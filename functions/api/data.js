@@ -2,8 +2,10 @@
  * CMS API: GET /api/data?k=projects|skills|home|dsa
  * PUT /api/data?k=...  Authorization: Bearer <JWT>  body: raw JSON
  *
- * Requires D1 binding named DB on the Pages project + JWT from your GitHub OAuth worker.
+ * Requires content D1: binding `DB` or `dsa-pattern-practice-content` + JWT from your GitHub OAuth worker.
  */
+
+import { contentDb } from "../_lib/d1-bindings.js";
 
 const ISS = "dsa-portfolio-admin";
 const ADMIN_GH = "AkashSingh1505";
@@ -83,15 +85,19 @@ export async function onRequestGet(context) {
         });
     }
 
-    if (!env.DB) {
-        return new Response(JSON.stringify({ error: "D1 not bound" }), {
-            status: 503,
-            headers: { "Content-Type": "application/json" },
-        });
+    const db = contentDb(env);
+    if (!db) {
+        return new Response(
+            JSON.stringify({ error: "D1 not bound (bind DB or dsa-pattern-practice-content)" }),
+            {
+                status: 503,
+                headers: { "Content-Type": "application/json" },
+            },
+        );
     }
 
     try {
-        const row = await env.DB.prepare("SELECT payload FROM cms_content WHERE key = ?").bind(key).first();
+        const row = await db.prepare("SELECT payload FROM cms_content WHERE key = ?").bind(key).first();
         if (row && row.payload) {
             return new Response(row.payload, {
                 headers: {
@@ -117,11 +123,15 @@ export async function onRequestGet(context) {
 
 export async function onRequestPut(context) {
     const { request, env } = context;
-    if (!env.DB) {
-        return new Response(JSON.stringify({ error: "D1 not bound" }), {
-            status: 503,
-            headers: { "Content-Type": "application/json" },
-        });
+    const db = contentDb(env);
+    if (!db) {
+        return new Response(
+            JSON.stringify({ error: "D1 not bound (bind DB or dsa-pattern-practice-content)" }),
+            {
+                status: 503,
+                headers: { "Content-Type": "application/json" },
+            },
+        );
     }
 
     const url = new URL(request.url);
@@ -162,11 +172,11 @@ export async function onRequestPut(context) {
     const now = Math.floor(Date.now() / 1000);
     let revision = 1;
     try {
-        const prev = await env.DB.prepare("SELECT revision FROM cms_content WHERE key = ?").bind(key).first();
+        const prev = await db.prepare("SELECT revision FROM cms_content WHERE key = ?").bind(key).first();
         if (prev && typeof prev.revision === "number" && prev.revision >= 1) {
             revision = prev.revision + 1;
         }
-        await env.DB.prepare(
+        await db.prepare(
             `INSERT INTO cms_content (key, payload, updated_at, revision, content_format, published_at)
              VALUES (?, ?, ?, ?, 'json', ?)
              ON CONFLICT(key) DO UPDATE SET
@@ -180,13 +190,13 @@ export async function onRequestPut(context) {
             .run();
     } catch (e) {
         console.warn("D1 extended write, falling back", e);
-        await env.DB.prepare("INSERT OR REPLACE INTO cms_content (key, payload, updated_at) VALUES (?, ?, ?)")
+        await db.prepare("INSERT OR REPLACE INTO cms_content (key, payload, updated_at) VALUES (?, ?, ?)")
             .bind(key, text, now)
             .run();
     }
 
     try {
-        await env.DB.prepare(
+        await db.prepare(
             `INSERT INTO content_audit (entity_type, entity_key, action, actor_ref, revision, created_at)
              VALUES ('cms_content', ?, 'put', 'jwt_admin', ?, ?)`,
         )

@@ -4,6 +4,10 @@
 name = "dsa-pattern-practice"
 pages_build_output_dir = "."  # adjust if you use a build step
 
+# Code accepts either short bindings below OR bindings named exactly:
+#   dsa-pattern-practice-content, dsa-pattern-practice-subscribers
+# (see functions/_lib/d1-bindings.js)
+
 [[d1_databases]]
 binding = "DB"
 database_name = "dsa-pattern-practice-content"

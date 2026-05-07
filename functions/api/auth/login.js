@@ -1,3 +1,4 @@
+import { subscribersDb } from "../../_lib/d1-bindings.js";
 import { verifyPassword, signPracticeToken } from "../../_lib/practice-jwt.js";
 
 function json(body, status = 200) {
@@ -9,8 +10,12 @@ function json(body, status = 200) {
 
 export async function onRequestPost(context) {
     const { request, env } = context;
-    if (!env.DB_SUBSCRIBERS) {
-        return json({ error: "DB_SUBSCRIBERS not bound" }, 503);
+    const db = subscribersDb(env);
+    if (!db) {
+        return json(
+            { error: "Subscribers D1 not bound (bind DB_SUBSCRIBERS or dsa-pattern-practice-subscribers)" },
+            503,
+        );
     }
     if (!env.USER_JWT_SECRET || String(env.USER_JWT_SECRET).length < 16) {
         return json({ error: "USER_JWT_SECRET not configured" }, 503);
@@ -32,7 +37,7 @@ export async function onRequestPost(context) {
 
     let row;
     try {
-        row = await env.DB_SUBSCRIBERS.prepare(
+        row = await db.prepare(
             `SELECT id, email, password_hash, salt, role, plan, status
              FROM practice_users WHERE email = ?`,
         )
@@ -57,7 +62,7 @@ export async function onRequestPost(context) {
 
     const now = Math.floor(Date.now() / 1000);
     try {
-        await env.DB_SUBSCRIBERS.prepare(
+        await db.prepare(
             "UPDATE practice_users SET last_login_at = ?, updated_at = ? WHERE id = ?",
         )
             .bind(now, now, row.id)
@@ -67,7 +72,7 @@ export async function onRequestPost(context) {
     }
 
     try {
-        await env.DB_SUBSCRIBERS.prepare(
+        await db.prepare(
             "INSERT INTO security_audit (user_id, action, created_at) VALUES (?, 'login', ?)",
         )
             .bind(row.id, now)

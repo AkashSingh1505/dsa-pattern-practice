@@ -1,3 +1,4 @@
+import { subscribersDb } from "../../_lib/d1-bindings.js";
 import { randomSaltB64, hashPassword, signPracticeToken } from "../../_lib/practice-jwt.js";
 
 function json(body, status = 200) {
@@ -13,8 +14,12 @@ function validEmail(s) {
 
 export async function onRequestPost(context) {
     const { request, env } = context;
-    if (!env.DB_SUBSCRIBERS) {
-        return json({ error: "DB_SUBSCRIBERS not bound" }, 503);
+    const db = subscribersDb(env);
+    if (!db) {
+        return json(
+            { error: "Subscribers D1 not bound (bind DB_SUBSCRIBERS or dsa-pattern-practice-subscribers)" },
+            503,
+        );
     }
     if (!env.USER_JWT_SECRET || String(env.USER_JWT_SECRET).length < 16) {
         return json({ error: "USER_JWT_SECRET not configured" }, 503);
@@ -49,7 +54,7 @@ export async function onRequestPost(context) {
 
     const now = Math.floor(Date.now() / 1000);
     try {
-        await env.DB_SUBSCRIBERS.prepare(
+        await db.prepare(
             `INSERT INTO practice_users (
                 public_id, email, password_hash, salt, role, plan, status, created_at, updated_at
             ) VALUES (?, ?, ?, ?, 'user', 'free', 'active', ?, ?)`,
@@ -66,11 +71,11 @@ export async function onRequestPost(context) {
     }
 
     try {
-        const row = await env.DB_SUBSCRIBERS.prepare("SELECT id FROM practice_users WHERE email = ?")
+        const row = await db.prepare("SELECT id FROM practice_users WHERE email = ?")
             .bind(email)
             .first();
         if (row && row.id != null) {
-            await env.DB_SUBSCRIBERS.prepare(
+            await db.prepare(
                 "INSERT OR IGNORE INTO security_audit (user_id, action, created_at) VALUES (?, 'register', ?)",
             )
                 .bind(row.id, now)

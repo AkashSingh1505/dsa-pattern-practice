@@ -1,6 +1,5 @@
 /**
- * CMS API: GET /api/data?k=projects|skills|home|dsa
- * PUT /api/data?k=...  Authorization: Bearer <JWT>  body: raw JSON
+ * CMS API: GET /api/data?k=dsa  |  PUT /api/data?k=dsa  Authorization: Bearer <JWT>  body: raw JSON
  *
  * Requires content D1: binding `DB` or `dsa-pattern-practice-content` + JWT from your GitHub OAuth worker.
  */
@@ -10,7 +9,7 @@ import { contentDb } from "../_lib/d1-bindings.js";
 const ISS = "dsa-portfolio-admin";
 const ADMIN_GH = "AkashSingh1505";
 
-const ALLOWED = new Set(["projects", "skills", "home", "dsa"]);
+const ALLOWED = new Set(["dsa"]);
 
 /** Same as auth/dsa-admin-public.pem — public only */
 const PEM = `-----BEGIN PUBLIC KEY-----
@@ -111,7 +110,7 @@ export async function onRequestGet(context) {
     }
 
     /* No row: empty payload (no static file fallback). */
-    const emptyBody = key === "home" ? "null" : "[]";
+    const emptyBody = "[]";
     return new Response(emptyBody, {
         status: 200,
         headers: {

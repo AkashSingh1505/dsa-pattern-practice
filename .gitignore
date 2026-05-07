@@ -8,3 +8,7 @@ build/
 *.log
 .idea/
 .vscode/
+
+# Never commit signing keys (public `.pem` in auth/ is intentional)
+auth/*private*.pem
+**/dsa-admin-private.pem

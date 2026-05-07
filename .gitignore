@@ -12,3 +12,8 @@ build/
 # Never commit signing keys (public `.pem` in auth/ is intentional)
 auth/*private*.pem
 **/dsa-admin-private.pem
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example

@@ -5109,7 +5109,9 @@ function dsaCompressImageToDataUrl(file, maxSide, quality, cb) {
 
 function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const isMetaRoot = parentKey === "__DSA_META__";
-    const isAdmin = typeof dsaIsAdminSession === "function" && dsaIsAdminSession();
+    /** Edit mode in customize UI: site admin (RSA) or Pro / practice-admin (see dsa-user-auth). */
+    const isAdmin =
+        typeof dsaHasCustomizeGraphAccess === "function" && dsaHasCustomizeGraphAccess();
     const kindFlags = dsaParentChildKindFlags(parentKey);
     const editQuestionName =
         opts && opts.editQuestionName ? String(opts.editQuestionName).trim() : "";
@@ -5146,7 +5148,8 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     if (!isAdmin) {
         adminNote = document.createElement("p");
         adminNote.className = "dsa-dialog-note";
-        adminNote.textContent = "View only. Sign in as admin to save changes.";
+        adminNote.textContent =
+            "View only. Sign in with a site admin or Pro / elevated practice account to edit the graph.";
     }
 
     const catFs = document.createElement("fieldset");
@@ -6844,16 +6847,15 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         nameIn.focus();
     }
 }
-function attachDsaCustomizePanel(panel, scheduleRedraw, restoredGraphUi, isAdminSession) {
+/**
+ * @param {{ siteAdmin: boolean, canEditGraph: boolean }} authCtx — siteAdmin = RSA CMS token; canEditGraph = customize UI rings.
+ */
+function attachDsaCustomizePanel(panel, scheduleRedraw, restoredGraphUi, authCtx) {
     panel.innerHTML = "";
     panel.classList.add("dsa-graph-panel--customize");
-    const adminFlag =
-        typeof dsaIsAdminSession === "function" ? dsaIsAdminSession() : !!isAdminSession;
-    const fullReload = () =>
-        loadDsaPatternsPage({
-            restore: { customize: true },
-            isAdmin: adminFlag,
-        });
+    const siteAdmin = !!(authCtx && authCtx.siteAdmin);
+    const canEditGraph = !!(authCtx && authCtx.canEditGraph);
+    const fullReload = () => loadDsaPatternsPage({ restore: { customize: true } });
     const refresh = () => {
         const ui = captureDsaCustomizeGraphUiState();
         const ok = dsaTrySoftRemountGraphTree(
@@ -6863,7 +6865,7 @@ function attachDsaCustomizePanel(panel, scheduleRedraw, restoredGraphUi, isAdmin
                 buildUnifiedMindmapTree(
                     panel,
                     scheduleRedraw,
-                    { refresh, isAdmin: adminFlag },
+                    { refresh, isAdmin: canEditGraph },
                     refresh,
                 ),
             () => {
@@ -6881,9 +6883,15 @@ function attachDsaCustomizePanel(panel, scheduleRedraw, restoredGraphUi, isAdmin
     topbar.className = "dsa-customize-topbar";
     const note = document.createElement("p");
     note.className = "dsa-customize-topbar-note";
-    note.textContent = isAdminSession
-        ? "Ring on each node: − remove, count expand/collapse, + add Problem or Node. Pencil beside the ring edits that topic’s label; pencil on a problem row edits the problem. Toolbar matches Full map (expand / collapse / zoom)."
-        : "This view is for signed-in admins. Toolbar above the map matches Full map.";
+    if (siteAdmin) {
+        note.textContent =
+            "Ring on each node: − remove, count expand/collapse, + add Problem or Node. Pencil beside the ring edits that topic’s label; pencil on a problem row edits the problem. Import/Export can sync to site CMS when signed in as site admin. Toolbar matches Full map (expand / collapse / zoom).";
+    } else if (canEditGraph) {
+        note.textContent =
+            "You can customize the map locally (export JSON to back up). Pushing the shared site graph to the database still requires the site admin account. Upgrade or account type controls this access.";
+    } else {
+        note.textContent = "This view requires permission to customize the graph.";
+    }
 
     const importInput = document.createElement("input");
     importInput.type = "file";
@@ -6901,7 +6909,7 @@ function attachDsaCustomizePanel(panel, scheduleRedraw, restoredGraphUi, isAdmin
     btnImport.type = "button";
     btnImport.className = "dsa-customize-topbar-btn";
     btnImport.textContent = "Import JSON…";
-    if (!isAdminSession) {
+    if (!siteAdmin) {
         btnImport.hidden = true;
         btnImport.setAttribute("aria-hidden", "true");
     }
@@ -6945,7 +6953,7 @@ function attachDsaCustomizePanel(panel, scheduleRedraw, restoredGraphUi, isAdmin
     const zoomContent = document.createElement("div");
     zoomContent.className = "dsa-mind-zoom-content";
     zoomContent.appendChild(
-        buildUnifiedMindmapTree(panel, scheduleRedraw, { refresh, isAdmin: !!isAdminSession }),
+        buildUnifiedMindmapTree(panel, scheduleRedraw, { refresh, isAdmin: canEditGraph }),
     );
     zoomSizer.appendChild(zoomContent);
     scroll.appendChild(zoomSizer);
@@ -6976,7 +6984,9 @@ function attachDsaCustomizePanel(panel, scheduleRedraw, restoredGraphUi, isAdmin
 
 function loadDsaPatternsPage(opts) {
     const restore = opts && opts.restore;
-    const isAdmin = !!(opts && opts.isAdmin);
+    const siteAdmin = typeof dsaIsAdminSession === "function" && dsaIsAdminSession();
+    const canCustomize =
+        typeof dsaHasCustomizeGraphAccess === "function" && dsaHasCustomizeGraphAccess();
     const viewport = document.getElementById("dsa-hierarchy-root");
     if (!viewport) {
         return;
@@ -7002,7 +7012,7 @@ function loadDsaPatternsPage(opts) {
     const hintUnified =
         "Full map (default): every data structure branches from DSA Patterns. Use Done on each problem to track progress; topic tiles show done/total (e.g. 10/14) and a light animated completion fill. Toolbar: expand, collapse, zoom; purple badges show immediate child counts and expand branches; scroll if the graph is wide.";
     const hintCustomize =
-        "Customize graph (admins): same map as Full map. Each node shows a ring with −, count, and +. Count expands/collapses; + adds a problem or node; − removes (confirm). Export JSON to save into your repo.";
+        "Customize graph: same map as Full map with edit rings (− / count / +). Site admins sync to the database; Pro or elevated practice accounts can edit locally and export JSON.";
     const hint = document.createElement("p");
     hint.className = "dsa-graph-hint";
     hint.textContent = hintUnified;
@@ -7032,7 +7042,7 @@ function loadDsaPatternsPage(opts) {
     btnSingleView.textContent = "One topic";
 
     let btnCustomizeView = null;
-    if (isAdmin) {
+    if (canCustomize) {
         btnCustomizeView = document.createElement("button");
         btnCustomizeView.type = "button";
         btnCustomizeView.className = "dsa-view-btn";
@@ -7051,17 +7061,25 @@ function loadDsaPatternsPage(opts) {
 
     const adminBar = document.createElement("div");
     adminBar.className = "dsa-admin-bar";
-    if (isAdmin) {
+    if (siteAdmin || canCustomize) {
         adminBar.style.display = "none";
         adminBar.setAttribute("aria-hidden", "true");
     } else {
-        const hint = document.createElement("span");
-        hint.className = "dsa-admin-bar-hint";
+        const barHint = document.createElement("span");
+        barHint.className = "dsa-admin-bar-hint";
         const loginUrl = typeof dsaGetAdminSignInUrl === "function" ? dsaGetAdminSignInUrl() : "";
-        hint.textContent = loginUrl
-            ? "Sign in as admin to open Customize graph, sync to the database, and use remove (−)."
-            : "Set meta dsa-admin-oauth-base to your OAuth worker URL, then sign in for CMS sync.";
-        adminBar.appendChild(hint);
+        const hasPractice = typeof dsaIsPracticeUser === "function" && dsaIsPracticeUser();
+        if (hasPractice) {
+            barHint.textContent =
+                "You’re signed in with a practice account — you see the same map as everyone else. Customize graph unlocks with Pro or an elevated account type.";
+        } else if (loginUrl) {
+            barHint.textContent =
+                "Create a practice account or sign in as site admin for CMS. Customize graph unlocks for site admins, practice admins, or Pro (when enabled).";
+        } else {
+            barHint.textContent =
+                "Configure OAuth base meta for site admin sign-in. Practice sign-up is on the Account page.";
+        }
+        adminBar.appendChild(barHint);
     }
     toolbar.appendChild(adminBar);
 
@@ -7074,11 +7092,10 @@ function loadDsaPatternsPage(opts) {
     panel.hidden = true;
 
     const scheduleRedraw = () => requestAnimationFrame(drawDsaMindmapEdges);
-    const pageIsAdmin = isAdmin;
     function graphRefresh() {
         const st = dsaCaptureGraphViewState();
         if (dsaGraphCustomizeMode) {
-            loadDsaPatternsPage({ restore: st, isAdmin: pageIsAdmin });
+            loadDsaPatternsPage({ restore: st });
             return;
         }
         const buildFreshTree = () => {
@@ -7094,7 +7111,7 @@ function loadDsaPatternsPage(opts) {
             return buildMindmapTree(merged, panel, scheduleRedraw, dsaStableThemeForKey(id), graphRefresh);
         };
         if (!dsaTrySoftRemountGraphTree(panel, scheduleRedraw, buildFreshTree, null)) {
-            loadDsaPatternsPage({ restore: st, isAdmin: pageIsAdmin });
+            loadDsaPatternsPage({ restore: st });
         }
     }
 
@@ -7164,7 +7181,10 @@ function loadDsaPatternsPage(opts) {
         rootsRow.hidden = true;
         panel.hidden = false;
         hint.textContent = hintCustomize;
-        attachDsaCustomizePanel(panel, scheduleRedraw, pendingCustomizeUi, isAdmin);
+        attachDsaCustomizePanel(panel, scheduleRedraw, pendingCustomizeUi, {
+            siteAdmin,
+            canEditGraph: canCustomize,
+        });
     }
 
     btnSingleView.addEventListener("click", async () => {
@@ -7294,7 +7314,7 @@ function loadDsaPatternsPage(opts) {
 
     function applyRestoreState() {
         if (!restore) {
-            if (isAdmin) {
+            if (siteAdmin) {
                 setGraphViewMode("customize");
                 enterCustomizeMap();
             } else {
@@ -7304,7 +7324,7 @@ function loadDsaPatternsPage(opts) {
             return;
         }
         if (restore.customize) {
-            if (!isAdmin || !btnCustomizeView) {
+            if (!canCustomize || !btnCustomizeView) {
                 setGraphViewMode("unified");
                 enterUnifiedMap();
                 return;
@@ -7767,25 +7787,37 @@ function filterProjects(category) {
     renderProjects(filteredProjects);
 }
 
-/** Navbar: Login → /admin.html; signed-in label "CMS"; sign-out when session active. */
+/** Navbar: Account page; label reflects site admin and/or practice session. */
 function syncNavbarAuthUi() {
     const link = document.getElementById("nav-admin-entry");
     const signOut = document.getElementById("nav-admin-signout");
-    const ok = typeof dsaIsAdminSession === "function" && dsaIsAdminSession();
+    const rsa = typeof dsaIsAdminSession === "function" && dsaIsAdminSession();
+    const practice = typeof dsaIsPracticeUser === "function" && dsaIsPracticeUser();
     if (link) {
         link.removeAttribute("title");
-        link.textContent = ok ? "CMS" : "Login";
-        link.setAttribute("aria-label", ok ? "Open CMS (signed in)" : "Admin login");
+        if (rsa && practice) {
+            link.textContent = "Account";
+            link.setAttribute("aria-label", "Account — site admin and practice user signed in");
+        } else if (rsa) {
+            link.textContent = "CMS";
+            link.setAttribute("aria-label", "Open account (site admin signed in)");
+        } else if (practice) {
+            link.textContent = "Account";
+            link.setAttribute("aria-label", "Open account (practice user signed in)");
+        } else {
+            link.textContent = "Sign in";
+            link.setAttribute("aria-label", "Sign in or create account");
+        }
     }
     if (signOut) {
-        signOut.hidden = !ok;
+        signOut.hidden = !(rsa || practice);
     }
 }
 
 function wireNavbarAdmin() {
     const link = document.getElementById("nav-admin-entry");
     if (link) {
-        link.href = new URL("admin.html", window.location.href).href.split("#")[0];
+        link.href = new URL("account.html", window.location.href).href.split("#")[0];
     }
     const signOut = document.getElementById("nav-admin-signout");
     if (signOut && signOut.dataset.wired !== "1") {
@@ -7794,8 +7826,11 @@ function wireNavbarAdmin() {
             if (typeof dsaAdminSignOut === "function") {
                 dsaAdminSignOut();
             }
+            if (typeof dsaPracticeUserSignOut === "function") {
+                dsaPracticeUserSignOut();
+            }
             if (document.getElementById("dsa-hierarchy-root") && typeof loadDsaPatternsPage === "function") {
-                loadDsaPatternsPage({ isAdmin: false });
+                loadDsaPatternsPage();
             }
             syncNavbarAuthUi();
         });
@@ -7938,7 +7973,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             .then(() =>
                 typeof dsaInitAdminAuth === "function" ? dsaInitAdminAuth() : Promise.resolve(false)
             )
-            .then((isAdmin) => loadDsaPatternsPage({ isAdmin }));
+            .then(() => loadDsaPatternsPage());
     } else if (document.body.classList.contains("projects-page")) {
         filterProjects("all");
         const menuItems = document.querySelectorAll(".menu-item");
@@ -7958,10 +7993,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else if (document.body.classList.contains("details-page")) {
         loadProjectDetails();
     } else if (
+        window.location.pathname.includes("account.html") ||
         window.location.pathname.includes("admin.html") ||
-        /\/admin\/?$/.test(window.location.pathname || "")
+        /\/(account|admin)\/?$/.test(window.location.pathname || "")
     ) {
-        /* CMS page — own scripts; only nav wiring from wireNavAdminEntry */
+        /* Account / CMS page — inline scripts on that HTML */
     } else {
         loadHomePage();
     }

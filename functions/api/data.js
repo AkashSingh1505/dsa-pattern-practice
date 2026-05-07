@@ -160,13 +160,43 @@ export async function onRequestPut(context) {
     }
 
     const now = Math.floor(Date.now() / 1000);
-    await env.DB.prepare(
-        "INSERT OR REPLACE INTO cms_content (key, payload, updated_at) VALUES (?, ?, ?)"
-    )
-        .bind(key, text, now)
-        .run();
+    let revision = 1;
+    try {
+        const prev = await env.DB.prepare("SELECT revision FROM cms_content WHERE key = ?").bind(key).first();
+        if (prev && typeof prev.revision === "number" && prev.revision >= 1) {
+            revision = prev.revision + 1;
+        }
+        await env.DB.prepare(
+            `INSERT INTO cms_content (key, payload, updated_at, revision, content_format, published_at)
+             VALUES (?, ?, ?, ?, 'json', ?)
+             ON CONFLICT(key) DO UPDATE SET
+               payload = excluded.payload,
+               updated_at = excluded.updated_at,
+               revision = excluded.revision,
+               content_format = excluded.content_format,
+               published_at = excluded.published_at`,
+        )
+            .bind(key, text, now, revision, now)
+            .run();
+    } catch (e) {
+        console.warn("D1 extended write, falling back", e);
+        await env.DB.prepare("INSERT OR REPLACE INTO cms_content (key, payload, updated_at) VALUES (?, ?, ?)")
+            .bind(key, text, now)
+            .run();
+    }
 
-    return new Response(JSON.stringify({ ok: true, key, updated_at: now }), {
+    try {
+        await env.DB.prepare(
+            `INSERT INTO content_audit (entity_type, entity_key, action, actor_ref, revision, created_at)
+             VALUES ('cms_content', ?, 'put', 'jwt_admin', ?, ?)`,
+        )
+            .bind(key, revision, now)
+            .run();
+    } catch (e) {
+        /* optional table */
+    }
+
+    return new Response(JSON.stringify({ ok: true, key, updated_at: now, revision }), {
         headers: { "Content-Type": "application/json" },
     });
 }

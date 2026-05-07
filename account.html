@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="dsa-admin-oauth-base" content="https://portfolio-admin-auth.akashsinghofficial15.workers.dev">
+    <title>Account · DSA Pattern Practice</title>
+    <link rel="stylesheet" href="./styles.css?v=3">
+</head>
+<body class="admin-page account-portal-page">
+    <div class="navbar">
+        <div class="left"><a href="./index.html">Home</a></div>
+        <div class="right">
+            <a href="./index.html">DSA Patterns</a>
+            <a href="https://github.com/AkashSingh1505/dsa-pattern-practice" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a id="nav-admin-entry" class="nav-admin-entry" href="./account.html">Sign in</a>
+            <button type="button" id="nav-admin-signout" class="nav-signout-btn" hidden>Sign out</button>
+        </div>
+    </div>
+
+    <div id="cms-toast" class="admin-toast" role="alert" aria-live="assertive" hidden></div>
+
+    <main class="admin-main portal-main">
+        <header class="admin-header portal-header">
+            <p class="admin-kicker">DSA Pattern Practice</p>
+            <h1 class="admin-title">Account</h1>
+            <p class="admin-lead">
+                <strong>Practice account</strong> — sign in or register to track progress across devices (same public graph for everyone; <strong>Customize graph</strong> unlocks for Pro or elevated roles). 
+                <strong>Site admin</strong> — password / authenticator for CMS JSON and publishing to the content database.
+            </p>
+        </header>
+
+        <div class="portal-primary-tabs" role="tablist" aria-label="Account sections">
+            <button type="button" class="portal-primary-tab portal-primary-tab--active" id="portal-tab-practice" role="tab" aria-selected="true" aria-controls="portal-panel-practice">Practice account</button>
+            <button type="button" class="portal-primary-tab" id="portal-tab-cms" role="tab" aria-selected="false" aria-controls="portal-panel-cms">Site admin &amp; CMS</button>
+        </div>
+
+        <section id="portal-panel-practice" class="portal-panel" role="tabpanel" aria-labelledby="portal-tab-practice">
+            <div class="admin-card admin-auth">
+                <div class="admin-auth-header">
+                    <h2 class="admin-card-title">Practice sign-in</h2>
+                    <p class="admin-auth-sub">Use email and password. New accounts start as <strong>user</strong> / <strong>free</strong> — same mind map as visitors. Upgrade to <strong>pro</strong> later for customize features.</p>
+                </div>
+                <div id="portal-practice-signedin" class="portal-practice-signedin" hidden>
+                    <p class="portal-signedin-line">Signed in as <strong id="portal-practice-email"></strong></p>
+                    <p class="cms-msg portal-meta">Plan: <span id="portal-practice-plan"></span> · Role: <span id="portal-practice-role"></span></p>
+                    <button type="button" id="portal-practice-signout" class="admin-btn admin-btn-ghost">Sign out practice account</button>
+                </div>
+                <div id="portal-practice-forms" class="portal-practice-forms">
+                    <div class="admin-auth-method-switch portal-secondary-tabs" role="tablist" aria-label="Practice account">
+                        <button type="button" class="admin-auth-tab admin-auth-tab--active" id="pt-tab-in" role="tab" aria-selected="true">Sign in</button>
+                        <button type="button" class="admin-auth-tab" id="pt-tab-reg" role="tab" aria-selected="false">Create account</button>
+                    </div>
+                    <form id="form-practice-login" class="admin-form portal-form" autocomplete="on">
+                        <input type="email" name="email" placeholder="Email" autocomplete="email" required />
+                        <input type="password" name="password" placeholder="Password" autocomplete="current-password" required />
+                        <button type="submit" class="admin-btn admin-btn-primary">Sign in</button>
+                    </form>
+                    <form id="form-practice-register" class="admin-form portal-form" hidden autocomplete="on">
+                        <input type="email" name="email" placeholder="Email" autocomplete="email" required />
+                        <input type="password" name="password" placeholder="Password (min 8 characters)" autocomplete="new-password" required minlength="8" />
+                        <button type="submit" class="admin-btn admin-btn-primary">Create account</button>
+                    </form>
+                </div>
+                <p id="portal-practice-msg" class="cms-msg admin-status" aria-live="polite"></p>
+            </div>
+        </section>
+
+        <section id="portal-panel-cms" class="portal-panel portal-panel--cms" role="tabpanel" aria-labelledby="portal-tab-cms" hidden>
+            <p id="cms-config-warn" class="cms-msg cms-msg-banner err" hidden></p>
+
+            <section id="cms-auth-panel" class="admin-card admin-auth" aria-label="Site admin sign in" hidden>
+                <div class="admin-auth-header">
+                    <h2 class="admin-card-title">Site admin</h2>
+                    <p class="admin-auth-sub">Password or authenticator — same as your portfolio Worker. Unlocks the JSON editor and CMS writes to the <strong>content</strong> database.</p>
+                </div>
+                <div class="admin-auth-body">
+                    <div class="admin-auth-method-switch" role="tablist" aria-label="Sign-in method">
+                        <button type="button" class="admin-auth-tab admin-auth-tab--active" role="tab" id="cms-tab-password" aria-selected="true" aria-controls="cms-auth-pane-password" data-auth-method="password">Password</button>
+                        <button type="button" class="admin-auth-tab" role="tab" id="cms-tab-totp" aria-selected="false" aria-controls="cms-auth-pane-totp" data-auth-method="totp">Authenticator</button>
+                    </div>
+                    <div id="cms-auth-pane-password" class="admin-auth-pane" role="tabpanel" aria-labelledby="cms-tab-password">
+                        <form id="cms-form-password" class="admin-form" method="POST" autocomplete="on">
+                            <input type="password" name="password" placeholder="Site password" autocomplete="current-password" required />
+                            <input type="hidden" name="return" id="cms-return-password" value="" />
+                            <button type="submit" class="admin-btn admin-btn-primary">Continue</button>
+                        </form>
+                    </div>
+                    <div id="cms-auth-pane-totp" class="admin-auth-pane" role="tabpanel" aria-labelledby="cms-tab-totp" hidden>
+                        <form id="cms-form-totp" class="admin-form" method="POST">
+                            <input type="text" name="code" inputmode="numeric" pattern="[0-9]*" maxlength="12" placeholder="6-digit code" autocomplete="one-time-code" required />
+                            <input type="hidden" name="return" id="cms-return-totp" value="" />
+                            <button type="submit" class="admin-btn admin-btn-primary">Continue</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <section id="cms-editor-section" class="admin-card admin-editor" aria-label="JSON editor" hidden>
+                <div class="admin-editor-head">
+                    <h2 class="admin-card-title">CMS editor</h2>
+                    <div class="cms-toolbar">
+                        <label for="cms-key">Dataset</label>
+                        <select id="cms-key">
+                            <option value="projects">projects</option>
+                            <option value="skills">skills</option>
+                            <option value="home">home</option>
+                            <option value="dsa">dsa (mind map JSON)</option>
+                        </select>
+                        <button type="button" id="cms-load" class="admin-btn admin-btn-ghost">Load</button>
+                        <button type="button" id="cms-save" class="admin-btn admin-btn-primary">Save</button>
+                    </div>
+                </div>
+                <textarea id="cms-editor" class="admin-textarea" spellcheck="false" placeholder="Load a key to fetch JSON from the API…"></textarea>
+                <p id="cms-status" class="cms-msg admin-status"></p>
+            </section>
+        </section>
+    </main>
+
+    <script src="./auth/dsa-admin-auth.js?v=3"></script>
+    <script src="./auth/dsa-user-auth.js?v=1"></script>
+    <script>
+        (function () {
+            const tabPractice = document.getElementById("portal-tab-practice");
+            const tabCms = document.getElementById("portal-tab-cms");
+            const panelPractice = document.getElementById("portal-panel-practice");
+            const panelCms = document.getElementById("portal-panel-cms");
+
+            function showPortalTab(which) {
+                const cms = which === "cms";
+                tabPractice.classList.toggle("portal-primary-tab--active", !cms);
+                tabCms.classList.toggle("portal-primary-tab--active", cms);
+                tabPractice.setAttribute("aria-selected", cms ? "false" : "true");
+                tabCms.setAttribute("aria-selected", cms ? "true" : "false");
+                panelPractice.hidden = cms;
+                panelCms.hidden = !cms;
+            }
+            tabPractice.addEventListener("click", () => showPortalTab("practice"));
+            tabCms.addEventListener("click", () => showPortalTab("cms"));
+            if (window.location.hash === "#cms") {
+                showPortalTab("cms");
+            }
+
+            const ptTabIn = document.getElementById("pt-tab-in");
+            const ptTabReg = document.getElementById("pt-tab-reg");
+            const formLogin = document.getElementById("form-practice-login");
+            const formReg = document.getElementById("form-practice-register");
+            const signedIn = document.getElementById("portal-practice-signedin");
+            const formsWrap = document.getElementById("portal-practice-forms");
+            const msgEl = document.getElementById("portal-practice-msg");
+
+            function setPracticeSubtab(reg) {
+                ptTabIn.classList.toggle("admin-auth-tab--active", !reg);
+                ptTabReg.classList.toggle("admin-auth-tab--active", reg);
+                ptTabIn.setAttribute("aria-selected", reg ? "false" : "true");
+                ptTabReg.setAttribute("aria-selected", reg ? "true" : "false");
+                formLogin.hidden = reg;
+                formReg.hidden = !reg;
+            }
+            ptTabIn.addEventListener("click", () => setPracticeSubtab(false));
+            ptTabReg.addEventListener("click", () => setPracticeSubtab(true));
+
+            function practiceMsg(text, cls) {
+                msgEl.textContent = text || "";
+                msgEl.className = "cms-msg admin-status" + (cls ? " " + cls : "");
+            }
+
+            function updatePracticeSignedInUi() {
+                const c = typeof dsaParsePracticeUserClaims === "function" ? dsaParsePracticeUserClaims() : null;
+                if (c && c.email) {
+                    signedIn.hidden = false;
+                    formsWrap.hidden = true;
+                    document.getElementById("portal-practice-email").textContent = c.email;
+                    document.getElementById("portal-practice-plan").textContent = c.plan || "free";
+                    document.getElementById("portal-practice-role").textContent = c.role || "user";
+                } else {
+                    signedIn.hidden = true;
+                    formsWrap.hidden = false;
+                }
+            }
+
+            function apiAuth(path) {
+                return new URL("api/auth/" + path, window.location.href).href;
+            }
+
+            formLogin.addEventListener("submit", async function (e) {
+                e.preventDefault();
+                practiceMsg("Signing in…");
+                const fd = new FormData(formLogin);
+                try {
+                    const r = await fetch(apiAuth("login"), {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            email: String(fd.get("email") || "").trim(),
+                            password: String(fd.get("password") || ""),
+                        }),
+                    });
+                    const j = await r.json().catch(() => ({}));
+                    if (!r.ok) {
+                        practiceMsg(j.error || "Sign-in failed", "err");
+                        return;
+                    }
+                    if (j.token && typeof dsaPracticeUserSetToken === "function") {
+                        dsaPracticeUserSetToken(j.token);
+                    }
+                    practiceMsg("Signed in.", "ok");
+                    updatePracticeSignedInUi();
+                    if (typeof window.syncNavbarAuthUi === "function") {
+                        window.syncNavbarAuthUi();
+                    }
+                } catch (err) {
+                    practiceMsg(String(err), "err");
+                }
+            });
+
+            formReg.addEventListener("submit", async function (e) {
+                e.preventDefault();
+                practiceMsg("Creating account…");
+                const fd = new FormData(formReg);
+                try {
+                    const r = await fetch(apiAuth("register"), {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            email: String(fd.get("email") || "").trim(),
+                            password: String(fd.get("password") || ""),
+                        }),
+                    });
+                    const j = await r.json().catch(() => ({}));
+                    if (!r.ok) {
+                        practiceMsg(j.error || "Registration failed", "err");
+                        return;
+                    }
+                    if (j.token && typeof dsaPracticeUserSetToken === "function") {
+                        dsaPracticeUserSetToken(j.token);
+                    }
+                    practiceMsg("Account created. You are signed in.", "ok");
+                    updatePracticeSignedInUi();
+                    if (typeof window.syncNavbarAuthUi === "function") {
+                        window.syncNavbarAuthUi();
+                    }
+                } catch (err) {
+                    practiceMsg(String(err), "err");
+                }
+            });
+
+            document.getElementById("portal-practice-signout").addEventListener("click", function () {
+                if (typeof dsaPracticeUserSignOut === "function") {
+                    dsaPracticeUserSignOut();
+                }
+                practiceMsg("Signed out practice account.", "ok");
+                updatePracticeSignedInUi();
+                if (typeof window.syncNavbarAuthUi === "function") {
+                    window.syncNavbarAuthUi();
+                }
+            });
+
+            document.addEventListener("DOMContentLoaded", function () {
+                updatePracticeSignedInUi();
+            });
+        })();
+    </script>
+    <script>
+        (function () {
+            const keySel = document.getElementById("cms-key");
+            const editor = document.getElementById("cms-editor");
+            const status = document.getElementById("cms-status");
+            const signout = document.getElementById("nav-admin-signout");
+            const authPanel = document.getElementById("cms-auth-panel");
+            const editorSection = document.getElementById("cms-editor-section");
+
+            function apiDataUrl(k) {
+                return new URL("api/data?k=" + encodeURIComponent(k), window.location.href).href;
+            }
+
+            function getWorkerBase() {
+                const m = document.querySelector('meta[name="dsa-admin-oauth-base"]');
+                return (m && m.getAttribute("content") || "").trim().replace(/\/+$/, "");
+            }
+
+            function consumeAdminErr() {
+                const hash = window.location.hash || "";
+                if (!hash.startsWith("#")) {
+                    return null;
+                }
+                const params = new URLSearchParams(hash.slice(1));
+                const err = params.get("dsa_admin_err");
+                if (!err) {
+                    return null;
+                }
+                params.delete("dsa_admin_err");
+                const rest = params.toString();
+                const newHash = rest ? "#" + rest : "";
+                window.history.replaceState(null, "", window.location.pathname + window.location.search + newHash);
+                return err;
+            }
+
+            const AUTH_ERR_LABELS = {
+                bad_password: "Wrong password.",
+                bad_totp: "Invalid authenticator code.",
+            };
+
+            function showToast(msg, kind) {
+                const el = document.getElementById("cms-toast");
+                if (!el || !msg) {
+                    return;
+                }
+                el.textContent = msg;
+                el.className = "admin-toast" + (kind === "err" ? " admin-toast--err" : " admin-toast--ok");
+                el.hidden = false;
+                clearTimeout(showToast._hide);
+                showToast._hide = setTimeout(function () {
+                    el.hidden = true;
+                }, 7000);
+            }
+
+            function setStatus(msg, cls) {
+                status.textContent = msg || "";
+                status.className = "cms-msg admin-status" + (cls ? " " + cls : "");
+                if (msg && cls === "err") {
+                    showToast(msg, "err");
+                }
+            }
+
+            function getToken() {
+                if (typeof dsaGetAdminJwt === "function") {
+                    const tok = dsaGetAdminJwt();
+                    if (tok) {
+                        return tok;
+                    }
+                }
+                try {
+                    return localStorage.getItem("dsaAdminJwtV1") || sessionStorage.getItem("dsaAdminJwtV1");
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            function setCmsAuthMethod(method) {
+                const pwTab = document.getElementById("cms-tab-password");
+                const totpTab = document.getElementById("cms-tab-totp");
+                const pwPane = document.getElementById("cms-auth-pane-password");
+                const totpPane = document.getElementById("cms-auth-pane-totp");
+                if (!pwTab || !totpTab || !pwPane || !totpPane) {
+                    return;
+                }
+                const isPw = method === "password";
+                pwTab.classList.toggle("admin-auth-tab--active", isPw);
+                totpTab.classList.toggle("admin-auth-tab--active", !isPw);
+                pwTab.setAttribute("aria-selected", isPw ? "true" : "false");
+                totpTab.setAttribute("aria-selected", !isPw ? "true" : "false");
+                pwPane.hidden = !isPw;
+                totpPane.hidden = isPw;
+                try {
+                    sessionStorage.setItem("cmsAuthMethod", isPw ? "password" : "totp");
+                } catch (e) {}
+            }
+
+            function updateAuthUi() {
+                const ok = typeof dsaIsAdminSession === "function" && dsaIsAdminSession();
+                if (editorSection) {
+                    editorSection.hidden = !ok;
+                }
+                const wb = getWorkerBase();
+                if (wb) {
+                    authPanel.hidden = ok;
+                } else {
+                    authPanel.hidden = true;
+                }
+                if (typeof window.syncNavbarAuthUi === "function") {
+                    window.syncNavbarAuthUi();
+                }
+            }
+
+            async function loadData() {
+                setStatus("Loading…");
+                const k = keySel.value;
+                try {
+                    const r = await fetch(apiDataUrl(k), { cache: "no-store" });
+                    const text = await r.text();
+                    if (!r.ok) {
+                        setStatus("Load failed: " + r.status + " " + text, "err");
+                        return;
+                    }
+                    try {
+                        editor.value = JSON.stringify(JSON.parse(text), null, 2);
+                    } catch (e) {
+                        editor.value = text;
+                    }
+                    setStatus("Loaded " + k + ".", "ok");
+                } catch (e) {
+                    setStatus(String(e), "err");
+                }
+            }
+
+            async function saveData() {
+                if (!dsaIsAdminSession()) {
+                    setStatus("Sign in first.", "err");
+                    return;
+                }
+                const k = keySel.value;
+                if (
+                    !window.confirm(
+                        'Save dataset "' + k + '" to the database? This replaces the existing value for that key.',
+                    )
+                ) {
+                    return;
+                }
+                let body = editor.value;
+                try {
+                    JSON.parse(body);
+                } catch (e) {
+                    setStatus("Invalid JSON: " + e.message, "err");
+                    return;
+                }
+                const tok = getToken();
+                if (!tok) {
+                    setStatus("No token in session.", "err");
+                    return;
+                }
+                setStatus("Saving…");
+                try {
+                    const r = await fetch(apiDataUrl(k), {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: "Bearer " + tok,
+                        },
+                        body,
+                    });
+                    const text = await r.text();
+                    if (!r.ok) {
+                        setStatus("Save failed: " + r.status + " " + text, "err");
+                        return;
+                    }
+                    setStatus("Saved " + k + ".", "ok");
+                } catch (e) {
+                    setStatus(String(e), "err");
+                }
+            }
+
+            document.getElementById("cms-load").addEventListener("click", loadData);
+            document.getElementById("cms-save").addEventListener("click", saveData);
+            signout.addEventListener("click", function () {
+                if (typeof dsaAdminSignOut === "function") {
+                    dsaAdminSignOut();
+                }
+                updateAuthUi();
+                setStatus("Site admin signed out.", "ok");
+                showToast("Site admin signed out.", "ok");
+            });
+
+            keySel.addEventListener("change", function () {
+                editor.value = "";
+                setStatus("");
+            });
+
+            document.addEventListener("DOMContentLoaded", async function () {
+                const err = consumeAdminErr();
+                const authErrMsg =
+                    err && (AUTH_ERR_LABELS[err] || "Sign-in failed: " + err.replace(/_/g, " ") + ".");
+                const ret = window.location.href.split("#")[0];
+                document.getElementById("cms-return-password").value = ret;
+                document.getElementById("cms-return-totp").value = ret;
+
+                let initialAuthMethod = "password";
+                try {
+                    const saved = sessionStorage.getItem("cmsAuthMethod");
+                    if (saved === "totp" || saved === "password") {
+                        initialAuthMethod = saved;
+                    }
+                } catch (e) {}
+                if (err === "bad_totp") {
+                    initialAuthMethod = "totp";
+                } else if (err === "bad_password") {
+                    initialAuthMethod = "password";
+                }
+                setCmsAuthMethod(initialAuthMethod);
+
+                document.getElementById("cms-tab-password").addEventListener("click", function () {
+                    setCmsAuthMethod("password");
+                });
+                document.getElementById("cms-tab-totp").addEventListener("click", function () {
+                    setCmsAuthMethod("totp");
+                });
+                const wb = getWorkerBase();
+                const cfgWarn = document.getElementById("cms-config-warn");
+                if (cfgWarn) {
+                    if (!wb) {
+                        cfgWarn.hidden = false;
+                        cfgWarn.textContent =
+                            'Set meta dsa-admin-oauth-base in account.html to your Worker URL (https://….workers.dev), commit, push, wait for Pages — then site-admin forms will post to the Worker.';
+                    } else {
+                        cfgWarn.hidden = true;
+                    }
+                }
+                if (wb) {
+                    document.getElementById("cms-form-password").action = wb + "/auth/password";
+                    document.getElementById("cms-form-totp").action = wb + "/auth/totp";
+                }
+                if (typeof dsaInitAdminAuth === "function") {
+                    await dsaInitAdminAuth();
+                }
+                updateAuthUi();
+                if (typeof dsaIsAdminSession === "function" && dsaIsAdminSession()) {
+                    await loadData();
+                }
+                if (authErrMsg) {
+                    if (typeof dsaIsAdminSession === "function" && dsaIsAdminSession()) {
+                        setStatus(authErrMsg, "err");
+                    } else {
+                        showToast(authErrMsg, "err");
+                    }
+                }
+            });
+        })();
+    </script>
+    <script src="./dsa-sketch-native.js?v=3"></script>
+    <script src="./script.js?v=3"></script>
+</body>
+</html>

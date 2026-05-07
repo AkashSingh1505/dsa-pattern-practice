@@ -6179,3 +6179,69 @@ a {
         padding: 5px 8px;
     }
 }
+
+/* —— Account portal (account.html) —— */
+.account-portal-page .portal-main {
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.portal-header .admin-lead {
+    line-height: 1.55;
+}
+
+.portal-primary-tabs {
+    display: flex;
+    gap: 8px;
+    margin: 0 0 20px;
+    flex-wrap: wrap;
+}
+
+.portal-primary-tab {
+    flex: 1;
+    min-width: 140px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    background: rgba(255, 255, 255, 0.6);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    color: #0f172a;
+}
+
+.portal-primary-tab--active {
+    border-color: rgba(99, 102, 241, 0.45);
+    background: linear-gradient(180deg, rgba(99, 102, 241, 0.12), rgba(99, 102, 241, 0.04));
+    color: #312e81;
+}
+
+.portal-panel--cms {
+    margin-top: 8px;
+}
+
+.portal-practice-forms .portal-secondary-tabs {
+    margin-bottom: 16px;
+}
+
+.portal-form input[type="email"],
+.portal-form input[type="password"] {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+}
+
+.portal-practice-signedin {
+    padding: 8px 0 4px;
+}
+
+.portal-signedin-line {
+    margin: 0 0 8px;
+    font-size: 1rem;
+}
+
+.portal-meta {
+    margin: 0 0 16px;
+    font-size: 0.9rem;
+}

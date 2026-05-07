@@ -53,7 +53,11 @@ function coerceCmsHome(raw) {
 
 async function fetchCmsKey(key) {
     try {
-        const r = await fetch(`/api/data?k=${encodeURIComponent(key)}`, { cache: "no-store" });
+        const url =
+            typeof window !== "undefined" && window.location
+                ? new URL(`api/data?k=${encodeURIComponent(key)}`, window.location.href).href
+                : `/api/data?k=${encodeURIComponent(key)}`;
+        const r = await fetch(url, { cache: "no-store" });
         if (r.status === 503) {
             console.warn("CMS: D1 not bound or unavailable", key);
             return key === "home" ? null : [];

@@ -12,12 +12,17 @@ const DSA_HIERARCHY_MINIMAL = [
     },
 ];
 
+/** Same-origin `/api/data` URL — works on GitHub Pages project paths (not only domain root). */
+function dsaApiDataUrl(k) {
+    return new URL("api/data?k=" + encodeURIComponent(k), window.location.href).href;
+}
+
 /**
  * Fills `dsaHierarchy` from GET /api/data?k=dsa; if empty or unavailable, uses minimal placeholder.
  */
 async function dsaLoadHierarchyFromSources() {
     try {
-        const r = await fetch("/api/data?k=dsa", { cache: "no-store" });
+        const r = await fetch(dsaApiDataUrl("dsa"), { cache: "no-store" });
         if (r.ok) {
             const data = await r.json();
             if (Array.isArray(data) && data.length) {
@@ -1497,7 +1502,7 @@ async function dsaSyncMergedHierarchyToCmsInternal() {
         const merged = getDsaHierarchyMerged();
         const body = JSON.stringify(merged);
         try {
-            const r = await fetch("/api/data?k=dsa", {
+            const r = await fetch(dsaApiDataUrl("dsa"), {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -7780,7 +7785,7 @@ function syncNavbarAuthUi() {
 function wireNavbarAdmin() {
     const link = document.getElementById("nav-admin-entry");
     if (link) {
-        link.href = new URL("/admin.html", window.location.origin).href.split("#")[0];
+        link.href = new URL("admin.html", window.location.href).href.split("#")[0];
     }
     const signOut = document.getElementById("nav-admin-signout");
     if (signOut && signOut.dataset.wired !== "1") {
@@ -7891,7 +7896,7 @@ async function footerVisitorsHit() {
     const el = document.getElementById("footer-visitors");
     if (!el) return;
     try {
-        const r = await fetch("/api/visitors", {
+        const r = await fetch(new URL("api/visitors", window.location.href).href, {
             method: "POST",
             headers: { "Content-Type": "application/json", Accept: "application/json" },
         });

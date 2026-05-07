@@ -20,6 +20,12 @@ python3 -m http.server 4173
 
 Open `index.html` — the app loads hierarchy from **`GET /api/data?k=dsa`** when deployed; locally you’ll see the built-in placeholder until you wire the same API.
 
+### CMS (`admin.html`)
+
+- Open **`./admin.html`** (navbar **Login** goes here after sign-in flow).
+- Same editor as the portfolio: load/save **projects**, **skills**, **home**, **dsa** via your **`/api/data`** Functions + bound D1.
+- Sign-in posts to the Worker URL in **`meta name="dsa-admin-oauth-base"`** — align it with your deployed Worker.
+
 ## What’s in this repo
 
 | Path | Purpose |

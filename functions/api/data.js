@@ -13,13 +13,13 @@ const ALLOWED = new Set(["dsa"]);
 
 /** Same as auth/dsa-admin-public.pem — public only */
 const PEM = `-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzH1e8DqjHrMBys8D3Aoc
-1sOrV4rP+WC3h0a49MPiHYznlCQ7ydJuLKtDikT6Gvr3J4Vy8cx8eMdt4Q/k75R1
-PnHspuKAnv1X+g5et9HLCv7/r8Fz0WdUKJPNI/0RcI+rO1Ht8KH22m/j0zDI4XkH
-kiQC/0N9gQ+nYTq2XWMd8duZIKbBZH8Z27zJePZ4PbdOkaeMWc8SKAPDHvNAexiT
-BapLmw8SORCEj0/XZM19aB9sf8ziFt4xYCIu3qdYpCFVyyfNg21mrWpuISnDuX8X
-8aQPerWET09sBWb3Qjellu9L9+dGEzZbea5kskVSXrPiJH4XMrvBx6ush429jQwS
-7wIDAQAB
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzgkacEByh0G5m8XIOR/i
+czyNHoRoiXEjE6NaoJCOtDvd+d/E0TvtvMKQOslPPE8lZmqoxGv6vSPMpCOafGyD
+jymubVqqYwDk19RuihcI9FG1U4Lz/egfVFR1OnEOvhvZgdC061jsm0s4Jix1QmsR
+4b4uHubpiHjKGkchcL6ZPMttcgI8Bxthyq2GwNIML9o/7LowdBj9z+IbGVDZfUcF
+Q16rc6a4q8BMBEn3WQqtENWDFsigV90Sj3XfVC25KY+PGKcNp3M3b/tAf/mxJiuq
+LcnU0icnlfznUZCJ8hv0a1//JuAHlyl4LeFRx6xwuquP0VhrzI1Qz6oQwVhVtLjS
+YQIDAQAB
 -----END PUBLIC KEY-----`;
 
 function base64UrlToUint8Array(b64url) {

@@ -591,6 +591,15 @@ body.nav-mobile-menu-open {
     cursor: pointer;
     box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
     -webkit-tap-highlight-color: transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dsa-graph-expand-btn svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
 }
 
 .dsa-graph-expand-btn:hover {
@@ -6296,10 +6305,23 @@ body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-inner.topnav-inner {
     min-height: 0;
     padding: 18px 32px;
     display: flex;
+    flex-wrap: nowrap;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 12px;
     box-sizing: border-box;
+}
+
+body.dsa-shell-layout.dsa-page .dsa-shell-navbar .topnav-start {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex-shrink: 0;
+}
+
+body.dsa-shell-layout.dsa-page .dsa-shell-navbar .topnav-start .left {
+    min-width: 0;
 }
 
 body.dsa-shell-layout.dsa-page .dsa-shell-navbar .brand-block {
@@ -6339,17 +6361,19 @@ body.dsa-shell-layout.dsa-page .dsa-shell-navbar .brand-name {
 
 body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right {
     display: flex;
-    flex: 1;
     align-items: center;
-    justify-content: space-between;
-    gap: 16px;
+    justify-content: flex-end;
+    gap: 4px;
     min-width: 0;
     flex-wrap: wrap;
+    flex-shrink: 0;
 }
 
 body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-tabs {
     display: flex;
     align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
     gap: 4px;
     padding: 4px;
     background: var(--dsa-shell-glass-2);
@@ -6357,6 +6381,8 @@ body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-tabs {
     border-radius: 12px;
     backdrop-filter: blur(20px) saturate(140%);
     -webkit-backdrop-filter: blur(20px) saturate(140%);
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-tab {
@@ -6419,7 +6445,7 @@ body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-admin-entry.topnav-aux-lin
     font: inherit;
 }
 
-/* Match mock: text sign out — stays visible when session ends via hidden attribute */
+/* Sign out — reference .signout (ghost; white hover) */
 body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-signout-btn.signout {
     appearance: none;
     border: 0;
@@ -6446,17 +6472,32 @@ body.dsa-shell-layout .dsa-shell-page {
     padding: 36px 32px 24px;
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 0;
     box-sizing: border-box;
 }
 
 body.dsa-shell-layout .dsa-shell-head.header-row {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
     gap: 24px;
-    padding: 4px 4px 0;
-    margin-bottom: 26px;
+    padding: 0;
+    margin: 0 0 26px;
+}
+
+body.dsa-shell-layout .dsa-shell-head-text {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+body.dsa-shell-layout .dsa-shell-view-toolbar-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    flex: 0 0 auto;
+    min-width: 0;
+    max-width: min(100%, 440px);
 }
 
 body.dsa-shell-layout .dsa-shell-eyebrow {
@@ -6533,7 +6574,7 @@ body.dsa-shell-layout .dsa-shell-foot-tip {
     text-align: center;
     color: var(--dsa-shell-muted);
     font-size: 11.5px;
-    margin: 6px 0 0;
+    margin: 14px 0 0;
     line-height: 1.5;
 }
 
@@ -6553,17 +6594,40 @@ body.dsa-shell-layout .dsa-shell-footer .footer-copyright p {
     color: var(--dsa-shell-ink-2);
 }
 
-/* JS-rendered view tabs → inspiration mode-seg (nodes/map unchanged) */
+/* JS-rendered view tabs → reference .mode-seg (nodes/map unchanged) */
 body.dsa-shell-layout .dsa-view-toolbar {
-    align-items: center;
-    justify-content: center;
+    align-items: flex-end;
+    justify-content: flex-start;
+    flex-wrap: wrap;
     gap: 12px;
-    margin-bottom: 18px;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+body.dsa-shell-layout .dsa-shell-view-toolbar-slot .dsa-view-toolbar {
+    width: auto;
+    max-width: 100%;
+    align-items: flex-end;
+}
+
+body.dsa-shell-layout .dsa-view-toolbar .dsa-admin-bar {
+    flex: 1 1 100%;
+    justify-content: center;
+    order: 2;
+}
+
+body.dsa-shell-layout .dsa-shell-view-toolbar-slot .dsa-view-toolbar .dsa-admin-bar {
+    justify-content: flex-end;
+    text-align: right;
 }
 
 body.dsa-shell-layout .dsa-view-tabs {
     display: inline-flex;
+    flex-wrap: wrap;
     align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
     gap: 4px;
     padding: 5px;
     background: var(--dsa-shell-glass-2);
@@ -6572,6 +6636,8 @@ body.dsa-shell-layout .dsa-view-tabs {
     backdrop-filter: blur(20px) saturate(140%);
     -webkit-backdrop-filter: blur(20px) saturate(140%);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 body.dsa-shell-layout .dsa-view-btn {
@@ -6631,6 +6697,11 @@ body.dsa-shell-layout .dsa-customize-topbar-note {
     line-height: 1.45;
 }
 
+body.dsa-shell-layout .dsa-customize-topbar-note b {
+    color: var(--dsa-shell-ink-2);
+    font-weight: 700;
+}
+
 body.dsa-shell-layout .dsa-customize-topbar-row {
     position: relative;
     z-index: 1;
@@ -6681,6 +6752,10 @@ body.dsa-shell-layout .dsa-customize-topbar-row .dsa-customize-topbar-btn:first-
 
 body.dsa-shell-layout .dsa-graph-map-toolbar {
     flex-shrink: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
     border-radius: 18px 18px 0 0;
     border: 1px solid rgba(255, 255, 255, 0.7);
     padding: 18px 20px;
@@ -6705,6 +6780,14 @@ body.dsa-shell-layout .dsa-graph-map-toolbar::before {
 body.dsa-shell-layout .dsa-graph-map-toolbar-cluster {
     position: relative;
     z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+body.dsa-shell-layout .dsa-graph-map-toolbar-cluster--zoom {
+    margin-left: auto;
 }
 
 body.dsa-shell-layout .dsa-mind-canvas {
@@ -6736,15 +6819,58 @@ body.dsa-shell-layout .dsa-graph-expand-btn:hover {
     border-color: var(--dsa-shell-line);
 }
 
-body.dsa-shell-layout .dsa-graph-zoom-group .dsa-graph-zoom-btn,
+/* Reference .zoom — segmented control */
+body.dsa-shell-layout .dsa-graph-zoom-group {
+    display: inline-flex;
+    align-items: stretch;
+    margin-left: auto;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid var(--dsa-shell-line);
+    border-radius: 11px;
+    overflow: hidden;
+    gap: 0;
+}
+
+body.dsa-shell-layout .dsa-graph-zoom-group .dsa-graph-zoom-btn {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    padding: 0;
+    margin: 0;
+    border-radius: 0;
+    border: 0;
+    background: transparent;
+    color: var(--dsa-shell-ink-2);
+    font-size: 16px;
+    font-weight: 600;
+    box-shadow: none;
+}
+
+body.dsa-shell-layout .dsa-graph-zoom-group .dsa-graph-zoom-btn:hover {
+    background: rgba(15, 23, 32, 0.06);
+    color: var(--dsa-shell-ink);
+}
+
+body.dsa-shell-layout .dsa-graph-zoom-group .dsa-graph-zoom-btn--text {
+    width: auto;
+    min-width: 60px;
+    height: 36px;
+    padding: 0 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--dsa-shell-ink);
+    border-left: 1px solid var(--dsa-shell-line);
+    border-right: 1px solid var(--dsa-shell-line);
+    font-variant-numeric: tabular-nums;
+}
+
 body.dsa-shell-layout .dsa-graph-zoom-float .dsa-graph-zoom-btn {
     border-radius: 11px;
-    border-color: var(--dsa-shell-line);
+    border: 1px solid var(--dsa-shell-line);
     background: rgba(255, 255, 255, 0.85);
     color: var(--dsa-shell-ink-2);
 }
 
-body.dsa-shell-layout .dsa-graph-zoom-group .dsa-graph-zoom-btn:hover,
 body.dsa-shell-layout .dsa-graph-zoom-float .dsa-graph-zoom-btn:hover {
     color: var(--dsa-shell-ink);
     background: #fff;
@@ -6754,13 +6880,15 @@ body.dsa-shell-layout .dsa-graph-hint {
     font-size: 12.5px;
     color: var(--dsa-shell-muted);
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
+    flex-wrap: wrap;
     gap: 8px;
-    text-align: left;
+    text-align: center;
     max-width: none;
     margin: 14px 0 18px;
-    padding: 0 4px;
+    padding: 0;
+    line-height: 1.45;
 }
 
 body.dsa-shell-layout .dsa-graph-hint::before {
@@ -6769,16 +6897,39 @@ body.dsa-shell-layout .dsa-graph-hint::before {
     height: 5px;
     border-radius: 50%;
     background: var(--dsa-shell-ink-2);
-    margin-top: 6px;
     flex-shrink: 0;
+}
+
+body.dsa-shell-layout .dsa-graph-hint b {
+    color: var(--dsa-shell-ink-2);
+    font-weight: 700;
 }
 
 @media (max-width: 780px) {
     body.dsa-shell-layout .dsa-shell-head.header-row {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
         gap: 14px;
-        margin-bottom: 20px;
+        margin-bottom: 26px;
+    }
+
+    body.dsa-shell-layout .dsa-shell-view-toolbar-slot {
+        max-width: none;
+        align-items: stretch;
+    }
+
+    body.dsa-shell-layout .dsa-shell-view-toolbar-slot .dsa-view-toolbar {
+        width: 100%;
+        align-items: stretch;
+    }
+
+    body.dsa-shell-layout .dsa-shell-view-toolbar-slot .dsa-view-tabs {
+        justify-content: flex-start;
+    }
+
+    body.dsa-shell-layout .dsa-shell-view-toolbar-slot .dsa-view-toolbar .dsa-admin-bar {
+        justify-content: flex-start;
+        text-align: left;
     }
 
     body.dsa-shell-layout .dsa-shell-title {
@@ -6786,7 +6937,7 @@ body.dsa-shell-layout .dsa-graph-hint::before {
     }
 
     body.dsa-shell-layout .dsa-shell-page {
-        padding: 24px 20px;
+        padding: 24px 20px 24px;
     }
 
     body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-inner.topnav-inner {
@@ -6810,7 +6961,28 @@ body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
 }
 
 @media (max-width: 720px) {
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-inner.topnav-inner {
+        flex-wrap: wrap;
+        row-gap: 12px;
+    }
+
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .topnav-start {
+        flex: 1 1 auto;
+        min-width: 0;
+        justify-content: space-between;
+    }
+
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-tabs {
+        flex: 1 1 100%;
+        order: 3;
+        margin: 0;
+        justify-content: center;
+    }
+
     body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right {
+        order: 2;
+        flex: 0 0 auto;
+        margin-left: auto;
         flex-direction: column;
         align-items: stretch;
         background: rgba(255, 255, 255, 0.96);
@@ -6818,35 +6990,34 @@ body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
         box-shadow: 0 12px 40px rgba(15, 23, 42, 0.12);
     }
 
-    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .nav-tabs {
-        width: 100%;
-        justify-content: center;
-    }
-
-    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .topnav-actions {
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .topnav-actions {
         justify-content: center;
         flex-wrap: wrap;
     }
 
-    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .nav-tab,
     body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .topnav-aux-link,
-    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .nav-admin-entry,
-    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .nav-signout-btn {
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .nav-admin-entry {
         color: var(--dsa-shell-ink);
         border: 1px solid rgba(15, 23, 32, 0.12);
         background: rgba(255, 255, 255, 0.72);
     }
 
-    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .nav-tab:hover,
     body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .topnav-aux-link:hover,
-    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .nav-admin-entry:hover,
-    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .nav-signout-btn:hover {
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .nav-admin-entry:hover {
         border-color: rgba(154, 164, 111, 0.45);
         background: rgba(154, 164, 111, 0.12);
         color: rgb(55, 62, 42);
     }
 
-    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .nav-tab--active {
-        background: rgba(154, 164, 111, 0.22);
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .nav-signout-btn.signout {
+        border: 0;
+        background: transparent;
+        color: var(--dsa-shell-ink-2);
+        box-shadow: none;
+    }
+
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .nav-signout-btn.signout:hover {
+        background: rgba(255, 255, 255, 0.6);
+        color: var(--dsa-shell-ink);
     }
 }

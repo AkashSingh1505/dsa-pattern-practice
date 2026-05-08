@@ -2396,6 +2396,21 @@ function dsaGraphTreeCollapseAll(panel) {
     dsaSyncGraphBranchBadgeUi(panel);
 }
 
+/** Chevron icon matching reference toolbar SVG (stroke polyline). */
+function dsaToolbarChevronSvg(points) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("fill", "none");
+    svg.setAttribute("stroke", "currentColor");
+    svg.setAttribute("stroke-width", "2.2");
+    svg.setAttribute("stroke-linecap", "round");
+    svg.setAttribute("stroke-linejoin", "round");
+    const pl = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+    pl.setAttribute("points", points);
+    svg.appendChild(pl);
+    return svg;
+}
+
 /** Expand / collapse all branches — full map, one topic, and customize (all users). */
 function dsaMountGraphExpandCollapseControls(hostEl, panel, scheduleRedraw) {
     if (!hostEl || !panel) {
@@ -2403,8 +2418,9 @@ function dsaMountGraphExpandCollapseControls(hostEl, panel, scheduleRedraw) {
     }
     const btnExpandAll = document.createElement("button");
     btnExpandAll.type = "button";
-    btnExpandAll.className = "dsa-graph-expand-btn";
-    btnExpandAll.textContent = "Expand all";
+    btnExpandAll.className = "btn dsa-graph-expand-btn";
+    btnExpandAll.appendChild(dsaToolbarChevronSvg("6 9 12 15 18 9"));
+    btnExpandAll.appendChild(document.createTextNode("Expand all"));
     btnExpandAll.setAttribute("aria-label", "Expand all branches");
     btnExpandAll.addEventListener("click", () => {
         dsaGraphTreeExpandAll(panel);
@@ -2414,8 +2430,9 @@ function dsaMountGraphExpandCollapseControls(hostEl, panel, scheduleRedraw) {
     });
     const btnCollapseAll = document.createElement("button");
     btnCollapseAll.type = "button";
-    btnCollapseAll.className = "dsa-graph-expand-btn";
-    btnCollapseAll.textContent = "Collapse all";
+    btnCollapseAll.className = "btn dsa-graph-expand-btn";
+    btnCollapseAll.appendChild(dsaToolbarChevronSvg("18 15 12 9 6 15"));
+    btnCollapseAll.appendChild(document.createTextNode("Collapse all"));
     btnCollapseAll.setAttribute("aria-label", "Collapse all branches");
     btnCollapseAll.addEventListener("click", () => {
         dsaGraphTreeCollapseAll(panel);
@@ -2431,7 +2448,10 @@ function dsaMountGraphExpandCollapseControls(hostEl, panel, scheduleRedraw) {
  * Mind map shell: top toolbar (expand / zoom) in flow, then body (SVG + scroll). No overlay on the graph.
  * @returns {{ canvas: HTMLDivElement, toolbarExpand: HTMLDivElement, toolbarZoom: HTMLDivElement, body: HTMLDivElement }}
  */
-function dsaCreateGraphCanvasLayout() {
+/**
+ * @param {HTMLElement | null} [toolbarMountParent] — if set, map toolbar is appended here instead of inside the canvas (index shell).
+ */
+function dsaCreateGraphCanvasLayout(toolbarMountParent) {
     const canvas = document.createElement("div");
     canvas.className = "dsa-mind-canvas";
     canvas.id = "dsa-mind-canvas";
@@ -2446,14 +2466,35 @@ function dsaCreateGraphCanvasLayout() {
     const toolbarZoom = document.createElement("div");
     toolbarZoom.className = "dsa-graph-map-toolbar-cluster dsa-graph-map-toolbar-cluster--zoom";
 
+    let toolbarHintSlot = null;
+    if (toolbarMountParent instanceof HTMLElement) {
+        toolbarHintSlot = document.createElement("span");
+        toolbarHintSlot.className = "dsa-graph-map-toolbar-hint";
+        const hintDot = document.createElement("span");
+        hintDot.className = "dot";
+        hintDot.setAttribute("aria-hidden", "true");
+        const hintTextEl = document.createElement("span");
+        hintTextEl.className = "dsa-graph-map-toolbar-hint-text";
+        hintTextEl.id = "dsa-map-toolbar-inline-hint";
+        toolbarHintSlot.appendChild(hintDot);
+        toolbarHintSlot.appendChild(hintTextEl);
+    }
+
     toolbar.appendChild(toolbarExpand);
+    if (toolbarHintSlot) {
+        toolbar.appendChild(toolbarHintSlot);
+    }
     toolbar.appendChild(toolbarZoom);
 
     const body = document.createElement("div");
     body.className = "dsa-mind-canvas-body";
     body.id = "dsa-mind-canvas-body";
 
-    canvas.appendChild(toolbar);
+    if (toolbarMountParent instanceof HTMLElement) {
+        toolbarMountParent.appendChild(toolbar);
+    } else {
+        canvas.appendChild(toolbar);
+    }
     canvas.appendChild(body);
 
     return { canvas, toolbarExpand, toolbarZoom, body };
@@ -4697,6 +4738,8 @@ function dsaWireMindScrollZoom(scrollEl, graphAreaEl, scheduleRedraw, zoomMountE
     let scale = 1;
     const min = 0.35;
     const max = 2.75;
+    let btnReset = null;
+    let zoomValEl = null;
 
     function syncSizer() {
         content.style.transform = "none";
@@ -4722,11 +4765,16 @@ function dsaWireMindScrollZoom(scrollEl, graphAreaEl, scheduleRedraw, zoomMountE
     }
 
     function updateZoomPctLabel() {
+        const pct = Math.round(scale * 100);
+        const text = `${pct}%`;
+        if (zoomValEl) {
+            zoomValEl.textContent = text;
+            return;
+        }
         if (!btnReset) {
             return;
         }
-        const pct = Math.round(scale * 100);
-        btnReset.textContent = `${pct}%`;
+        btnReset.textContent = text;
         const at100 = pct === 100;
         const tip = at100 ? "Zoom is 100%. Click to reset." : `Zoom ${pct}%. Click to reset to 100%.`;
         btnReset.title = tip;
@@ -4785,7 +4833,7 @@ function dsaWireMindScrollZoom(scrollEl, graphAreaEl, scheduleRedraw, zoomMountE
     scrollEl.addEventListener("touchcancel", onTouchEnd);
 
     const bar = document.createElement("div");
-    bar.className = zoomMountEl ? "dsa-graph-zoom-group" : "dsa-graph-zoom-float";
+    const useShellZoomChrome = !!zoomMountEl;
 
     function mkBtn(label, cls, title) {
         const b = document.createElement("button");
@@ -4797,9 +4845,37 @@ function dsaWireMindScrollZoom(scrollEl, graphAreaEl, scheduleRedraw, zoomMountE
         return b;
     }
 
-    const btnOut = mkBtn("−", "", "Zoom out");
-    let btnReset = mkBtn("100%", "dsa-graph-zoom-btn--text", "Zoom 100%. Click to reset to 100%.");
-    const btnIn = mkBtn("+", "", "Zoom in");
+    let btnOut;
+    let btnIn;
+    if (useShellZoomChrome) {
+        bar.className = "zoom";
+        bar.setAttribute("role", "group");
+        bar.setAttribute("aria-label", "Zoom");
+        btnOut = document.createElement("button");
+        btnOut.type = "button";
+        btnOut.title = "Zoom out";
+        btnOut.setAttribute("aria-label", "Zoom out");
+        btnOut.textContent = "−";
+        zoomValEl = document.createElement("span");
+        zoomValEl.className = "val";
+        zoomValEl.textContent = "100%";
+        btnIn = document.createElement("button");
+        btnIn.type = "button";
+        btnIn.title = "Zoom in";
+        btnIn.setAttribute("aria-label", "Zoom in");
+        btnIn.textContent = "+";
+    } else {
+        bar.className = "dsa-graph-zoom-float";
+        btnOut = mkBtn("−", "", "Zoom out");
+        btnReset = mkBtn("100%", "dsa-graph-zoom-btn--text", "Zoom 100%. Click to reset to 100%.");
+        btnIn = mkBtn("+", "", "Zoom in");
+        btnReset.addEventListener("click", (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            setScale(1);
+        });
+    }
+
     btnOut.addEventListener("click", (ev) => {
         ev.preventDefault();
         ev.stopPropagation();
@@ -4810,13 +4886,12 @@ function dsaWireMindScrollZoom(scrollEl, graphAreaEl, scheduleRedraw, zoomMountE
         ev.stopPropagation();
         setScale(scale + 0.15);
     });
-    btnReset.addEventListener("click", (ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        setScale(1);
-    });
     bar.appendChild(btnOut);
-    bar.appendChild(btnReset);
+    if (useShellZoomChrome) {
+        bar.appendChild(zoomValEl);
+    } else {
+        bar.appendChild(btnReset);
+    }
     bar.appendChild(btnIn);
     zoomHost.appendChild(bar);
 
@@ -4841,6 +4916,7 @@ function dsaWireMindScrollZoom(scrollEl, graphAreaEl, scheduleRedraw, zoomMountE
         }
         bar.remove();
         btnReset = null;
+        zoomValEl = null;
     };
 }
 
@@ -4959,10 +5035,17 @@ function dsaScrollMindMapElIntoView(el, opts) {
     });
 }
 
-function attachDsaMindCanvas(panel, buildTreeFragment, scheduleRedraw) {
+function attachDsaMindCanvas(panel, buildTreeFragment, scheduleRedraw, mindOpts) {
     panel.innerHTML = "";
     panel.classList.remove("dsa-graph-panel--customize");
-    const { canvas, toolbarExpand, toolbarZoom, body } = dsaCreateGraphCanvasLayout();
+    const mo = mindOpts || {};
+    const tp = mo.toolbarParent;
+    if (tp instanceof HTMLElement) {
+        tp.replaceChildren();
+    }
+    const { canvas, toolbarExpand, toolbarZoom, body } = dsaCreateGraphCanvasLayout(
+        tp instanceof HTMLElement ? tp : null,
+    );
 
     const svgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svgEl.classList.add("dsa-graph-svg");
@@ -6853,6 +6936,10 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
 function attachDsaCustomizePanel(panel, scheduleRedraw, restoredGraphUi, authCtx) {
     panel.innerHTML = "";
     panel.classList.add("dsa-graph-panel--customize");
+    const mapToolbarHost = document.getElementById("dsa-map-toolbar-host");
+    if (mapToolbarHost) {
+        mapToolbarHost.replaceChildren();
+    }
     const siteAdmin = !!(authCtx && authCtx.siteAdmin);
     const canEditGraph = !!(authCtx && authCtx.canEditGraph);
     const fullReload = () => loadDsaPatternsPage({ restore: { customize: true } });
@@ -6940,7 +7027,9 @@ function attachDsaCustomizePanel(panel, scheduleRedraw, restoredGraphUi, authCtx
     topbar.appendChild(note);
     topbar.appendChild(btnRow);
 
-    const { canvas, toolbarExpand, toolbarZoom, body } = dsaCreateGraphCanvasLayout();
+    const { canvas, toolbarExpand, toolbarZoom, body } = dsaCreateGraphCanvasLayout(
+        mapToolbarHost instanceof HTMLElement ? mapToolbarHost : null,
+    );
 
     const svgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svgEl.classList.add("dsa-graph-svg");
@@ -6982,6 +7071,14 @@ function attachDsaCustomizePanel(panel, scheduleRedraw, restoredGraphUi, authCtx
     });
 }
 
+/** Clear index-shell slot for map toolbar (expand/collapse/zoom) so listeners are not orphaned. */
+function dsaClearExternalMapToolbarHost() {
+    const host = document.getElementById("dsa-map-toolbar-host");
+    if (host) {
+        host.replaceChildren();
+    }
+}
+
 function loadDsaPatternsPage(opts) {
     const restore = opts && opts.restore;
     const siteAdmin = typeof dsaIsAdminSession === "function" && dsaIsAdminSession();
@@ -6991,6 +7088,12 @@ function loadDsaPatternsPage(opts) {
     if (!viewport) {
         return;
     }
+
+    const shellViewToolbarSlot = document.getElementById("dsa-shell-view-toolbar");
+    if (shellViewToolbarSlot) {
+        shellViewToolbarSlot.replaceChildren();
+    }
+    dsaClearExternalMapToolbarHost();
 
     const pendingCustomizeUi = captureDsaCustomizeGraphUiState();
 
@@ -7010,20 +7113,44 @@ function loadDsaPatternsPage(opts) {
     const hintSingle =
         "One topic: pick a data structure below, then use the map. Mark Done on problems to update progress; the topic hub shows done/total and a completion fill. Purple badges use the immediate child count and expand branches; leaf badges open problem links. Toolbar: expand / collapse / zoom; scroll to pan.";
     const hintUnified =
-        "Full map (default): every data structure branches from DSA Patterns. Use Done on each problem to track progress; topic tiles show done/total (e.g. 10/14) and a light animated completion fill. Toolbar: expand, collapse, zoom; purple badges show immediate child counts and expand branches; scroll if the graph is wide.";
+        "Rings on topics expand branches; leaf rings open problems. Mark Done to track progress. Pinch or Ctrl/⌘-scroll to zoom — drag to pan.";
     const hintCustomize =
         "Customize graph: same map as Full map with edit rings (− / count / +). Site admins sync to the database; Pro or elevated practice accounts can edit locally and export JSON.";
+    const mapToolbarHost = document.getElementById("dsa-map-toolbar-host");
+    const mindToolbarOpts =
+        mapToolbarHost instanceof HTMLElement ? { toolbarParent: mapToolbarHost } : undefined;
+
     const hint = document.createElement("p");
     hint.className = "dsa-graph-hint";
-    hint.textContent = hintUnified;
+    if (mapToolbarHost) {
+        hint.classList.add("dsa-graph-hint--shell-external");
+    }
+
+    function setMindHint(text) {
+        const s = text == null ? "" : String(text);
+        hint.textContent = s;
+        const inlineHint = document.getElementById("dsa-map-toolbar-inline-hint");
+        if (inlineHint) {
+            inlineHint.textContent = s;
+            const wrap = inlineHint.closest(".dsa-graph-map-toolbar-hint");
+            if (wrap) {
+                wrap.hidden = !s.trim();
+            }
+            return;
+        }
+    }
 
     const toolbar = document.createElement("div");
     toolbar.className = "dsa-view-toolbar";
 
     const tablist = document.createElement("div");
-    tablist.className = "dsa-view-tabs";
+    tablist.className = "dsa-view-tabs seg dsa-seg-track";
     tablist.setAttribute("role", "tablist");
     tablist.setAttribute("aria-label", "Graph layout");
+
+    const tabThumb = document.createElement("span");
+    tabThumb.className = "dsa-seg-thumb";
+    tabThumb.setAttribute("aria-hidden", "true");
 
     const btnUnifiedView = document.createElement("button");
     btnUnifiedView.type = "button";
@@ -7049,9 +7176,10 @@ function loadDsaPatternsPage(opts) {
         btnCustomizeView.setAttribute("role", "tab");
         btnCustomizeView.setAttribute("aria-selected", "false");
         btnCustomizeView.dataset.mode = "customize";
-        btnCustomizeView.textContent = "Customize graph";
+        btnCustomizeView.textContent = "Customize";
     }
 
+    tablist.appendChild(tabThumb);
     tablist.appendChild(btnUnifiedView);
     tablist.appendChild(btnSingleView);
     if (btnCustomizeView) {
@@ -7059,29 +7187,15 @@ function loadDsaPatternsPage(opts) {
     }
     toolbar.appendChild(tablist);
 
-    const adminBar = document.createElement("div");
-    adminBar.className = "dsa-admin-bar";
-    if (siteAdmin || canCustomize) {
-        adminBar.style.display = "none";
-        adminBar.setAttribute("aria-hidden", "true");
-    } else {
-        const barHint = document.createElement("span");
-        barHint.className = "dsa-admin-bar-hint";
-        const loginUrl = typeof dsaGetAdminSignInUrl === "function" ? dsaGetAdminSignInUrl() : "";
-        const hasPractice = typeof dsaIsPracticeUser === "function" && dsaIsPracticeUser();
-        if (hasPractice) {
-            barHint.textContent =
-                "You’re signed in with a practice account — you see the same map as everyone else. Customize graph unlocks with Pro or an elevated account type.";
-        } else if (loginUrl) {
-            barHint.textContent =
-                "Create a practice account or sign in as site admin for CMS. Customize graph unlocks for site admins, practice admins, or Pro (when enabled).";
-        } else {
-            barHint.textContent =
-                "Configure OAuth base meta for site admin sign-in. Practice sign-up is on the Account page.";
-        }
-        adminBar.appendChild(barHint);
+    if (typeof ResizeObserver !== "undefined") {
+        const tablistThumbRo = new ResizeObserver(() => dsaSyncSegThumbTrack(tablist));
+        tablistThumbRo.observe(tablist);
     }
-    toolbar.appendChild(adminBar);
+    window.addEventListener(
+        "resize",
+        () => dsaSyncSegThumbTrack(tablist),
+        { passive: true },
+    );
 
     const rootsRow = document.createElement("div");
     rootsRow.className = "dsa-graph-roots";
@@ -7139,6 +7253,7 @@ function loadDsaPatternsPage(opts) {
         }
         btnUnifiedView.setAttribute("aria-selected", u ? "true" : "false");
         btnSingleView.setAttribute("aria-selected", s ? "true" : "false");
+        requestAnimationFrame(() => dsaSyncSegThumbTrack(tablist));
     }
 
     function enterSingleTopicChrome() {
@@ -7148,9 +7263,10 @@ function loadDsaPatternsPage(opts) {
         rootsRow.hidden = false;
         panel.hidden = true;
         panel.innerHTML = "";
+        dsaClearExternalMapToolbarHost();
         dsaGraphActiveRoot = null;
         resetRootsRowInactive();
-        hint.textContent = hintSingle;
+        setMindHint(hintSingle);
         scheduleRedraw();
     }
 
@@ -7163,12 +7279,13 @@ function loadDsaPatternsPage(opts) {
         viewport.classList.add("dsa-view-unified");
         rootsRow.hidden = true;
         panel.hidden = false;
-        hint.textContent = hintUnified;
         attachDsaMindCanvas(
             panel,
             () => buildUnifiedMindmapTree(panel, scheduleRedraw, null, graphRefresh),
             scheduleRedraw,
+            mindToolbarOpts,
         );
+        setMindHint(hintUnified);
     }
 
     function enterCustomizeMap() {
@@ -7180,11 +7297,11 @@ function loadDsaPatternsPage(opts) {
         viewport.classList.add("dsa-view-customize");
         rootsRow.hidden = true;
         panel.hidden = false;
-        hint.textContent = hintCustomize;
         attachDsaCustomizePanel(panel, scheduleRedraw, pendingCustomizeUi, {
             siteAdmin,
             canEditGraph: canCustomize,
         });
+        setMindHint(hintCustomize);
     }
 
     btnSingleView.addEventListener("click", async () => {
@@ -7261,7 +7378,8 @@ function loadDsaPatternsPage(opts) {
                 dsaGraphActiveRoot = null;
                 panel.hidden = true;
                 panel.innerHTML = "";
-                hint.textContent = hintSingle;
+                dsaClearExternalMapToolbarHost();
+                setMindHint(hintSingle);
                 scheduleRedraw();
                 return;
             }
@@ -7275,7 +7393,7 @@ function loadDsaPatternsPage(opts) {
             const mergedNow = getDsaHierarchyMerged();
             const freshDs = mergedNow.find((d) => d && dsaDsIdEq(d.id, dsIdSnapshot));
             if (!freshDs) {
-                hint.textContent = hintSingle;
+                setMindHint(hintSingle);
                 scheduleRedraw();
                 return;
             }
@@ -7285,18 +7403,23 @@ function loadDsaPatternsPage(opts) {
             btn.classList.add("dsa-node--active");
             btn.setAttribute("aria-expanded", "true");
             panel.hidden = false;
-            hint.textContent = hintSingle;
 
             attachDsaMindCanvas(
                 panel,
                 () => buildMindmapTree(freshDs, panel, scheduleRedraw, topicTheme, graphRefresh),
                 scheduleRedraw,
+                mindToolbarOpts,
             );
+            setMindHint(hintSingle);
         });
         rootsRow.appendChild(btn);
     });
 
-    layer.appendChild(toolbar);
+    if (shellViewToolbarSlot) {
+        shellViewToolbarSlot.appendChild(toolbar);
+    } else {
+        layer.appendChild(toolbar);
+    }
     layer.appendChild(hint);
     layer.appendChild(rootsRow);
     layer.appendChild(panel);
@@ -7355,12 +7478,13 @@ function loadDsaPatternsPage(opts) {
                 topicBtn.classList.add("dsa-node--active");
                 topicBtn.setAttribute("aria-expanded", "true");
                 panel.hidden = false;
-                hint.textContent = hintSingle;
                 attachDsaMindCanvas(
                     panel,
                     () => buildMindmapTree(ds, panel, scheduleRedraw, topicTheme, graphRefresh),
                     scheduleRedraw,
+                    mindToolbarOpts,
                 );
+                setMindHint(hintSingle);
                 return;
             }
         }
@@ -7369,6 +7493,7 @@ function loadDsaPatternsPage(opts) {
     }
 
     applyRestoreState();
+    requestAnimationFrame(() => requestAnimationFrame(() => dsaSyncSegThumbTrack(tablist)));
     syncNavbarAuthUi();
 }
 
@@ -7842,18 +7967,70 @@ window.syncNavbarAuthUi = syncNavbarAuthUi;
 
 const NAV_MOBILE_MQ = window.matchMedia("(max-width: 720px)");
 
+/**
+ * Apple-style sliding pill under the active segment.
+ * Track: `position: relative`; first child `.dsa-seg-thumb`; active: `.dsa-view-btn--active` or `a.active`.
+ */
+function dsaSyncSegThumbTrack(track) {
+    if (!track || !(track instanceof HTMLElement)) {
+        return;
+    }
+    const thumb = track.querySelector(":scope > .dsa-seg-thumb");
+    if (!thumb) {
+        return;
+    }
+    const active =
+        track.querySelector(".dsa-view-btn--active") ||
+        track.querySelector("a.active") ||
+        track.querySelector('[role="tab"][aria-selected="true"]');
+    if (!active) {
+        thumb.style.opacity = "0";
+        return;
+    }
+    thumb.style.opacity = "1";
+    const tr = track.getBoundingClientRect();
+    const ar = active.getBoundingClientRect();
+    const x = ar.left - tr.left;
+    const y = ar.top - tr.top;
+    thumb.style.width = `${Math.round(ar.width)}px`;
+    thumb.style.height = `${Math.round(ar.height)}px`;
+    thumb.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0)`;
+}
+
 /** Hamburger + slide-down panel on small screens; backdrop closes menu. */
 function wireMobileNav() {
-    const nav = document.querySelector(".navbar");
+    const nav = document.querySelector("header.navbar") || document.querySelector("header.nav");
     if (!nav || nav.dataset.mobileNavWired === "1") {
         return;
     }
-    const left = nav.querySelector(".left");
-    const right = nav.querySelector(".right");
+    let left = nav.querySelector(".left");
+    let right = nav.querySelector(".right");
+    if (!left) {
+        left = nav.querySelector(".brand");
+    }
+    /* Index: .nav-links + .nav-auth are direct siblings of .brand (wrapped into .right for mobile). */
+    if (!right && left) {
+        const inner = nav.querySelector(".nav-inner");
+        const links = nav.querySelector(".nav-links");
+        const auth = nav.querySelector(".nav-auth");
+        if (inner && links && auth && links.parentElement === inner && auth.parentElement === inner) {
+            right = document.createElement("div");
+            right.className = "right";
+            inner.insertBefore(right, links);
+            right.appendChild(links);
+            right.appendChild(auth);
+        }
+    }
     if (!left || !right) {
         return;
     }
     nav.dataset.mobileNavWired = "1";
+
+    function navMenuIsOpen() {
+        return (
+            nav.classList.contains("navbar--menu-open") || nav.classList.contains("nav--menu-open")
+        );
+    }
 
     const toggle = document.createElement("button");
     toggle.type = "button";
@@ -7873,6 +8050,7 @@ function wireMobileNav() {
 
     function setMenuOpen(open) {
         nav.classList.toggle("navbar--menu-open", open);
+        nav.classList.toggle("nav--menu-open", open);
         toggle.setAttribute("aria-expanded", open);
         toggle.setAttribute("aria-label", open ? "Close menu" : "Menu");
         backdrop.hidden = !open;
@@ -7891,7 +8069,7 @@ function wireMobileNav() {
         if (!NAV_MOBILE_MQ.matches) {
             return;
         }
-        setMenuOpen(!nav.classList.contains("navbar--menu-open"));
+        setMenuOpen(!navMenuIsOpen());
     });
 
     backdrop.addEventListener("click", () => closeIfMobile());
@@ -7909,7 +8087,7 @@ function wireMobileNav() {
     });
 
     document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && nav.classList.contains("navbar--menu-open")) {
+        if (e.key === "Escape" && navMenuIsOpen()) {
             setMenuOpen(false);
         }
     });

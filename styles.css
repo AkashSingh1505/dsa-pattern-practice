@@ -6245,3 +6245,305 @@ a {
     margin: 0 0 16px;
     font-size: 0.9rem;
 }
+
+/* —— Index shell layout (glass inspiration — chrome only; graph DOM/styles unchanged) —— */
+body.dsa-shell-layout.dsa-page {
+    --dsa-shell-ink: #0f1720;
+    --dsa-shell-ink-2: #3a4452;
+    --dsa-shell-muted: #6b7480;
+    --dsa-shell-line: rgba(15, 23, 32, 0.08);
+    --dsa-shell-glass: rgba(255, 255, 255, 0.55);
+    --dsa-shell-shadow: 0 20px 60px rgba(20, 30, 50, 0.12), 0 2px 8px rgba(20, 30, 50, 0.06);
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "SF Pro Display",
+        "Inter",
+        system-ui,
+        sans-serif;
+    color: var(--dsa-shell-ink);
+    background:
+        radial-gradient(1100px 700px at 85% 10%, #f3e3cf 0%, transparent 60%),
+        radial-gradient(900px 700px at 10% 90%, #cfe1f0 0%, transparent 55%),
+        radial-gradient(900px 600px at 90% 90%, #bfe1d4 0%, transparent 60%),
+        linear-gradient(135deg, #e9eef3, #dde6ee);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+}
+
+body.dsa-shell-layout.dsa-page .navbar.dsa-shell-navbar {
+    position: sticky;
+    top: 0;
+    left: auto;
+    right: auto;
+    height: auto;
+    min-height: 58px;
+    padding: 0;
+    flex-wrap: nowrap;
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    background: rgba(255, 255, 255, 0.55);
+    border-bottom: 1px solid var(--dsa-shell-line);
+    box-shadow: none;
+    color: var(--dsa-shell-ink);
+}
+
+body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    min-height: 58px;
+    padding: 0 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    box-sizing: border-box;
+}
+
+body.dsa-shell-layout.dsa-page .dsa-shell-navbar .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    font-size: 15px;
+    color: var(--dsa-shell-ink);
+    text-decoration: none;
+    margin-left: 0;
+}
+
+body.dsa-shell-layout.dsa-page .dsa-shell-navbar .brand-mark {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #2a3442, #0f1720);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+    flex-shrink: 0;
+    box-shadow:
+        0 4px 12px rgba(15, 23, 32, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right {
+    gap: 4px;
+}
+
+body.dsa-shell-layout.dsa-page .dsa-shell-navbar .dsa-shell-nav-link {
+    padding: 8px 14px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--dsa-shell-ink-2);
+    text-decoration: none;
+    border-radius: 10px;
+    margin-left: 0;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+body.dsa-shell-layout.dsa-page .dsa-shell-navbar .dsa-shell-nav-link:hover {
+    background: rgba(255, 255, 255, 0.6);
+    color: var(--dsa-shell-ink);
+}
+
+body.dsa-shell-layout.dsa-page .dsa-shell-navbar .dsa-shell-nav-link--active {
+    background: #fff;
+    color: var(--dsa-shell-ink);
+    box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.06),
+        0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-admin-entry.dsa-shell-nav-link {
+    border: 0;
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-signout-btn.signout {
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 10px;
+    border: 1px solid var(--dsa-shell-line);
+    background: rgba(255, 255, 255, 0.6);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--dsa-shell-ink-2);
+    margin-left: 8px;
+}
+
+body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-signout-btn.signout:hover {
+    background: #fff;
+    color: var(--dsa-shell-ink);
+    border-color: var(--dsa-shell-line);
+}
+
+body.dsa-shell-layout .dsa-shell-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 22px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    box-sizing: border-box;
+}
+
+body.dsa-shell-layout .dsa-shell-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 4px 4px 0;
+}
+
+body.dsa-shell-layout .dsa-shell-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    font-weight: 600;
+    color: var(--dsa-shell-muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+body.dsa-shell-layout .dsa-shell-title {
+    font-size: 34px;
+    font-weight: 700;
+    margin: 0 0 8px;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--dsa-shell-ink);
+}
+
+body.dsa-shell-layout .dsa-shell-lede {
+    color: var(--dsa-shell-ink-2);
+    font-size: 13.5px;
+    line-height: 1.5;
+    margin: 0;
+    max-width: 680px;
+}
+
+body.dsa-shell-layout .dsa-shell-lede b {
+    color: var(--dsa-shell-ink);
+    font-weight: 700;
+}
+
+body.dsa-shell-layout .dsa-shell-graph-card {
+    background: var(--dsa-shell-glass);
+    backdrop-filter: blur(28px) saturate(160%);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 22px;
+    padding: 8px;
+    box-shadow: var(--dsa-shell-shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+body.dsa-shell-layout .dsa-shell-graph-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 40%);
+    pointer-events: none;
+    border-radius: 22px;
+}
+
+body.dsa-shell-layout .dsa-shell-graph-stage {
+    position: relative;
+    z-index: 1;
+    border-radius: 16px;
+    background:
+        radial-gradient(800px 500px at 80% 20%, rgba(243, 227, 207, 0.55), transparent 60%),
+        radial-gradient(700px 500px at 15% 85%, rgba(207, 225, 240, 0.55), transparent 60%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.3));
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    overflow: auto;
+    min-height: 0;
+}
+
+body.dsa-shell-layout .dsa-shell-graph-stage .dsa-graph-viewport {
+    position: relative;
+    z-index: 2;
+}
+
+body.dsa-shell-layout .dsa-shell-foot-tip {
+    text-align: center;
+    color: var(--dsa-shell-muted);
+    font-size: 11.5px;
+    margin: 6px 0 0;
+    line-height: 1.5;
+}
+
+body.dsa-shell-layout .dsa-shell-footer.footer {
+    background: rgba(255, 255, 255, 0.38);
+    backdrop-filter: blur(18px) saturate(130%);
+    -webkit-backdrop-filter: blur(18px) saturate(130%);
+    border-top: 1px solid rgba(255, 255, 255, 0.5);
+    min-height: auto;
+}
+
+body.dsa-shell-layout .dsa-shell-footer .footer-bottom {
+    border-top-color: rgba(15, 23, 32, 0.08);
+}
+
+body.dsa-shell-layout .dsa-shell-footer .footer-copyright p {
+    color: var(--dsa-shell-ink-2);
+}
+
+@media (max-width: 780px) {
+    body.dsa-shell-layout .dsa-shell-head {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    body.dsa-shell-layout .dsa-shell-title {
+        font-size: 28px;
+    }
+}
+
+body.dsa-shell-layout.dsa-page .nav-mobile-toggle {
+    border-color: rgba(15, 23, 32, 0.2);
+    background: rgba(255, 255, 255, 0.35);
+    color: var(--dsa-shell-ink);
+}
+
+body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
+    background: rgba(255, 255, 255, 0.55);
+    border-color: rgba(154, 164, 111, 0.55);
+}
+
+@media (max-width: 720px) {
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right {
+        background: rgba(255, 255, 255, 0.96);
+        border: 1px solid rgba(15, 23, 32, 0.1);
+        box-shadow: 0 12px 40px rgba(15, 23, 42, 0.12);
+    }
+
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .dsa-shell-nav-link,
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .nav-admin-entry,
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .nav-signout-btn {
+        color: var(--dsa-shell-ink);
+        border-color: rgba(15, 23, 32, 0.12);
+        background: rgba(255, 255, 255, 0.72);
+    }
+
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .dsa-shell-nav-link:hover,
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .nav-admin-entry:hover,
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .nav-signout-btn:hover {
+        border-color: rgba(154, 164, 111, 0.45);
+        background: rgba(154, 164, 111, 0.12);
+        color: rgb(55, 62, 42);
+    }
+
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .dsa-shell-nav-link--active {
+        background: rgba(154, 164, 111, 0.18);
+    }
+}

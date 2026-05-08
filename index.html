@@ -9,29 +9,56 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./styles.css?v=3">
+    <link rel="stylesheet" href="./styles.css?v=4">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 </head>
-<body class="dsa-page">
-    <div class="navbar">
-        <div class="left"><a href="./index.html" class="dsa-app-title">DSA Pattern Practice</a></div>
-        <div class="right">
-            <a href="https://github.com/AkashSingh1505/dsa-pattern-practice" target="_blank" rel="noopener noreferrer">GitHub</a>
-            <a id="nav-admin-entry" class="nav-admin-entry" href="#">Login</a>
-            <button type="button" id="nav-admin-signout" class="nav-signout-btn" hidden>Sign out</button>
+<body class="dsa-page dsa-shell-layout">
+    <header class="navbar dsa-shell-navbar">
+        <div class="nav-inner">
+            <div class="left">
+                <a href="./index.html" class="brand dsa-app-title">
+                    <span class="brand-mark" aria-hidden="true">D</span>
+                    DSA Pattern Practice
+                </a>
+            </div>
+            <div class="right">
+                <a href="./index.html" class="dsa-shell-nav-link dsa-shell-nav-link--active" aria-current="page">DSA Patterns</a>
+                <a
+                    href="https://github.com/AkashSingh1505/dsa-pattern-practice"
+                    class="dsa-shell-nav-link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >GitHub</a>
+                <a id="nav-admin-entry" class="nav-admin-entry dsa-shell-nav-link" href="#">Login</a>
+                <button type="button" id="nav-admin-signout" class="nav-signout-btn signout" hidden>Sign out</button>
+            </div>
         </div>
-    </div>
+    </header>
 
-    <div class="content-box">
-        <div class="section">
-            <h3 class="section-title">DSA problem patterns</h3>
-            <h4 class="section-description">Full map opens by default (all topics under DSA Patterns). Use One topic to focus on a single structure. The map flows left → right; scroll the shaded area when it’s wide.</h4>
-        </div>
+    <main class="dsa-shell-page">
+        <section class="dsa-shell-head">
+            <div class="dsa-shell-head-text">
+                <div class="dsa-shell-eyebrow">Knowledge Map</div>
+                <h1 class="dsa-shell-title">DSA problem patterns</h1>
+                <p class="dsa-shell-lede">
+                    Full map opens by default (all topics under DSA Patterns). Use <b>One topic</b> to focus on a single
+                    structure. The map flows left → right; scroll the shaded area when it’s wide.
+                </p>
+            </div>
+        </section>
 
-        <div id="dsa-hierarchy-root" class="dsa-graph-viewport" aria-label="DSA pattern graph"></div>
-    </div>
+        <section class="dsa-shell-graph-card" aria-label="Graph container">
+            <div class="dsa-shell-graph-stage">
+                <div id="dsa-hierarchy-root" class="dsa-graph-viewport" aria-label="DSA pattern graph"></div>
+            </div>
+        </section>
 
-    <div class="footer">
+        <p class="dsa-shell-foot-tip">
+            Tip: use the controls above the map for Full map, One topic, and Customize. Mark problems done to track progress.
+        </p>
+    </main>
+
+    <footer class="footer dsa-shell-footer">
         <div class="footer-bottom">
             <div class="footer-copyright">
                 <p>DSA Pattern Practice — pattern-led practice</p>
@@ -49,7 +76,7 @@
                 <span class="footer-visitors-label">visits</span>
             </div>
         </div>
-    </div>
+    </footer>
 
     <script src="./auth/dsa-admin-auth.js?v=3"></script>
     <script src="./auth/dsa-user-auth.js?v=1"></script>

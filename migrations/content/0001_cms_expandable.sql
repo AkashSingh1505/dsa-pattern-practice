@@ -4,7 +4,7 @@
 -- Safe to re-run: uses IF NOT EXISTS / idempotent patterns where possible.
 -- =============================================================================
 
--- Published blobs (projects, skills, home, dsa, …). Extend ALLOWED keys in api/data.js.
+-- Published JSON blobs (e.g. key `dsa` for the mind map). Allowed keys are enforced in functions/api/data.js.
 CREATE TABLE IF NOT EXISTS cms_content (
     key TEXT PRIMARY KEY NOT NULL,
     payload TEXT NOT NULL,

@@ -6253,6 +6253,7 @@ body.dsa-shell-layout.dsa-page {
     --dsa-shell-muted: #6b7480;
     --dsa-shell-line: rgba(15, 23, 32, 0.08);
     --dsa-shell-glass: rgba(255, 255, 255, 0.55);
+    --dsa-shell-glass-2: rgba(255, 255, 255, 0.35);
     --dsa-shell-shadow: 0 20px 60px rgba(20, 30, 50, 0.12), 0 2px 8px rgba(20, 30, 50, 0.06);
     font-family:
         -apple-system,
@@ -6271,72 +6272,129 @@ body.dsa-shell-layout.dsa-page {
     -webkit-font-smoothing: antialiased;
 }
 
-body.dsa-shell-layout.dsa-page .navbar.dsa-shell-navbar {
+body.dsa-shell-layout.dsa-page .navbar.dsa-shell-navbar.topnav {
     position: sticky;
     top: 0;
     left: auto;
     right: auto;
     height: auto;
-    min-height: 58px;
+    min-height: 0;
     padding: 0;
     flex-wrap: nowrap;
     backdrop-filter: blur(20px) saturate(160%);
     -webkit-backdrop-filter: blur(20px) saturate(160%);
-    background: rgba(255, 255, 255, 0.55);
+    background: rgba(255, 255, 255, 0.45);
     border-bottom: 1px solid var(--dsa-shell-line);
     box-shadow: none;
     color: var(--dsa-shell-ink);
 }
 
-body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-inner {
-    max-width: 1400px;
+body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-inner.topnav-inner {
+    max-width: 1280px;
     margin: 0 auto;
     width: 100%;
-    min-height: 58px;
-    padding: 0 22px;
+    min-height: 0;
+    padding: 18px 32px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 16px;
     box-sizing: border-box;
 }
 
-body.dsa-shell-layout.dsa-page .dsa-shell-navbar .brand {
+body.dsa-shell-layout.dsa-page .dsa-shell-navbar .brand-block {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     font-weight: 700;
     letter-spacing: -0.01em;
-    font-size: 15px;
     color: var(--dsa-shell-ink);
     text-decoration: none;
     margin-left: 0;
 }
 
 body.dsa-shell-layout.dsa-page .dsa-shell-navbar .brand-mark {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #2a3442, #0f1720);
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: linear-gradient(180deg, #2a3442, #0f1720);
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
-    font-size: 13px;
-    font-weight: 800;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
     flex-shrink: 0;
     box-shadow:
-        0 4px 12px rgba(15, 23, 32, 0.25),
-        inset 0 1px 0 rgba(255, 255, 255, 0.18);
+        0 6px 16px rgba(15, 23, 32, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+body.dsa-shell-layout.dsa-page .dsa-shell-navbar .brand-name {
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.01em;
 }
 
 body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right {
-    gap: 4px;
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-width: 0;
+    flex-wrap: wrap;
 }
 
-body.dsa-shell-layout.dsa-page .dsa-shell-navbar .dsa-shell-nav-link {
+body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-tabs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    background: var(--dsa-shell-glass-2);
+    border: 1px solid var(--dsa-shell-line);
+    border-radius: 12px;
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+}
+
+body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-tab {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--dsa-shell-ink-2);
+    text-decoration: none;
+    border-radius: 8px;
+    margin-left: 0;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-tab:hover:not(.nav-tab--active) {
+    color: var(--dsa-shell-ink);
+}
+
+body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-tab--active {
+    background: #fff;
+    color: var(--dsa-shell-ink);
+    box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.06),
+        0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+body.dsa-shell-layout.dsa-page .dsa-shell-navbar .topnav-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+body.dsa-shell-layout.dsa-page .dsa-shell-navbar .topnav-aux-link {
     padding: 8px 14px;
-    font-size: 13.5px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--dsa-shell-ink-2);
     text-decoration: none;
@@ -6345,62 +6403,60 @@ body.dsa-shell-layout.dsa-page .dsa-shell-navbar .dsa-shell-nav-link {
     transition: background 0.2s ease, color 0.2s ease;
 }
 
-body.dsa-shell-layout.dsa-page .dsa-shell-navbar .dsa-shell-nav-link:hover {
+body.dsa-shell-layout.dsa-page .dsa-shell-navbar .topnav-aux-link:hover {
     background: rgba(255, 255, 255, 0.6);
     color: var(--dsa-shell-ink);
 }
 
-body.dsa-shell-layout.dsa-page .dsa-shell-navbar .dsa-shell-nav-link--active {
-    background: #fff;
-    color: var(--dsa-shell-ink);
-    box-shadow:
-        0 1px 2px rgba(0, 0, 0, 0.06),
-        0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-admin-entry.dsa-shell-nav-link {
+body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-admin-entry.topnav-aux-link {
     border: 0;
     background: transparent;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
+    cursor: pointer;
+    font: inherit;
 }
 
+/* Match mock: text sign out — stays visible when session ends via hidden attribute */
 body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-signout-btn.signout {
-    height: 36px;
-    padding: 0 14px;
-    border-radius: 10px;
-    border: 1px solid var(--dsa-shell-line);
-    background: rgba(255, 255, 255, 0.6);
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--dsa-shell-ink-2);
     font-size: 13px;
     font-weight: 600;
-    color: var(--dsa-shell-ink-2);
-    margin-left: 8px;
+    cursor: pointer;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-family: inherit;
+    margin-left: 0;
+    transition: background 0.2s ease, color 0.2s ease;
 }
 
 body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-signout-btn.signout:hover {
-    background: #fff;
+    background: rgba(255, 255, 255, 0.6);
     color: var(--dsa-shell-ink);
-    border-color: var(--dsa-shell-line);
 }
 
 body.dsa-shell-layout .dsa-shell-page {
-    max-width: 1400px;
+    max-width: 1280px;
     margin: 0 auto;
-    padding: 24px 22px 40px;
+    padding: 36px 32px 24px;
     display: flex;
     flex-direction: column;
     gap: 18px;
     box-sizing: border-box;
 }
 
-body.dsa-shell-layout .dsa-shell-head {
+body.dsa-shell-layout .dsa-shell-head.header-row {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
     gap: 24px;
     padding: 4px 4px 0;
+    margin-bottom: 26px;
 }
 
 body.dsa-shell-layout .dsa-shell-eyebrow {
@@ -6409,13 +6465,13 @@ body.dsa-shell-layout .dsa-shell-eyebrow {
     font-weight: 600;
     color: var(--dsa-shell-muted);
     text-transform: uppercase;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 body.dsa-shell-layout .dsa-shell-title {
-    font-size: 34px;
+    font-size: 44px;
     font-weight: 700;
-    margin: 0 0 8px;
+    margin: 0 0 12px;
     letter-spacing: -0.02em;
     line-height: 1;
     color: var(--dsa-shell-ink);
@@ -6423,10 +6479,10 @@ body.dsa-shell-layout .dsa-shell-title {
 
 body.dsa-shell-layout .dsa-shell-lede {
     color: var(--dsa-shell-ink-2);
-    font-size: 13.5px;
-    line-height: 1.5;
+    font-size: 14.5px;
+    line-height: 1.55;
     margin: 0;
-    max-width: 680px;
+    max-width: 640px;
 }
 
 body.dsa-shell-layout .dsa-shell-lede b {
@@ -6497,15 +6553,248 @@ body.dsa-shell-layout .dsa-shell-footer .footer-copyright p {
     color: var(--dsa-shell-ink-2);
 }
 
+/* JS-rendered view tabs → inspiration mode-seg (nodes/map unchanged) */
+body.dsa-shell-layout .dsa-view-toolbar {
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+body.dsa-shell-layout .dsa-view-tabs {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px;
+    background: var(--dsa-shell-glass-2);
+    border: 1px solid var(--dsa-shell-line);
+    border-radius: 14px;
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+body.dsa-shell-layout .dsa-view-btn {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    padding: 10px 20px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--dsa-shell-ink-2);
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+}
+
+body.dsa-shell-layout .dsa-view-btn:hover:not(.dsa-view-btn--active) {
+    color: var(--dsa-shell-ink);
+}
+
+body.dsa-shell-layout .dsa-view-btn.dsa-view-btn--active {
+    background: #fff;
+    color: var(--dsa-shell-ink);
+    box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.06),
+        0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+/* Customize top bar + in-map toolbar → toolbar card */
+body.dsa-shell-layout .dsa-customize-topbar {
+    background: var(--dsa-shell-glass);
+    backdrop-filter: blur(28px) saturate(160%);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 18px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    box-shadow: var(--dsa-shell-shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+body.dsa-shell-layout .dsa-customize-topbar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 40%);
+    pointer-events: none;
+}
+
+body.dsa-shell-layout .dsa-customize-topbar-note {
+    position: relative;
+    z-index: 1;
+    font-size: 12.5px;
+    color: var(--dsa-shell-muted);
+    margin: 0 0 14px;
+    line-height: 1.45;
+}
+
+body.dsa-shell-layout .dsa-customize-topbar-row {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+body.dsa-shell-layout .dsa-customize-topbar-btn {
+    appearance: none;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 11px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    border: 1px solid var(--dsa-shell-line);
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--dsa-shell-ink-2);
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        color 0.2s ease;
+}
+
+body.dsa-shell-layout .dsa-customize-topbar-btn:hover {
+    background: #fff;
+    transform: translateY(-1px);
+    color: var(--dsa-shell-ink);
+}
+
+body.dsa-shell-layout .dsa-customize-topbar-row .dsa-customize-topbar-btn:first-child {
+    background: linear-gradient(180deg, #2a3442, #0f1720);
+    color: #fff;
+    border-color: transparent;
+    box-shadow:
+        0 8px 20px rgba(15, 23, 32, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+body.dsa-shell-layout .dsa-customize-topbar-row .dsa-customize-topbar-btn:first-child:hover {
+    background: #000;
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+body.dsa-shell-layout .dsa-graph-map-toolbar {
+    flex-shrink: 0;
+    border-radius: 18px 18px 0 0;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    padding: 18px 20px;
+    margin-bottom: 0;
+    box-shadow: var(--dsa-shell-shadow);
+    position: relative;
+    overflow: hidden;
+    background: var(--dsa-shell-glass);
+    backdrop-filter: blur(28px) saturate(160%);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+    border-bottom: 1px solid var(--dsa-shell-line);
+}
+
+body.dsa-shell-layout .dsa-graph-map-toolbar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 40%);
+    pointer-events: none;
+}
+
+body.dsa-shell-layout .dsa-graph-map-toolbar-cluster {
+    position: relative;
+    z-index: 1;
+}
+
+body.dsa-shell-layout .dsa-mind-canvas {
+    border-radius: 0 0 18px 18px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-top: none;
+    background: transparent;
+}
+
+body.dsa-shell-layout .dsa-graph-expand-btn {
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 11px;
+    font-size: 13px;
+    border: 1px solid var(--dsa-shell-line);
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--dsa-shell-ink-2);
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        color 0.2s ease;
+}
+
+body.dsa-shell-layout .dsa-graph-expand-btn:hover {
+    background: #fff;
+    transform: translateY(-1px);
+    color: var(--dsa-shell-ink);
+    border-color: var(--dsa-shell-line);
+}
+
+body.dsa-shell-layout .dsa-graph-zoom-group .dsa-graph-zoom-btn,
+body.dsa-shell-layout .dsa-graph-zoom-float .dsa-graph-zoom-btn {
+    border-radius: 11px;
+    border-color: var(--dsa-shell-line);
+    background: rgba(255, 255, 255, 0.85);
+    color: var(--dsa-shell-ink-2);
+}
+
+body.dsa-shell-layout .dsa-graph-zoom-group .dsa-graph-zoom-btn:hover,
+body.dsa-shell-layout .dsa-graph-zoom-float .dsa-graph-zoom-btn:hover {
+    color: var(--dsa-shell-ink);
+    background: #fff;
+}
+
+body.dsa-shell-layout .dsa-graph-hint {
+    font-size: 12.5px;
+    color: var(--dsa-shell-muted);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 8px;
+    text-align: left;
+    max-width: none;
+    margin: 14px 0 18px;
+    padding: 0 4px;
+}
+
+body.dsa-shell-layout .dsa-graph-hint::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--dsa-shell-ink-2);
+    margin-top: 6px;
+    flex-shrink: 0;
+}
+
 @media (max-width: 780px) {
-    body.dsa-shell-layout .dsa-shell-head {
+    body.dsa-shell-layout .dsa-shell-head.header-row {
         flex-direction: column;
         align-items: flex-start;
         gap: 14px;
+        margin-bottom: 20px;
     }
 
     body.dsa-shell-layout .dsa-shell-title {
-        font-size: 28px;
+        font-size: 34px;
+    }
+
+    body.dsa-shell-layout .dsa-shell-page {
+        padding: 24px 20px;
+    }
+
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-inner.topnav-inner {
+        padding: 14px 18px;
+    }
+
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .nav-tab {
+        padding: 7px 12px;
     }
 }
 
@@ -6522,20 +6811,34 @@ body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
 
 @media (max-width: 720px) {
     body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right {
+        flex-direction: column;
+        align-items: stretch;
         background: rgba(255, 255, 255, 0.96);
         border: 1px solid rgba(15, 23, 32, 0.1);
         box-shadow: 0 12px 40px rgba(15, 23, 42, 0.12);
     }
 
-    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .dsa-shell-nav-link,
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .nav-tabs {
+        width: 100%;
+        justify-content: center;
+    }
+
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .topnav-actions {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .nav-tab,
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .topnav-aux-link,
     body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .nav-admin-entry,
     body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .nav-signout-btn {
         color: var(--dsa-shell-ink);
-        border-color: rgba(15, 23, 32, 0.12);
+        border: 1px solid rgba(15, 23, 32, 0.12);
         background: rgba(255, 255, 255, 0.72);
     }
 
-    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .dsa-shell-nav-link:hover,
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .nav-tab:hover,
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .topnav-aux-link:hover,
     body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .nav-admin-entry:hover,
     body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .nav-signout-btn:hover {
         border-color: rgba(154, 164, 111, 0.45);
@@ -6543,7 +6846,7 @@ body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
         color: rgb(55, 62, 42);
     }
 
-    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .dsa-shell-nav-link--active {
-        background: rgba(154, 164, 111, 0.18);
+    body.dsa-shell-layout.dsa-page .dsa-shell-navbar .right .nav-tab--active {
+        background: rgba(154, 164, 111, 0.22);
     }
 }

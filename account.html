@@ -307,10 +307,33 @@
         .cms-toolbar select { padding: 10px; height: 44px; }
         .cms-editor { min-height: 260px; padding: 12px; resize: vertical; }
         .cms-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+        .account-nav-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            align-self: flex-start;
+            margin-bottom: 4px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ink-2);
+            text-decoration: none;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+        .account-nav-back:hover {
+            background: #fff;
+            color: var(--ink);
+        }
     </style>
 </head>
 <body>
     <main class="shell">
+        <a href="./index.html" class="account-nav-back">← Home</a>
         <header class="head">
             <div class="eyebrow">DSA Pattern Practice</div>
             <h1>Account</h1>

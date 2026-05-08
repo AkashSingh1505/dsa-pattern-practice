@@ -1,115 +1,374 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev">
-    <title>Account · DSA Pattern Practice</title>
-    <link rel="stylesheet" href="./styles.css?v=3">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev" />
+    <title>Account — DSA Pattern Practice</title>
+    <style>
+        :root {
+            --bg-1: #dfe9f3;
+            --bg-2: #f5e6d3;
+            --bg-3: #cfe7d8;
+            --bg-4: #bfd9e6;
+            --ink: #0f1720;
+            --ink-2: #3a4452;
+            --muted: #6b7480;
+            --line: rgba(15, 23, 32, 0.08);
+            --glass: rgba(255, 255, 255, 0.55);
+            --glass-2: rgba(255, 255, 255, 0.35);
+            --accent: #1f2a37;
+            --shadow: 0 20px 60px rgba(20, 30, 50, 0.12), 0 2px 8px rgba(20, 30, 50, 0.06);
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(1100px 700px at 85% 10%, #f3e3cf 0%, transparent 60%),
+                radial-gradient(900px 700px at 10% 90%, #cfe1f0 0%, transparent 55%),
+                radial-gradient(900px 600px at 90% 90%, #bfe1d4 0%, transparent 60%),
+                linear-gradient(135deg, #e9eef3, #dde6ee);
+            min-height: 100vh;
+            padding: 24px 16px;
+            -webkit-font-smoothing: antialiased;
+        }
+        .topbar {
+            max-width: 980px;
+            margin: 0 auto 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .topbar a {
+            color: var(--ink-2);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+            margin-right: 10px;
+        }
+        .topbar button {
+            border: 0;
+            border-radius: 10px;
+            padding: 9px 12px;
+            cursor: pointer;
+            font-weight: 600;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        .shell {
+            width: 100%;
+            max-width: 520px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .eyebrow {
+            font-size: 11px;
+            letter-spacing: 0.18em;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        h1 {
+            font-size: 40px;
+            margin: 0 0 10px;
+            letter-spacing: -0.02em;
+            line-height: 1;
+        }
+        .lede {
+            color: var(--ink-2);
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 0;
+        }
+        .seg {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            background: var(--glass-2);
+            backdrop-filter: blur(20px) saturate(140%);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 4px;
+        }
+        .seg button {
+            border: 0;
+            background: transparent;
+            padding: 10px 14px;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--ink-2);
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .seg button.active {
+            background: #fff;
+            color: var(--ink);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 4px 14px rgba(0, 0, 0, 0.05);
+        }
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(28px) saturate(160%);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            border-radius: 22px;
+            padding: 22px;
+            box-shadow: var(--shadow);
+        }
+        .card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .toggle-link {
+            font-size: 12.5px;
+            color: var(--muted);
+            cursor: pointer;
+            user-select: none;
+        }
+        .helper {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.45;
+            margin: 0 0 16px;
+        }
+        .field {
+            position: relative;
+            margin-bottom: 10px;
+        }
+        .field input, .cms-form input, .cms-toolbar select, .cms-editor {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(15, 23, 32, 0.08);
+            border-radius: 14px;
+            font-family: inherit;
+            color: var(--ink);
+        }
+        .field input {
+            height: 54px;
+            padding: 18px 50px 6px 16px;
+            font-size: 15px;
+            outline: none;
+        }
+        .field label {
+            position: absolute;
+            left: 16px;
+            top: 17px;
+            font-size: 14px;
+            color: var(--muted);
+            pointer-events: none;
+            transition: 0.18s ease;
+        }
+        .field input:focus + label,
+        .field input:not(:placeholder-shown) + label {
+            top: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        .icon {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            border: 0;
+            background: var(--accent);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 6px 2px 14px;
+            font-size: 12.5px;
+            color: var(--muted);
+        }
+        .cta, .btn {
+            width: 100%;
+            height: 50px;
+            border: 0;
+            border-radius: 14px;
+            background: linear-gradient(180deg, #2a3442, #0f1720);
+            color: #fff;
+            font-size: 14.5px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .btn.ghost {
+            background: #fff;
+            color: var(--ink-2);
+            border: 1px solid var(--line);
+            height: 42px;
+        }
+        .steps {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+        .steps span {
+            height: 3px;
+            flex: 1;
+            background: rgba(15, 23, 32, 0.08);
+            border-radius: 2px;
+        }
+        .steps span.on {
+            background: var(--ink);
+        }
+        .status {
+            margin: 10px 2px 0;
+            font-size: 13px;
+        }
+        .status.ok { color: #057a55; }
+        .status.err { color: #b42318; }
+        .meta-line {
+            margin: 0 0 8px;
+            font-size: 13px;
+            color: var(--ink-2);
+        }
+        #portal-panel-cms { display: none; }
+        .cms-form { display: grid; gap: 10px; margin-top: 12px; }
+        .cms-form input { padding: 14px; }
+        .cms-tabs { display: flex; gap: 8px; margin-top: 8px; }
+        .cms-tabs button {
+            border: 1px solid var(--line);
+            background: #fff;
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .cms-tabs button.active { background: #101820; color: #fff; }
+        .cms-toolbar { display: grid; gap: 8px; margin-bottom: 10px; }
+        .cms-toolbar select { padding: 10px; height: 44px; }
+        .cms-editor { min-height: 260px; padding: 12px; resize: vertical; }
+        .cms-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+    </style>
 </head>
-<body class="admin-page account-portal-page">
-    <div class="navbar">
-        <div class="left"><a href="./index.html">Home</a></div>
-        <div class="right">
+<body>
+    <div class="topbar">
+        <div>
+            <a href="./index.html">Home</a>
             <a href="./index.html">DSA Patterns</a>
             <a href="https://github.com/AkashSingh1505/dsa-pattern-practice" target="_blank" rel="noopener noreferrer">GitHub</a>
-            <a id="nav-admin-entry" class="nav-admin-entry" href="./account.html">Sign in</a>
-            <button type="button" id="nav-admin-signout" class="nav-signout-btn" hidden>Sign out</button>
         </div>
+        <button type="button" id="nav-admin-signout" hidden>Sign out</button>
     </div>
 
-    <div id="cms-toast" class="admin-toast" role="alert" aria-live="assertive" hidden></div>
-
-    <main class="admin-main portal-main">
-        <header class="admin-header portal-header">
-            <p class="admin-kicker">DSA Pattern Practice</p>
-            <h1 class="admin-title">Account</h1>
-            <p class="admin-lead">
-                <strong>Practice account</strong> — sign in or register to track progress across devices (same public graph for everyone; <strong>Customize graph</strong> unlocks for Pro or elevated roles). 
-                <strong>Site admin</strong> — password / authenticator for CMS JSON and publishing to the content database.
-            </p>
+    <main class="shell">
+        <header>
+            <div class="eyebrow">DSA Pattern Practice</div>
+            <h1>Account</h1>
+            <p class="lede"><b>Practice account</b> — sign in or register to track progress across devices.</p>
         </header>
 
-        <div class="portal-primary-tabs" role="tablist" aria-label="Account sections">
-            <button type="button" class="portal-primary-tab portal-primary-tab--active" id="portal-tab-practice" role="tab" aria-selected="true" aria-controls="portal-panel-practice">Practice account</button>
-            <button type="button" class="portal-primary-tab" id="portal-tab-cms" role="tab" aria-selected="false" aria-controls="portal-panel-cms">Site admin &amp; CMS</button>
-        </div>
+        <nav class="seg" role="tablist" aria-label="Account sections">
+            <button id="portal-tab-practice" class="active" type="button">Practice</button>
+            <button id="portal-tab-cms" type="button">Admin &amp; CMS</button>
+        </nav>
 
-        <section id="portal-panel-practice" class="portal-panel" role="tabpanel" aria-labelledby="portal-tab-practice">
-            <div class="admin-card admin-auth">
-                <div class="admin-auth-header">
-                    <h2 class="admin-card-title">Practice sign-in</h2>
-                    <p class="admin-auth-sub">Use email and password. New accounts start as <strong>user</strong> / <strong>free</strong> — same mind map as visitors. Upgrade to <strong>pro</strong> later for customize features.</p>
+        <section id="portal-panel-practice" class="card">
+            <div id="portal-practice-signedin" hidden>
+                <p class="meta-line">Signed in as <strong id="portal-practice-email"></strong></p>
+                <p class="meta-line">Plan: <span id="portal-practice-plan"></span> · Role: <span id="portal-practice-role"></span></p>
+                <button class="btn ghost" type="button" id="portal-practice-signout">Sign out practice account</button>
+            </div>
+
+            <div id="portal-practice-forms">
+                <div class="card-head">
+                    <div class="card-title" id="title">Welcome back</div>
+                    <span class="toggle-link" id="switcher">New here? <b>Create</b></span>
                 </div>
-                <div id="portal-practice-signedin" class="portal-practice-signedin" hidden>
-                    <p class="portal-signedin-line">Signed in as <strong id="portal-practice-email"></strong></p>
-                    <p class="cms-msg portal-meta">Plan: <span id="portal-practice-plan"></span> · Role: <span id="portal-practice-role"></span></p>
-                    <button type="button" id="portal-practice-signout" class="admin-btn admin-btn-ghost">Sign out practice account</button>
+
+                <div class="steps">
+                    <span class="on"></span>
+                    <span id="s2"></span>
                 </div>
-                <div id="portal-practice-forms" class="portal-practice-forms">
-                    <div class="admin-auth-method-switch portal-secondary-tabs" role="tablist" aria-label="Practice account">
-                        <button type="button" class="admin-auth-tab admin-auth-tab--active" id="pt-tab-in" role="tab" aria-selected="true">Sign in</button>
-                        <button type="button" class="admin-auth-tab" id="pt-tab-reg" role="tab" aria-selected="false">Create account</button>
+
+                <p class="helper" id="helper">Enter your email to continue. We'll guide you step by step.</p>
+
+                <form id="practice-step-form">
+                    <div class="field">
+                        <input id="practice-email" type="email" placeholder=" " required autocomplete="email" />
+                        <label for="practice-email">Email address</label>
+                        <button type="submit" class="icon" aria-label="Continue">→</button>
                     </div>
-                    <form id="form-practice-login" class="admin-form portal-form" autocomplete="on">
-                        <input type="email" name="email" placeholder="Email" autocomplete="email" required />
-                        <input type="password" name="password" placeholder="Password" autocomplete="current-password" required />
-                        <button type="submit" class="admin-btn admin-btn-primary">Sign in</button>
-                    </form>
-                    <form id="form-practice-register" class="admin-form portal-form" hidden autocomplete="on">
-                        <input type="email" name="email" placeholder="Email" autocomplete="email" required />
-                        <input type="password" name="password" placeholder="Password (min 8 characters)" autocomplete="new-password" required minlength="8" />
-                        <button type="submit" class="admin-btn admin-btn-primary">Create account</button>
-                    </form>
-                </div>
-                <p id="portal-practice-msg" class="cms-msg admin-status" aria-live="polite"></p>
+
+                    <div class="field" id="passField" style="display:none">
+                        <input id="practice-password" type="password" placeholder=" " minlength="8" autocomplete="current-password" />
+                        <label for="practice-password">Password</label>
+                        <button type="button" class="icon" id="passToggle" aria-label="Toggle visibility">•••</button>
+                    </div>
+
+                    <div class="row" id="rowExtras" style="display:none">
+                        <span>Remember me</span>
+                        <span>Forgot password?</span>
+                    </div>
+
+                    <button class="cta" id="cta" type="submit">Continue</button>
+                </form>
+                <p id="portal-practice-msg" class="status" aria-live="polite"></p>
             </div>
         </section>
 
-        <section id="portal-panel-cms" class="portal-panel portal-panel--cms" role="tabpanel" aria-labelledby="portal-tab-cms" hidden>
-            <p id="cms-config-warn" class="cms-msg cms-msg-banner err" hidden></p>
+        <section id="portal-panel-cms" class="card">
+            <p id="cms-config-warn" class="status err" hidden></p>
 
-            <section id="cms-auth-panel" class="admin-card admin-auth" aria-label="Site admin sign in" hidden>
-                <div class="admin-auth-header">
-                    <h2 class="admin-card-title">Site admin</h2>
-                    <p class="admin-auth-sub">Password or authenticator — same as your portfolio Worker. Unlocks the JSON editor and CMS writes to the <strong>content</strong> database.</p>
+            <section id="cms-auth-panel" hidden>
+                <h2 class="card-title">Site admin sign in</h2>
+                <div class="cms-tabs">
+                    <button type="button" id="cms-tab-password" class="active">Password</button>
+                    <button type="button" id="cms-tab-totp">Authenticator</button>
                 </div>
-                <div class="admin-auth-body">
-                    <div class="admin-auth-method-switch" role="tablist" aria-label="Sign-in method">
-                        <button type="button" class="admin-auth-tab admin-auth-tab--active" role="tab" id="cms-tab-password" aria-selected="true" aria-controls="cms-auth-pane-password" data-auth-method="password">Password</button>
-                        <button type="button" class="admin-auth-tab" role="tab" id="cms-tab-totp" aria-selected="false" aria-controls="cms-auth-pane-totp" data-auth-method="totp">Authenticator</button>
-                    </div>
-                    <div id="cms-auth-pane-password" class="admin-auth-pane" role="tabpanel" aria-labelledby="cms-tab-password">
-                        <form id="cms-form-password" class="admin-form" method="POST" autocomplete="on">
-                            <input type="password" name="password" placeholder="Site password" autocomplete="current-password" required />
-                            <input type="hidden" name="return" id="cms-return-password" value="" />
-                            <button type="submit" class="admin-btn admin-btn-primary">Continue</button>
-                        </form>
-                    </div>
-                    <div id="cms-auth-pane-totp" class="admin-auth-pane" role="tabpanel" aria-labelledby="cms-tab-totp" hidden>
-                        <form id="cms-form-totp" class="admin-form" method="POST">
-                            <input type="text" name="code" inputmode="numeric" pattern="[0-9]*" maxlength="12" placeholder="6-digit code" autocomplete="one-time-code" required />
-                            <input type="hidden" name="return" id="cms-return-totp" value="" />
-                            <button type="submit" class="admin-btn admin-btn-primary">Continue</button>
-                        </form>
-                    </div>
+
+                <div id="cms-auth-pane-password">
+                    <form id="cms-form-password" class="cms-form" method="POST" autocomplete="on">
+                        <input type="password" name="password" placeholder="Site password" required />
+                        <input type="hidden" name="return" id="cms-return-password" value="" />
+                        <button class="btn" type="submit">Continue</button>
+                    </form>
+                </div>
+                <div id="cms-auth-pane-totp" hidden>
+                    <form id="cms-form-totp" class="cms-form" method="POST">
+                        <input type="text" name="code" inputmode="numeric" pattern="[0-9]*" maxlength="12" placeholder="6-digit code" required />
+                        <input type="hidden" name="return" id="cms-return-totp" value="" />
+                        <button class="btn" type="submit">Continue</button>
+                    </form>
                 </div>
             </section>
 
-            <section id="cms-editor-section" class="admin-card admin-editor" aria-label="JSON editor" hidden>
-                <div class="admin-editor-head">
-                    <h2 class="admin-card-title">CMS editor</h2>
-                    <div class="cms-toolbar">
-                        <label for="cms-key">Dataset</label>
-                        <select id="cms-key">
-                            <option value="dsa">dsa (mind map JSON)</option>
-                        </select>
-                        <button type="button" id="cms-load" class="admin-btn admin-btn-ghost">Load</button>
-                        <button type="button" id="cms-save" class="admin-btn admin-btn-primary">Save</button>
-                    </div>
+            <section id="cms-editor-section" hidden>
+                <h2 class="card-title">CMS editor</h2>
+                <div class="cms-toolbar">
+                    <label for="cms-key">Dataset</label>
+                    <select id="cms-key">
+                        <option value="dsa">dsa (mind map JSON)</option>
+                    </select>
                 </div>
-                <textarea id="cms-editor" class="admin-textarea" spellcheck="false" placeholder="Load a key to fetch JSON from the API…"></textarea>
-                <p id="cms-status" class="cms-msg admin-status"></p>
+                <textarea id="cms-editor" class="cms-editor" spellcheck="false" placeholder="Load key and edit JSON..."></textarea>
+                <div class="cms-actions">
+                    <button id="cms-load" class="btn ghost" type="button">Load</button>
+                    <button id="cms-save" class="btn" type="button">Save</button>
+                </div>
+                <p id="cms-status" class="status"></p>
             </section>
         </section>
     </main>
@@ -123,122 +382,145 @@
             const panelPractice = document.getElementById("portal-panel-practice");
             const panelCms = document.getElementById("portal-panel-cms");
 
-            function showPortalTab(which) {
+            function showTab(which) {
                 const cms = which === "cms";
-                tabPractice.classList.toggle("portal-primary-tab--active", !cms);
-                tabCms.classList.toggle("portal-primary-tab--active", cms);
-                tabPractice.setAttribute("aria-selected", cms ? "false" : "true");
-                tabCms.setAttribute("aria-selected", cms ? "true" : "false");
-                panelPractice.hidden = cms;
-                panelCms.hidden = !cms;
+                panelPractice.style.display = cms ? "none" : "block";
+                panelCms.style.display = cms ? "block" : "none";
+                tabPractice.classList.toggle("active", !cms);
+                tabCms.classList.toggle("active", cms);
             }
-            tabPractice.addEventListener("click", () => showPortalTab("practice"));
-            tabCms.addEventListener("click", () => showPortalTab("cms"));
-            if (window.location.hash === "#cms") {
-                showPortalTab("cms");
+            tabPractice.addEventListener("click", () => showTab("practice"));
+            tabCms.addEventListener("click", () => showTab("cms"));
+            if ((window.location.hash || "").includes("cms")) {
+                showTab("cms");
             }
 
-            const ptTabIn = document.getElementById("pt-tab-in");
-            const ptTabReg = document.getElementById("pt-tab-reg");
-            const formLogin = document.getElementById("form-practice-login");
-            const formReg = document.getElementById("form-practice-register");
-            const signedIn = document.getElementById("portal-practice-signedin");
-            const formsWrap = document.getElementById("portal-practice-forms");
+            const titleEl = document.getElementById("title");
+            const helperEl = document.getElementById("helper");
+            const switcherEl = document.getElementById("switcher");
+            const ctaEl = document.getElementById("cta");
+            const passField = document.getElementById("passField");
+            const s2 = document.getElementById("s2");
+            const form = document.getElementById("practice-step-form");
+            const emailEl = document.getElementById("practice-email");
+            const passEl = document.getElementById("practice-password");
             const msgEl = document.getElementById("portal-practice-msg");
+            const rowExtras = document.getElementById("rowExtras");
+            const formsWrap = document.getElementById("portal-practice-forms");
+            const signedWrap = document.getElementById("portal-practice-signedin");
 
-            function setPracticeSubtab(reg) {
-                ptTabIn.classList.toggle("admin-auth-tab--active", !reg);
-                ptTabReg.classList.toggle("admin-auth-tab--active", reg);
-                ptTabIn.setAttribute("aria-selected", reg ? "false" : "true");
-                ptTabReg.setAttribute("aria-selected", reg ? "true" : "false");
-                formLogin.hidden = reg;
-                formReg.hidden = !reg;
-            }
-            ptTabIn.addEventListener("click", () => setPracticeSubtab(false));
-            ptTabReg.addEventListener("click", () => setPracticeSubtab(true));
+            let mode = "signin";
+            let step = 1;
 
             function practiceMsg(text, cls) {
                 msgEl.textContent = text || "";
-                msgEl.className = "cms-msg admin-status" + (cls ? " " + cls : "");
-            }
-
-            function updatePracticeSignedInUi() {
-                const c = typeof dsaParsePracticeUserClaims === "function" ? dsaParsePracticeUserClaims() : null;
-                if (c && c.email) {
-                    signedIn.hidden = false;
-                    formsWrap.hidden = true;
-                    document.getElementById("portal-practice-email").textContent = c.email;
-                    document.getElementById("portal-practice-plan").textContent = c.plan || "free";
-                    document.getElementById("portal-practice-role").textContent = c.role || "user";
-                } else {
-                    signedIn.hidden = true;
-                    formsWrap.hidden = false;
-                }
+                msgEl.className = "status" + (cls ? " " + cls : "");
             }
 
             function apiAuth(path) {
                 return new URL("api/auth/" + path, window.location.href).href;
             }
 
-            formLogin.addEventListener("submit", async function (e) {
-                e.preventDefault();
-                practiceMsg("Signing in…");
-                const fd = new FormData(formLogin);
-                try {
-                    const r = await fetch(apiAuth("login"), {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            email: String(fd.get("email") || "").trim(),
-                            password: String(fd.get("password") || ""),
-                        }),
-                    });
-                    const j = await r.json().catch(() => ({}));
-                    if (!r.ok) {
-                        practiceMsg(j.error || "Sign-in failed", "err");
-                        return;
-                    }
-                    if (j.token && typeof dsaPracticeUserSetToken === "function") {
-                        dsaPracticeUserSetToken(j.token);
-                    }
-                    practiceMsg("Signed in.", "ok");
-                    updatePracticeSignedInUi();
-                    if (typeof window.syncNavbarAuthUi === "function") {
-                        window.syncNavbarAuthUi();
-                    }
-                } catch (err) {
-                    practiceMsg(String(err), "err");
+            function resetStepUi() {
+                step = 1;
+                passField.style.display = "none";
+                rowExtras.style.display = "none";
+                s2.classList.remove("on");
+                passEl.value = "";
+                passEl.type = "password";
+                ctaEl.textContent = "Continue";
+            }
+
+            function setMode(nextMode) {
+                mode = nextMode;
+                if (mode === "signup") {
+                    titleEl.textContent = "Create account";
+                    helperEl.innerHTML = "Start free as <b>user</b>. Upgrade to <b>pro</b> anytime.";
+                    switcherEl.innerHTML = "Have an account? <b>Sign in</b>";
+                } else {
+                    titleEl.textContent = "Welcome back";
+                    helperEl.textContent = "Enter your email to continue. We'll guide you step by step.";
+                    switcherEl.innerHTML = "New here? <b>Create</b>";
                 }
+                resetStepUi();
+            }
+
+            switcherEl.addEventListener("click", function () {
+                setMode(mode === "signin" ? "signup" : "signin");
             });
 
-            formReg.addEventListener("submit", async function (e) {
+            document.getElementById("passToggle").addEventListener("click", function () {
+                passEl.type = passEl.type === "password" ? "text" : "password";
+            });
+
+            function updatePracticeSignedInUi() {
+                const c = typeof dsaParsePracticeUserClaims === "function" ? dsaParsePracticeUserClaims() : null;
+                if (c && c.email) {
+                    signedWrap.hidden = false;
+                    formsWrap.hidden = true;
+                    document.getElementById("portal-practice-email").textContent = c.email;
+                    document.getElementById("portal-practice-plan").textContent = c.plan || "free";
+                    document.getElementById("portal-practice-role").textContent = c.role || "user";
+                } else {
+                    signedWrap.hidden = true;
+                    formsWrap.hidden = false;
+                }
+            }
+
+            form.addEventListener("submit", async function (e) {
                 e.preventDefault();
-                practiceMsg("Creating account…");
-                const fd = new FormData(formReg);
+                if (step === 1) {
+                    if (!emailEl.checkValidity()) {
+                        emailEl.reportValidity();
+                        return;
+                    }
+                    step = 2;
+                    passField.style.display = "block";
+                    rowExtras.style.display = mode === "signin" ? "flex" : "none";
+                    s2.classList.add("on");
+                    helperEl.innerHTML =
+                        mode === "signin"
+                            ? "Hi <b>" + emailEl.value + "</b> — enter your password."
+                            : "Create a strong password (min 8 characters).";
+                    ctaEl.textContent = mode === "signin" ? "Sign in" : "Create account";
+                    passEl.setAttribute("autocomplete", mode === "signin" ? "current-password" : "new-password");
+                    setTimeout(() => passEl.focus(), 20);
+                    return;
+                }
+                if (mode === "signup" && passEl.value.length < 8) {
+                    passEl.setCustomValidity("Password must be at least 8 characters.");
+                    passEl.reportValidity();
+                    passEl.setCustomValidity("");
+                    return;
+                }
+
+                practiceMsg(mode === "signin" ? "Signing in..." : "Creating account...");
+                ctaEl.textContent = "Working...";
                 try {
-                    const r = await fetch(apiAuth("register"), {
+                    const endpoint = mode === "signin" ? "login" : "register";
+                    const r = await fetch(apiAuth(endpoint), {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
-                            email: String(fd.get("email") || "").trim(),
-                            password: String(fd.get("password") || ""),
+                            email: String(emailEl.value || "").trim(),
+                            password: String(passEl.value || ""),
                         }),
                     });
                     const j = await r.json().catch(() => ({}));
                     if (!r.ok) {
-                        practiceMsg(j.error || "Registration failed", "err");
+                        practiceMsg(j.error || "Request failed.", "err");
+                        ctaEl.textContent = mode === "signin" ? "Sign in" : "Create account";
                         return;
                     }
                     if (j.token && typeof dsaPracticeUserSetToken === "function") {
                         dsaPracticeUserSetToken(j.token);
                     }
-                    practiceMsg("Account created. You are signed in.", "ok");
+                    practiceMsg(mode === "signin" ? "Signed in." : "Account created. You are signed in.", "ok");
                     updatePracticeSignedInUi();
-                    if (typeof window.syncNavbarAuthUi === "function") {
-                        window.syncNavbarAuthUi();
-                    }
                 } catch (err) {
                     practiceMsg(String(err), "err");
+                } finally {
+                    ctaEl.textContent = mode === "signin" ? "Sign in" : "Create account";
                 }
             });
 
@@ -247,25 +529,29 @@
                     dsaPracticeUserSignOut();
                 }
                 practiceMsg("Signed out practice account.", "ok");
+                setMode("signin");
                 updatePracticeSignedInUi();
-                if (typeof window.syncNavbarAuthUi === "function") {
-                    window.syncNavbarAuthUi();
-                }
             });
 
-            document.addEventListener("DOMContentLoaded", function () {
-                updatePracticeSignedInUi();
-            });
-        })();
-    </script>
-    <script>
-        (function () {
+            setMode("signin");
+            updatePracticeSignedInUi();
+
             const keySel = document.getElementById("cms-key");
             const editor = document.getElementById("cms-editor");
             const status = document.getElementById("cms-status");
-            const signout = document.getElementById("nav-admin-signout");
             const authPanel = document.getElementById("cms-auth-panel");
             const editorSection = document.getElementById("cms-editor-section");
+            const navSignout = document.getElementById("nav-admin-signout");
+
+            const AUTH_ERR_LABELS = {
+                bad_password: "Wrong password.",
+                bad_totp: "Invalid authenticator code.",
+            };
+
+            function setStatus(msg, cls) {
+                status.textContent = msg || "";
+                status.className = "status" + (cls ? " " + cls : "");
+            }
 
             function apiDataUrl(k) {
                 return new URL("api/data?k=" + encodeURIComponent(k), window.location.href).href;
@@ -278,14 +564,10 @@
 
             function consumeAdminErr() {
                 const hash = window.location.hash || "";
-                if (!hash.startsWith("#")) {
-                    return null;
-                }
+                if (!hash.startsWith("#")) return null;
                 const params = new URLSearchParams(hash.slice(1));
                 const err = params.get("dsa_admin_err");
-                if (!err) {
-                    return null;
-                }
+                if (!err) return null;
                 params.delete("dsa_admin_err");
                 const rest = params.toString();
                 const newHash = rest ? "#" + rest : "";
@@ -293,39 +575,32 @@
                 return err;
             }
 
-            const AUTH_ERR_LABELS = {
-                bad_password: "Wrong password.",
-                bad_totp: "Invalid authenticator code.",
-            };
-
-            function showToast(msg, kind) {
-                const el = document.getElementById("cms-toast");
-                if (!el || !msg) {
-                    return;
-                }
-                el.textContent = msg;
-                el.className = "admin-toast" + (kind === "err" ? " admin-toast--err" : " admin-toast--ok");
-                el.hidden = false;
-                clearTimeout(showToast._hide);
-                showToast._hide = setTimeout(function () {
-                    el.hidden = true;
-                }, 7000);
+            function setCmsAuthMethod(method) {
+                const pwTab = document.getElementById("cms-tab-password");
+                const totpTab = document.getElementById("cms-tab-totp");
+                const pwPane = document.getElementById("cms-auth-pane-password");
+                const totpPane = document.getElementById("cms-auth-pane-totp");
+                const isPw = method === "password";
+                pwTab.classList.toggle("active", isPw);
+                totpTab.classList.toggle("active", !isPw);
+                pwPane.hidden = !isPw;
+                totpPane.hidden = isPw;
+                try {
+                    sessionStorage.setItem("cmsAuthMethod", isPw ? "password" : "totp");
+                } catch (e) {}
             }
 
-            function setStatus(msg, cls) {
-                status.textContent = msg || "";
-                status.className = "cms-msg admin-status" + (cls ? " " + cls : "");
-                if (msg && cls === "err") {
-                    showToast(msg, "err");
-                }
+            function updateAdminUi() {
+                const ok = typeof dsaIsAdminSession === "function" && dsaIsAdminSession();
+                editorSection.hidden = !ok;
+                authPanel.hidden = ok;
+                navSignout.hidden = !ok;
             }
 
             function getToken() {
                 if (typeof dsaGetAdminJwt === "function") {
                     const tok = dsaGetAdminJwt();
-                    if (tok) {
-                        return tok;
-                    }
+                    if (tok) return tok;
                 }
                 try {
                     return localStorage.getItem("dsaAdminJwtV1") || sessionStorage.getItem("dsaAdminJwtV1");
@@ -334,47 +609,10 @@
                 }
             }
 
-            function setCmsAuthMethod(method) {
-                const pwTab = document.getElementById("cms-tab-password");
-                const totpTab = document.getElementById("cms-tab-totp");
-                const pwPane = document.getElementById("cms-auth-pane-password");
-                const totpPane = document.getElementById("cms-auth-pane-totp");
-                if (!pwTab || !totpTab || !pwPane || !totpPane) {
-                    return;
-                }
-                const isPw = method === "password";
-                pwTab.classList.toggle("admin-auth-tab--active", isPw);
-                totpTab.classList.toggle("admin-auth-tab--active", !isPw);
-                pwTab.setAttribute("aria-selected", isPw ? "true" : "false");
-                totpTab.setAttribute("aria-selected", !isPw ? "true" : "false");
-                pwPane.hidden = !isPw;
-                totpPane.hidden = isPw;
-                try {
-                    sessionStorage.setItem("cmsAuthMethod", isPw ? "password" : "totp");
-                } catch (e) {}
-            }
-
-            function updateAuthUi() {
-                const ok = typeof dsaIsAdminSession === "function" && dsaIsAdminSession();
-                if (editorSection) {
-                    editorSection.hidden = !ok;
-                }
-                const wb = getWorkerBase();
-                if (wb) {
-                    authPanel.hidden = ok;
-                } else {
-                    authPanel.hidden = true;
-                }
-                if (typeof window.syncNavbarAuthUi === "function") {
-                    window.syncNavbarAuthUi();
-                }
-            }
-
             async function loadData() {
-                setStatus("Loading…");
-                const k = keySel.value;
+                setStatus("Loading...");
                 try {
-                    const r = await fetch(apiDataUrl(k), { cache: "no-store" });
+                    const r = await fetch(apiDataUrl(keySel.value), { cache: "no-store" });
                     const text = await r.text();
                     if (!r.ok) {
                         setStatus("Load failed: " + r.status + " " + text, "err");
@@ -385,23 +623,15 @@
                     } catch (e) {
                         editor.value = text;
                     }
-                    setStatus("Loaded " + k + ".", "ok");
+                    setStatus("Loaded " + keySel.value + ".", "ok");
                 } catch (e) {
                     setStatus(String(e), "err");
                 }
             }
 
             async function saveData() {
-                if (!dsaIsAdminSession()) {
+                if (!(typeof dsaIsAdminSession === "function" && dsaIsAdminSession())) {
                     setStatus("Sign in first.", "err");
-                    return;
-                }
-                const k = keySel.value;
-                if (
-                    !window.confirm(
-                        'Save dataset "' + k + '" to the database? This replaces the existing value for that key.',
-                    )
-                ) {
                     return;
                 }
                 let body = editor.value;
@@ -416,14 +646,11 @@
                     setStatus("No token in session.", "err");
                     return;
                 }
-                setStatus("Saving…");
+                setStatus("Saving...");
                 try {
-                    const r = await fetch(apiDataUrl(k), {
+                    const r = await fetch(apiDataUrl(keySel.value), {
                         method: "PUT",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: "Bearer " + tok,
-                        },
+                        headers: { "Content-Type": "application/json", Authorization: "Bearer " + tok },
                         body,
                     });
                     const text = await r.text();
@@ -431,7 +658,7 @@
                         setStatus("Save failed: " + r.status + " " + text, "err");
                         return;
                     }
-                    setStatus("Saved " + k + ".", "ok");
+                    setStatus("Saved " + keySel.value + ".", "ok");
                 } catch (e) {
                     setStatus(String(e), "err");
                 }
@@ -439,81 +666,52 @@
 
             document.getElementById("cms-load").addEventListener("click", loadData);
             document.getElementById("cms-save").addEventListener("click", saveData);
-            signout.addEventListener("click", function () {
+            document.getElementById("cms-tab-password").addEventListener("click", () => setCmsAuthMethod("password"));
+            document.getElementById("cms-tab-totp").addEventListener("click", () => setCmsAuthMethod("totp"));
+
+            navSignout.addEventListener("click", function () {
                 if (typeof dsaAdminSignOut === "function") {
                     dsaAdminSignOut();
                 }
-                updateAuthUi();
+                updateAdminUi();
                 setStatus("Site admin signed out.", "ok");
-                showToast("Site admin signed out.", "ok");
             });
 
-            keySel.addEventListener("change", function () {
-                editor.value = "";
-                setStatus("");
-            });
-
-            document.addEventListener("DOMContentLoaded", async function () {
-                const err = consumeAdminErr();
-                const authErrMsg =
-                    err && (AUTH_ERR_LABELS[err] || "Sign-in failed: " + err.replace(/_/g, " ") + ".");
+            (async function initCms() {
                 const ret = window.location.href.split("#")[0];
                 document.getElementById("cms-return-password").value = ret;
                 document.getElementById("cms-return-totp").value = ret;
-
-                let initialAuthMethod = "password";
-                try {
-                    const saved = sessionStorage.getItem("cmsAuthMethod");
-                    if (saved === "totp" || saved === "password") {
-                        initialAuthMethod = saved;
-                    }
-                } catch (e) {}
-                if (err === "bad_totp") {
-                    initialAuthMethod = "totp";
-                } else if (err === "bad_password") {
-                    initialAuthMethod = "password";
-                }
-                setCmsAuthMethod(initialAuthMethod);
-
-                document.getElementById("cms-tab-password").addEventListener("click", function () {
-                    setCmsAuthMethod("password");
-                });
-                document.getElementById("cms-tab-totp").addEventListener("click", function () {
-                    setCmsAuthMethod("totp");
-                });
                 const wb = getWorkerBase();
                 const cfgWarn = document.getElementById("cms-config-warn");
-                if (cfgWarn) {
-                    if (!wb) {
-                        cfgWarn.hidden = false;
-                        cfgWarn.textContent =
-                            'Set meta dsa-admin-oauth-base in account.html to your Worker URL (https://….workers.dev), commit, push, wait for Pages — then site-admin forms will post to the Worker.';
-                    } else {
-                        cfgWarn.hidden = true;
-                    }
-                }
-                if (wb) {
+                if (!wb) {
+                    cfgWarn.hidden = false;
+                    cfgWarn.textContent = "Set meta dsa-admin-oauth-base in account.html to your Worker URL.";
+                } else {
+                    cfgWarn.hidden = true;
                     document.getElementById("cms-form-password").action = wb + "/auth/password";
                     document.getElementById("cms-form-totp").action = wb + "/auth/totp";
                 }
+                const err = consumeAdminErr();
+                let initialAuthMethod = "password";
+                try {
+                    const saved = sessionStorage.getItem("cmsAuthMethod");
+                    if (saved === "totp" || saved === "password") initialAuthMethod = saved;
+                } catch (e) {}
+                if (err === "bad_totp") initialAuthMethod = "totp";
+                setCmsAuthMethod(initialAuthMethod);
+
                 if (typeof dsaInitAdminAuth === "function") {
                     await dsaInitAdminAuth();
                 }
-                updateAuthUi();
+                updateAdminUi();
                 if (typeof dsaIsAdminSession === "function" && dsaIsAdminSession()) {
                     await loadData();
                 }
-                if (authErrMsg) {
-                    if (typeof dsaIsAdminSession === "function" && dsaIsAdminSession()) {
-                        setStatus(authErrMsg, "err");
-                    } else {
-                        showToast(authErrMsg, "err");
-                    }
+                if (err) {
+                    setStatus(AUTH_ERR_LABELS[err] || "Sign-in failed: " + err.replace(/_/g, " ") + ".", "err");
                 }
-            });
+            })();
         })();
     </script>
-    <script src="./dsa-sketch-native.js?v=3"></script>
-    <script src="./script.js?v=3"></script>
 </body>
 </html>

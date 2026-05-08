@@ -5,11 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev" />
     <title>Account — DSA Pattern Practice</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./dsa-glass-theme.css?v=1">
     <style>
+        :root {
+            --bg-1: #dfe9f3;
+            --bg-2: #f5e6d3;
+            --bg-3: #cfe7d8;
+            --bg-4: #bfd9e6;
+            --ink: #0f1720;
+            --ink-2: #3a4452;
+            --muted: #6b7480;
+            --line: rgba(15, 23, 32, 0.08);
+            --glass: rgba(255, 255, 255, 0.55);
+            --glass-2: rgba(255, 255, 255, 0.35);
+            --accent: #1f2a37;
+            --shadow: 0 20px 60px rgba(20, 30, 50, 0.12), 0 2px 8px rgba(20, 30, 50, 0.06);
+        }
+        * {
+            box-sizing: border-box;
+        }
+        html,body{height:100%}
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(1100px 700px at 85% 10%, #f3e3cf 0%, transparent 60%),
+                radial-gradient(900px 700px at 10% 90%, #cfe1f0 0%, transparent 55%),
+                radial-gradient(900px 600px at 90% 90%, #bfe1d4 0%, transparent 60%),
+                linear-gradient(135deg, #e9eef3, #dde6ee);
+            min-height:100vh;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:32px 16px;
+            -webkit-font-smoothing: antialiased;
+        }
         .shell {
             width: 100%;
             max-width:460px;
@@ -279,7 +309,7 @@
         .cms-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
     </style>
 </head>
-<body class="dsa-glass-theme dsa-account-page">
+<body>
     <main class="shell">
         <header class="head">
             <div class="eyebrow">DSA Pattern Practice</div>

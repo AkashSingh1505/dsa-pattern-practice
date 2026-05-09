@@ -86,15 +86,21 @@
     }
 
     /**
-     * Customize graph tab: site RSA admin, or paid plan, or practice roles admin / subscriber.
+     * Customize graph: `staff_admin` (RSA) or `subscriber` (paid practice). See auth/dsa-member-roles.js.
      */
     function dsaHasCustomizeGraphAccess() {
+        if (typeof dsaIsStaffAdmin === "function" && dsaIsStaffAdmin()) {
+            return true;
+        }
         if (typeof dsaIsAdminSession === "function" && dsaIsAdminSession()) {
             return true;
         }
         const c = dsaParsePracticeUserClaims();
         if (!c) {
             return false;
+        }
+        if (typeof dsaIsSubscriberRole === "function" && dsaIsSubscriberRole(c)) {
+            return true;
         }
         if (c.role === "admin" || c.role === "subscriber") {
             return true;

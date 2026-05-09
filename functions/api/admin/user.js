@@ -1,6 +1,7 @@
 import { subscribersDb } from "../../_lib/d1-bindings.js";
 import { json, requireAdmin } from "../../_lib/admin-api.js";
 
+/** practice_users maps to product roles `free` / `subscriber` via `member-roles.js`. `staff_admin` is RSA only. */
 const ROLES = new Set(["user", "admin", "subscriber"]);
 const PLANS = new Set(["free", "pro", "team", "lifetime"]);
 const STATUSES = new Set(["active", "suspended", "deleted"]);

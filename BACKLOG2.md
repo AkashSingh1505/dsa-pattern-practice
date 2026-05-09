@@ -24,6 +24,8 @@ Keep **four audiences**. Do **not** treat “admin” as another daily-user tier
 
 **Summary:** Keep **3 user states** (public, free member, paid member) + **1 staff surface** (admin). That is **4 roles in the product story**; in the database you might still store `role = user` for everyone except mapping paid via `plan` / subscriptions.
 
+**Implementation (roles `free` / `subscriber` / `staff_admin`):** `auth/dsa-member-roles.js` — `dsaGetPracticeMemberRole()`, `dsaIsSubscriberRole`, `dsaIsStaffAdmin`, `dsaResolveMemberRole()`. Workers: `functions/_lib/member-roles.js` (`practiceMemberRoleFromRolePlan`, `isSubscriberPracticeMember`).
+
 ---
 
 ## 2. Priority legend

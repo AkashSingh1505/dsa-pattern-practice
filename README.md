@@ -16,7 +16,7 @@ npx --yes serve . -p 4173
 
 - **`index.html`** — practice map / graph (default). Navbar **Sign in** → `account.html`; **Admin** link → `admin.html`. When a site-admin RSA session exists, the primary auth link targets **`admin.html`** instead.
 - **`account.html`** — practice sign-in / sign-up only → `POST /api/auth/register`, `POST /api/auth/login` (D1 **subscribers** + `USER_JWT_SECRET`). After success, redirects to **`index.html`**.
-- **`admin.html`** — site admin: RSA password/TOTP via Worker in `meta dsa-admin-oauth-base`. Set **`return`** to this page’s URL (e.g. `https://<host>/<path>/admin.html`); allow that origin prefix in **`ALLOWED_RETURN_PREFIXES`**. Admin UI calls **`/api/admin/*`**. **`PUT /api/data?k=dsa`** still publishes live JSON (RSA JWT).
+- **`admin.html`** (and **`/admin`** via `_redirects` on Cloudflare Pages) — site admin: RSA password/TOTP via Worker in `meta dsa-admin-oauth-base`. Set **`return`** to the URL you actually use (e.g. `https://<host>/admin.html` or `https://<host>/admin`); allow that prefix in **`ALLOWED_RETURN_PREFIXES`**. Admin UI calls **`/api/admin/*`**. **`PUT /api/data?k=dsa`** still publishes live JSON (RSA JWT).
 
 ### Customize graph access
 

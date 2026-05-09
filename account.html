@@ -2,6 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
+    <script>
+    (function () {
+        function assetBaseHref(pageStem) {
+            var u = new URL(location.href);
+            var path = u.pathname.replace(/\/$/, "");
+            var parts = path.split("/").filter(Boolean);
+            var last = parts.length ? parts[parts.length - 1] : "";
+            if (last === pageStem) {
+                parts.pop();
+                u.pathname = "/" + parts.join("/") + (parts.length ? "/" : "");
+                return u.href;
+            }
+            if (last === pageStem + ".html") {
+                u.pathname = path.slice(0, path.length - last.length);
+                return u.href;
+            }
+            return new URL(".", location.href).href;
+        }
+        var b = document.createElement("base");
+        b.href = assetBaseHref("account");
+        document.head.insertBefore(b, document.head.firstChild);
+    })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Practice account — DSA Pattern Practice</title>
     <link rel="stylesheet" href="./auth/portal-shell.css?v=2" />
@@ -76,6 +99,6 @@
         </div>
     </main>
     <script src="./auth/dsa-user-auth.js?v=2"></script>
-    <script src="./auth/practice-account-page.js?v=1"></script>
+    <script src="./auth/practice-account-page.js?v=2"></script>
 </body>
 </html>

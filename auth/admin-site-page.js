@@ -28,7 +28,7 @@
     }
 
     function adminReturnUrl() {
-        return new URL("admin.html", window.location.href).href.split("#")[0];
+        return new URL("admin.html", document.baseURI).href.split("#")[0];
     }
 
     function consumeAdminErr() {

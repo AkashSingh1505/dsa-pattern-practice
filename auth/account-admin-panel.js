@@ -19,7 +19,7 @@
     let lastDashboardPayload = null;
 
     function apiAdmin(segment) {
-        return new URL("api/admin/" + segment, window.location.href).href;
+        return new URL("api/admin/" + segment, document.baseURI).href;
     }
 
     function getAdminToken() {

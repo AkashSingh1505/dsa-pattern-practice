@@ -3,7 +3,7 @@
  */
 (function () {
     function apiAuth(path) {
-        return new URL("api/auth/" + path, window.location.href).href;
+        return new URL("api/auth/" + path, document.baseURI).href;
     }
 
     const titleEl = document.getElementById("title");

@@ -87,10 +87,13 @@
             return cachedPubKey;
         }
         const path = window.location.pathname || "";
+        const baseForAuthAssets = document.querySelector("base[href]")
+            ? document.baseURI
+            : window.location.href;
         const pemHref =
             path.includes("/skill pages/") || path.includes("/project pages/")
                 ? new URL("../auth/dsa-admin-public.pem", window.location.href).href
-                : new URL("auth/dsa-admin-public.pem", window.location.href).href;
+                : new URL("auth/dsa-admin-public.pem", baseForAuthAssets).href;
         const r = await fetch(pemHref, { cache: "force-cache" });
         const pem = await r.text();
         const pemBody = pem

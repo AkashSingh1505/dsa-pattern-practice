@@ -2,6 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
+    <script>
+    (function () {
+        function assetBaseHref(pageStem) {
+            var u = new URL(location.href);
+            var path = u.pathname.replace(/\/$/, "");
+            var parts = path.split("/").filter(Boolean);
+            var last = parts.length ? parts[parts.length - 1] : "";
+            if (last === pageStem) {
+                parts.pop();
+                u.pathname = "/" + parts.join("/") + (parts.length ? "/" : "");
+                return u.href;
+            }
+            if (last === pageStem + ".html") {
+                u.pathname = path.slice(0, path.length - last.length);
+                return u.href;
+            }
+            return new URL(".", location.href).href;
+        }
+        var b = document.createElement("base");
+        b.href = assetBaseHref("admin");
+        document.head.insertBefore(b, document.head.firstChild);
+    })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev" />
     <title>Site admin — DSA Pattern Practice</title>
@@ -334,8 +357,8 @@
         </section>
         </div>
     </main>
-    <script src="./auth/dsa-admin-auth.js?v=3"></script>
-    <script src="./auth/account-admin-panel.js?v=4"></script>
-    <script src="./auth/admin-site-page.js?v=1"></script>
+    <script src="./auth/dsa-admin-auth.js?v=4"></script>
+    <script src="./auth/account-admin-panel.js?v=5"></script>
+    <script src="./auth/admin-site-page.js?v=2"></script>
 </body>
 </html>

@@ -12,17 +12,18 @@ export async function onRequestGet(context) {
     }
 
     const url = new URL(request.url);
-    const limit = Math.min(200, Math.max(1, parseInt(url.searchParams.get("limit") || "100", 10) || 100));
+    const limit = Math.min(500, Math.max(1, parseInt(url.searchParams.get("limit") || "100", 10) || 100));
+    const offset = Math.max(0, parseInt(url.searchParams.get("offset") || "0", 10) || 0);
 
     try {
         const rows = await db
             .prepare(
                 `SELECT id, email, user_id, source, consent_marketing, created_at, meta
-                 FROM subscriber_contacts ORDER BY id DESC LIMIT ?`,
+                 FROM subscriber_contacts ORDER BY id DESC LIMIT ? OFFSET ?`,
             )
-            .bind(limit)
+            .bind(limit, offset)
             .all();
-        return json({ ok: true, contacts: d1ResultRows(rows) });
+        return json({ ok: true, limit, offset, contacts: d1ResultRows(rows) });
     } catch (e) {
         console.error("admin contacts", e);
         return json({ error: "server error" }, 500);

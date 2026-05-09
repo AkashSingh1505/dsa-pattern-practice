@@ -82,6 +82,31 @@ export async function onRequestPut(context) {
     }
 }
 
+export async function onRequestDelete(context) {
+    const { request, env } = context;
+    const gate = await requireAdmin(request);
+    if (gate.response) return gate.response;
+
+    const db = contentDb(env);
+    if (!db) {
+        return json({ error: "Content D1 not bound" }, 503);
+    }
+
+    const url = new URL(request.url);
+    const k = String(url.searchParams.get("k") || "").trim();
+    if (!k || k.length > 256) {
+        return json({ error: "missing or invalid k" }, 400);
+    }
+
+    try {
+        await db.prepare("DELETE FROM app_kv WHERE k = ?").bind(k).run();
+        return json({ ok: true, deleted: k });
+    } catch (e) {
+        console.error("app_kv delete", e);
+        return json({ error: "server error" }, 500);
+    }
+}
+
 function d1ResultRows(rows) {
     if (rows && Array.isArray(rows.results)) return rows.results;
     return [];

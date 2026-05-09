@@ -14,6 +14,9 @@
     };
 
     let usersCache = [];
+    let usersOffset = 0;
+    let usersLimit = 50;
+    let usersTotal = 0;
     let selectedUserId = null;
     let lastUserPayload = null;
     let lastDashboardPayload = null;
@@ -190,6 +193,8 @@
             fillMiniTable("adm-dash-table-content", d.recent_content_audit || [], function (r) {
                 return (
                     "<td>" +
+                    escapeHtml(r.entity_type) +
+                    "</td><td>" +
                     escapeHtml(r.entity_key) +
                     "</td><td>" +
                     escapeHtml(r.action) +
@@ -223,14 +228,19 @@
         if (!host) return;
         host.innerHTML = "";
         (rows || []).forEach(function (row, idx) {
-            host.appendChild(kvRowEl(row.k, row.v, row.meta, idx));
+            host.appendChild(kvRowEl(row.k, row.v, row.meta, idx, row.updated_at));
         });
     }
 
-    function kvRowEl(k, v, meta, idx) {
+    function kvRowEl(k, v, meta, idx, updatedAt) {
         const wrap = document.createElement("div");
         wrap.className = "adm-kv-row";
         wrap.dataset.kvIndex = String(idx);
+
+        const sk = k != null && String(k).trim() ? String(k).trim() : "";
+        if (sk) {
+            wrap.dataset.savedKey = sk;
+        }
 
         const f1 = document.createElement("div");
         f1.className = "adm-field";
@@ -240,6 +250,10 @@
         inpK.className = "adm-kv-k";
         inpK.spellcheck = false;
         inpK.value = k != null ? String(k) : "";
+        if (sk) {
+            inpK.readOnly = true;
+            inpK.title = "Rename: delete old key and add a new row with the new name.";
+        }
         f1.appendChild(inpK);
 
         const f2 = document.createElement("div");
@@ -247,9 +261,26 @@
         f2.innerHTML = "<label>Value (string, often JSON)</label>";
         const ta = document.createElement("textarea");
         ta.className = "adm-kv-v";
-        ta.rows = 3;
+        ta.rows = 4;
         ta.value = v != null ? String(v) : "";
         f2.appendChild(ta);
+
+        const f3 = document.createElement("div");
+        f3.className = "adm-field";
+        f3.innerHTML = "<label>Meta (optional string)</label>";
+        const taMeta = document.createElement("textarea");
+        taMeta.className = "adm-kv-meta";
+        taMeta.rows = 2;
+        taMeta.value = meta != null ? String(meta) : "";
+        f3.appendChild(taMeta);
+
+        if (updatedAt != null) {
+            const hint = document.createElement("p");
+            hint.className = "meta-line";
+            hint.style.marginTop = "4px";
+            hint.textContent = "Server updated_at: " + fmtTime(updatedAt);
+            f1.appendChild(hint);
+        }
 
         const actions = document.createElement("div");
         actions.className = "adm-kv-row-actions";
@@ -260,18 +291,19 @@
         const btnRm = document.createElement("button");
         btnRm.type = "button";
         btnRm.className = "btn ghost btn-sm adm-kv-remove";
-        btnRm.textContent = "Remove row";
+        btnRm.textContent = sk ? "Delete key" : "Discard row";
         actions.appendChild(btnSave);
         actions.appendChild(btnRm);
 
         wrap.appendChild(f1);
         wrap.appendChild(f2);
+        wrap.appendChild(f3);
         wrap.appendChild(actions);
 
-        let metaRef = meta;
         btnSave.addEventListener("click", async function () {
             const kk = inpK.value.trim();
             const vv = ta.value;
+            const metaStr = taMeta.value.trim();
             if (!kk) {
                 setStatus("adm-kv-msg", "Key required.", "err");
                 return;
@@ -284,17 +316,31 @@
                     body: JSON.stringify({
                         k: kk,
                         v: vv,
-                        meta: metaRef == null ? null : String(metaRef),
+                        meta: metaStr ? metaStr : null,
                     }),
                 });
-                metaRef = null;
                 setStatus("adm-kv-msg", "Saved " + kk + ".", "ok");
                 await loadKvUi();
             } catch (e) {
                 setStatus("adm-kv-msg", e.message, "err");
             }
         });
-        btnRm.addEventListener("click", function () {
+        btnRm.addEventListener("click", async function () {
+            const saved = wrap.dataset.savedKey || "";
+            if (saved) {
+                if (!confirm('Delete key "' + saved + '" from the server?')) {
+                    return;
+                }
+                setStatus("adm-kv-msg", "Deleting…", "");
+                try {
+                    await fetchJson(apiAdmin("kv") + "?k=" + encodeURIComponent(saved), { method: "DELETE" });
+                    setStatus("adm-kv-msg", "Deleted " + saved + ".", "ok");
+                    await loadKvUi();
+                } catch (e) {
+                    setStatus("adm-kv-msg", e.message, "err");
+                }
+                return;
+            }
             wrap.remove();
         });
         return wrap;
@@ -384,13 +430,44 @@
         });
     }
 
+    function syncUsersPageControls() {
+        const sel = document.getElementById("adm-users-page-size");
+        if (sel) {
+            const v = parseInt(sel.value, 10);
+            if (v >= 25 && v <= 500) {
+                usersLimit = v;
+            }
+        }
+        const prev = document.getElementById("adm-users-prev");
+        const next = document.getElementById("adm-users-next");
+        if (prev) prev.disabled = usersOffset <= 0;
+        if (next) next.disabled = usersOffset + usersLimit >= usersTotal && usersTotal > 0;
+    }
+
     async function loadUsers() {
         const meta = document.getElementById("admin-users-meta");
         if (meta) meta.textContent = "Loading…";
+        syncUsersPageControls();
         try {
-            const d = await fetchJson(apiAdmin("users") + "?limit=200&offset=0");
+            const d = await fetchJson(
+                apiAdmin("users") + "?limit=" + encodeURIComponent(usersLimit) + "&offset=" + encodeURIComponent(usersOffset),
+            );
             usersCache = d.users || [];
+            usersTotal = typeof d.total === "number" ? d.total : usersCache.length;
+            const pageStart = usersOffset + 1;
+            const pageEnd = usersOffset + usersCache.length;
+            if (meta) {
+                meta.textContent =
+                    "Showing " +
+                    (usersCache.length ? pageStart + "–" + pageEnd : "0") +
+                    " of " +
+                    usersTotal +
+                    " users (offset " +
+                    usersOffset +
+                    ").";
+            }
             renderUsersTable(document.getElementById("adm-user-search") && document.getElementById("adm-user-search").value);
+            syncUsersPageControls();
         } catch (e) {
             if (meta) meta.textContent = "Error: " + e.message;
         }
@@ -411,6 +488,8 @@
             "adm-profile-tz",
             "adm-profile-bio",
             "adm-profile-prefs",
+            "adm-profile-avatar",
+            "adm-profile-social",
         ];
         ids.forEach(function (id) {
             const el = document.getElementById(id);
@@ -420,6 +499,55 @@
             } else {
                 el.value = "";
             }
+        });
+        fillMiniTable("adm-user-table-entitlements", [], function () {
+            return "";
+        });
+        const bc = document.getElementById("adm-user-billing-customers");
+        const bs = document.getElementById("adm-user-billing-subs");
+        if (bc) bc.textContent = "—";
+        if (bs) bs.textContent = "—";
+        fillMiniTable("adm-user-table-sec-audit", [], function () {
+            return "";
+        });
+    }
+
+    function renderUserReadonlyBlocks(d) {
+        const ent = (d && d.entitlements) || [];
+        fillMiniTable("adm-user-table-entitlements", ent, function (r) {
+            return (
+                "<td>" +
+                escapeHtml(r.feature_key) +
+                "</td><td>" +
+                escapeHtml(r.value_json) +
+                "</td><td>" +
+                escapeHtml(r.source) +
+                "</td><td>" +
+                escapeHtml(fmtTime(r.valid_until)) +
+                "</td>"
+            );
+        });
+        const bc = document.getElementById("adm-user-billing-customers");
+        const bs = document.getElementById("adm-user-billing-subs");
+        try {
+            if (bc) bc.textContent = JSON.stringify(d.billing_customers || [], null, 2);
+            if (bs) bs.textContent = JSON.stringify(d.billing_subscriptions || [], null, 2);
+        } catch (e) {
+            if (bc) bc.textContent = "—";
+            if (bs) bs.textContent = "—";
+        }
+        fillMiniTable("adm-user-table-sec-audit", (d && d.security_audit_recent) || [], function (r) {
+            return (
+                "<td>" +
+                escapeHtml(r.action) +
+                "</td><td>" +
+                escapeHtml(r.entity_type) +
+                " / " +
+                escapeHtml(r.entity_id) +
+                "</td><td>" +
+                escapeHtml(fmtTime(r.created_at)) +
+                "</td>"
+            );
         });
     }
 
@@ -441,6 +569,10 @@
         document.getElementById("adm-profile-tz").value = p.timezone || "";
         document.getElementById("adm-profile-bio").value = p.bio || "";
         document.getElementById("adm-profile-prefs").value = p.prefs_json != null ? String(p.prefs_json) : "";
+        document.getElementById("adm-profile-avatar").value = p.avatar_url || "";
+        document.getElementById("adm-profile-social").value = p.social_json != null ? String(p.social_json) : "";
+
+        renderUserReadonlyBlocks(d);
 
         const uj = document.getElementById("adm-users-json");
         if (uj) uj.value = JSON.stringify(d, null, 2);
@@ -480,11 +612,15 @@
         const tz = document.getElementById("adm-profile-tz").value.trim();
         const bio = document.getElementById("adm-profile-bio").value;
         const prefs = document.getElementById("adm-profile-prefs").value.trim();
+        const avatar = document.getElementById("adm-profile-avatar").value.trim();
+        const social = document.getElementById("adm-profile-social").value.trim();
         if (disp) profile.display_name = disp;
         if (loc) profile.locale = loc;
         if (tz) profile.timezone = tz;
         if (bio) profile.bio = bio;
         if (prefs) profile.prefs_json = prefs;
+        if (avatar) profile.avatar_url = avatar;
+        if (social) profile.social_json = social;
         if (Object.keys(profile).length) body.profile = profile;
 
         setStatus(out, "Saving…", "");
@@ -524,7 +660,9 @@
         if (u.plan != null) body.plan = u.plan;
         if (u.status != null) body.status = u.status;
         if (u.metadata !== undefined) body.metadata = u.metadata;
-        if (o.profile && typeof o.profile === "object") body.profile = o.profile;
+        if (o.profile && typeof o.profile === "object") {
+            body.profile = o.profile;
+        }
 
         if (Object.keys(body).length === 0) {
             setStatus(msg, "Nothing to update (need role/plan/status/metadata/profile).", "err");
@@ -687,13 +825,22 @@
     async function loadSystemUi() {
         setStatus("adm-system-msg", "Loading…", "");
         try {
-            const c = await fetchJson(apiAdmin("audits") + "?type=content&limit=120");
-            const s = await fetchJson(apiAdmin("audits") + "?type=security&limit=120");
-            const ct = await fetchJson(apiAdmin("contacts") + "?limit=200");
+            const limEl = document.getElementById("adm-sys-rows-limit");
+            const lim = limEl ? Math.min(500, Math.max(25, parseInt(limEl.value, 10) || 120)) : 120;
+
+            const [dash, c, s, ct] = await Promise.all([
+                fetchJson(apiAdmin("dashboard")),
+                fetchJson(apiAdmin("audits") + "?type=content&limit=" + lim + "&offset=0"),
+                fetchJson(apiAdmin("audits") + "?type=security&limit=" + lim + "&offset=0"),
+                fetchJson(apiAdmin("contacts") + "?limit=" + lim + "&offset=0"),
+            ]);
+            lastDashboardPayload = dash;
 
             fillMiniTable("adm-sys-table-content", c.rows || [], function (r) {
                 return (
                     "<td>" +
+                    escapeHtml(r.entity_type) +
+                    "</td><td>" +
                     escapeHtml(r.entity_key) +
                     "</td><td>" +
                     escapeHtml(r.action) +
@@ -710,6 +857,10 @@
                     escapeHtml(r.user_id) +
                     "</td><td>" +
                     escapeHtml(r.action) +
+                    "</td><td>" +
+                    escapeHtml(r.entity_type) +
+                    " / " +
+                    escapeHtml(r.entity_id) +
                     "</td><td>" +
                     escapeHtml(fmtTime(r.created_at)) +
                     "</td>"
@@ -730,13 +881,16 @@
             });
 
             const combined = {
+                dashboard: dash,
                 content_audit: c.rows,
                 security_audit: s.rows,
                 subscriber_contacts: ct.contacts,
+                limits: { audits_contacts: lim },
+                fetched_at: Math.floor(Date.now() / 1000),
             };
             const sj = document.getElementById("adm-system-json");
             if (sj) sj.value = JSON.stringify(combined, null, 2);
-            setStatus("adm-system-msg", "Updated.", "ok");
+            setStatus("adm-system-msg", "Updated (" + lim + " rows per audit/contact table).", "ok");
         } catch (e) {
             setStatus("adm-system-msg", e.message, "err");
         }
@@ -846,6 +1000,58 @@
         });
         const ujApply = document.getElementById("adm-users-json-apply");
         if (ujApply) ujApply.addEventListener("click", applyUserJson);
+
+        const psz = document.getElementById("adm-users-page-size");
+        if (psz) {
+            usersLimit = Math.min(500, Math.max(25, parseInt(psz.value, 10) || 50));
+        }
+        const up = document.getElementById("adm-users-prev");
+        if (up) {
+            up.addEventListener("click", function () {
+                usersOffset = Math.max(0, usersOffset - usersLimit);
+                loadUsers();
+            });
+        }
+        const un = document.getElementById("adm-users-next");
+        if (un) {
+            un.addEventListener("click", function () {
+                if (usersOffset + usersLimit < usersTotal) {
+                    usersOffset += usersLimit;
+                    loadUsers();
+                }
+            });
+        }
+        if (psz) {
+            psz.addEventListener("change", function () {
+                usersLimit = Math.min(500, Math.max(25, parseInt(this.value, 10) || 50));
+                usersOffset = 0;
+                loadUsers();
+            });
+        }
+        const uex = document.getElementById("adm-users-export-json");
+        if (uex) {
+            uex.addEventListener("click", function () {
+                const payload = {
+                    exported_at: Math.floor(Date.now() / 1000),
+                    offset: usersOffset,
+                    limit: usersLimit,
+                    total: usersTotal,
+                    users: usersCache,
+                };
+                const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(blob);
+                a.download = "dsa-admin-users-page.json";
+                a.click();
+                URL.revokeObjectURL(a.href);
+                setStatus("admin-edit-user-status", "Exported current page JSON.", "ok");
+            });
+        }
+
+        const sysReload = document.getElementById("adm-system-reload");
+        if (sysReload) sysReload.addEventListener("click", loadSystemUi);
+        const sysJsonRefresh = document.getElementById("adm-system-json-refresh");
+        if (sysJsonRefresh) sysJsonRefresh.addEventListener("click", loadSystemUi);
 
         const sysCopy = document.getElementById("adm-system-json-copy");
         if (sysCopy) sysCopy.addEventListener("click", function () {

@@ -307,6 +307,56 @@
         .adm-hidden {
             display: none !important;
         }
+        .adm-content-editor-wrap {
+            margin-bottom: 16px;
+        }
+        .adm-content-editor-wrap .cms-editor {
+            width: 100%;
+            min-height: 280px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 12px;
+            line-height: 1.45;
+        }
+        .adm-inline-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ink-2, #334155);
+            margin-right: 8px;
+        }
+        .adm-select-sm {
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--line);
+            font-size: 13px;
+            background: #fff;
+        }
+        .adm-users-toolbar {
+            gap: 8px;
+            align-items: center;
+        }
+        .adm-details {
+            margin: 12px 0;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.5);
+        }
+        .adm-details summary {
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        .adm-json-snippet {
+            margin: 0;
+            padding: 8px;
+            font-size: 11px;
+            overflow: auto;
+            max-height: 140px;
+            background: rgba(15, 23, 32, 0.04);
+            border-radius: 8px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
         .adm-dashboard {
             position: relative;
             z-index: 1;

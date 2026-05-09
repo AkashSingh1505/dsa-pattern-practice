@@ -8,7 +8,8 @@ export async function onRequestGet(context) {
 
     const url = new URL(request.url);
     const type = (url.searchParams.get("type") || "content").toLowerCase();
-    const limit = Math.min(200, Math.max(1, parseInt(url.searchParams.get("limit") || "50", 10) || 50));
+    const limit = Math.min(500, Math.max(1, parseInt(url.searchParams.get("limit") || "50", 10) || 50));
+    const offset = Math.max(0, parseInt(url.searchParams.get("offset") || "0", 10) || 0);
 
     if (type === "content") {
         const db = contentDb(env);
@@ -19,11 +20,11 @@ export async function onRequestGet(context) {
             const rows = await db
                 .prepare(
                     `SELECT id, entity_type, entity_key, action, actor_ref, revision, created_at
-                     FROM content_audit ORDER BY id DESC LIMIT ?`,
+                     FROM content_audit ORDER BY id DESC LIMIT ? OFFSET ?`,
                 )
-                .bind(limit)
+                .bind(limit, offset)
                 .all();
-            return json({ ok: true, type: "content", rows: d1ResultRows(rows) });
+            return json({ ok: true, type: "content", limit, offset, rows: d1ResultRows(rows) });
         } catch (e) {
             console.error("content audit", e);
             return json({ error: "server error" }, 500);
@@ -39,11 +40,11 @@ export async function onRequestGet(context) {
             const rows = await db
                 .prepare(
                     `SELECT id, user_id, action, entity_type, entity_id, created_at
-                     FROM security_audit ORDER BY id DESC LIMIT ?`,
+                     FROM security_audit ORDER BY id DESC LIMIT ? OFFSET ?`,
                 )
-                .bind(limit)
+                .bind(limit, offset)
                 .all();
-            return json({ ok: true, type: "security", rows: d1ResultRows(rows) });
+            return json({ ok: true, type: "security", limit, offset, rows: d1ResultRows(rows) });
         } catch (e) {
             console.error("security audit", e);
             return json({ error: "server error" }, 500);

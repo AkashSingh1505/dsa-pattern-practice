@@ -33,7 +33,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev" />
     <title>Site admin — DSA Pattern Practice</title>
-    <link rel="stylesheet" href="./auth/portal-shell.css?v=3" />
+    <link rel="stylesheet" href="./auth/portal-shell.css?v=4" />
 </head>
 <body>
     <main class="dsa-portal-page">
@@ -108,7 +108,7 @@
                                     <h4>Content audit</h4>
                                     <div class="adm-mini-table-wrap">
                                         <table class="adm-mini-table" id="adm-dash-table-content">
-                                            <thead><tr><th>Key</th><th>Action</th><th>Rev</th><th>When</th></tr></thead>
+                                            <thead><tr><th>Type</th><th>Key</th><th>Action</th><th>Rev</th><th>When</th></tr></thead>
                                             <tbody></tbody>
                                         </table>
                                     </div>
@@ -142,7 +142,7 @@
                             </div>
                         </div>
                         <div data-adm-panel="site-ui">
-                            <p class="helper" style="margin-top:0">Remote key/value config in <code>app_kv</code>. Values are strings (often JSON). Use for feature flags and copy.</p>
+                            <p class="helper" style="margin-top:0">Remote key/value config in <code>app_kv</code>. Values are strings (often JSON). <b>Save</b> writes one key; <b>Delete key</b> removes it from D1. JSON tab can bulk-apply many rows.</p>
                             <div class="adm-toolbar-row">
                                 <button type="button" class="btn ghost btn-sm" id="adm-kv-add">Add row</button>
                                 <button type="button" class="btn btn-sm" id="adm-kv-reload">Reload from server</button>
@@ -173,9 +173,19 @@
                         <div data-adm-panel="users-ui">
                             <div class="adm-users-layout">
                                 <div>
-                                    <div class="adm-toolbar-row">
+                                    <div class="adm-toolbar-row adm-users-toolbar">
                                         <input type="search" id="adm-user-search" placeholder="Filter by email…" autocomplete="off" />
+                                        <label class="adm-inline-label" for="adm-users-page-size">Page size</label>
+                                        <select id="adm-users-page-size" class="adm-select-sm">
+                                            <option value="25">25</option>
+                                            <option value="50" selected>50</option>
+                                            <option value="100">100</option>
+                                            <option value="200">200</option>
+                                        </select>
+                                        <button type="button" class="btn ghost btn-sm" id="adm-users-prev">Prev</button>
+                                        <button type="button" class="btn ghost btn-sm" id="adm-users-next">Next</button>
                                         <button type="button" class="btn ghost btn-sm" id="adm-users-reload">Reload</button>
+                                        <button type="button" class="btn ghost btn-sm" id="adm-users-export-json">Export page JSON</button>
                                     </div>
                                     <p id="admin-users-meta" class="meta-line"></p>
                                     <div class="admin-table-wrap">
@@ -258,6 +268,49 @@
                                         <label for="adm-profile-prefs">Profile prefs (JSON string)</label>
                                         <textarea id="adm-profile-prefs" rows="3" placeholder="user_profiles.prefs_json"></textarea>
                                     </div>
+                                    <div class="adm-form-grid cols-2" style="margin-top:12px">
+                                        <div class="adm-field">
+                                            <label for="adm-profile-avatar">Avatar URL</label>
+                                            <input id="adm-profile-avatar" type="url" placeholder="https://…" />
+                                        </div>
+                                        <div class="adm-field">
+                                            <label for="adm-profile-social">Social links (JSON string)</label>
+                                            <textarea id="adm-profile-social" rows="2" placeholder="user_profiles.social_json"></textarea>
+                                        </div>
+                                    </div>
+                                    <details class="adm-details" id="adm-user-readonly-details">
+                                        <summary>Entitlements, billing &amp; recent security (read-only)</summary>
+                                        <div class="adm-readonly-blocks">
+                                            <div class="adm-subcard" style="margin-top:10px">
+                                                <h5>Entitlements</h5>
+                                                <div class="adm-mini-table-wrap" style="max-height:160px">
+                                                    <table class="adm-mini-table" id="adm-user-table-entitlements">
+                                                        <thead><tr><th>Feature</th><th>Value</th><th>Source</th><th>Until</th></tr></thead>
+                                                        <tbody></tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                            <div class="adm-two-col" style="margin-top:10px">
+                                                <div class="adm-subcard">
+                                                    <h5>Billing customers</h5>
+                                                    <pre class="adm-json-snippet" id="adm-user-billing-customers"></pre>
+                                                </div>
+                                                <div class="adm-subcard">
+                                                    <h5>Subscriptions</h5>
+                                                    <pre class="adm-json-snippet" id="adm-user-billing-subs"></pre>
+                                                </div>
+                                            </div>
+                                            <div class="adm-subcard" style="margin-top:10px">
+                                                <h5>Recent security audit (this user)</h5>
+                                                <div class="adm-mini-table-wrap" style="max-height:140px">
+                                                    <table class="adm-mini-table" id="adm-user-table-sec-audit">
+                                                        <thead><tr><th>Action</th><th>Entity</th><th>When</th></tr></thead>
+                                                        <tbody></tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </details>
                                     <button type="button" class="btn" id="admin-save-user-patch">Save user</button>
                                     <p id="admin-edit-user-status" class="status"></p>
                                 </div>
@@ -274,7 +327,7 @@
                         </div>
                     </div>
 
-                    <!-- Content / graph -->
+                    <!-- Content / graph — shared editor visible in both UI and JSON modes -->
                     <div class="adm-pane adm-hidden" data-admin-pane="content">
                         <div class="adm-pane-head">
                             <h3>Content — mind map</h3>
@@ -282,6 +335,10 @@
                                 <button type="button" class="active" data-adm-dual="content" data-adm-mode="ui">UI</button>
                                 <button type="button" data-adm-dual="content" data-adm-mode="json">JSON</button>
                             </div>
+                        </div>
+                        <div class="adm-content-editor-wrap">
+                            <label for="cms-editor" class="adm-inline-label">Mind map JSON (array) — edits here apply to draft / publish in both modes</label>
+                            <textarea id="cms-editor" class="cms-editor adm-json-input" spellcheck="false" rows="18" aria-label="Mind map JSON"></textarea>
                         </div>
                         <div data-adm-panel="content-ui">
                             <div class="cms-toolbar">
@@ -299,8 +356,7 @@
                             </div>
                         </div>
                         <div data-adm-panel="content-json" class="adm-hidden">
-                            <p class="helper" style="margin-top:0">Raw graph JSON (same as editor). Validate before save.</p>
-                            <textarea id="cms-editor" class="cms-editor adm-json-input" spellcheck="false"></textarea>
+                            <p class="helper" style="margin-top:0">Use <b>Format JSON</b> before save. Same editor as above; this tab focuses on raw editing tools.</p>
                             <div class="cms-actions" style="margin-top:10px">
                                 <button id="cms-json-format" type="button" class="btn ghost">Format JSON</button>
                                 <button id="cms-json-save-draft" type="button" class="btn ghost">Save draft</button>
@@ -320,12 +376,22 @@
                             </div>
                         </div>
                         <div data-adm-panel="system-ui">
+                            <div class="adm-toolbar-row" style="margin-bottom:12px;flex-wrap:wrap">
+                                <label class="adm-inline-label" for="adm-sys-rows-limit">Rows per table</label>
+                                <select id="adm-sys-rows-limit" class="adm-select-sm">
+                                    <option value="50">50</option>
+                                    <option value="120" selected>120</option>
+                                    <option value="250">250</option>
+                                    <option value="500">500</option>
+                                </select>
+                                <button type="button" class="btn btn-sm" id="adm-system-reload">Reload system data</button>
+                            </div>
                             <div class="adm-two-col">
                                 <div class="adm-subcard">
                                     <h4>Content audit</h4>
                                     <div class="adm-mini-table-wrap" style="max-height:280px">
                                         <table class="adm-mini-table" id="adm-sys-table-content">
-                                            <thead><tr><th>Key</th><th>Action</th><th>Rev</th><th>When</th></tr></thead>
+                                            <thead><tr><th>Type</th><th>Key</th><th>Action</th><th>Rev</th><th>When</th></tr></thead>
                                             <tbody></tbody>
                                         </table>
                                     </div>
@@ -334,7 +400,7 @@
                                     <h4>Security audit</h4>
                                     <div class="adm-mini-table-wrap" style="max-height:280px">
                                         <table class="adm-mini-table" id="adm-sys-table-security">
-                                            <thead><tr><th>User</th><th>Action</th><th>When</th></tr></thead>
+                                            <thead><tr><th>User</th><th>Action</th><th>Entity</th><th>When</th></tr></thead>
                                             <tbody></tbody>
                                         </table>
                                     </div>
@@ -352,9 +418,12 @@
                             <p id="adm-system-msg" class="status"></p>
                         </div>
                         <div data-adm-panel="system-json" class="adm-hidden">
-                            <p class="helper" style="margin-top:0">Combined export (read-only reference).</p>
+                            <p class="helper" style="margin-top:0">Combined export: audits, contacts, plus <b>dashboard</b> snapshot. Read-only — use Reload on UI tab or open System to refresh.</p>
                             <textarea id="adm-system-json" class="adm-json-input" spellcheck="false" readonly></textarea>
-                            <button type="button" class="btn ghost btn-sm" id="adm-system-json-copy">Copy</button>
+                            <div class="adm-toolbar-row">
+                                <button type="button" class="btn ghost btn-sm" id="adm-system-json-copy">Copy JSON</button>
+                                <button type="button" class="btn ghost btn-sm" id="adm-system-json-refresh">Refresh export</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -363,7 +432,7 @@
         </div>
     </main>
     <script src="./auth/dsa-admin-auth.js?v=5"></script>
-    <script src="./auth/account-admin-panel.js?v=5"></script>
+    <script src="./auth/account-admin-panel.js?v=6"></script>
     <script src="./auth/admin-site-page.js?v=3"></script>
 </body>
 </html>

@@ -7920,12 +7920,13 @@ function syncNavbarAuthUi() {
     const practice = typeof dsaIsPracticeUser === "function" && dsaIsPracticeUser();
     if (link) {
         link.removeAttribute("title");
+        link.setAttribute("href", rsa ? "#admin" : "#sign-in");
         if (rsa && practice) {
             link.textContent = "Account";
             link.setAttribute("aria-label", "Account — site admin and practice user signed in");
         } else if (rsa) {
-            link.textContent = "CMS";
-            link.setAttribute("aria-label", "Open account (site admin signed in)");
+            link.textContent = "Admin";
+            link.setAttribute("aria-label", "Open admin dashboard (site admin signed in)");
         } else if (practice) {
             link.textContent = "Account";
             link.setAttribute("aria-label", "Open account (practice user signed in)");
@@ -7942,7 +7943,7 @@ function syncNavbarAuthUi() {
 function wireNavbarAdmin() {
     const link = document.getElementById("nav-admin-entry");
     if (link) {
-        link.href = new URL("account.html", window.location.href).href.split("#")[0];
+        link.setAttribute("href", "#sign-in");
     }
     const signOut = document.getElementById("nav-admin-signout");
     if (signOut && signOut.dataset.wired !== "1") {
@@ -7953,6 +7954,10 @@ function wireNavbarAdmin() {
             }
             if (typeof dsaPracticeUserSignOut === "function") {
                 dsaPracticeUserSignOut();
+            }
+            window.location.hash = "#app";
+            if (typeof dsaApplyShellRoute === "function") {
+                dsaApplyShellRoute();
             }
             if (document.getElementById("dsa-hierarchy-root") && typeof loadDsaPatternsPage === "function") {
                 loadDsaPatternsPage();
@@ -8172,6 +8177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadProjectDetails();
     } else if (
         window.location.pathname.includes("account.html") ||
+        window.location.pathname.includes("login-signup.html") ||
         window.location.pathname.includes("admin.html") ||
         /\/(account|admin)\/?$/.test(window.location.pathname || "")
     ) {

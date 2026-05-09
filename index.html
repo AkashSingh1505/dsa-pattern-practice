@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./styles.css?v=11">
     <link rel="stylesheet" href="./dsa-index-shell.css?v=11">
+    <link rel="stylesheet" href="./auth/portal-shell.css?v=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 </head>
 <body class="dsa-page dsa-index-ref">
@@ -18,13 +19,13 @@
     <!-- Top Nav: brand | centered DSA + CMS | right: Login + Sign out -->
     <header class="nav">
         <div class="nav-inner">
-            <a href="./index.html" class="brand dsa-app-title">
+            <a href="#app" class="brand dsa-app-title">
                 <span class="brand-mark">D</span>
                 DSA Pattern Practice
             </a>
             <nav class="nav-links" aria-label="Site sections">
-                <a href="./index.html" class="active" aria-current="page">DSA Patterns</a>
-                <a href="./account.html#cms">CMS</a>
+                <a href="#app" class="active" aria-current="page" id="nav-link-app">DSA Patterns</a>
+                <a href="#admin" id="nav-link-admin">Admin</a>
             </nav>
             <div class="nav-auth">
                 <a id="nav-admin-entry" class="nav-admin-entry" href="#">Login</a>
@@ -33,7 +34,7 @@
         </div>
     </header>
 
-    <main class="page">
+    <main id="dsa-route-app" class="page">
 
         <!-- Header -->
         <section class="head">
@@ -85,6 +86,398 @@
         </div>
     </footer>
 
+    <div id="dsa-route-portal" class="dsa-portal-page" hidden>
+        <div class="shell">
+        <button type="button" class="account-nav-back" id="dsa-portal-back-app">← Back to map</button>
+        <header class="head">
+            <div class="eyebrow">DSA Pattern Practice</div>
+            <h1>Account</h1>
+            <p class="lede"><b>Practice account</b> — sign in or register to track progress across devices. Same public graph for everyone.</p>
+        </header>
+
+        <nav class="seg" role="tablist" aria-label="Account sections">
+            <button id="portal-tab-practice" class="active" type="button">Practice</button>
+            <button id="portal-tab-cms" type="button">Admin &amp; CMS</button>
+        </nav>
+
+        <section id="portal-panel-practice" class="card">
+            <div id="portal-practice-signedin" hidden>
+                <p class="meta-line">Signed in as <strong id="portal-practice-email"></strong></p>
+                <p class="meta-line">Plan: <span id="portal-practice-plan"></span> · Role: <span id="portal-practice-role"></span></p>
+                <button class="btn ghost" type="button" id="portal-practice-signout">Sign out practice account</button>
+            </div>
+
+            <div id="portal-practice-forms">
+                <div class="card-head">
+                    <div class="card-title" id="title">Welcome back</div>
+                    <span class="toggle-link" id="switcher">New here? <b>Create</b></span>
+                </div>
+
+                <div class="steps">
+                    <span class="on"></span>
+                    <span id="s2"></span>
+                </div>
+
+                <p class="helper" id="helper">Enter your email to continue. We'll guide you step by step.</p>
+
+                <form id="practice-step-form">
+                    <div class="field">
+                        <input id="practice-email" type="email" placeholder=" " required autocomplete="email" />
+                        <label for="practice-email">Email address</label>
+                        <button type="submit" class="icon" aria-label="Continue">→</button>
+                    </div>
+
+                    <div class="field" id="passField" style="display:none">
+                        <input id="practice-password" type="password" placeholder=" " minlength="8" autocomplete="current-password" />
+                        <label for="practice-password">Password</label>
+                        <button type="button" class="icon" id="passToggle" aria-label="Toggle visibility">•••</button>
+                    </div>
+
+                    <div class="row" id="rowExtras" style="display:none">
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+                            <input type="checkbox" style="accent-color:#0f1720" /> Remember me
+                        </label>
+                        <a href="#" aria-disabled="true">Forgot password?</a>
+                    </div>
+
+                    <button class="cta" id="cta" type="submit">Continue</button>
+                </form>
+                <p id="portal-practice-msg" class="status" aria-live="polite"></p>
+                <div class="or">or continue with</div>
+                <div class="alt">
+                    <button type="button" id="oauth-google-btn" aria-disabled="true">
+                        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.6c-.2 1.3-1 2.4-2.1 3.1v2.6h3.4c2-1.8 3.1-4.5 3.1-7.5z"/><path fill="#34A853" d="M12 22c2.8 0 5.2-.9 6.9-2.5l-3.4-2.6c-.9.6-2.1 1-3.5 1-2.7 0-5-1.8-5.8-4.3H2.7v2.7C4.4 19.7 8 22 12 22z"/><path fill="#FBBC05" d="M6.2 13.6c-.2-.6-.3-1.2-.3-1.6s.1-1 .3-1.6V7.7H2.7C2 9 1.6 10.5 1.6 12s.4 3 1.1 4.3l3.5-2.7z"/><path fill="#EA4335" d="M12 5.4c1.5 0 2.9.5 3.9 1.5l3-3C17.1 2.2 14.7 1.2 12 1.2 8 1.2 4.4 3.5 2.7 7l3.5 2.7C7 7.2 9.3 5.4 12 5.4z"/></svg>
+                        Google
+                    </button>
+                    <button type="button" id="oauth-apple-btn" aria-disabled="true">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.6c0-2.4 2-3.5 2.1-3.6-1.1-1.6-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.9-1.6 0-3.2.9-4 2.4-1.7 3-.4 7.4 1.2 9.8.8 1.2 1.8 2.5 3.1 2.5 1.2 0 1.7-.8 3.2-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.3-2.8-.1 0-2.7-1-2.7-4zM14 4.8c.7-.8 1.1-1.9 1-3-.9.1-2.1.6-2.7 1.4-.6.7-1.2 1.8-1 2.9 1 .1 2-.5 2.7-1.3z"/></svg>
+                        Apple
+                    </button>
+                </div>
+                <p class="foot">By continuing you agree to our <a href="#" aria-disabled="true">Terms</a> and <a href="#" aria-disabled="true">Privacy</a>.</p>
+                <svg class="sparkle" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8z"/></svg>
+            </div>
+        </section>
+
+        <section id="portal-panel-cms" class="card">
+            <p id="cms-config-warn" class="status err" hidden></p>
+
+            <section id="cms-auth-panel" hidden>
+                <h2 class="card-title">Site admin sign in</h2>
+                <div class="cms-tabs">
+                    <button type="button" id="cms-tab-password" class="active">Password</button>
+                    <button type="button" id="cms-tab-totp">Authenticator</button>
+                </div>
+
+                <div id="cms-auth-pane-password">
+                    <form id="cms-form-password" class="cms-form" method="POST" autocomplete="on">
+                        <input type="password" name="password" placeholder="Site password" required />
+                        <input type="hidden" name="return" id="cms-return-password" value="" />
+                        <button class="btn" type="submit">Continue</button>
+                    </form>
+                </div>
+                <div id="cms-auth-pane-totp" hidden>
+                    <form id="cms-form-totp" class="cms-form" method="POST">
+                        <input type="text" name="code" inputmode="numeric" pattern="[0-9]*" maxlength="12" placeholder="6-digit code" required />
+                        <input type="hidden" name="return" id="cms-return-totp" value="" />
+                        <button class="btn" type="submit">Continue</button>
+                    </form>
+                </div>
+            </section>
+
+            <section id="cms-editor-section" hidden>
+                <div class="adm-dashboard">
+                    <div class="adm-topbar">
+                        <div>
+                            <h2>Admin dashboard</h2>
+                            <p>Manage site config, practice accounts, published graph, and audit data. Every section supports a visual editor and a raw JSON view.</p>
+                        </div>
+                        <div class="adm-topbar-actions">
+                            <span class="adm-badge" id="adm-session-badge">RSA session</span>
+                            <button type="button" class="btn ghost btn-inline" id="adm-refresh-all">Refresh</button>
+                        </div>
+                    </div>
+
+                    <nav class="adm-nav-main" role="tablist" aria-label="Admin dashboard">
+                        <button type="button" class="active" data-admin-tab="dashboard">Dashboard</button>
+                        <button type="button" data-admin-tab="site">Site settings</button>
+                        <button type="button" data-admin-tab="users">Users</button>
+                        <button type="button" data-admin-tab="content">Content</button>
+                        <button type="button" data-admin-tab="system">System</button>
+                    </nav>
+
+                    <!-- Dashboard -->
+                    <div class="adm-pane" data-admin-pane="dashboard">
+                        <div class="adm-pane-head">
+                            <h3>Overview</h3>
+                            <div class="adm-seg" data-adm-dual-wrap="dashboard">
+                                <button type="button" class="active" data-adm-dual="dashboard" data-adm-mode="ui">UI</button>
+                                <button type="button" data-adm-dual="dashboard" data-adm-mode="json">JSON</button>
+                            </div>
+                        </div>
+                        <div data-adm-panel="dashboard-ui">
+                            <div class="adm-stats-grid" id="adm-dash-stats"></div>
+                            <div class="adm-two-col">
+                                <div class="adm-subcard">
+                                    <h4>Content audit</h4>
+                                    <div class="adm-mini-table-wrap">
+                                        <table class="adm-mini-table" id="adm-dash-table-content">
+                                            <thead><tr><th>Key</th><th>Action</th><th>Rev</th><th>When</th></tr></thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="adm-subcard">
+                                    <h4>Security audit</h4>
+                                    <div class="adm-mini-table-wrap">
+                                        <table class="adm-mini-table" id="adm-dash-table-security">
+                                            <thead><tr><th>User</th><th>Action</th><th>When</th></tr></thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <p id="adm-dash-msg" class="status" aria-live="polite"></p>
+                        </div>
+                        <div data-adm-panel="dashboard-json" class="adm-hidden">
+                            <p class="helper" style="margin-top:0">Full <code>GET /api/admin/dashboard</code> payload. Read-only reference — copy to inspect.</p>
+                            <textarea id="adm-dash-json" class="adm-json-input" spellcheck="false" readonly></textarea>
+                            <button type="button" class="btn ghost btn-inline" id="adm-dash-json-copy">Copy JSON</button>
+                        </div>
+                    </div>
+
+                    <!-- Site settings (app_kv) -->
+                    <div class="adm-pane adm-hidden" data-admin-pane="site">
+                        <div class="adm-pane-head">
+                            <h3>Site settings</h3>
+                            <div class="adm-seg" data-adm-dual-wrap="site">
+                                <button type="button" class="active" data-adm-dual="site" data-adm-mode="ui">UI</button>
+                                <button type="button" data-adm-dual="site" data-adm-mode="json">JSON</button>
+                            </div>
+                        </div>
+                        <div data-adm-panel="site-ui">
+                            <p class="helper" style="margin-top:0">Remote key/value config in <code>app_kv</code>. Values are strings (often JSON). Use for feature flags and copy.</p>
+                            <div class="adm-toolbar-row">
+                                <button type="button" class="btn ghost btn-sm" id="adm-kv-add">Add row</button>
+                                <button type="button" class="btn btn-sm" id="adm-kv-reload">Reload from server</button>
+                            </div>
+                            <div id="adm-kv-list"></div>
+                            <p id="adm-kv-msg" class="status" aria-live="polite"></p>
+                        </div>
+                        <div data-adm-panel="site-json" class="adm-hidden">
+                            <p class="helper" style="margin-top:0">Array of <code>{ "k", "v", "meta" }</code>. Apply runs PUT per row.</p>
+                            <textarea id="adm-site-json" class="adm-json-input" spellcheck="false"></textarea>
+                            <div class="adm-toolbar-row">
+                                <button type="button" class="btn ghost btn-sm" id="adm-site-json-load">Load from server</button>
+                                <button type="button" class="btn btn-sm" id="adm-site-json-apply">Apply JSON</button>
+                            </div>
+                            <p id="adm-site-json-msg" class="status" aria-live="polite"></p>
+                        </div>
+                    </div>
+
+                    <!-- Users -->
+                    <div class="adm-pane adm-hidden" data-admin-pane="users">
+                        <div class="adm-pane-head">
+                            <h3>User settings</h3>
+                            <div class="adm-seg" data-adm-dual-wrap="users">
+                                <button type="button" class="active" data-adm-dual="users" data-adm-mode="ui">UI</button>
+                                <button type="button" data-adm-dual="users" data-adm-mode="json">JSON</button>
+                            </div>
+                        </div>
+                        <div data-adm-panel="users-ui">
+                            <div class="adm-users-layout">
+                                <div>
+                                    <div class="adm-toolbar-row">
+                                        <input type="search" id="adm-user-search" placeholder="Filter by email…" autocomplete="off" />
+                                        <button type="button" class="btn ghost btn-sm" id="adm-users-reload">Reload</button>
+                                    </div>
+                                    <p id="admin-users-meta" class="meta-line"></p>
+                                    <div class="admin-table-wrap">
+                                        <table class="admin-table" id="admin-users-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Email</th>
+                                                    <th>Role</th>
+                                                    <th>Plan</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="adm-subcard" id="adm-user-editor-card">
+                                    <h4 style="margin-bottom:12px">Selected user</h4>
+                                    <div class="adm-form-grid">
+                                        <div class="adm-field">
+                                            <label for="adm-user-id">User ID</label>
+                                            <input id="adm-user-id" type="text" readonly placeholder="Select a row" />
+                                        </div>
+                                        <div class="adm-field">
+                                            <label for="adm-user-email">Email</label>
+                                            <input id="adm-user-email" type="text" readonly />
+                                        </div>
+                                    </div>
+                                    <div class="adm-form-grid cols-2" style="margin-top:12px">
+                                        <div class="adm-field">
+                                            <label for="admin-edit-role">Role</label>
+                                            <select id="admin-edit-role">
+                                                <option value="user">user</option>
+                                                <option value="subscriber">subscriber</option>
+                                                <option value="admin">admin</option>
+                                            </select>
+                                        </div>
+                                        <div class="adm-field">
+                                            <label for="admin-edit-plan">Plan</label>
+                                            <select id="admin-edit-plan">
+                                                <option value="free">free</option>
+                                                <option value="pro">pro</option>
+                                                <option value="team">team</option>
+                                                <option value="lifetime">lifetime</option>
+                                            </select>
+                                        </div>
+                                        <div class="adm-field">
+                                            <label for="admin-edit-status">Status</label>
+                                            <select id="admin-edit-status">
+                                                <option value="active">active</option>
+                                                <option value="suspended">suspended</option>
+                                                <option value="deleted">deleted</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="adm-field" style="margin-top:12px">
+                                        <label for="adm-user-metadata">Account metadata (JSON text)</label>
+                                        <textarea id="adm-user-metadata" placeholder='Optional JSON string in practice_users.metadata'></textarea>
+                                    </div>
+                                    <div class="adm-form-grid cols-2" style="margin-top:12px">
+                                        <div class="adm-field">
+                                            <label for="adm-profile-display">Display name</label>
+                                            <input id="adm-profile-display" type="text" />
+                                        </div>
+                                        <div class="adm-field">
+                                            <label for="adm-profile-locale">Locale</label>
+                                            <input id="adm-profile-locale" type="text" placeholder="e.g. en-US" />
+                                        </div>
+                                        <div class="adm-field">
+                                            <label for="adm-profile-tz">Timezone</label>
+                                            <input id="adm-profile-tz" type="text" placeholder="e.g. Asia/Kolkata" />
+                                        </div>
+                                    </div>
+                                    <div class="adm-field" style="margin-top:12px">
+                                        <label for="adm-profile-bio">Bio</label>
+                                        <textarea id="adm-profile-bio" rows="2"></textarea>
+                                    </div>
+                                    <div class="adm-field">
+                                        <label for="adm-profile-prefs">Profile prefs (JSON string)</label>
+                                        <textarea id="adm-profile-prefs" rows="3" placeholder="user_profiles.prefs_json"></textarea>
+                                    </div>
+                                    <button type="button" class="btn" id="admin-save-user-patch">Save user</button>
+                                    <p id="admin-edit-user-status" class="status"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div data-adm-panel="users-json" class="adm-hidden">
+                            <p class="helper" style="margin-top:0">Same shape as <code>GET /api/admin/user?id=</code>. Edit and apply — sends PATCH with <code>user</code> fields and optional <code>profile</code>.</p>
+                            <textarea id="adm-users-json" class="adm-json-input" spellcheck="false"></textarea>
+                            <div class="adm-toolbar-row">
+                                <button type="button" class="btn ghost btn-sm" id="adm-users-json-load">Load selected user</button>
+                                <button type="button" class="btn btn-sm" id="adm-users-json-apply">Apply JSON</button>
+                            </div>
+                            <p id="adm-users-json-msg" class="status" aria-live="polite"></p>
+                        </div>
+                    </div>
+
+                    <!-- Content / graph -->
+                    <div class="adm-pane adm-hidden" data-admin-pane="content">
+                        <div class="adm-pane-head">
+                            <h3>Content — mind map</h3>
+                            <div class="adm-seg" data-adm-dual-wrap="content">
+                                <button type="button" class="active" data-adm-dual="content" data-adm-mode="ui">UI</button>
+                                <button type="button" data-adm-dual="content" data-adm-mode="json">JSON</button>
+                            </div>
+                        </div>
+                        <div data-adm-panel="content-ui">
+                            <div class="cms-toolbar">
+                                <label for="cms-key">Dataset</label>
+                                <select id="cms-key">
+                                    <option value="dsa">dsa (mind map JSON)</option>
+                                </select>
+                            </div>
+                            <div class="adm-content-summary" id="adm-content-summary"></div>
+                            <div class="cms-actions">
+                                <button id="cms-load" class="btn ghost" type="button">Reload from server</button>
+                                <button id="cms-save-draft" class="btn ghost" type="button">Save draft</button>
+                                <button id="cms-publish" class="btn" type="button">Publish live</button>
+                                <button id="cms-discard-draft" class="btn ghost" type="button">Discard draft</button>
+                            </div>
+                        </div>
+                        <div data-adm-panel="content-json" class="adm-hidden">
+                            <p class="helper" style="margin-top:0">Raw graph JSON (same as editor). Validate before save.</p>
+                            <textarea id="cms-editor" class="cms-editor adm-json-input" spellcheck="false"></textarea>
+                            <div class="cms-actions" style="margin-top:10px">
+                                <button id="cms-json-format" type="button" class="btn ghost">Format JSON</button>
+                                <button id="cms-json-save-draft" type="button" class="btn ghost">Save draft</button>
+                                <button id="cms-json-publish" type="button" class="btn">Publish live</button>
+                            </div>
+                        </div>
+                        <p id="cms-status" class="status" style="margin-top:12px"></p>
+                    </div>
+
+                    <!-- System -->
+                    <div class="adm-pane adm-hidden" data-admin-pane="system">
+                        <div class="adm-pane-head">
+                            <h3>System</h3>
+                            <div class="adm-seg" data-adm-dual-wrap="system">
+                                <button type="button" class="active" data-adm-dual="system" data-adm-mode="ui">UI</button>
+                                <button type="button" data-adm-dual="system" data-adm-mode="json">JSON</button>
+                            </div>
+                        </div>
+                        <div data-adm-panel="system-ui">
+                            <div class="adm-two-col">
+                                <div class="adm-subcard">
+                                    <h4>Content audit</h4>
+                                    <div class="adm-mini-table-wrap" style="max-height:280px">
+                                        <table class="adm-mini-table" id="adm-sys-table-content">
+                                            <thead><tr><th>Key</th><th>Action</th><th>Rev</th><th>When</th></tr></thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="adm-subcard">
+                                    <h4>Security audit</h4>
+                                    <div class="adm-mini-table-wrap" style="max-height:280px">
+                                        <table class="adm-mini-table" id="adm-sys-table-security">
+                                            <thead><tr><th>User</th><th>Action</th><th>When</th></tr></thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="adm-subcard" style="margin-top:12px">
+                                <h4>Marketing contacts</h4>
+                                <div class="adm-mini-table-wrap" style="max-height:220px">
+                                    <table class="adm-mini-table" id="adm-sys-table-contacts">
+                                        <thead><tr><th>Email</th><th>User</th><th>Marketing</th><th>Created</th></tr></thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <p id="adm-system-msg" class="status"></p>
+                        </div>
+                        <div data-adm-panel="system-json" class="adm-hidden">
+                            <p class="helper" style="margin-top:0">Combined export (read-only reference).</p>
+                            <textarea id="adm-system-json" class="adm-json-input" spellcheck="false" readonly></textarea>
+                            <button type="button" class="btn ghost btn-sm" id="adm-system-json-copy">Copy</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </div>
+
+    </div>
+
     <script src="./auth/dsa-admin-auth.js?v=3"></script>
     <script src="./auth/dsa-user-auth.js?v=2"></script>
     <script src="./cms-bootstrap.js?v=3"></script>
@@ -98,6 +491,21 @@
                 "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/";
         }
     </script>
-    <script src="./script.js?v=15"></script>
+    <script src="./auth/account-admin-panel.js?v=3"></script>
+    <script src="./auth/portal-practice.js?v=1"></script>
+    <script src="./auth/dsa-shell-route.js?v=1"></script>
+    <script src="./script.js?v=16"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            if (typeof dsaInitPortalPractice === "function") {
+                dsaInitPortalPractice();
+            }
+            requestAnimationFrame(function () {
+                if (typeof dsaApplyShellRoute === "function") {
+                    dsaApplyShellRoute();
+                }
+            });
+        });
+    </script>
 </body>
 </html>

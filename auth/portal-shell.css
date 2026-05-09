@@ -33,6 +33,12 @@
             -webkit-font-smoothing: antialiased;
             box-sizing: border-box;
         }
+        /* Standalone admin.html — use nearly full viewport width */
+        .dsa-portal-page--admin {
+            align-items: stretch;
+            justify-content: flex-start;
+            padding: 12px 14px 40px;
+        }
         .shell {
             width: 100%;
             max-width:460px;
@@ -316,9 +322,17 @@
         .cms-toolbar select { padding: 10px; height: 44px; }
         .cms-editor { min-height: 260px; padding: 12px; resize: vertical; }
         .shell.shell--admin {
-            max-width: 1120px;
-            align-self: flex-start;
-            margin-top: 8px;
+            width: 100%;
+            max-width: min(1760px, calc(100vw - 28px));
+            align-self: center;
+            margin-top: 4px;
+            font-size: 15px;
+        }
+        .shell.shell--admin .adm-dashboard {
+            font-size: inherit;
+        }
+        .shell.shell--admin .adm-topbar h2 {
+            font-size: 1.55rem;
         }
         .adm-hidden {
             display: none !important;
@@ -341,7 +355,7 @@
             line-height: 1.45;
         }
         .adm-graph-preview.graph-card .graph-stage {
-            min-height: 420px;
+            min-height: min(72vh, 820px);
         }
         .adm-content-graph-wrap {
             margin: 16px 0 20px;
@@ -355,8 +369,13 @@
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            gap: 12px 16px;
+            gap: 12px 18px;
             margin: 0 !important;
+            padding: 12px 16px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 249, 246, 0.96) 100%);
+            box-shadow: 0 10px 28px rgba(15, 23, 32, 0.07);
         }
         .adm-graph-toolbar-extras {
             display: inline-flex;
@@ -367,19 +386,29 @@
             max-width: 100%;
         }
         .adm-graph-toolbar-map-host {
-            flex: 1 1 260px;
+            flex: 1 1 280px;
             min-width: 0;
         }
         /* Admin preview: no inline hint — expand/collapse left, zoom right, single row */
         .adm-graph-toolbar-map-host .dsa-graph-map-toolbar {
             flex-wrap: nowrap;
             align-items: center;
+            justify-content: flex-start;
+            gap: 10px 14px;
         }
         .adm-graph-toolbar-map-host .dsa-graph-map-toolbar-cluster {
             flex-shrink: 0;
+            display: inline-flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            align-items: center;
         }
         .adm-graph-toolbar-map-host .dsa-graph-map-toolbar-cluster--zoom {
             margin-left: auto;
+        }
+        .adm-graph-toolbar-map-host .dsa-graph-expand-btn {
+            flex: 0 0 auto;
+            white-space: nowrap;
         }
         @media (max-width: 520px) {
             .adm-graph-toolbar-map-host .dsa-graph-map-toolbar {
@@ -721,6 +750,12 @@
         .adm-form-grid.cols-2 {
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
         }
+        .adm-form-grid.cols-2 .adm-field--span-2 {
+            grid-column: 1 / -1;
+        }
+        .dsa-portal-page--admin .adm-form-grid.cols-2 {
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        }
         .adm-field label {
             display: block;
             font-size: 11px;
@@ -752,6 +787,68 @@
         .adm-field input:read-only {
             opacity: 0.85;
             background: rgba(15, 23, 32, 0.04);
+        }
+        .adm-field code {
+            font-size: 0.92em;
+        }
+        .adm-field-hint {
+            margin: 6px 0 0;
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.45;
+        }
+        .adm-user-editor-title {
+            margin: 0 0 14px;
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+        .adm-user-form-section {
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 1px solid var(--line);
+        }
+        .adm-user-form-section:first-of-type {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+        }
+        .adm-user-form-heading {
+            margin: 0 0 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: var(--muted);
+        }
+        .adm-textarea-code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+        .adm-textarea-prose {
+            font-family: inherit;
+            font-size: 15px;
+            line-height: 1.5;
+            min-height: 96px;
+        }
+        .adm-textarea-tall {
+            min-height: 132px;
+        }
+        .dsa-portal-page--admin .adm-field input,
+        .dsa-portal-page--admin .adm-field select,
+        .dsa-portal-page--admin .adm-field textarea {
+            padding: 12px 14px;
+            font-size: 15px;
+        }
+        .dsa-portal-page--admin .adm-field textarea.adm-textarea-code {
+            font-size: 13px;
+        }
+        .adm-user-save-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            margin-top: 18px;
         }
         .adm-toolbar-row {
             display: flex;
@@ -786,6 +883,9 @@
             border: 1px solid var(--line);
             border-radius: 14px;
             background: rgba(255, 255, 255, 0.35);
+        }
+        .dsa-portal-page--admin .admin-table-wrap {
+            max-height: min(62vh, 640px);
         }
         table.admin-table {
             width: 100%;

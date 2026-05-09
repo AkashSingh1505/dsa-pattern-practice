@@ -33,15 +33,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev" />
     <title>Site admin — DSA Pattern Practice</title>
-    <link rel="stylesheet" href="./auth/portal-shell.css?v=11" />
+    <link rel="stylesheet" href="./auth/portal-shell.css?v=12" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css?v=13" />
-    <link rel="stylesheet" href="./dsa-index-shell.css?v=13" />
+    <link rel="stylesheet" href="./dsa-index-shell.css?v=14" />
 </head>
 <body>
-    <main class="dsa-portal-page">
+    <main class="dsa-portal-page dsa-portal-page--admin">
         <div class="shell">
             <header id="admin-session-bar" class="admin-session-bar">
                 <div class="admin-session-bar-inner">
@@ -302,80 +302,113 @@
                                     </div>
                                 </div>
                                 <div class="adm-subcard" id="adm-user-editor-card">
-                                    <h4 style="margin-bottom:12px">Selected user</h4>
-                                    <div class="adm-form-grid">
+                                    <h4 class="adm-user-editor-title">Selected user</h4>
+                                    <section class="adm-user-form-section" aria-labelledby="adm-user-sec-account">
+                                        <h4 id="adm-user-sec-account" class="adm-user-form-heading">Account (read-only)</h4>
+                                        <div class="adm-form-grid cols-2">
+                                            <div class="adm-field">
+                                                <label for="adm-user-id">User ID</label>
+                                                <input id="adm-user-id" type="text" readonly placeholder="Select a row" />
+                                            </div>
+                                            <div class="adm-field">
+                                                <label for="adm-user-public-id">Public ID</label>
+                                                <input id="adm-user-public-id" type="text" readonly />
+                                            </div>
+                                            <div class="adm-field adm-field--span-2">
+                                                <label for="adm-user-email">Email</label>
+                                                <input id="adm-user-email" type="text" readonly autocomplete="off" />
+                                                <p class="adm-field-hint">Not editable here; changing email would need a dedicated flow.</p>
+                                            </div>
+                                            <div class="adm-field">
+                                                <label for="adm-user-email-verified">Email verified</label>
+                                                <input id="adm-user-email-verified" type="text" readonly />
+                                            </div>
+                                            <div class="adm-field">
+                                                <label for="adm-user-last-login">Last login</label>
+                                                <input id="adm-user-last-login" type="text" readonly />
+                                            </div>
+                                            <div class="adm-field">
+                                                <label for="adm-user-created">Created</label>
+                                                <input id="adm-user-created" type="text" readonly />
+                                            </div>
+                                            <div class="adm-field">
+                                                <label for="adm-user-updated">Updated</label>
+                                                <input id="adm-user-updated" type="text" readonly />
+                                            </div>
+                                        </div>
+                                    </section>
+                                    <section class="adm-user-form-section" aria-labelledby="adm-user-sec-access">
+                                        <h4 id="adm-user-sec-access" class="adm-user-form-heading">Access</h4>
+                                        <div class="adm-form-grid cols-2">
+                                            <div class="adm-field">
+                                                <label for="admin-edit-role">Role</label>
+                                                <select id="admin-edit-role">
+                                                    <option value="user">user</option>
+                                                    <option value="subscriber">subscriber</option>
+                                                    <option value="admin">admin</option>
+                                                </select>
+                                            </div>
+                                            <div class="adm-field">
+                                                <label for="admin-edit-plan">Plan</label>
+                                                <select id="admin-edit-plan">
+                                                    <option value="free">free</option>
+                                                    <option value="pro">pro</option>
+                                                    <option value="team">team</option>
+                                                    <option value="lifetime">lifetime</option>
+                                                </select>
+                                            </div>
+                                            <div class="adm-field">
+                                                <label for="admin-edit-status">Status</label>
+                                                <select id="admin-edit-status">
+                                                    <option value="active">active</option>
+                                                    <option value="suspended">suspended</option>
+                                                    <option value="deleted">deleted</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </section>
+                                    <section class="adm-user-form-section" aria-labelledby="adm-user-sec-metadata">
+                                        <h4 id="adm-user-sec-metadata" class="adm-user-form-heading">Account metadata</h4>
                                         <div class="adm-field">
-                                            <label for="adm-user-id">User ID</label>
-                                            <input id="adm-user-id" type="text" readonly placeholder="Select a row" />
+                                            <label for="adm-user-metadata">JSON text (<code>practice_users.metadata</code>)</label>
+                                            <textarea id="adm-user-metadata" class="adm-textarea-code adm-textarea-tall" placeholder='Optional JSON object or string'></textarea>
+                                        </div>
+                                    </section>
+                                    <section class="adm-user-form-section" aria-labelledby="adm-user-sec-profile">
+                                        <h4 id="adm-user-sec-profile" class="adm-user-form-heading">Profile</h4>
+                                        <div class="adm-form-grid cols-2">
+                                            <div class="adm-field">
+                                                <label for="adm-profile-display">Display name</label>
+                                                <input id="adm-profile-display" type="text" autocomplete="off" />
+                                            </div>
+                                            <div class="adm-field">
+                                                <label for="adm-profile-locale">Locale</label>
+                                                <input id="adm-profile-locale" type="text" placeholder="e.g. en-US" autocomplete="off" />
+                                            </div>
+                                            <div class="adm-field adm-field--span-2">
+                                                <label for="adm-profile-tz">Timezone</label>
+                                                <input id="adm-profile-tz" type="text" placeholder="e.g. Asia/Kolkata" autocomplete="off" />
+                                            </div>
                                         </div>
                                         <div class="adm-field">
-                                            <label for="adm-user-email">Email</label>
-                                            <input id="adm-user-email" type="text" readonly />
-                                        </div>
-                                    </div>
-                                    <div class="adm-form-grid cols-2" style="margin-top:12px">
-                                        <div class="adm-field">
-                                            <label for="admin-edit-role">Role</label>
-                                            <select id="admin-edit-role">
-                                                <option value="user">user</option>
-                                                <option value="subscriber">subscriber</option>
-                                                <option value="admin">admin</option>
-                                            </select>
+                                            <label for="adm-profile-bio">Bio</label>
+                                            <textarea id="adm-profile-bio" class="adm-textarea-prose" rows="4"></textarea>
                                         </div>
                                         <div class="adm-field">
-                                            <label for="admin-edit-plan">Plan</label>
-                                            <select id="admin-edit-plan">
-                                                <option value="free">free</option>
-                                                <option value="pro">pro</option>
-                                                <option value="team">team</option>
-                                                <option value="lifetime">lifetime</option>
-                                            </select>
+                                            <label for="adm-profile-prefs">Prefs JSON (<code>prefs_json</code>)</label>
+                                            <textarea id="adm-profile-prefs" class="adm-textarea-code adm-textarea-tall" rows="5" placeholder="{}"></textarea>
                                         </div>
-                                        <div class="adm-field">
-                                            <label for="admin-edit-status">Status</label>
-                                            <select id="admin-edit-status">
-                                                <option value="active">active</option>
-                                                <option value="suspended">suspended</option>
-                                                <option value="deleted">deleted</option>
-                                            </select>
+                                        <div class="adm-form-grid cols-2">
+                                            <div class="adm-field adm-field--span-2">
+                                                <label for="adm-profile-avatar">Avatar URL</label>
+                                                <input id="adm-profile-avatar" type="url" placeholder="https://…" autocomplete="off" />
+                                            </div>
+                                            <div class="adm-field adm-field--span-2">
+                                                <label for="adm-profile-social">Social links JSON (<code>social_json</code>)</label>
+                                                <textarea id="adm-profile-social" class="adm-textarea-code" rows="4" placeholder="{}"></textarea>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="adm-field" style="margin-top:12px">
-                                        <label for="adm-user-metadata">Account metadata (JSON text)</label>
-                                        <textarea id="adm-user-metadata" placeholder='Optional JSON string in practice_users.metadata'></textarea>
-                                    </div>
-                                    <div class="adm-form-grid cols-2" style="margin-top:12px">
-                                        <div class="adm-field">
-                                            <label for="adm-profile-display">Display name</label>
-                                            <input id="adm-profile-display" type="text" />
-                                        </div>
-                                        <div class="adm-field">
-                                            <label for="adm-profile-locale">Locale</label>
-                                            <input id="adm-profile-locale" type="text" placeholder="e.g. en-US" />
-                                        </div>
-                                        <div class="adm-field">
-                                            <label for="adm-profile-tz">Timezone</label>
-                                            <input id="adm-profile-tz" type="text" placeholder="e.g. Asia/Kolkata" />
-                                        </div>
-                                    </div>
-                                    <div class="adm-field" style="margin-top:12px">
-                                        <label for="adm-profile-bio">Bio</label>
-                                        <textarea id="adm-profile-bio" rows="2"></textarea>
-                                    </div>
-                                    <div class="adm-field">
-                                        <label for="adm-profile-prefs">Profile prefs (JSON string)</label>
-                                        <textarea id="adm-profile-prefs" rows="3" placeholder="user_profiles.prefs_json"></textarea>
-                                    </div>
-                                    <div class="adm-form-grid cols-2" style="margin-top:12px">
-                                        <div class="adm-field">
-                                            <label for="adm-profile-avatar">Avatar URL</label>
-                                            <input id="adm-profile-avatar" type="url" placeholder="https://…" />
-                                        </div>
-                                        <div class="adm-field">
-                                            <label for="adm-profile-social">Social links (JSON string)</label>
-                                            <textarea id="adm-profile-social" rows="2" placeholder="user_profiles.social_json"></textarea>
-                                        </div>
-                                    </div>
+                                    </section>
                                     <details class="adm-details" id="adm-user-readonly-details">
                                         <summary>Entitlements, billing &amp; recent security (read-only)</summary>
                                         <div class="adm-readonly-blocks">
@@ -409,8 +442,10 @@
                                             </div>
                                         </div>
                                     </details>
-                                    <button type="button" class="btn" id="admin-save-user-patch">Save user</button>
-                                    <p id="admin-edit-user-status" class="status"></p>
+                                    <div class="adm-user-save-row">
+                                        <button type="button" class="btn" id="admin-save-user-patch">Save user</button>
+                                        <p id="admin-edit-user-status" class="status" style="margin:0;flex:1;min-width:200px"></p>
+                                    </div>
                                 </div>
                             </div>
                         </div>

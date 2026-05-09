@@ -83,10 +83,27 @@
 
     function fmtTime(ts) {
         if (ts == null || ts === "") return "—";
+        if (typeof ts === "string") {
+            const t = ts.trim();
+            if (!t) return "—";
+            const iso = Date.parse(t);
+            if (!Number.isNaN(iso)) return new Date(iso).toLocaleString();
+            if (/^\d+$/.test(t)) {
+                const n = parseInt(t, 10);
+                const ms = n < 1e12 ? n * 1000 : n;
+                try {
+                    return new Date(ms).toLocaleString();
+                } catch (e) {
+                    return String(ts);
+                }
+            }
+            return String(ts);
+        }
         const n = Number(ts);
         if (!Number.isFinite(n)) return String(ts);
+        const ms = n < 1e12 ? n * 1000 : n;
         try {
-            return new Date(n * 1000).toLocaleString();
+            return new Date(ms).toLocaleString();
         } catch (e) {
             return String(ts);
         }
@@ -644,7 +661,12 @@
         lastUserPayload = null;
         const ids = [
             "adm-user-id",
+            "adm-user-public-id",
             "adm-user-email",
+            "adm-user-email-verified",
+            "adm-user-last-login",
+            "adm-user-created",
+            "adm-user-updated",
             "admin-edit-role",
             "admin-edit-plan",
             "admin-edit-status",
@@ -723,7 +745,17 @@
         selectedUserId = u.id;
         lastUserPayload = d;
         document.getElementById("adm-user-id").value = String(u.id);
+        const pub = document.getElementById("adm-user-public-id");
+        if (pub) pub.value = u.public_id != null ? String(u.public_id) : "";
         document.getElementById("adm-user-email").value = u.email || "";
+        const ev = document.getElementById("adm-user-email-verified");
+        if (ev) ev.value = fmtTime(u.email_verified_at);
+        const ll = document.getElementById("adm-user-last-login");
+        if (ll) ll.value = fmtTime(u.last_login_at);
+        const cr = document.getElementById("adm-user-created");
+        if (cr) cr.value = fmtTime(u.created_at);
+        const up = document.getElementById("adm-user-updated");
+        if (up) up.value = fmtTime(u.updated_at);
         document.getElementById("admin-edit-role").value = u.role || "user";
         document.getElementById("admin-edit-plan").value = u.plan || "free";
         document.getElementById("admin-edit-status").value = u.status || "active";

@@ -506,6 +506,13 @@
     gap: 8px;
 }
 
+/* Admin content preview: keep expand / collapse on one row */
+#admin-dsa-map-toolbar-host .dsa-graph-map-toolbar-cluster:not(.dsa-graph-map-toolbar-cluster--zoom) {
+    flex-wrap: nowrap;
+    flex-direction: row;
+    align-items: center;
+}
+
 /* Hint + leading dot, immediately left of zoom (margin-left: auto pulls hint+zoom right). */
 :is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .dsa-graph-map-toolbar-hint {
     display: inline-flex;

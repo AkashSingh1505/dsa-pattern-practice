@@ -51,7 +51,8 @@
     </script>
     <main class="dsa-portal-page dsa-portal-page--admin">
         <div class="shell">
-            <header id="admin-session-bar" class="admin-session-bar">
+            <!-- Hidden until signed in (see optimistic script below + updateAdminUi). -->
+            <header id="admin-session-bar" class="admin-session-bar" hidden>
                 <div class="admin-session-bar-inner">
                     <div class="admin-session-row admin-session-row--primary">
                         <div class="admin-session-brand-row">
@@ -131,6 +132,17 @@
                     </nav>
                 </div>
             </header>
+            <script>
+                (function () {
+                    try {
+                        var t = localStorage.getItem("dsaAdminJwtV1") || sessionStorage.getItem("dsaAdminJwtV1");
+                        if (t) {
+                            var bar = document.getElementById("admin-session-bar");
+                            if (bar) bar.removeAttribute("hidden");
+                        }
+                    } catch (e) {}
+                })();
+            </script>
             <header id="admin-prelogin-head" class="head">
                 <div class="eyebrow">DSA Pattern Practice</div>
                 <h1>Site admin</h1>
@@ -584,6 +596,6 @@
     <script src="./dsa-sketch-native.js?v=3"></script>
     <script src="./script.js?v=23"></script>
     <script src="./auth/account-admin-panel.js?v=15"></script>
-    <script src="./auth/admin-site-page.js?v=9"></script>
+    <script src="./auth/admin-site-page.js?v=10"></script>
 </body>
 </html>

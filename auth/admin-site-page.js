@@ -91,10 +91,14 @@
             authPanel.hidden = ok;
         }
         const preHead = document.getElementById("admin-prelogin-head");
+        const sessionBar = document.getElementById("admin-session-bar");
         const sub = document.getElementById("admin-session-subline");
         const feat = document.getElementById("admin-session-features");
         const rsa = document.getElementById("admin-session-rsa");
         const notifyBtn = document.getElementById("admin-session-notify");
+        if (sessionBar) {
+            sessionBar.hidden = !ok;
+        }
         if (preHead) {
             preHead.hidden = !!ok;
         }

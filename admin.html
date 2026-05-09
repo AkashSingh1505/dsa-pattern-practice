@@ -33,7 +33,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev" />
     <title>Site admin — DSA Pattern Practice</title>
-    <link rel="stylesheet" href="./auth/portal-shell.css?v=9" />
+    <link rel="stylesheet" href="./auth/portal-shell.css?v=10" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -45,16 +45,71 @@
         <div class="shell">
             <header id="admin-session-bar" class="admin-session-bar">
                 <div class="admin-session-bar-inner">
-                    <a href="./index.html" class="admin-session-brand" aria-label="DSA Pattern Practice home">
-                        <span class="admin-session-brand-mark" aria-hidden="true">D</span>
-                        DSA Pattern Practice
-                    </a>
-                    <div class="nav-auth">
-                        <span class="admin-session-context" id="admin-session-context">Site admin</span>
-                        <button type="button" id="nav-admin-signout" class="signout nav-signout-btn" hidden>
-                            Sign out
-                        </button>
+                    <div class="admin-session-row admin-session-row--primary">
+                        <div class="admin-session-brand-row">
+                            <a href="./index.html" class="admin-session-brand" aria-label="DSA Pattern Practice home">
+                                <span class="admin-session-brand-mark" aria-hidden="true">D</span>
+                            </a>
+                            <div class="admin-session-titles">
+                                <span class="admin-session-product">DSA Pattern Practice</span>
+                                <span class="admin-session-sub" id="admin-session-subline">Site admin</span>
+                            </div>
+                        </div>
+                        <div class="admin-session-end">
+                            <span id="admin-session-rsa" class="admin-session-rsa" hidden>RSA session</span>
+                            <button
+                                type="button"
+                                id="adm-top-refresh"
+                                class="btn ghost btn-sm admin-session-refresh-btn"
+                                title="Refresh current section"
+                                hidden
+                            >
+                                Refresh
+                            </button>
+                            <div class="nav-auth">
+                                <button type="button" id="nav-admin-signout" class="signout nav-signout-btn" hidden>
+                                    Sign out
+                                </button>
+                            </div>
+                        </div>
                     </div>
+                    <nav
+                        id="admin-session-features"
+                        class="admin-session-features"
+                        aria-label="Admin console areas"
+                        hidden
+                    >
+                        <span class="admin-session-features-label">Areas</span>
+                        <div class="admin-session-pill-row" role="toolbar" aria-label="Available and planned features">
+                            <button type="button" class="admin-session-pill" data-admin-tab="dashboard">Dashboard</button>
+                            <button type="button" class="admin-session-pill" data-admin-tab="site">Site</button>
+                            <button type="button" class="admin-session-pill" data-admin-tab="users">Users</button>
+                            <button type="button" class="admin-session-pill" data-admin-tab="content">Content</button>
+                            <button type="button" class="admin-session-pill" data-admin-tab="system">System</button>
+                            <span class="admin-session-pill-gap" aria-hidden="true"></span>
+                            <button type="button" class="admin-session-pill admin-session-pill--soon" disabled title="Coming soon">
+                                Analytics
+                            </button>
+                            <button type="button" class="admin-session-pill admin-session-pill--soon" disabled title="Coming soon">
+                                API keys
+                            </button>
+                            <button type="button" class="admin-session-pill admin-session-pill--soon" disabled title="Coming soon">
+                                Webhooks
+                            </button>
+                            <button type="button" class="admin-session-pill admin-session-pill--soon" disabled title="Coming soon">
+                                Email
+                            </button>
+                            <button type="button" class="admin-session-pill admin-session-pill--soon" disabled title="Coming soon">
+                                Feature flags
+                            </button>
+                            <button type="button" class="admin-session-pill admin-session-pill--soon" disabled title="Coming soon">
+                                Billing
+                            </button>
+                            <button type="button" class="admin-session-pill admin-session-pill--soon" disabled title="Coming soon">
+                                Domains
+                            </button>
+                        </div>
+                    </nav>
                 </div>
             </header>
             <header id="admin-prelogin-head" class="head">
@@ -97,7 +152,6 @@
                             <p>Manage site config, practice accounts, published graph, and audit data. Every section supports a visual editor and a raw JSON view.</p>
                         </div>
                         <div class="adm-topbar-actions">
-                            <span class="adm-badge" id="adm-session-badge">RSA session</span>
                             <button type="button" class="btn ghost btn-inline" id="adm-refresh-all">Refresh</button>
                         </div>
                     </div>
@@ -461,7 +515,7 @@
     <script src="./auth/dsa-user-auth.js?v=2"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
     <script src="./script.js?v=23"></script>
-    <script src="./auth/account-admin-panel.js?v=12"></script>
-    <script src="./auth/admin-site-page.js?v=6"></script>
+    <script src="./auth/account-admin-panel.js?v=13"></script>
+    <script src="./auth/admin-site-page.js?v=7"></script>
 </body>
 </html>

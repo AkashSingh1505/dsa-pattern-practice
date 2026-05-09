@@ -799,60 +799,161 @@
             min-width: 120px;
             height: 44px;
         }
-        /* Logged-in admin: index-like top row (brand left, Sign out right) */
+        /* Admin session bar: brand, RSA, feature rail (live + coming soon), sign out */
         .admin-session-bar {
             width: 100%;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
         }
         .admin-session-bar-inner {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            flex-wrap: wrap;
-            padding: 10px 14px;
+            flex-direction: column;
+            gap: 12px;
+            padding: 12px 14px 14px;
             border-radius: 14px;
             border: 1px solid var(--line);
             background: rgba(255, 255, 255, 0.55);
             backdrop-filter: blur(20px) saturate(140%);
             -webkit-backdrop-filter: blur(20px) saturate(140%);
         }
+        .admin-session-row--primary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px 16px;
+            flex-wrap: wrap;
+        }
+        .admin-session-brand-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
         .admin-session-brand {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            font-size: 15px;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            color: var(--ink);
+            justify-content: center;
+            flex-shrink: 0;
             text-decoration: none;
+            border-radius: 10px;
+            transition: opacity 0.2s ease, transform 0.2s ease;
         }
         .admin-session-brand:hover {
-            color: var(--accent);
+            opacity: 0.92;
+            transform: scale(1.02);
         }
         .admin-session-brand-mark {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
             background: linear-gradient(135deg, #1e293b, #0f172a);
             color: #fff;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 700;
+        }
+        .admin-session-titles {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+        .admin-session-product {
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--ink);
+            line-height: 1.2;
+        }
+        .admin-session-sub {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted, #64748b);
+            line-height: 1.3;
+        }
+        .admin-session-end {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-left: auto;
+        }
+        .admin-session-rsa {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--ink-2);
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.72);
+            white-space: nowrap;
+        }
+        .admin-session-refresh-btn {
+            flex-shrink: 0;
+        }
+        .admin-session-features {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-top: 12px;
+            border-top: 1px solid var(--line);
+        }
+        .admin-session-features-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--muted, #64748b);
+        }
+        .admin-session-pill-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+        .admin-session-pill {
+            appearance: none;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.65);
+            color: var(--ink-2);
+            font-size: 12px;
+            font-weight: 600;
+            font-family: inherit;
+            padding: 7px 12px;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+        .admin-session-pill:hover {
+            background: #fff;
+            color: var(--ink);
+        }
+        .admin-session-pill.active {
+            background: var(--ink);
+            color: #fff;
+            border-color: var(--ink);
+        }
+        .admin-session-pill--soon:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            background: rgba(255, 255, 255, 0.35);
+            color: var(--muted, #64748b);
+            border-style: dashed;
+        }
+        .admin-session-pill-gap {
+            width: 1px;
+            height: 22px;
+            margin: 0 4px;
+            background: var(--line);
+            flex-shrink: 0;
         }
         .admin-session-bar .nav-auth {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-left: auto;
-        }
-        .admin-session-context {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--muted, #64748b);
-            white-space: nowrap;
+            gap: 8px;
         }
         .admin-session-bar .nav-signout-btn {
             padding: 8px 14px;

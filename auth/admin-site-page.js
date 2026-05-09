@@ -91,12 +91,24 @@
             authPanel.hidden = ok;
         }
         const preHead = document.getElementById("admin-prelogin-head");
-        const ctx = document.getElementById("admin-session-context");
+        const sub = document.getElementById("admin-session-subline");
+        const feat = document.getElementById("admin-session-features");
+        const rsa = document.getElementById("admin-session-rsa");
+        const topRef = document.getElementById("adm-top-refresh");
         if (preHead) {
             preHead.hidden = !!ok;
         }
-        if (ctx) {
-            ctx.textContent = ok ? "Signed in" : "Site admin";
+        if (sub) {
+            sub.textContent = ok ? "Site admin console · signed in" : "Site admin · sign in below";
+        }
+        if (feat) {
+            feat.hidden = !ok;
+        }
+        if (rsa) {
+            rsa.hidden = !ok;
+        }
+        if (topRef) {
+            topRef.hidden = !ok;
         }
         if (typeof syncNavbarAuthUi === "function") {
             syncNavbarAuthUi();

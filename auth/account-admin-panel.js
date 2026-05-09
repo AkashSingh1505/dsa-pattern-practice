@@ -1119,19 +1119,27 @@
             setDualSection(k, dualMode[k]);
         });
 
+        function refreshCurrentAdminSection() {
+            const open =
+                document.querySelector(".adm-nav-main button.active[data-admin-tab]") ||
+                document.querySelector("#admin-session-features .admin-session-pill.active[data-admin-tab]");
+            const name = open && open.getAttribute("data-admin-tab");
+            if (name === "dashboard") loadDashboard();
+            else if (name === "site") loadKvUi();
+            else if (name === "users") loadUsers();
+            else if (name === "content") {
+                const cl = document.getElementById("cms-load");
+                if (cl) cl.click();
+            } else if (name === "system") loadSystemUi();
+        }
+
         const refreshBtn = document.getElementById("adm-refresh-all");
         if (refreshBtn) {
-            refreshBtn.addEventListener("click", function () {
-                const open = document.querySelector(".adm-nav-main button.active[data-admin-tab]");
-                const name = open && open.getAttribute("data-admin-tab");
-                if (name === "dashboard") loadDashboard();
-                else if (name === "site") loadKvUi();
-                else if (name === "users") loadUsers();
-                else if (name === "content") {
-                    const cl = document.getElementById("cms-load");
-                    if (cl) cl.click();
-                } else if (name === "system") loadSystemUi();
-            });
+            refreshBtn.addEventListener("click", refreshCurrentAdminSection);
+        }
+        const topRefreshBtn = document.getElementById("adm-top-refresh");
+        if (topRefreshBtn) {
+            topRefreshBtn.addEventListener("click", refreshCurrentAdminSection);
         }
 
         const dashCopy = document.getElementById("adm-dash-json-copy");

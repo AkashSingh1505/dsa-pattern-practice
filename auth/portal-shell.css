@@ -267,6 +267,22 @@
             line-height:1.5;
         }
         .foot a{color:var(--ink-2); text-decoration:none; font-weight:600}
+        .account-site-admin-foot {
+            text-align: center;
+            margin: 14px 0 0;
+            padding-top: 12px;
+            border-top: 1px solid var(--line);
+            font-size: 12px;
+        }
+        .account-site-admin-link {
+            color: var(--ink-2);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .account-site-admin-link:hover {
+            color: var(--ink);
+            text-decoration: underline;
+        }
         .sparkle{
             position:absolute;
             right:16px; bottom:16px;

@@ -22,7 +22,12 @@
         }
         var b = document.createElement("base");
         b.href = assetBaseHref("admin");
-        document.head.insertBefore(b, document.head.firstChild);
+        var cs = document.querySelector("meta[charset]");
+        if (cs && cs.parentNode === document.head) {
+            cs.insertAdjacentElement("afterend", b);
+        } else {
+            document.head.appendChild(b);
+        }
     })();
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />

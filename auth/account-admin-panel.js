@@ -167,6 +167,142 @@
         });
     }
 
+    function numAgg(x) {
+        if (typeof x === "number" && Number.isFinite(x)) {
+            return x;
+        }
+        const p = parseInt(x, 10);
+        return Number.isFinite(p) ? p : 0;
+    }
+
+    function isoDayFromUnix(ts) {
+        const n = Number(ts);
+        if (!Number.isFinite(n)) {
+            return null;
+        }
+        try {
+            return new Date(n * 1000).toISOString().slice(0, 10);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function renderAdmDashboardViz(d) {
+        const host = document.getElementById("adm-dash-viz");
+        if (!host) {
+            return;
+        }
+        const u = d.users || {};
+        if (u.error) {
+            host.innerHTML = '<p class="adm-viz-fallback">User charts unavailable.</p>';
+            return;
+        }
+
+        const roleRows = [
+            { label: "User", v: numAgg(u.role_user), c: "#6366f1" },
+            { label: "Subscriber", v: numAgg(u.role_subscriber), c: "#0ea5e9" },
+            { label: "Admin", v: numAgg(u.role_admin), c: "#a855f7" },
+        ];
+        const maxRole = Math.max(1, roleRows[0].v, roleRows[1].v, roleRows[2].v);
+
+        const planRows = [
+            { label: "Free", v: numAgg(u.plan_free), c: "#94a3b8" },
+            { label: "Pro", v: numAgg(u.plan_pro), c: "#22c55e" },
+            { label: "Team", v: numAgg(u.plan_team), c: "#eab308" },
+            { label: "Lifetime", v: numAgg(u.plan_lifetime), c: "#f97316" },
+        ];
+        const maxPlan = Math.max(1, ...planRows.map(function (r) {
+            return r.v;
+        }));
+
+        const total = numAgg(u.total);
+        const active = numAgg(u.status_active);
+        const inactive = Math.max(0, total - active);
+
+        const byDay = {};
+        (d.recent_security_audit || []).forEach(function (r) {
+            const day = isoDayFromUnix(r.created_at);
+            if (!day) {
+                return;
+            }
+            byDay[day] = (byDay[day] || 0) + 1;
+        });
+        const dayKeys = Object.keys(byDay).sort();
+        let maxDay = 1;
+        dayKeys.forEach(function (k) {
+            if (byDay[k] > maxDay) {
+                maxDay = byDay[k];
+            }
+        });
+
+        function barCard(title, rows, maxV) {
+            let html =
+                '<div class="adm-viz-card"><h4 class="adm-viz-title">' + escapeHtml(title) + "</h4>";
+            rows.forEach(function (row) {
+                const pct = maxV > 0 ? Math.min(100, Math.round((row.v / maxV) * 100)) : 0;
+                html +=
+                    '<div class="adm-viz-bar-row"><span class="adm-viz-bar-label">' +
+                    escapeHtml(row.label) +
+                    '</span><div class="adm-viz-bar-track"><div class="adm-viz-bar-fill" style="width:' +
+                    pct +
+                    "%;background:" +
+                    row.c +
+                    '"></div></div><span class="adm-viz-bar-val">' +
+                    escapeHtml(String(row.v)) +
+                    "</span></div>";
+            });
+            html += "</div>";
+            return html;
+        }
+
+        let activityCard =
+            '<div class="adm-viz-card"><h4 class="adm-viz-title">Security events by day</h4>';
+        if (!dayKeys.length) {
+            activityCard +=
+                '<p class="adm-viz-muted">No security rows in the last snapshot (see System for more).</p></div>';
+        } else {
+            dayKeys.forEach(function (dk) {
+                const cnt = byDay[dk];
+                const pct = maxDay > 0 ? Math.min(100, Math.round((cnt / maxDay) * 100)) : 0;
+                activityCard +=
+                    '<div class="adm-viz-bar-row"><span class="adm-viz-bar-label">' +
+                    escapeHtml(dk) +
+                    '</span><div class="adm-viz-bar-track"><div class="adm-viz-bar-fill adm-viz-bar-fill--emerald" style="width:' +
+                    pct +
+                    '%"></div></div><span class="adm-viz-bar-val">' +
+                    escapeHtml(String(cnt)) +
+                    "</span></div>";
+            });
+            activityCard += "</div>";
+        }
+
+        const activePct = total > 0 ? Math.round((active / total) * 100) : 0;
+        const otherPct = total > 0 ? Math.round((inactive / total) * 100) : 0;
+        const statusCard =
+            '<div class="adm-viz-card"><h4 class="adm-viz-title">Active accounts</h4>' +
+            '<div class="adm-viz-bar-row"><span class="adm-viz-bar-label">Active</span><div class="adm-viz-bar-track"><div class="adm-viz-bar-fill adm-viz-bar-fill--emerald" style="width:' +
+            activePct +
+            '%"></div></div><span class="adm-viz-bar-val">' +
+            escapeHtml(String(active)) +
+            "</span></div>" +
+            '<div class="adm-viz-bar-row"><span class="adm-viz-bar-label">Not active</span><div class="adm-viz-bar-track"><div class="adm-viz-bar-fill" style="width:' +
+            otherPct +
+            '%;background:#cbd5e1"></div></div><span class="adm-viz-bar-val">' +
+            escapeHtml(String(inactive)) +
+            "</span></div>" +
+            '<p class="adm-viz-foot">' +
+            escapeHtml(String(total)) +
+            " total practice accounts</p></div>";
+
+        host.innerHTML =
+            '<div class="adm-viz-grid">' +
+            barCard("Users by role", roleRows, maxRole) +
+            barCard("Users by plan", planRows, maxPlan) +
+            statusCard +
+            activityCard +
+            "</div>";
+    }
+
     async function loadDashboard() {
         const statsHost = document.getElementById("adm-dash-stats");
         const jta = document.getElementById("adm-dash-json");
@@ -243,10 +379,13 @@
                     "</td>"
                 );
             });
+            renderAdmDashboardViz(d);
             setStatus("adm-dash-msg", "Updated " + fmtTime(d.generated_at) + ".", "ok");
         } catch (e) {
             setStatus("adm-dash-msg", e.message, "err");
             if (statsHost) statsHost.innerHTML = "";
+            const vz = document.getElementById("adm-dash-viz");
+            if (vz) vz.innerHTML = "";
         }
     }
 
@@ -1120,9 +1259,7 @@
         });
 
         function refreshCurrentAdminSection() {
-            const open =
-                document.querySelector(".adm-nav-main button.active[data-admin-tab]") ||
-                document.querySelector("#admin-session-features .admin-session-pill.active[data-admin-tab]");
+            const open = document.querySelector(".admin-session-pill.active[data-admin-tab]");
             const name = open && open.getAttribute("data-admin-tab");
             if (name === "dashboard") loadDashboard();
             else if (name === "site") loadKvUi();

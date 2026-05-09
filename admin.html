@@ -33,7 +33,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev" />
     <title>Site admin — DSA Pattern Practice</title>
-    <link rel="stylesheet" href="./auth/portal-shell.css?v=10" />
+    <link rel="stylesheet" href="./auth/portal-shell.css?v=11" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -56,15 +56,37 @@
                             </div>
                         </div>
                         <div class="admin-session-end">
-                            <span id="admin-session-rsa" class="admin-session-rsa" hidden>RSA session</span>
+                            <span id="admin-session-rsa" class="admin-session-rsa admin-session-rsa--live" hidden>
+                                <span class="admin-session-rsa-dot" aria-hidden="true"></span>
+                                RSA active
+                            </span>
+                            <button
+                                type="button"
+                                id="admin-session-notify"
+                                class="admin-session-icon-btn"
+                                hidden
+                                disabled
+                                title="Notifications (coming soon)"
+                                aria-label="Notifications (coming soon)"
+                            >
+                                <svg class="admin-session-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                                </svg>
+                            </button>
                             <button
                                 type="button"
                                 id="adm-top-refresh"
-                                class="btn ghost btn-sm admin-session-refresh-btn"
-                                title="Refresh current section"
+                                class="admin-session-icon-btn admin-session-icon-btn--reload"
+                                title="Reload current section"
+                                aria-label="Reload current section"
                                 hidden
                             >
-                                Refresh
+                                <svg class="admin-session-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M23 4v6h-6" />
+                                    <path d="M1 20v-6h6" />
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                                </svg>
                             </button>
                             <div class="nav-auth">
                                 <button type="button" id="nav-admin-signout" class="signout nav-signout-btn" hidden>
@@ -76,11 +98,10 @@
                     <nav
                         id="admin-session-features"
                         class="admin-session-features"
-                        aria-label="Admin console areas"
+                        aria-label="Admin console navigation"
                         hidden
                     >
-                        <span class="admin-session-features-label">Areas</span>
-                        <div class="admin-session-pill-row" role="toolbar" aria-label="Available and planned features">
+                        <div class="admin-session-pill-row" role="tablist" aria-label="Sections and roadmap">
                             <button type="button" class="admin-session-pill" data-admin-tab="dashboard">Dashboard</button>
                             <button type="button" class="admin-session-pill" data-admin-tab="site">Site</button>
                             <button type="button" class="admin-session-pill" data-admin-tab="users">Users</button>
@@ -152,17 +173,21 @@
                             <p>Manage site config, practice accounts, published graph, and audit data. Every section supports a visual editor and a raw JSON view.</p>
                         </div>
                         <div class="adm-topbar-actions">
-                            <button type="button" class="btn ghost btn-inline" id="adm-refresh-all">Refresh</button>
+                            <button
+                                type="button"
+                                class="admin-session-icon-btn admin-session-icon-btn--reload adm-dash-inline-reload"
+                                id="adm-refresh-all"
+                                title="Reload dashboard data"
+                                aria-label="Reload dashboard data"
+                            >
+                                <svg class="admin-session-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M23 4v6h-6" />
+                                    <path d="M1 20v-6h6" />
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
-
-                    <nav class="adm-nav-main" role="tablist" aria-label="Admin dashboard">
-                        <button type="button" class="active" data-admin-tab="dashboard">Dashboard</button>
-                        <button type="button" data-admin-tab="site">Site settings</button>
-                        <button type="button" data-admin-tab="users">Users</button>
-                        <button type="button" data-admin-tab="content">Content</button>
-                        <button type="button" data-admin-tab="system">System</button>
-                    </nav>
 
                     <!-- Dashboard -->
                     <div class="adm-pane" data-admin-pane="dashboard">
@@ -175,6 +200,7 @@
                         </div>
                         <div data-adm-panel="dashboard-ui">
                             <div class="adm-stats-grid" id="adm-dash-stats"></div>
+                            <div class="adm-dash-viz" id="adm-dash-viz" aria-label="Practice users and activity charts"></div>
                             <div class="adm-two-col">
                                 <div class="adm-subcard">
                                     <h4>Content audit</h4>
@@ -515,7 +541,7 @@
     <script src="./auth/dsa-user-auth.js?v=2"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
     <script src="./script.js?v=23"></script>
-    <script src="./auth/account-admin-panel.js?v=13"></script>
-    <script src="./auth/admin-site-page.js?v=7"></script>
+    <script src="./auth/account-admin-panel.js?v=14"></script>
+    <script src="./auth/admin-site-page.js?v=8"></script>
 </body>
 </html>

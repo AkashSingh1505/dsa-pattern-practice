@@ -575,6 +575,81 @@
             color: var(--muted);
             margin-top: 4px;
         }
+        .adm-dash-viz {
+            margin: 0 0 20px;
+        }
+        .adm-viz-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+        }
+        .adm-viz-card {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 14px 16px;
+        }
+        .adm-viz-title {
+            margin: 0 0 12px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+        .adm-viz-bar-row {
+            display: grid;
+            grid-template-columns: minmax(72px, 0.35fr) 1fr minmax(28px, auto);
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .adm-viz-bar-row:last-child {
+            margin-bottom: 0;
+        }
+        .adm-viz-bar-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ink-2);
+        }
+        .adm-viz-bar-track {
+            height: 10px;
+            border-radius: 999px;
+            background: rgba(15, 23, 32, 0.06);
+            overflow: hidden;
+        }
+        .adm-viz-bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            min-width: 0;
+            transition: width 0.35s ease;
+        }
+        .adm-viz-bar-fill--emerald {
+            background: linear-gradient(90deg, #34d399, #059669) !important;
+        }
+        .adm-viz-bar-val {
+            font-size: 12px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: var(--ink);
+            text-align: right;
+        }
+        .adm-viz-muted {
+            margin: 0;
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.45;
+        }
+        .adm-viz-foot {
+            margin: 12px 0 0;
+            font-size: 11px;
+            color: var(--muted);
+        }
+        .adm-viz-fallback {
+            margin: 0;
+            font-size: 13px;
+            color: var(--muted);
+        }
         .adm-two-col {
             display: grid;
             grid-template-columns: 1fr;
@@ -880,19 +955,93 @@
             margin-left: auto;
         }
         .admin-session-rsa {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            color: var(--ink-2);
-            padding: 6px 10px;
-            border-radius: 999px;
-            border: 1px solid var(--line);
-            background: rgba(255, 255, 255, 0.72);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             white-space: nowrap;
         }
-        .admin-session-refresh-btn {
+        .admin-session-rsa--live {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            text-transform: none;
+            color: #065f46;
+            padding: 8px 14px 8px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(16, 185, 129, 0.5);
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 55%, #a7f3d0 160%);
+            box-shadow:
+                0 1px 2px rgba(16, 185, 129, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.7);
+        }
+        .admin-session-rsa-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #059669;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.35);
             flex-shrink: 0;
+            animation: adm-rsa-pulse 2.2s ease-in-out infinite;
+        }
+        @keyframes adm-rsa-pulse {
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.75;
+                transform: scale(0.92);
+            }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .admin-session-rsa-dot {
+                animation: none;
+            }
+        }
+        .admin-session-icon-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border-radius: 12px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.75);
+            color: var(--ink-2);
+            cursor: pointer;
+            font-family: inherit;
+            flex-shrink: 0;
+            transition:
+                background 0.2s ease,
+                color 0.2s ease,
+                border-color 0.2s ease,
+                transform 0.15s ease;
+        }
+        .admin-session-icon-btn:hover:not(:disabled) {
+            background: #fff;
+            color: var(--ink);
+            border-color: rgba(15, 23, 32, 0.14);
+        }
+        .admin-session-icon-btn:active:not(:disabled) {
+            transform: scale(0.96);
+        }
+        .admin-session-icon-btn:disabled {
+            opacity: 0.42;
+            cursor: not-allowed;
+        }
+        .admin-session-icon-btn--reload:hover:not(:disabled) {
+            color: #059669;
+            border-color: rgba(16, 185, 129, 0.45);
+            background: rgba(236, 253, 245, 0.9);
+        }
+        .admin-session-icon-svg {
+            display: block;
+        }
+        .adm-dash-inline-reload {
+            width: 42px;
+            height: 42px;
         }
         .admin-session-features {
             display: flex;
@@ -900,13 +1049,6 @@
             gap: 8px;
             padding-top: 12px;
             border-top: 1px solid var(--line);
-        }
-        .admin-session-features-label {
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: var(--muted, #64748b);
         }
         .admin-session-pill-row {
             display: flex;

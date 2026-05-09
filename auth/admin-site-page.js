@@ -95,6 +95,7 @@
         const feat = document.getElementById("admin-session-features");
         const rsa = document.getElementById("admin-session-rsa");
         const topRef = document.getElementById("adm-top-refresh");
+        const notifyBtn = document.getElementById("admin-session-notify");
         if (preHead) {
             preHead.hidden = !!ok;
         }
@@ -109,6 +110,9 @@
         }
         if (topRef) {
             topRef.hidden = !ok;
+        }
+        if (notifyBtn) {
+            notifyBtn.hidden = !ok;
         }
         if (typeof syncNavbarAuthUi === "function") {
             syncNavbarAuthUi();

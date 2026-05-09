@@ -12,6 +12,18 @@ export async function onRequestGet(context) {
     }
 
     const url = new URL(request.url);
+    const singleK = url.searchParams.get("k");
+    if (singleK && String(singleK).trim()) {
+        const k = String(singleK).trim();
+        try {
+            const row = await db.prepare("SELECT k, v, updated_at, meta FROM app_kv WHERE k = ?").bind(k).first();
+            return json({ ok: true, row: row || null });
+        } catch (e) {
+            console.error("app_kv get", e);
+            return json({ error: "server error" }, 500);
+        }
+    }
+
     const limit = Math.min(500, Math.max(1, parseInt(url.searchParams.get("limit") || "200", 10) || 200));
 
     try {

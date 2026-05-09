@@ -153,32 +153,110 @@ export async function onRequestPatch(context) {
         updates.push("status = ?");
         binds.push(s);
     }
+    if (body.metadata !== undefined) {
+        updates.push("metadata = ?");
+        binds.push(body.metadata == null ? null : String(body.metadata));
+    }
 
-    if (updates.length === 0) {
-        return json({ error: "no valid fields (role, plan, status)" }, 400);
+    const profileIn = body.profile && typeof body.profile === "object" ? body.profile : null;
+    const profileKeys = profileIn
+        ? ["display_name", "locale", "timezone", "prefs_json", "bio", "avatar_url", "social_json"].filter(
+              (k) => Object.prototype.hasOwnProperty.call(profileIn, k),
+          )
+        : [];
+
+    if (updates.length === 0 && profileKeys.length === 0) {
+        return json({ error: "no valid fields (role, plan, status, metadata, profile)" }, 400);
     }
 
     const now = Math.floor(Date.now() / 1000);
-    updates.push("updated_at = ?");
-    binds.push(now);
-    binds.push(id);
 
     try {
         const exists = await db.prepare("SELECT id FROM practice_users WHERE id = ?").bind(id).first();
         if (!exists) {
             return json({ error: "not found" }, 404);
         }
-        await db
-            .prepare(`UPDATE practice_users SET ${updates.join(", ")} WHERE id = ?`)
-            .bind(...binds)
-            .run();
+
+        if (updates.length > 0) {
+            updates.push("updated_at = ?");
+            binds.push(now);
+            binds.push(id);
+            await db
+                .prepare(`UPDATE practice_users SET ${updates.join(", ")} WHERE id = ?`)
+                .bind(...binds)
+                .run();
+        } else if (profileKeys.length > 0) {
+            await db.prepare("UPDATE practice_users SET updated_at = ? WHERE id = ?").bind(now, id).run();
+        }
+
+        if (profileKeys.length > 0) {
+            let prev = null;
+            try {
+                prev = await db.prepare("SELECT * FROM user_profiles WHERE user_id = ?").bind(id).first();
+            } catch (e) {
+                prev = null;
+            }
+            const row = {
+                user_id: id,
+                display_name: prev && prev.display_name != null ? prev.display_name : null,
+                avatar_url: prev && prev.avatar_url != null ? prev.avatar_url : null,
+                locale: prev && prev.locale != null ? prev.locale : null,
+                timezone: prev && prev.timezone != null ? prev.timezone : null,
+                prefs_json: prev && prev.prefs_json != null ? prev.prefs_json : null,
+                bio: prev && prev.bio != null ? prev.bio : null,
+                social_json: prev && prev.social_json != null ? prev.social_json : null,
+                updated_at: now,
+            };
+            for (const k of profileKeys) {
+                const v = profileIn[k];
+                row[k] = v == null || v === "" ? null : String(v);
+            }
+            await db
+                .prepare(
+                    `INSERT INTO user_profiles (user_id, display_name, avatar_url, locale, timezone, prefs_json, bio, social_json, updated_at)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     ON CONFLICT(user_id) DO UPDATE SET
+                       display_name = excluded.display_name,
+                       avatar_url = excluded.avatar_url,
+                       locale = excluded.locale,
+                       timezone = excluded.timezone,
+                       prefs_json = excluded.prefs_json,
+                       bio = excluded.bio,
+                       social_json = excluded.social_json,
+                       updated_at = excluded.updated_at`,
+                )
+                .bind(
+                    row.user_id,
+                    row.display_name,
+                    row.avatar_url,
+                    row.locale,
+                    row.timezone,
+                    row.prefs_json,
+                    row.bio,
+                    row.social_json,
+                    row.updated_at,
+                )
+                .run();
+        }
+
         try {
             await db
                 .prepare(
                     `INSERT INTO security_audit (user_id, action, entity_type, entity_id, payload_json, created_at)
                      VALUES (?, 'admin_patch_user', 'practice_users', ?, ?, ?)`,
                 )
-                .bind(id, String(id), JSON.stringify({ role: body.role, plan: body.plan, status: body.status }), now)
+                .bind(
+                    id,
+                    String(id),
+                    JSON.stringify({
+                        role: body.role,
+                        plan: body.plan,
+                        status: body.status,
+                        metadata: body.metadata,
+                        profile: profileIn,
+                    }),
+                    now,
+                )
                 .run();
         } catch (e) {
             console.warn("audit admin patch", e);

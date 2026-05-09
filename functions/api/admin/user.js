@@ -268,6 +268,51 @@ export async function onRequestPatch(context) {
     }
 }
 
+export async function onRequestDelete(context) {
+    const { request, env } = context;
+    const gate = await requireAdmin(request);
+    if (gate.response) return gate.response;
+
+    const db = subscribersDb(env);
+    if (!db) {
+        return json({ error: "Subscribers D1 not bound" }, 503);
+    }
+
+    const url = new URL(request.url);
+    const id = parseInt(url.searchParams.get("id") || "", 10);
+    if (!id || id < 1) {
+        return json({ error: "missing or invalid id" }, 400);
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+
+    try {
+        const row = await db.prepare("SELECT id, email FROM practice_users WHERE id = ?").bind(id).first();
+        if (!row) {
+            return json({ error: "not found" }, 404);
+        }
+
+        await db.prepare("DELETE FROM practice_users WHERE id = ?").bind(id).run();
+
+        try {
+            await db
+                .prepare(
+                    `INSERT INTO security_audit (user_id, action, entity_type, entity_id, payload_json, created_at)
+                     VALUES (NULL, 'admin_delete_user', 'practice_users', ?, ?, ?)`,
+                )
+                .bind(String(id), JSON.stringify({ deleted_email: row.email }), now)
+                .run();
+        } catch (e) {
+            console.warn("audit admin delete user", e);
+        }
+
+        return json({ ok: true, id, deleted_at: now });
+    } catch (e) {
+        console.error("admin user delete", e);
+        return json({ error: "server error" }, 500);
+    }
+}
+
 function d1ResultRows(rows) {
     if (rows && Array.isArray(rows.results)) return rows.results;
     return [];

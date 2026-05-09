@@ -324,7 +324,7 @@
         .shell.shell--admin {
             width: 100%;
             max-width: min(1760px, calc(100vw - 28px));
-            align-self: center;
+            align-self: flex-start;
             margin-top: 4px;
             font-size: 15px;
         }
@@ -473,18 +473,26 @@
             gap: 12px;
             margin-bottom: 16px;
         }
+        .adm-topbar-copy {
+            flex: 1 1 240px;
+            min-width: 0;
+        }
         .adm-topbar h2 {
             margin: 0;
             font-size: 22px;
             font-weight: 700;
             letter-spacing: -0.02em;
         }
-        .adm-topbar p {
+        .adm-topbar p,
+        .adm-topbar-blurb {
             margin: 4px 0 0;
             font-size: 13px;
             color: var(--muted);
-            max-width: 520px;
+            max-width: min(640px, 100%);
             line-height: 1.45;
+        }
+        .adm-topbar-blurb:empty {
+            display: none;
         }
         .adm-topbar-actions {
             display: flex;
@@ -1233,4 +1241,194 @@
         .account-nav-back:hover {
             background: #fff;
             color: var(--ink);
+        }
+
+        /* Theme toggle (admin header) */
+        .admin-theme-toggle {
+            display: inline-flex;
+            padding: 3px;
+            border-radius: 11px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.5);
+            gap: 2px;
+        }
+        .admin-theme-btn {
+            appearance: none;
+            border: 0;
+            margin: 0;
+            padding: 7px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: inherit;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--ink-2);
+            background: transparent;
+            transition: background 0.18s ease, color 0.18s ease;
+        }
+        .admin-theme-btn:hover {
+            color: var(--ink);
+            background: rgba(255, 255, 255, 0.65);
+        }
+        .admin-theme-btn.active {
+            background: var(--ink);
+            color: #fff;
+        }
+
+        /* Role / plan / status — taller, clearer selects */
+        .adm-field select.adm-select-enhanced,
+        select.adm-select-enhanced {
+            min-height: 48px;
+            padding: 12px 40px 12px 14px;
+            font-size: 15px;
+            font-weight: 600;
+            line-height: 1.25;
+            appearance: none;
+            background-color: rgba(255, 255, 255, 0.92);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%233a4452' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            cursor: pointer;
+        }
+        .adm-field select.adm-select-enhanced:focus,
+        select.adm-select-enhanced:focus {
+            outline: 2px solid rgba(15, 23, 32, 0.2);
+            outline-offset: 1px;
+        }
+
+        .adm-user-danger-zone {
+            border-radius: 12px;
+            padding: 14px 16px;
+            border: 1px solid rgba(185, 28, 28, 0.35);
+            background: rgba(254, 242, 242, 0.55);
+        }
+        .adm-btn-danger {
+            background: #b91c1c !important;
+            color: #fff !important;
+            border: 1px solid #991b1b !important;
+            font-weight: 700;
+        }
+        .adm-btn-danger:hover {
+            background: #991b1b !important;
+            filter: brightness(1.05);
+        }
+
+        /* ——— Dark theme (admin only; toggled via html[data-admin-theme="dark"]) ——— */
+        html[data-admin-theme="dark"] {
+            --ink: #e8eaef;
+            --ink-2: #b4bcc6;
+            --muted: #8b95a3;
+            --line: rgba(255, 255, 255, 0.12);
+            --glass: rgba(28, 32, 40, 0.78);
+            --glass-2: rgba(18, 22, 28, 0.55);
+            --accent: #d1d5db;
+            --shadow: 0 24px 64px rgba(0, 0, 0, 0.55), 0 2px 12px rgba(0, 0, 0, 0.35);
+        }
+        html[data-admin-theme="dark"] .dsa-portal-page--admin {
+            background:
+                radial-gradient(1000px 640px at 88% 8%, #2c2418 0%, transparent 58%),
+                radial-gradient(820px 600px at 8% 92%, #152028 0%, transparent 55%),
+                radial-gradient(900px 560px at 92% 88%, #14261c 0%, transparent 58%),
+                linear-gradient(145deg, #14181e, #0c0f14);
+        }
+        html[data-admin-theme="dark"] .card {
+            background: var(--glass);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        html[data-admin-theme="dark"] .card::before {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 42%);
+        }
+        html[data-admin-theme="dark"] .head .lede,
+        html[data-admin-theme="dark"] .helper {
+            color: var(--muted);
+        }
+        html[data-admin-theme="dark"] .admin-session-bar-inner {
+            background: rgba(22, 26, 32, 0.92);
+            border-color: var(--line);
+        }
+        html[data-admin-theme="dark"] .admin-session-pill {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--ink-2);
+            border-color: var(--line);
+        }
+        html[data-admin-theme="dark"] .admin-session-pill:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--ink);
+        }
+        html[data-admin-theme="dark"] .admin-session-pill.active {
+            background: #e8eaef;
+            color: #0f1218;
+            border-color: #e8eaef;
+        }
+        html[data-admin-theme="dark"] .admin-theme-toggle {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--line);
+        }
+        html[data-admin-theme="dark"] .admin-theme-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        html[data-admin-theme="dark"] .admin-theme-btn.active {
+            background: #e8eaef;
+            color: #0f1218;
+        }
+        html[data-admin-theme="dark"] .admin-session-icon-btn {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--ink-2);
+            border-color: var(--line);
+        }
+        html[data-admin-theme="dark"] .admin-session-icon-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.14);
+            color: var(--ink);
+        }
+        html[data-admin-theme="dark"] .admin-session-bar .nav-signout-btn {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--ink-2);
+            border-color: var(--line);
+        }
+        html[data-admin-theme="dark"] .admin-session-bar .nav-signout-btn:hover {
+            background: rgba(255, 255, 255, 0.14);
+            color: var(--ink);
+        }
+        html[data-admin-theme="dark"] .adm-subcard,
+        html[data-admin-theme="dark"] .adm-kv-row,
+        html[data-admin-theme="dark"] .admin-table-wrap,
+        html[data-admin-theme="dark"] .adm-content-graph-toolbar {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--line);
+        }
+        html[data-admin-theme="dark"] .admin-table th {
+            background: rgba(20, 24, 30, 0.96);
+            color: var(--muted);
+        }
+        html[data-admin-theme="dark"] .admin-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+        html[data-admin-theme="dark"] .admin-table tbody tr.adm-row-selected {
+            background: rgba(96, 165, 250, 0.12);
+        }
+        html[data-admin-theme="dark"] .adm-field input,
+        html[data-admin-theme="dark"] .adm-field select,
+        html[data-admin-theme="dark"] .adm-field textarea {
+            background: rgba(12, 14, 18, 0.65);
+            border-color: rgba(255, 255, 255, 0.12);
+            color: var(--ink);
+        }
+        html[data-admin-theme="dark"] .adm-field input:read-only {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        html[data-admin-theme="dark"] select.adm-select-enhanced {
+            background-color: rgba(12, 14, 18, 0.75);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23b4bcc6' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        }
+        html[data-admin-theme="dark"] .adm-json-input {
+            background: rgba(12, 14, 18, 0.65);
+            border-color: rgba(255, 255, 255, 0.12);
+            color: var(--ink);
+        }
+        html[data-admin-theme="dark"] .adm-user-danger-zone {
+            background: rgba(127, 29, 29, 0.2);
+            border-color: rgba(248, 113, 113, 0.35);
+        }
+        html[data-admin-theme="dark"] .adm-content-graph-toolbar {
+            background: linear-gradient(180deg, rgba(32, 36, 44, 0.95) 0%, rgba(22, 26, 32, 0.92) 100%);
         }

@@ -29,6 +29,73 @@
     let lastDashboardPayload = null;
     let adminMainTabName = "dashboard";
 
+    const ADMIN_THEME_KEY = "dsaAdminThemeV1";
+    const ADMIN_CONSOLE_HEAD = {
+        dashboard: {
+            title: "Admin dashboard",
+            blurb:
+                "Manage site config, practice accounts, published graph, and audit data. Every section supports a visual editor and a raw JSON view.",
+        },
+        site: {
+            title: "Site",
+            blurb: "KV-backed settings as strings (often JSON). Use Reload after changes made elsewhere.",
+        },
+        users: {
+            title: "Users",
+            blurb: "Practice accounts: role, plan, status, profile, and destructive actions in Danger zone.",
+        },
+        content: {
+            title: "Content",
+            blurb: "Published mind map — UI preview or JSON editor, then publish.",
+        },
+        system: {
+            title: "System",
+            blurb: "Security and content audits, contacts, and combined JSON export.",
+        },
+    };
+
+    function syncAdminConsoleHeader(name) {
+        const c = ADMIN_CONSOLE_HEAD[name] || ADMIN_CONSOLE_HEAD.dashboard;
+        const t = document.getElementById("adm-console-title");
+        const b = document.getElementById("adm-console-blurb");
+        if (t) t.textContent = c.title;
+        if (b) b.textContent = c.blurb || "";
+    }
+
+    function applyAdminTheme(mode) {
+        const m = mode === "dark" ? "dark" : "light";
+        document.documentElement.setAttribute("data-admin-theme", m);
+        try {
+            localStorage.setItem(ADMIN_THEME_KEY, m);
+        } catch (e) {
+            /* ignore */
+        }
+        const lightBtn = document.getElementById("adm-theme-light");
+        const darkBtn = document.getElementById("adm-theme-dark");
+        if (lightBtn) lightBtn.classList.toggle("active", m === "light");
+        if (darkBtn) darkBtn.classList.toggle("active", m === "dark");
+    }
+
+    function initAdminThemeControls() {
+        let initial = document.documentElement.getAttribute("data-admin-theme");
+        if (initial !== "dark" && initial !== "light") {
+            initial = "light";
+        }
+        applyAdminTheme(initial);
+        const lightBtn = document.getElementById("adm-theme-light");
+        const darkBtn = document.getElementById("adm-theme-dark");
+        if (lightBtn) {
+            lightBtn.addEventListener("click", function () {
+                applyAdminTheme("light");
+            });
+        }
+        if (darkBtn) {
+            darkBtn.addEventListener("click", function () {
+                applyAdminTheme("dark");
+            });
+        }
+    }
+
     function apiAdmin(segment) {
         return new URL("api/admin/" + segment, document.baseURI).href;
     }
@@ -134,6 +201,7 @@
             /* HTML uses .adm-hidden on panes (display:none !important); hidden="" alone does not remove it. */
             pane.classList.toggle("adm-hidden", !on);
         });
+        syncAdminConsoleHeader(name);
     }
 
     function setDualSection(section, mode) {
@@ -836,6 +904,32 @@
         }
     }
 
+    async function deleteUserFromForm() {
+        const id = parseInt(document.getElementById("adm-user-id").value, 10);
+        const out = "admin-edit-user-status";
+        if (!id) {
+            setStatus(out, "Select a user from the table.", "err");
+            return;
+        }
+        const email = (document.getElementById("adm-user-email") && document.getElementById("adm-user-email").value) || "";
+        const line = "Permanently delete user " + id + (email ? " (" + email + ")" : "") + "? This cannot be undone.";
+        if (!window.confirm(line)) {
+            return;
+        }
+        if (!window.confirm("Second confirmation: delete this user and cascade-linked rows?")) {
+            return;
+        }
+        setStatus(out, "Deleting…", "");
+        try {
+            await fetchJson(apiAdmin("user") + "?id=" + encodeURIComponent(id), { method: "DELETE" });
+            setStatus(out, "User deleted.", "ok");
+            formSetUserEmpty();
+            await loadUsers();
+        } catch (e) {
+            setStatus(out, e.message, "err");
+        }
+    }
+
     async function applyUserJson() {
         const ta = document.getElementById("adm-users-json");
         const msg = "adm-users-json-msg";
@@ -1289,6 +1383,8 @@
         Object.keys(dualMode).forEach(function (k) {
             setDualSection(k, dualMode[k]);
         });
+        initAdminThemeControls();
+        syncAdminConsoleHeader(adminMainTabName);
 
         function refreshCurrentAdminSection() {
             const open = document.querySelector(".admin-session-pill.active[data-admin-tab]");
@@ -1305,10 +1401,6 @@
         const refreshBtn = document.getElementById("adm-refresh-all");
         if (refreshBtn) {
             refreshBtn.addEventListener("click", refreshCurrentAdminSection);
-        }
-        const topRefreshBtn = document.getElementById("adm-top-refresh");
-        if (topRefreshBtn) {
-            topRefreshBtn.addEventListener("click", refreshCurrentAdminSection);
         }
 
         const dashCopy = document.getElementById("adm-dash-json-copy");
@@ -1346,6 +1438,8 @@
         });
         const saveUser = document.getElementById("admin-save-user-patch");
         if (saveUser) saveUser.addEventListener("click", saveUserFromForm);
+        const delUser = document.getElementById("admin-delete-user");
+        if (delUser) delUser.addEventListener("click", deleteUserFromForm);
         const ujLoad = document.getElementById("adm-users-json-load");
         if (ujLoad) ujLoad.addEventListener("click", function () {
             if (!selectedUserId) {

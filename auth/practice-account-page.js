@@ -24,6 +24,26 @@
         return;
     }
 
+    function safeNextRedirect() {
+        try {
+            var u = new URL(window.location.href);
+            var next = u.searchParams.get("next") || u.searchParams.get("return");
+            if (!next) {
+                return "./index.html";
+            }
+            next = String(next).trim();
+            if (next.indexOf("..") >= 0 || next.indexOf("/") >= 0 || next.indexOf("\\") >= 0) {
+                return "./index.html";
+            }
+            if (!/\.html$/i.test(next)) {
+                return "./index.html";
+            }
+            return "./" + next;
+        } catch (e) {
+            return "./index.html";
+        }
+    }
+
     let mode = "signin";
     let step = 1;
 
@@ -132,7 +152,7 @@
             }
             practiceMsg(mode === "signin" ? "Signed in." : "Account created. You are signed in.", "ok");
             updatePracticeSignedInUi();
-            window.location.href = "./index.html";
+            window.location.href = safeNextRedirect();
         } catch (err) {
             practiceMsg(String(err), "err");
         } finally {

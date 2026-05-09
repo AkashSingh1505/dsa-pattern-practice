@@ -1,0 +1,376 @@
+/* Member dashboard (user-dashboard.html) — extends portal-shell tokens via .dsa-portal-page */
+
+.dsa-udash-layout {
+    width: 100%;
+    max-width: min(1200px, calc(100vw - 32px));
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.dsa-udash-topnav {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+    padding: 12px 16px;
+    border-radius: 18px;
+    border: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.78));
+    backdrop-filter: blur(16px) saturate(140%);
+    box-shadow: 0 8px 32px rgba(15, 23, 32, 0.08);
+}
+
+.dsa-udash-brand {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--ink);
+    text-decoration: none;
+    letter-spacing: -0.02em;
+    margin-right: 4px;
+}
+
+.dsa-udash-nav-scroll {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+    align-items: center;
+}
+
+.dsa-udash-nav-scroll a {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink-2);
+    text-decoration: none;
+    padding: 7px 11px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+.dsa-udash-nav-scroll a:hover {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: var(--line);
+    color: var(--ink);
+}
+
+.dsa-udash-nav-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.dsa-udash-icon-btn {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.85);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink);
+}
+
+.dsa-udash-icon-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.dsa-udash-icon-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.dsa-udash-plan-pill {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(15, 23, 32, 0.08);
+    color: var(--ink-2);
+}
+
+.dsa-udash-plan-pill--pro {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    color: #f8fafc;
+}
+
+.dsa-udash-graph-hero {
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    background:
+        radial-gradient(800px 400px at 90% 0%, rgba(191, 225, 212, 0.55), transparent 55%),
+        radial-gradient(700px 380px at 10% 100%, rgba(207, 225, 240, 0.6), transparent 50%),
+        linear-gradient(145deg, rgba(255, 255, 255, 0.75), rgba(248, 250, 252, 0.5));
+    position: relative;
+}
+
+.dsa-udash-graph-hero-inner {
+    padding: 22px 22px 20px;
+    display: grid;
+    gap: 16px;
+}
+
+@media (min-width: 720px) {
+    .dsa-udash-graph-hero-inner {
+        grid-template-columns: 1fr auto;
+        align-items: end;
+    }
+}
+
+.dsa-udash-graph-preview {
+    min-height: 140px;
+    border-radius: 16px;
+    border: 1px dashed rgba(15, 23, 32, 0.12);
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0%, transparent 50%),
+        repeating-linear-gradient(-12deg, transparent, transparent 10px, rgba(15, 23, 32, 0.03) 10px, rgba(15, 23, 32, 0.03) 11px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.dsa-udash-hero-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: min(100%, 240px);
+}
+
+.dsa-udash-btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.dsa-udash-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    border: 1px solid var(--line);
+    text-decoration: none;
+    color: var(--ink);
+    background: #fff;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.dsa-udash-btn:hover:not(:disabled) {
+    box-shadow: 0 6px 18px rgba(15, 23, 32, 0.1);
+}
+
+.dsa-udash-btn--primary {
+    background: linear-gradient(180deg, #2a3442, #0f1720);
+    color: #fff;
+    border-color: transparent;
+}
+
+.dsa-udash-btn:disabled,
+.dsa-udash-btn[aria-disabled="true"] {
+    opacity: 0.48;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.dsa-udash-section {
+    scroll-margin-top: 88px;
+}
+
+.dsa-udash-section-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.dsa-udash-section-head h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.dsa-udash-section-head p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--muted);
+    width: 100%;
+}
+
+.dsa-udash-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+}
+
+.dsa-udash-fcard {
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    background: var(--glass);
+    backdrop-filter: blur(20px) saturate(150%);
+    padding: 16px 18px;
+    box-shadow: 0 10px 36px rgba(15, 23, 32, 0.07);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 120px;
+    position: relative;
+}
+
+.dsa-udash-fcard h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.dsa-udash-fcard p {
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--ink-2);
+    flex: 1;
+}
+
+.dsa-udash-fcard-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.dsa-udash-tag {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: rgba(15, 23, 32, 0.06);
+    color: var(--muted);
+}
+
+.dsa-udash-tag--soon {
+    background: rgba(180, 35, 24, 0.08);
+    color: #b42318;
+}
+
+.dsa-udash-tag--pro {
+    background: rgba(30, 41, 59, 0.12);
+    color: #1e293b;
+}
+
+.dsa-udash-fcard.is-locked {
+    opacity: 0.72;
+}
+
+.dsa-udash-fcard.is-locked::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 18px;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(248, 250, 252, 0.35));
+}
+
+.dsa-udash-settings-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+}
+
+.dsa-udash-settings-row:last-child {
+    border-bottom: 0;
+}
+
+.dsa-udash-toggle {
+    width: 44px;
+    height: 26px;
+    border-radius: 999px;
+    border: 0;
+    background: rgba(15, 23, 32, 0.15);
+    position: relative;
+    cursor: not-allowed;
+    opacity: 0.5;
+    flex-shrink: 0;
+}
+
+.dsa-udash-toggle::after {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    top: 3px;
+    left: 3px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.dsa-udash-invite-box {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(15, 23, 32, 0.05);
+    border: 1px solid var(--line);
+    word-break: break-all;
+    color: var(--muted);
+}
+
+.dsa-udash-billing-card {
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    background: var(--glass);
+    padding: 20px;
+    backdrop-filter: blur(20px);
+}
+
+.dsa-udash-billing-card ul {
+    margin: 12px 0 0;
+    padding-left: 18px;
+    font-size: 13px;
+    color: var(--ink-2);
+    line-height: 1.55;
+}
+
+.dsa-udash-redirect-banner {
+    text-align: center;
+    padding: 48px 20px;
+}
+
+.dsa-udash-redirect-banner .cta {
+    max-width: 280px;
+    margin: 16px auto 0;
+    text-decoration: none;
+    display: flex;
+}

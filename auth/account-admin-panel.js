@@ -5,6 +5,13 @@
 (function () {
     const CMS_KEY = "dsa";
 
+    /** Mind map mount targets — must match admin.html preview markup. */
+    const ADMIN_GRAPH_MOUNT = {
+        viewportId: "admin-dsa-hierarchy-root",
+        mapToolbarHostId: "admin-dsa-map-toolbar-host",
+        shellToolbarId: null,
+    };
+
     const dualMode = {
         dashboard: "ui",
         site: "ui",
@@ -20,6 +27,7 @@
     let selectedUserId = null;
     let lastUserPayload = null;
     let lastDashboardPayload = null;
+    let adminMainTabName = "dashboard";
 
     function apiAdmin(segment) {
         return new URL("api/admin/" + segment, document.baseURI).href;
@@ -92,6 +100,13 @@
     }
 
     function activeMainTab(name) {
+        const prev = adminMainTabName;
+        adminMainTabName = name;
+        if (prev === "content" && name !== "content") {
+            if (typeof dsaTeardownAdminGraphPreview === "function") {
+                dsaTeardownAdminGraphPreview();
+            }
+        }
         document.querySelectorAll("[data-admin-tab]").forEach(function (btn) {
             const on = btn.getAttribute("data-admin-tab") === name;
             btn.classList.toggle("active", on);
@@ -115,6 +130,15 @@
         const showUi = mode === "ui";
         if (ui) ui.classList.toggle("adm-hidden", !showUi);
         if (json) json.classList.toggle("adm-hidden", showUi);
+        if (section === "content") {
+            if (mode === "json") {
+                if (typeof dsaTeardownAdminGraphPreview === "function") {
+                    dsaTeardownAdminGraphPreview();
+                }
+            } else if (typeof window.__dsaAdminRefreshContentGraph === "function") {
+                window.__dsaAdminRefreshContentGraph(true);
+            }
+        }
     }
 
     function statCard(lbl, val, sub) {
@@ -713,6 +737,46 @@
         if (!editor) return;
 
         let lastCms = null;
+        let graphPreviewTimer = null;
+
+        function contentPaneIsActive() {
+            const pane = document.querySelector('.adm-pane[data-admin-pane="content"]');
+            return !!(pane && !pane.classList.contains("adm-hidden"));
+        }
+
+        function scheduleRefreshContentGraphPreview(force) {
+            if (dualMode.content !== "ui") {
+                return;
+            }
+            if (typeof dsaReloadGraphFromEditorJson !== "function") {
+                return;
+            }
+            const run = function () {
+                graphPreviewTimer = null;
+                if (!contentPaneIsActive()) {
+                    return;
+                }
+                const r = dsaReloadGraphFromEditorJson(editor.value, ADMIN_GRAPH_MOUNT);
+                if (!r.ok && force) {
+                    const em = r.error && r.error.message;
+                    graphSetStatus(status, "Preview: " + (em || "Invalid JSON"), "err");
+                }
+            };
+            if (force) {
+                if (graphPreviewTimer) {
+                    clearTimeout(graphPreviewTimer);
+                    graphPreviewTimer = null;
+                }
+                run();
+                return;
+            }
+            if (graphPreviewTimer) {
+                clearTimeout(graphPreviewTimer);
+            }
+            graphPreviewTimer = setTimeout(run, 350);
+        }
+
+        window.__dsaAdminRefreshContentGraph = scheduleRefreshContentGraphPreview;
 
         function graphSetStatus(el, msg, cls) {
             if (!el) return;
@@ -741,6 +805,9 @@
                     ? "Draft in progress — live revision " + (d.published && d.published.revision) + "."
                     : "No draft — editor shows live published JSON.";
                 graphSetStatus(status, hint, "ok");
+                if (contentPaneIsActive() && dualMode.content === "ui") {
+                    scheduleRefreshContentGraphPreview(true);
+                }
             } catch (e) {
                 graphSetStatus(status, "Load failed: " + e.message, "err");
             }
@@ -834,6 +901,9 @@
                 editor.value = JSON.stringify(JSON.parse(editor.value), null, 2);
                 graphSetStatus(status, "Formatted.", "ok");
                 updateContentSummary(editor, lastCms);
+                if (dualMode.content === "ui") {
+                    scheduleRefreshContentGraphPreview(true);
+                }
             } catch (e) {
                 graphSetStatus(status, "Format failed: " + e.message, "err");
             }

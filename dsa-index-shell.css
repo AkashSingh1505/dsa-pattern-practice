@@ -1,8 +1,14 @@
 /**
  * Index page shell — matches reference mock (body.dsa-index-ref).
+ * Admin embeds the same chrome under .dsa-graph-shell.dsa-index-ref (see admin Content → UI).
  * Mind-map node UI stays in styles.css / script (no .graph/.node rules here).
  */
-body.dsa-index-ref {
+.dsa-graph-shell.dsa-index-ref {
+    --pill: rgba(255, 255, 255, 0.7);
+    --accent-2: #0f1720;
+}
+
+:is(body, .dsa-graph-shell).dsa-index-ref {
     --bg-1: #dfe9f3;
     --bg-2: #f5e6d3;
     --bg-3: #cfe7d8;
@@ -35,7 +41,7 @@ body.dsa-index-ref {
     -webkit-font-smoothing: antialiased;
 }
 
-body.dsa-index-ref .nav {
+:is(body, .dsa-graph-shell).dsa-index-ref .nav {
     position: sticky;
     top: 0;
     z-index: 50;
@@ -45,7 +51,7 @@ body.dsa-index-ref .nav {
     border-bottom: 1px solid var(--line);
 }
 
-body.dsa-index-ref .nav-inner {
+:is(body, .dsa-graph-shell).dsa-index-ref .nav-inner {
     max-width: 1400px;
     margin: 0 auto;
     height: 58px;
@@ -56,7 +62,7 @@ body.dsa-index-ref .nav-inner {
     box-sizing: border-box;
 }
 
-body.dsa-index-ref .nav .brand {
+:is(body, .dsa-graph-shell).dsa-index-ref .nav .brand {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -67,7 +73,7 @@ body.dsa-index-ref .nav .brand {
     text-decoration: none;
 }
 
-body.dsa-index-ref .nav .brand-mark {
+:is(body, .dsa-graph-shell).dsa-index-ref .nav .brand-mark {
     width: 28px;
     height: 28px;
     border-radius: 8px;
@@ -83,13 +89,13 @@ body.dsa-index-ref .nav .brand-mark {
         inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
-body.dsa-index-ref .nav .nav-links {
+:is(body, .dsa-graph-shell).dsa-index-ref .nav .nav-links {
     display: flex;
     align-items: center;
     gap: 4px;
 }
 
-body.dsa-index-ref .nav .nav-links a {
+:is(body, .dsa-graph-shell).dsa-index-ref .nav .nav-links a {
     padding: 8px 14px;
     font-size: 13.5px;
     font-weight: 600;
@@ -99,12 +105,12 @@ body.dsa-index-ref .nav .nav-links a {
     transition: 0.2s;
 }
 
-body.dsa-index-ref .nav .nav-links a:hover {
+:is(body, .dsa-graph-shell).dsa-index-ref .nav .nav-links a:hover {
     background: rgba(255, 255, 255, 0.6);
     color: var(--ink);
 }
 
-body.dsa-index-ref .nav .nav-links a.active {
+:is(body, .dsa-graph-shell).dsa-index-ref .nav .nav-links a.active {
     background: #fff;
     color: var(--ink);
     box-shadow:
@@ -112,14 +118,14 @@ body.dsa-index-ref .nav .nav-links a.active {
         0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-body.dsa-index-ref .nav .nav-auth {
+:is(body, .dsa-graph-shell).dsa-index-ref .nav .nav-auth {
     display: flex;
     align-items: center;
     gap: 8px;
     flex-shrink: 0;
 }
 
-body.dsa-index-ref .nav .nav-auth .nav-admin-entry {
+:is(body, .dsa-graph-shell).dsa-index-ref .nav .nav-auth .nav-admin-entry {
     padding: 8px 14px;
     font-size: 13.5px;
     font-weight: 600;
@@ -130,12 +136,12 @@ body.dsa-index-ref .nav .nav-auth .nav-admin-entry {
     white-space: nowrap;
 }
 
-body.dsa-index-ref .nav .nav-auth .nav-admin-entry:hover {
+:is(body, .dsa-graph-shell).dsa-index-ref .nav .nav-auth .nav-admin-entry:hover {
     background: rgba(255, 255, 255, 0.6);
     color: var(--ink);
 }
 
-body.dsa-index-ref .nav .signout {
+:is(body, .dsa-graph-shell).dsa-index-ref .nav .signout {
     height: 36px;
     padding: 0 14px;
     border-radius: 10px;
@@ -149,13 +155,13 @@ body.dsa-index-ref .nav .signout {
     transition: 0.2s;
 }
 
-body.dsa-index-ref .nav .signout:hover {
+:is(body, .dsa-graph-shell).dsa-index-ref .nav .signout:hover {
     background: #fff;
     transform: translateY(-1px);
 }
 
 /* After wireMobileNav(): links + signout wrapped in .right for the slide-down panel. */
-body.dsa-index-ref .nav .right {
+:is(body, .dsa-graph-shell).dsa-index-ref .nav .right {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -164,7 +170,7 @@ body.dsa-index-ref .nav .right {
 
 /* Desktop: brand left | DSA + CMS centered | Login + Sign out in .nav-auth flush right */
 @media (min-width: 721px) {
-    body.dsa-index-ref .nav-inner {
+    :is(body, .dsa-graph-shell).dsa-index-ref .nav-inner {
         display: grid;
         grid-template-columns: 1fr auto 1fr;
         align-items: center;
@@ -172,21 +178,21 @@ body.dsa-index-ref .nav .right {
         justify-content: initial;
     }
 
-    body.dsa-index-ref .nav .brand {
+    :is(body, .dsa-graph-shell).dsa-index-ref .nav .brand {
         grid-column: 1;
         justify-self: start;
     }
 
-    body.dsa-index-ref .nav .right {
+    :is(body, .dsa-graph-shell).dsa-index-ref .nav .right {
         display: contents;
     }
 
-    body.dsa-index-ref .nav .nav-links {
+    :is(body, .dsa-graph-shell).dsa-index-ref .nav .nav-links {
         grid-column: 2;
         justify-self: center;
     }
 
-    body.dsa-index-ref .nav .nav-auth {
+    :is(body, .dsa-graph-shell).dsa-index-ref .nav .nav-auth {
         grid-column: 3;
         justify-self: end;
         justify-content: flex-end;
@@ -194,14 +200,14 @@ body.dsa-index-ref .nav .right {
 }
 
 @media (max-width: 720px) {
-    body.dsa-index-ref .nav {
+    :is(body, .dsa-graph-shell).dsa-index-ref .nav {
         position: relative;
         flex-wrap: wrap;
         height: auto;
         min-height: 58px;
     }
 
-    body.dsa-index-ref .nav .nav-inner {
+    :is(body, .dsa-graph-shell).dsa-index-ref .nav .nav-inner {
         display: flex;
         position: relative;
         height: auto;
@@ -212,12 +218,12 @@ body.dsa-index-ref .nav .right {
         justify-content: space-between;
     }
 
-    body.dsa-index-ref .nav .brand {
+    :is(body, .dsa-graph-shell).dsa-index-ref .nav .brand {
         flex: 1 1 auto;
         min-width: 0;
     }
 
-    body.dsa-index-ref .nav .right {
+    :is(body, .dsa-graph-shell).dsa-index-ref .nav .right {
         position: absolute;
         left: 12px;
         right: 12px;
@@ -250,20 +256,20 @@ body.dsa-index-ref .nav .right {
             visibility 0.22s;
     }
 
-    body.dsa-index-ref .nav.nav--menu-open .right {
+    :is(body, .dsa-graph-shell).dsa-index-ref .nav.nav--menu-open .right {
         opacity: 1;
         visibility: visible;
         transform: translateY(0) scale(1);
         pointer-events: auto;
     }
 
-    body.dsa-index-ref .nav.nav--menu-open .nav-mobile-toggle {
+    :is(body, .dsa-graph-shell).dsa-index-ref .nav.nav--menu-open .nav-mobile-toggle {
         background: rgba(255, 255, 255, 0.85);
         border-color: rgba(15, 23, 32, 0.18);
         color: var(--ink);
     }
 
-    body.dsa-index-ref .nav .right .nav-links {
+    :is(body, .dsa-graph-shell).dsa-index-ref .nav .right .nav-links {
         display: flex;
         flex-direction: column;
         align-items: stretch;
@@ -271,7 +277,7 @@ body.dsa-index-ref .nav .right {
         width: 100%;
     }
 
-    body.dsa-index-ref .nav .right .nav-auth {
+    :is(body, .dsa-graph-shell).dsa-index-ref .nav .right .nav-auth {
         display: flex;
         flex-direction: column;
         align-items: stretch;
@@ -279,9 +285,9 @@ body.dsa-index-ref .nav .right {
         width: 100%;
     }
 
-    body.dsa-index-ref .nav .right .nav-links a,
-    body.dsa-index-ref .nav .right .nav-auth .nav-admin-entry,
-    body.dsa-index-ref .nav .right .nav-auth .nav-signout-btn {
+    :is(body, .dsa-graph-shell).dsa-index-ref .nav .right .nav-links a,
+    :is(body, .dsa-graph-shell).dsa-index-ref .nav .right .nav-auth .nav-admin-entry,
+    :is(body, .dsa-graph-shell).dsa-index-ref .nav .right .nav-auth .nav-signout-btn {
         margin-left: 0;
         width: 100%;
         justify-content: center;
@@ -294,16 +300,16 @@ body.dsa-index-ref .nav .right {
         color: var(--ink-2);
     }
 
-    body.dsa-index-ref .nav .right .nav-links a:hover,
-    body.dsa-index-ref .nav .right .nav-auth .nav-admin-entry:hover,
-    body.dsa-index-ref .nav .right .nav-auth .nav-signout-btn:hover {
+    :is(body, .dsa-graph-shell).dsa-index-ref .nav .right .nav-links a:hover,
+    :is(body, .dsa-graph-shell).dsa-index-ref .nav .right .nav-auth .nav-admin-entry:hover,
+    :is(body, .dsa-graph-shell).dsa-index-ref .nav .right .nav-auth .nav-signout-btn:hover {
         background: #fff;
         color: var(--ink);
         border-color: rgba(15, 23, 32, 0.12);
     }
 }
 
-body.dsa-index-ref .page {
+:is(body, .dsa-graph-shell).dsa-index-ref .page {
     max-width: 1400px;
     margin: 0 auto;
     padding: 24px 22px 40px;
@@ -313,7 +319,7 @@ body.dsa-index-ref .page {
     box-sizing: border-box;
 }
 
-body.dsa-index-ref .head {
+:is(body, .dsa-graph-shell).dsa-index-ref .head {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
@@ -321,7 +327,7 @@ body.dsa-index-ref .head {
     padding: 4px 4px 0;
 }
 
-body.dsa-index-ref .head-text .eyebrow {
+:is(body, .dsa-graph-shell).dsa-index-ref .head-text .eyebrow {
     font-size: 11px;
     letter-spacing: 0.18em;
     font-weight: 600;
@@ -330,7 +336,7 @@ body.dsa-index-ref .head-text .eyebrow {
     margin-bottom: 8px;
 }
 
-body.dsa-index-ref .head-text h1 {
+:is(body, .dsa-graph-shell).dsa-index-ref .head-text h1 {
     font-size: 34px;
     font-weight: 700;
     margin: 0 0 8px;
@@ -338,7 +344,7 @@ body.dsa-index-ref .head-text h1 {
     line-height: 1;
 }
 
-body.dsa-index-ref .head-text p {
+:is(body, .dsa-graph-shell).dsa-index-ref .head-text p {
     color: var(--ink-2);
     font-size: 13.5px;
     line-height: 1.5;
@@ -346,16 +352,16 @@ body.dsa-index-ref .head-text p {
     max-width: 680px;
 }
 
-body.dsa-index-ref .head-text p b {
+:is(body, .dsa-graph-shell).dsa-index-ref .head-text p b {
     color: var(--ink);
 }
 
-body.dsa-index-ref #dsa-shell-view-toolbar {
+:is(body, .dsa-graph-shell).dsa-index-ref #dsa-shell-view-toolbar {
     flex-shrink: 0;
 }
 
-body.dsa-index-ref .seg,
-body.dsa-index-ref .dsa-view-tabs.seg {
+:is(body, .dsa-graph-shell).dsa-index-ref .seg,
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-view-tabs.seg {
     display: inline-flex;
     align-items: center;
     gap: 0;
@@ -369,11 +375,11 @@ body.dsa-index-ref .dsa-view-tabs.seg {
 }
 
 /* Sliding white pill (thumb) — DSA view tabs only */
-body.dsa-index-ref .dsa-view-tabs.dsa-seg-track {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-view-tabs.dsa-seg-track {
     position: relative;
 }
 
-body.dsa-index-ref .dsa-view-tabs.dsa-seg-track > .dsa-seg-thumb {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-view-tabs.dsa-seg-track > .dsa-seg-thumb {
     position: absolute;
     left: 0;
     top: 0;
@@ -394,13 +400,13 @@ body.dsa-index-ref .dsa-view-tabs.dsa-seg-track > .dsa-seg-thumb {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    body.dsa-index-ref .dsa-view-tabs.dsa-seg-track > .dsa-seg-thumb {
+    :is(body, .dsa-graph-shell).dsa-index-ref .dsa-view-tabs.dsa-seg-track > .dsa-seg-thumb {
         transition: opacity 0.15s ease;
     }
 }
 
-body.dsa-index-ref .seg .dsa-view-btn,
-body.dsa-index-ref .dsa-view-tabs.seg .dsa-view-btn {
+:is(body, .dsa-graph-shell).dsa-index-ref .seg .dsa-view-btn,
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-view-tabs.seg .dsa-view-btn {
     appearance: none;
     border: 0;
     background: transparent;
@@ -423,14 +429,14 @@ body.dsa-index-ref .dsa-view-tabs.seg .dsa-view-btn {
     z-index: 1;
 }
 
-body.dsa-index-ref .seg .dsa-view-btn.dsa-view-btn--active,
-body.dsa-index-ref .dsa-view-tabs.seg .dsa-view-btn.dsa-view-btn--active {
+:is(body, .dsa-graph-shell).dsa-index-ref .seg .dsa-view-btn.dsa-view-btn--active,
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-view-tabs.seg .dsa-view-btn.dsa-view-btn--active {
     background: transparent;
     color: var(--ink);
     box-shadow: none;
 }
 
-body.dsa-index-ref .dsa-view-toolbar {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-view-toolbar {
     margin: 0;
     width: auto;
     display: flex;
@@ -439,7 +445,7 @@ body.dsa-index-ref .dsa-view-toolbar {
     justify-content: flex-end;
 }
 
-body.dsa-index-ref .toolbar {
+:is(body, .dsa-graph-shell).dsa-index-ref .toolbar {
     background: var(--glass);
     backdrop-filter: blur(28px) saturate(160%);
     -webkit-backdrop-filter: blur(28px) saturate(160%);
@@ -456,7 +462,7 @@ body.dsa-index-ref .toolbar {
     overflow: hidden;
 }
 
-body.dsa-index-ref .toolbar::before {
+:is(body, .dsa-graph-shell).dsa-index-ref .toolbar::before {
     content: "";
     position: absolute;
     inset: 0;
@@ -464,7 +470,7 @@ body.dsa-index-ref .toolbar::before {
     pointer-events: none;
 }
 
-body.dsa-index-ref #dsa-map-toolbar-host {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) {
     display: flex;
     align-items: center;
     flex: 1;
@@ -473,7 +479,7 @@ body.dsa-index-ref #dsa-map-toolbar-host {
     z-index: 1;
 }
 
-body.dsa-index-ref #dsa-map-toolbar-host .dsa-graph-map-toolbar {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .dsa-graph-map-toolbar {
     flex: 1;
     min-width: 0;
     margin: 0;
@@ -486,22 +492,22 @@ body.dsa-index-ref #dsa-map-toolbar-host .dsa-graph-map-toolbar {
     border-radius: 0;
 }
 
-body.dsa-index-ref #dsa-map-toolbar-host .dsa-graph-map-toolbar::before {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .dsa-graph-map-toolbar::before {
     display: none;
 }
 
-body.dsa-index-ref #dsa-map-toolbar-host .dsa-graph-map-toolbar {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .dsa-graph-map-toolbar {
     justify-content: flex-start;
     flex-wrap: nowrap;
     gap: 10px 14px;
 }
 
-body.dsa-index-ref #dsa-map-toolbar-host .dsa-graph-map-toolbar-cluster {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .dsa-graph-map-toolbar-cluster {
     gap: 8px;
 }
 
 /* Hint + leading dot, immediately left of zoom (margin-left: auto pulls hint+zoom right). */
-body.dsa-index-ref #dsa-map-toolbar-host .dsa-graph-map-toolbar-hint {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .dsa-graph-map-toolbar-hint {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -515,7 +521,7 @@ body.dsa-index-ref #dsa-map-toolbar-host .dsa-graph-map-toolbar-hint {
     color: var(--muted);
 }
 
-body.dsa-index-ref #dsa-map-toolbar-host .dsa-graph-map-toolbar-hint .dot {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .dsa-graph-map-toolbar-hint .dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
@@ -523,7 +529,7 @@ body.dsa-index-ref #dsa-map-toolbar-host .dsa-graph-map-toolbar-hint .dot {
     flex-shrink: 0;
 }
 
-body.dsa-index-ref #dsa-map-toolbar-host .dsa-graph-map-toolbar-hint-text {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .dsa-graph-map-toolbar-hint-text {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -531,13 +537,13 @@ body.dsa-index-ref #dsa-map-toolbar-host .dsa-graph-map-toolbar-hint-text {
     text-align: left;
 }
 
-body.dsa-index-ref #dsa-map-toolbar-host .dsa-graph-map-toolbar-cluster--zoom {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .dsa-graph-map-toolbar-cluster--zoom {
     margin-left: 0;
     flex-shrink: 0;
 }
 
 /* Expand / collapse — match reference .btn */
-body.dsa-index-ref #dsa-map-toolbar-host .btn {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .btn {
     height: 36px;
     padding: 0 12px;
     border-radius: 10px;
@@ -555,20 +561,20 @@ body.dsa-index-ref #dsa-map-toolbar-host .btn {
     box-shadow: none;
 }
 
-body.dsa-index-ref #dsa-map-toolbar-host .btn:hover {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .btn:hover {
     background: #fff;
     transform: translateY(-1px);
     color: var(--ink);
 }
 
-body.dsa-index-ref #dsa-map-toolbar-host .btn svg {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .btn svg {
     width: 14px;
     height: 14px;
     flex-shrink: 0;
 }
 
 /* Zoom — match reference .zoom (mounted toolbar only) */
-body.dsa-index-ref #dsa-map-toolbar-host .zoom {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .zoom {
     display: inline-flex;
     align-items: center;
     background: rgba(255, 255, 255, 0.6);
@@ -577,7 +583,7 @@ body.dsa-index-ref #dsa-map-toolbar-host .zoom {
     overflow: hidden;
 }
 
-body.dsa-index-ref #dsa-map-toolbar-host .zoom button {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .zoom button {
     width: 32px;
     height: 34px;
     border: 0;
@@ -593,12 +599,12 @@ body.dsa-index-ref #dsa-map-toolbar-host .zoom button {
     padding: 0;
 }
 
-body.dsa-index-ref #dsa-map-toolbar-host .zoom button:hover {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .zoom button:hover {
     background: rgba(255, 255, 255, 0.9);
     color: var(--ink);
 }
 
-body.dsa-index-ref #dsa-map-toolbar-host .zoom .val {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .zoom .val {
     padding: 0 10px;
     font-size: 12px;
     font-weight: 600;
@@ -611,7 +617,7 @@ body.dsa-index-ref #dsa-map-toolbar-host .zoom .val {
     font-variant-numeric: tabular-nums;
 }
 
-body.dsa-index-ref .graph-card {
+:is(body, .dsa-graph-shell).dsa-index-ref .graph-card {
     background: var(--glass);
     backdrop-filter: blur(28px) saturate(160%);
     -webkit-backdrop-filter: blur(28px) saturate(160%);
@@ -623,7 +629,7 @@ body.dsa-index-ref .graph-card {
     overflow: hidden;
 }
 
-body.dsa-index-ref .graph-card::before {
+:is(body, .dsa-graph-shell).dsa-index-ref .graph-card::before {
     content: "";
     position: absolute;
     inset: 0;
@@ -632,7 +638,7 @@ body.dsa-index-ref .graph-card::before {
     border-radius: 22px;
 }
 
-body.dsa-index-ref .graph-stage {
+:is(body, .dsa-graph-shell).dsa-index-ref .graph-stage {
     position: relative;
     border-radius: 16px;
     background:
@@ -644,7 +650,7 @@ body.dsa-index-ref .graph-stage {
     min-height: 560px;
 }
 
-body.dsa-index-ref .foot {
+:is(body, .dsa-graph-shell).dsa-index-ref .foot {
     text-align: center;
     color: var(--muted);
     font-size: 11.5px;
@@ -652,13 +658,13 @@ body.dsa-index-ref .foot {
     line-height: 1.5;
 }
 
-body.dsa-index-ref .foot a {
+:is(body, .dsa-graph-shell).dsa-index-ref .foot a {
     color: var(--ink-2);
     text-decoration: none;
     font-weight: 600;
 }
 
-body.dsa-index-ref .dsa-index-site-footer.footer {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-index-site-footer.footer {
     background: rgba(255, 255, 255, 0.38);
     backdrop-filter: blur(18px) saturate(130%);
     -webkit-backdrop-filter: blur(18px) saturate(130%);
@@ -666,15 +672,15 @@ body.dsa-index-ref .dsa-index-site-footer.footer {
     min-height: auto;
 }
 
-body.dsa-index-ref .dsa-index-site-footer .footer-bottom {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-index-site-footer .footer-bottom {
     border-top-color: rgba(15, 23, 32, 0.08);
 }
 
-body.dsa-index-ref .dsa-index-site-footer .footer-copyright p {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-index-site-footer .footer-copyright p {
     color: var(--ink-2);
 }
 
-body.dsa-index-ref .dsa-graph-hint--shell-external {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-graph-hint--shell-external {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -687,7 +693,7 @@ body.dsa-index-ref .dsa-graph-hint--shell-external {
 }
 
 /* —— Practice problem card + solution UI (glass, index only) —— */
-body.dsa-index-ref .dsa-h-problems-card {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-h-problems-card {
     position: relative;
     background: var(--glass);
     backdrop-filter: blur(28px) saturate(160%);
@@ -698,7 +704,7 @@ body.dsa-index-ref .dsa-h-problems-card {
     overflow: visible;
 }
 
-body.dsa-index-ref .dsa-h-problems-card::before {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-h-problems-card::before {
     content: "";
     position: absolute;
     inset: 0;
@@ -708,20 +714,20 @@ body.dsa-index-ref .dsa-h-problems-card::before {
     z-index: 0;
 }
 
-body.dsa-index-ref .dsa-h-problems-card > * {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-h-problems-card > * {
     position: relative;
     z-index: 1;
 }
 
-body.dsa-index-ref .dsa-h-problems-card-title {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-h-problems-card-title {
     color: var(--ink-2);
 }
 
-body.dsa-index-ref .dsa-h-problems-empty {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-h-problems-empty {
     color: var(--muted);
 }
 
-body.dsa-index-ref .dsa-h-problems-filter-tabs {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-h-problems-filter-tabs {
     background: var(--glass-2);
     backdrop-filter: blur(20px) saturate(140%);
     -webkit-backdrop-filter: blur(20px) saturate(140%);
@@ -729,7 +735,7 @@ body.dsa-index-ref .dsa-h-problems-filter-tabs {
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
-body.dsa-index-ref .dsa-h-problems-tools-tab {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-h-problems-tools-tab {
     background: rgba(255, 255, 255, 0.5);
     backdrop-filter: blur(12px) saturate(130%);
     -webkit-backdrop-filter: blur(12px) saturate(130%);
@@ -737,39 +743,39 @@ body.dsa-index-ref .dsa-h-problems-tools-tab {
     color: var(--ink-2);
 }
 
-body.dsa-index-ref .dsa-h-problems-tools-tab:hover {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-h-problems-tools-tab:hover {
     background: rgba(255, 255, 255, 0.75);
     color: var(--ink);
     border-color: rgba(15, 23, 32, 0.12);
 }
 
-body.dsa-index-ref .dsa-h-problems-tools-panel {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-h-problems-tools-panel {
     background: var(--glass-2);
     backdrop-filter: blur(18px) saturate(140%);
     -webkit-backdrop-filter: blur(18px) saturate(140%);
     border: 1px solid rgba(255, 255, 255, 0.55);
 }
 
-body.dsa-index-ref .dsa-h-problems-tools-search-input {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-h-problems-tools-search-input {
     background: rgba(255, 255, 255, 0.72);
     border-color: var(--line);
     color: var(--ink);
 }
 
-body.dsa-index-ref .dsa-h-problems-diff-chip {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-h-problems-diff-chip {
     background: rgba(255, 255, 255, 0.45);
     border-color: var(--line);
     color: var(--ink-2);
 }
 
-body.dsa-index-ref .dsa-h-problems-diff-chip:hover {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-h-problems-diff-chip:hover {
     background: rgba(255, 255, 255, 0.75);
     border-color: rgba(15, 23, 32, 0.1);
     color: var(--ink);
 }
 
-body.dsa-index-ref .dsa-h-problems-card-close,
-body.dsa-index-ref .dsa-h-problems-card-delete-all {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-h-problems-card-close,
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-h-problems-card-delete-all {
     background: rgba(255, 255, 255, 0.55);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -777,14 +783,14 @@ body.dsa-index-ref .dsa-h-problems-card-delete-all {
     color: var(--ink-2);
 }
 
-body.dsa-index-ref .dsa-h-problems-card-close:hover,
-body.dsa-index-ref .dsa-h-problems-card-delete-all:hover {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-h-problems-card-close:hover,
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-h-problems-card-delete-all:hover {
     background: #fff;
     border-color: rgba(15, 23, 32, 0.12);
     color: var(--ink);
 }
 
-body.dsa-index-ref .dsa-h-sol-modern {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-h-sol-modern {
     background: var(--glass);
     backdrop-filter: blur(28px) saturate(160%);
     -webkit-backdrop-filter: blur(28px) saturate(160%);
@@ -792,23 +798,23 @@ body.dsa-index-ref .dsa-h-sol-modern {
     box-shadow: var(--shadow);
 }
 
-body.dsa-index-ref .dsa-h-sol-heading {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-h-sol-heading {
     color: var(--ink-2);
 }
 
-body.dsa-index-ref .dsa-h-sol-chip {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-h-sol-chip {
     background: rgba(255, 255, 255, 0.5);
     border-color: var(--line);
     color: var(--ink);
 }
 
-body.dsa-index-ref .dsa-h-sol-chip:hover {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-h-sol-chip:hover {
     background: rgba(255, 255, 255, 0.82);
     border-color: rgba(15, 23, 32, 0.1);
 }
 
-body.dsa-index-ref .dsa-h-prob-hint,
-body.dsa-index-ref .dsa-h-prob-companies {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-h-prob-hint,
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-h-prob-companies {
     background: var(--glass-2);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -816,40 +822,40 @@ body.dsa-index-ref .dsa-h-prob-companies {
     color: var(--ink-2);
 }
 
-body.dsa-index-ref .dsa-h-prob-pane-img {
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-h-prob-pane-img {
     border-color: var(--line);
 }
 
 @media (max-width: 780px) {
-    body.dsa-index-ref .head {
+    :is(body, .dsa-graph-shell).dsa-index-ref .head {
         flex-direction: column;
         align-items: flex-start;
         gap: 14px;
     }
 
-    body.dsa-index-ref .head-text h1 {
+    :is(body, .dsa-graph-shell).dsa-index-ref .head-text h1 {
         font-size: 28px;
     }
 
-    body.dsa-index-ref .page {
+    :is(body, .dsa-graph-shell).dsa-index-ref .page {
         padding: 24px 20px 40px;
     }
 
-    body.dsa-index-ref .nav-inner {
+    :is(body, .dsa-graph-shell).dsa-index-ref .nav-inner {
         padding: 0 18px;
     }
 
-    body.dsa-index-ref .nav .nav-links a {
+    :is(body, .dsa-graph-shell).dsa-index-ref .nav .nav-links a {
         padding: 7px 12px;
     }
 
-    body.dsa-index-ref .dsa-view-toolbar {
+    :is(body, .dsa-graph-shell).dsa-index-ref .dsa-view-toolbar {
         align-items: stretch;
         width: 100%;
         justify-content: stretch;
     }
 
-    body.dsa-index-ref .dsa-view-toolbar .dsa-view-tabs.seg {
+    :is(body, .dsa-graph-shell).dsa-index-ref .dsa-view-toolbar .dsa-view-tabs.seg {
         width: 100%;
         justify-content: center;
     }

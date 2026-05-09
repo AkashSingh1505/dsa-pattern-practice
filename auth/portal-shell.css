@@ -317,6 +317,16 @@
             font-size: 12px;
             line-height: 1.45;
         }
+        [data-adm-panel="content-json"] .cms-editor {
+            width: 100%;
+            min-height: 320px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 12px;
+            line-height: 1.45;
+        }
+        .adm-graph-preview.graph-card .graph-stage {
+            min-height: 420px;
+        }
         .adm-inline-label {
             font-size: 12px;
             font-weight: 600;
@@ -723,6 +733,70 @@
             flex: 1;
             min-width: 120px;
             height: 44px;
+        }
+        /* Logged-in admin: index-like top row (brand left, Sign out right) */
+        .admin-session-bar {
+            width: 100%;
+            margin-bottom: 12px;
+        }
+        .admin-session-bar-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            padding: 10px 14px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(20px) saturate(140%);
+            -webkit-backdrop-filter: blur(20px) saturate(140%);
+        }
+        .admin-session-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--ink);
+            text-decoration: none;
+        }
+        .admin-session-brand:hover {
+            color: var(--accent);
+        }
+        .admin-session-brand-mark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .admin-session-bar .nav-auth {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: auto;
+        }
+        .admin-session-bar .nav-signout-btn {
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.65);
+            color: var(--ink-2);
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .admin-session-bar .nav-signout-btn:hover {
+            background: #fff;
+            color: var(--ink);
         }
         .account-nav-back {
             display: inline-flex;

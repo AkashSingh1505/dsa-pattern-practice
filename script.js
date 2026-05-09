@@ -43,6 +43,39 @@ let dsaGraphUnifiedMode = false;
 /** Customize graph editor tab — no SVG mind-map edges. */
 let dsaGraphCustomizeMode = false;
 
+/** DOM ids for embedding the mind map (admin preview uses alternate roots). */
+let dsaGraphMount = {
+    viewportId: "dsa-hierarchy-root",
+    mapToolbarHostId: "dsa-map-toolbar-host",
+    shellToolbarId: "dsa-shell-view-toolbar",
+};
+/** When true, keep `dsaHierarchy` from the editor — do not refetch /api/data on view switches. */
+let dsaGraphPreviewMode = false;
+
+function dsaMergeGraphMount(patch) {
+    if (!patch || typeof patch !== "object") {
+        return;
+    }
+    if (typeof patch.viewportId === "string" && patch.viewportId) {
+        dsaGraphMount.viewportId = patch.viewportId;
+    }
+    if (typeof patch.mapToolbarHostId === "string" && patch.mapToolbarHostId) {
+        dsaGraphMount.mapToolbarHostId = patch.mapToolbarHostId;
+    }
+    if ("shellToolbarId" in patch) {
+        dsaGraphMount.shellToolbarId = patch.shellToolbarId;
+    }
+}
+
+function dsaResetGraphMountAndPreview() {
+    dsaGraphMount = {
+        viewportId: "dsa-hierarchy-root",
+        mapToolbarHostId: "dsa-map-toolbar-host",
+        shellToolbarId: "dsa-shell-view-toolbar",
+    };
+    dsaGraphPreviewMode = false;
+}
+
 const DSA_USER_STORAGE_KEY = "dsaUserNodesPayload";
 /** Merged from `data/dsa-user-nodes.json` + localStorage (local wins by id). Not a DB — see export. */
 let dsaUserPayload = { version: 1, nodes: [], removals: [] };
@@ -6936,7 +6969,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
 function attachDsaCustomizePanel(panel, scheduleRedraw, restoredGraphUi, authCtx) {
     panel.innerHTML = "";
     panel.classList.add("dsa-graph-panel--customize");
-    const mapToolbarHost = document.getElementById("dsa-map-toolbar-host");
+    const mapToolbarHost = document.getElementById(dsaGraphMount.mapToolbarHostId);
     if (mapToolbarHost) {
         mapToolbarHost.replaceChildren();
     }
@@ -7071,25 +7104,89 @@ function attachDsaCustomizePanel(panel, scheduleRedraw, restoredGraphUi, authCtx
     });
 }
 
-/** Clear index-shell slot for map toolbar (expand/collapse/zoom) so listeners are not orphaned. */
+/** Clear external map toolbar host (expand/collapse/zoom) so listeners are not orphaned. */
 function dsaClearExternalMapToolbarHost() {
-    const host = document.getElementById("dsa-map-toolbar-host");
+    const id = dsaGraphMount && dsaGraphMount.mapToolbarHostId;
+    const host = id ? document.getElementById(id) : null;
     if (host) {
         host.replaceChildren();
     }
 }
 
+/**
+ * Tear down an embedded admin graph preview and restore default mount ids for index.
+ */
+function dsaTeardownAdminGraphPreview() {
+    if (typeof dsaGraphResizeCleanup === "function") {
+        dsaGraphResizeCleanup();
+        dsaGraphResizeCleanup = null;
+    }
+    const vp = document.getElementById("admin-dsa-hierarchy-root");
+    if (vp) {
+        vp.innerHTML = "";
+        vp.classList.remove("dsa-view-unified", "dsa-view-customize");
+    }
+    dsaClearExternalMapToolbarHost();
+    dsaGraphActiveRoot = null;
+    dsaGraphUnifiedMode = false;
+    dsaGraphCustomizeMode = false;
+    dsaResetGraphMountAndPreview();
+}
+window.dsaTeardownAdminGraphPreview = dsaTeardownAdminGraphPreview;
+
+/**
+ * Apply mind-map JSON to `dsaHierarchy` and render the graph (e.g. admin Content → UI).
+ * @param {string} jsonStr
+ * @param {{ viewportId?: string, mapToolbarHostId?: string, shellToolbarId?: string|null }} [mount]
+ * @returns {{ ok: boolean, error?: Error }}
+ */
+function dsaReloadGraphFromEditorJson(jsonStr, mount) {
+    let parsed;
+    try {
+        parsed = JSON.parse(String(jsonStr || ""));
+    } catch (e) {
+        return { ok: false, error: e };
+    }
+    if (!Array.isArray(parsed)) {
+        return {
+            ok: false,
+            error: new Error("Mind map JSON must be an array of root topics."),
+        };
+    }
+    dsaHierarchy = parsed;
+    loadDsaPatternsPage({
+        graphPreview: true,
+        mount:
+            mount ||
+            {
+                viewportId: "admin-dsa-hierarchy-root",
+                mapToolbarHostId: "admin-dsa-map-toolbar-host",
+                shellToolbarId: null,
+            },
+    });
+    return { ok: true };
+}
+window.dsaReloadGraphFromEditorJson = dsaReloadGraphFromEditorJson;
+
 function loadDsaPatternsPage(opts) {
     const restore = opts && opts.restore;
+    if (opts && opts.mount) {
+        dsaMergeGraphMount(opts.mount);
+    }
+    if (opts && Object.prototype.hasOwnProperty.call(opts, "graphPreview")) {
+        dsaGraphPreviewMode = !!opts.graphPreview;
+    }
     const siteAdmin = typeof dsaIsAdminSession === "function" && dsaIsAdminSession();
     const canCustomize =
         typeof dsaHasCustomizeGraphAccess === "function" && dsaHasCustomizeGraphAccess();
-    const viewport = document.getElementById("dsa-hierarchy-root");
+    const viewport = document.getElementById(dsaGraphMount.viewportId);
     if (!viewport) {
         return;
     }
 
-    const shellViewToolbarSlot = document.getElementById("dsa-shell-view-toolbar");
+    const shellId = dsaGraphMount.shellToolbarId;
+    const shellViewToolbarSlot =
+        shellId != null && shellId !== "" ? document.getElementById(shellId) : null;
     if (shellViewToolbarSlot) {
         shellViewToolbarSlot.replaceChildren();
     }
@@ -7116,9 +7213,21 @@ function loadDsaPatternsPage(opts) {
         "Rings on topics expand branches; leaf rings open problems. Mark Done to track progress. Pinch or Ctrl/⌘-scroll to zoom — drag to pan.";
     const hintCustomize =
         "Customize graph: same map as Full map with edit rings (− / count / +). Site admins sync to the database; Pro or elevated practice accounts can edit locally and export JSON.";
-    const mapToolbarHost = document.getElementById("dsa-map-toolbar-host");
+    const mapToolbarHost = document.getElementById(dsaGraphMount.mapToolbarHostId);
     const mindToolbarOpts =
         mapToolbarHost instanceof HTMLElement ? { toolbarParent: mapToolbarHost } : undefined;
+
+    async function dsaReloadHierarchyAndUserIfLive() {
+        if (dsaGraphPreviewMode) {
+            return;
+        }
+        try {
+            await dsaLoadHierarchyFromSources();
+            await dsaInitUserData();
+        } catch (e) {
+            console.warn("DSA hierarchy/user reload skipped or failed", e);
+        }
+    }
 
     const hint = document.createElement("p");
     hint.className = "dsa-graph-hint";
@@ -7306,24 +7415,14 @@ function loadDsaPatternsPage(opts) {
 
     btnSingleView.addEventListener("click", async () => {
         setGraphViewMode("single");
-        try {
-            await dsaLoadHierarchyFromSources();
-            await dsaInitUserData();
-        } catch (e) {
-            console.warn("DSA reload before One topic", e);
-        }
+        await dsaReloadHierarchyAndUserIfLive();
         dsaRefreshRootsRowUi(rootsRow);
         enterSingleTopicChrome();
     });
 
     btnUnifiedView.addEventListener("click", async () => {
         setGraphViewMode("unified");
-        try {
-            await dsaLoadHierarchyFromSources();
-            await dsaInitUserData();
-        } catch (e) {
-            console.warn("DSA reload before Full map", e);
-        }
+        await dsaReloadHierarchyAndUserIfLive();
         enterUnifiedMap();
     });
 
@@ -7383,12 +7482,7 @@ function loadDsaPatternsPage(opts) {
                 scheduleRedraw();
                 return;
             }
-            try {
-                await dsaLoadHierarchyFromSources();
-                await dsaInitUserData();
-            } catch (e) {
-                console.warn("DSA reload before topic graph", e);
-            }
+            await dsaReloadHierarchyAndUserIfLive();
             dsaRefreshRootsRowUi(rootsRow);
             const mergedNow = getDsaHierarchyMerged();
             const freshDs = mergedNow.find((d) => d && dsaDsIdEq(d.id, dsIdSnapshot));
@@ -7437,6 +7531,7 @@ function loadDsaPatternsPage(opts) {
 
     function applyRestoreState() {
         if (!restore) {
+            /* Match index.html: site admins land on Customize; preview embed (admin Content UI) keeps all three tabs. */
             if (siteAdmin) {
                 setGraphViewMode("customize");
                 enterCustomizeMap();

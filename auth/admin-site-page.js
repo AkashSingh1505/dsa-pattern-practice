@@ -81,11 +81,29 @@
 
     function updateAdminUi() {
         const ok = typeof dsaIsAdminSession === "function" && dsaIsAdminSession();
+        if (!ok && typeof dsaTeardownAdminGraphPreview === "function") {
+            dsaTeardownAdminGraphPreview();
+        }
         if (editorSection) {
             editorSection.hidden = !ok;
         }
         if (authPanel) {
             authPanel.hidden = ok;
+        }
+        const preHead = document.getElementById("admin-prelogin-head");
+        const navBack = document.getElementById("admin-nav-back");
+        const sessionBar = document.getElementById("admin-session-bar");
+        if (preHead) {
+            preHead.hidden = !!ok;
+        }
+        if (navBack) {
+            navBack.hidden = !!ok;
+        }
+        if (sessionBar) {
+            sessionBar.hidden = !ok;
+        }
+        if (typeof syncNavbarAuthUi === "function") {
+            syncNavbarAuthUi();
         }
     }
 
@@ -138,6 +156,15 @@
             console.warn("Site admin page init failed:", e);
         } finally {
             updateAdminUi();
+            if (!document.body.dataset.admSignOutChrome) {
+                document.body.dataset.admSignOutChrome = "1";
+                const so = document.getElementById("nav-admin-signout");
+                if (so) {
+                    so.addEventListener("click", function () {
+                        setTimeout(updateAdminUi, 0);
+                    });
+                }
+            }
             if (typeof dsaInitAccountAdminPanel === "function") {
                 try {
                     dsaInitAccountAdminPanel();

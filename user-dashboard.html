@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dsa-udash-html">
 <head>
     <meta charset="UTF-8" />
     <script>
@@ -30,457 +30,417 @@
         }
     })();
     </script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Member dashboard — DSA Pattern Practice</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Member hub — DSA Pattern Practice</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./auth/portal-shell.css?v=9" />
-    <link rel="stylesheet" href="./auth/user-dashboard.css?v=1" />
+    <link rel="stylesheet" href="./auth/user-dashboard.css?v=2" />
 </head>
-<body>
-    <main class="dsa-portal-page" id="dsa-user-dashboard-main" style="align-items: flex-start; padding-top: 20px">
-        <div class="dsa-udash-layout">
-            <header class="dsa-udash-topnav" aria-label="Member navigation">
-                <a class="dsa-udash-brand" href="./index.html">DSA Pattern Practice</a>
-                <nav class="dsa-udash-nav-scroll" aria-label="Dashboard sections">
-                    <a href="#dash-home">Overview</a>
-                    <a href="#dash-graph">Graph</a>
-                    <a href="#dash-study">Study</a>
-                    <a href="#dash-shared">Shared</a>
-                    <a href="#dash-collab">Collab</a>
-                    <a href="#dash-quizzes">Quizzes</a>
-                    <a href="#dash-reminders">Reminders</a>
-                    <a href="#dash-billing">Billing</a>
-                    <a href="#dash-notifications">Alerts</a>
-                    <a href="#dash-settings">Settings</a>
-                    <a href="#dash-profile">Profile</a>
-                </nav>
-                <div class="dsa-udash-nav-actions">
-                    <span class="dsa-udash-plan-pill" id="dsa-udash-plan-pill">Free</span>
-                    <button type="button" class="dsa-udash-icon-btn" id="dsa-udash-notif-bell" aria-label="Notifications (coming soon)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                        </svg>
-                    </button>
-                    <button type="button" class="btn ghost" id="dsa-udash-signout" style="width: auto; height: 40px; padding: 0 14px; font-size: 13px">
-                        Sign out
-                    </button>
-                </div>
-            </header>
+<body class="dsa-udash-body">
+    <div class="dsa-udash-app" id="dsa-user-dashboard-main">
+        <aside class="dsa-udash-sidebar" id="udash-sidebar" aria-label="Dashboard sections">
+            <button type="button" class="dsa-udash-nav-btn is-active" data-panel="graph" aria-current="page">
+                <svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                Graph
+            </button>
+            <button type="button" class="dsa-udash-nav-btn" data-panel="study">
+                <svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                Study
+            </button>
+            <button type="button" class="dsa-udash-nav-btn" data-panel="shared">
+                <svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Shared
+            </button>
+            <button type="button" class="dsa-udash-nav-btn" data-panel="collab">
+                <svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                Collab
+            </button>
+            <button type="button" class="dsa-udash-nav-btn" data-panel="quizzes">
+                <svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                Quizzes
+            </button>
+            <button type="button" class="dsa-udash-nav-btn" data-panel="reminders">
+                <svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                Reminders
+            </button>
+            <button type="button" class="dsa-udash-nav-btn" data-panel="billing">
+                <svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                Billing
+            </button>
+            <button type="button" class="dsa-udash-nav-btn" data-panel="alerts">
+                <svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                Alerts
+                <span class="dsa-udash-nav-badge" id="udash-nav-badge-alerts" hidden>0</span>
+            </button>
+            <button type="button" class="dsa-udash-nav-btn" data-panel="settings">
+                <svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                Settings
+            </button>
+            <button type="button" class="dsa-udash-nav-btn" data-panel="profile">
+                <svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Profile
+            </button>
+        </aside>
 
-            <header class="head" style="padding: 4px 4px 0">
-                <div class="eyebrow">Member hub</div>
-                <h1 style="font-size: clamp(28px, 5vw, 40px)">Your dashboard</h1>
-                <p class="lede">
-                    One place for your graph, progress, billing, and everything in the roadmap. Items marked <span class="dsa-udash-tag dsa-udash-tag--soon">Soon</span> are
-                    not wired yet; paid-only tiles unlock when your plan is Pro (or equivalent).
-                </p>
-            </header>
+        <header class="dsa-udash-topbar">
+            <button type="button" class="dsa-udash-menu-btn" id="udash-menu-btn" aria-label="Open menu" aria-expanded="false">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+            </button>
+            <a class="dsa-udash-topbar-brand" href="./index.html">DSA Patterns</a>
+            <span class="dsa-udash-topbar-title" id="udash-topbar-section">Graph</span>
+            <div class="dsa-udash-topbar-actions">
+                <span class="dsa-udash-plan-pill" id="dsa-udash-plan-pill">Free</span>
+                <button type="button" class="dsa-udash-icon-btn" id="dsa-udash-notif-bell" aria-label="Open alerts">
+                    <span class="dot" id="udash-bell-dot" hidden></span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                </button>
+                <button type="button" class="btn ghost udash-signout" id="dsa-udash-signout">Sign out</button>
+            </div>
+        </header>
 
-            <!-- Graph workspace (top) -->
-            <section class="dsa-udash-graph-hero dsa-udash-section" id="dash-graph" aria-labelledby="dash-graph-title">
-                <div class="dsa-udash-graph-hero-inner">
-                    <div>
-                        <h2 id="dash-graph-title" style="margin: 0 0 6px; font-size: 1.25rem">Graph workspace</h2>
-                        <p style="margin: 0 0 12px; font-size: 13px; color: var(--muted)">
-                            Open the full mind map on the practice page. <strong>Customize</strong> (add topics, problems, rings) is available for paid members and staff —
-                            same rules as the main app.
-                        </p>
-                        <div class="dsa-udash-graph-preview" aria-hidden="true">Interactive map opens in full page →</div>
+        <div class="dsa-udash-main-wrap">
+            <div class="dsa-udash-scroll">
+                <!-- Graph -->
+                <section class="dsa-udash-panel is-active" id="panel-graph" data-panel-id="graph" aria-labelledby="ph-graph">
+                    <div class="dsa-udash-panel-head">
+                        <h1 id="ph-graph">Graph workspace</h1>
+                        <p>Full mind map, customize (paid), and your personal graph library — local preview until cloud sync ships.</p>
                     </div>
-                    <div class="dsa-udash-hero-actions">
+                    <div class="dsa-udash-stat-row">
+                        <div class="dsa-udash-stat"><b id="udash-stat-quiz">0</b><span>Quiz answers today</span></div>
+                        <div class="dsa-udash-stat"><b id="udash-stat-reminders">0</b><span>Open reminders</span></div>
+                        <div class="dsa-udash-stat"><b id="udash-stat-graphs">0</b><span>My graphs (paid)</span></div>
+                        <div class="dsa-udash-stat"><b id="udash-stat-streak">0</b><span>Local visit streak</span></div>
+                    </div>
+                    <div class="dsa-udash-graph-hero">
+                        <div class="dsa-udash-graph-hero-inner">
+                            <div>
+                                <p style="margin: 0 0 10px; font-size: 13px; color: var(--udash-muted)">Canonical DSA pattern map + your overlays. Opens in the full practice UI.</p>
+                                <div class="dsa-udash-graph-preview" aria-hidden="true">Mind map → full screen practice page</div>
+                            </div>
+                            <div class="dsa-udash-btn-row" style="flex-direction: column; align-items: stretch">
+                                <a class="dsa-udash-btn dsa-udash-btn--primary" href="./index.html">Open full graph</a>
+                                <a class="dsa-udash-btn" href="./index.html">View &amp; zoom tools</a>
+                                <button type="button" class="dsa-udash-btn dsa-udash-btn--primary" id="dsa-udash-open-customize" disabled>Customize graph</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dsa-udash-card">
+                        <h2 style="margin: 0 0 12px; font-size: 15px">Official map</h2>
+                        <p style="margin: 0 0 12px; font-size: 13px; color: var(--udash-muted)">Same public catalog for everyone; progress sync is on the roadmap.</p>
                         <div class="dsa-udash-btn-row">
-                            <a class="dsa-udash-btn dsa-udash-btn--primary" href="./index.html">Open full graph</a>
-                            <a class="dsa-udash-btn" href="./index.html#dsa-shell-view-toolbar">Jump to view tools</a>
+                            <a class="dsa-udash-btn dsa-udash-btn--primary" href="./index.html">Launch practice</a>
+                        </div>
+                    </div>
+                    <div class="dsa-udash-gate" id="udash-gate-graphs">
+                        <div class="dsa-udash-gate-content">
+                            <div class="dsa-udash-card">
+                                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 10px">
+                                    <h2 style="margin: 0; font-size: 15px">Personal graph library</h2>
+                                    <span class="dsa-udash-tag dsa-udash-tag--pro">Paid</span>
+                                </div>
+                                <p style="margin: 0 0 12px; font-size: 13px; color: var(--udash-muted)">Create named graphs, set visibility, export JSON — stored in this browser until backend ships.</p>
+                                <div class="dsa-udash-field">
+                                    <label for="udash-new-graph-name">New graph name</label>
+                                    <div class="dsa-udash-btn-row">
+                                        <input class="dsa-udash-input" id="udash-new-graph-name" type="text" placeholder="e.g. Interview sprint" maxlength="80" />
+                                        <button type="button" class="dsa-udash-btn dsa-udash-btn--primary" id="udash-btn-add-graph">Add</button>
+                                    </div>
+                                </div>
+                                <ul class="dsa-udash-list" id="udash-graph-list"></ul>
+                            </div>
+                        </div>
+                        <div class="dsa-udash-gate-banner" aria-hidden="true">
+                            <div class="dsa-udash-gate-banner-inner">
+                                <strong>Pro feature</strong>
+                                <p style="margin: 8px 0 12px; font-size: 13px; color: var(--udash-muted)">Upgrade to manage personal graphs, sharing presets, and exports.</p>
+                                <button type="button" class="dsa-udash-btn dsa-udash-btn--primary" data-jump-panel="billing">View billing</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Study -->
+                <section class="dsa-udash-panel" id="panel-study" data-panel-id="study" aria-labelledby="ph-study">
+                    <div class="dsa-udash-panel-head">
+                        <h1 id="ph-study">Study</h1>
+                        <p>Curated paths and progress tracked locally. Complete steps to build your streak on this device.</p>
+                    </div>
+                    <div class="dsa-udash-card" id="udash-study-paths-host"></div>
+                    <div class="dsa-udash-card">
+                        <h2 style="margin: 0 0 10px; font-size: 15px">Mistake log</h2>
+                        <p style="margin: 0 0 12px; font-size: 13px; color: var(--udash-muted)">Filled when you miss a quiz question (this device).</p>
+                        <ul class="dsa-udash-list" id="udash-mistake-list"></ul>
+                        <button type="button" class="dsa-udash-btn" id="udash-clear-mistakes">Clear log</button>
+                    </div>
+                </section>
+
+                <!-- Shared -->
+                <section class="dsa-udash-panel" id="panel-shared" data-panel-id="shared" aria-labelledby="ph-shared">
+                    <div class="dsa-udash-panel-head">
+                        <h1 id="ph-shared">Shared with you</h1>
+                        <p>Simulated inbox for graphs shared by link or email — Pro can add samples; full sync is backend roadmap.</p>
+                    </div>
+                    <div class="dsa-udash-gate" id="udash-gate-shared">
+                        <div class="dsa-udash-gate-content">
+                            <div class="dsa-udash-card">
+                                <div class="dsa-udash-btn-row" style="margin-bottom: 14px">
+                                    <button type="button" class="dsa-udash-btn" id="udash-add-sample-share">Add sample share</button>
+                                </div>
+                                <ul class="dsa-udash-list" id="udash-shared-list"></ul>
+                            </div>
+                        </div>
+                        <div class="dsa-udash-gate-banner">
+                            <div class="dsa-udash-gate-banner-inner">
+                                <strong>Pro inbox</strong>
+                                <p style="margin: 8px 0 12px; font-size: 13px; color: var(--udash-muted)">Paid members get shared-graph inbox and publish presets.</p>
+                                <button type="button" class="dsa-udash-btn dsa-udash-btn--primary" data-jump-panel="billing">Upgrade</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Collab -->
+                <section class="dsa-udash-panel" id="panel-collab" data-panel-id="collab" aria-labelledby="ph-collab">
+                    <div class="dsa-udash-panel-head">
+                        <h1 id="ph-collab">Collaboration</h1>
+                        <p>Generate a friend invite link (local demo). Real ACL + expiry will live on the server later.</p>
+                    </div>
+                    <div class="dsa-udash-gate" id="udash-gate-collab">
+                        <div class="dsa-udash-gate-content">
+                            <div class="dsa-udash-card">
+                                <div class="dsa-udash-field">
+                                    <label for="udash-collab-role">Role for invite</label>
+                                    <select class="dsa-udash-select" id="udash-collab-role">
+                                        <option value="viewer">Viewer</option>
+                                        <option value="commenter">Commenter</option>
+                                        <option value="editor">Co-editor</option>
+                                    </select>
+                                </div>
+                                <div class="dsa-udash-btn-row">
+                                    <button type="button" class="dsa-udash-btn dsa-udash-btn--primary" id="udash-gen-invite">Generate invite link</button>
+                                    <button type="button" class="dsa-udash-btn" id="udash-copy-invite">Copy</button>
+                                    <button type="button" class="dsa-udash-btn" id="udash-revoke-invite">Revoke</button>
+                                </div>
+                                <div class="dsa-udash-invite-box" id="udash-invite-url" style="margin-top: 12px">No active invite.</div>
+                                <p style="font-size: 12px; color: var(--udash-muted); margin-top: 10px">Share this URL with a friend to study the same graph view (demo only).</p>
+                            </div>
+                        </div>
+                        <div class="dsa-udash-gate-banner">
+                            <div class="dsa-udash-gate-banner-inner">
+                                <strong>Pro collaboration</strong>
+                                <p style="margin: 8px 0 12px; font-size: 13px; color: var(--udash-muted)">Invite links and roles for paid members.</p>
+                                <button type="button" class="dsa-udash-btn dsa-udash-btn--primary" data-jump-panel="billing">Upgrade</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Quizzes -->
+                <section class="dsa-udash-panel" id="panel-quizzes" data-panel-id="quizzes" aria-labelledby="ph-quizzes">
+                    <div class="dsa-udash-panel-head">
+                        <h1 id="ph-quizzes">Quizzes</h1>
+                        <p>Pattern, complexity, and topic drills — works offline. Quiz lab stats are a Pro extra (local).</p>
+                    </div>
+                    <div class="dsa-udash-quiz-tabs" id="udash-quiz-tabs">
+                        <button type="button" class="is-active" data-quiz="pattern">Pattern</button>
+                        <button type="button" data-quiz="complexity">Complexity</button>
+                        <button type="button" data-quiz="topic">Topic</button>
+                    </div>
+                    <div id="udash-quiz-host"></div>
+                    <div class="dsa-udash-gate" id="udash-gate-quizlab">
+                        <div class="dsa-udash-gate-content">
+                            <div class="dsa-udash-card">
+                                <h2 style="margin: 0 0 8px; font-size: 15px">Quiz lab (Pro)</h2>
+                                <p style="margin: 0 0 12px; font-size: 13px; color: var(--udash-muted)">Running totals across modes on this device.</p>
+                                <ul class="dsa-udash-list" id="udash-quiz-stats"></ul>
+                                <div class="dsa-udash-btn-row">
+                                    <button type="button" class="dsa-udash-btn" id="udash-export-quiz-stats">Export stats JSON</button>
+                                    <button type="button" class="dsa-udash-btn" id="udash-reset-quiz-stats">Reset stats</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dsa-udash-gate-banner">
+                            <div class="dsa-udash-gate-banner-inner">
+                                <strong>Pro analytics</strong>
+                                <p style="margin: 8px 0 12px; font-size: 13px; color: var(--udash-muted)">Unlock aggregated quiz lab on this device.</p>
+                                <button type="button" class="dsa-udash-btn dsa-udash-btn--primary" data-jump-panel="billing">Upgrade</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Reminders -->
+                <section class="dsa-udash-panel" id="panel-reminders" data-panel-id="reminders" aria-labelledby="ph-reminders">
+                    <div class="dsa-udash-panel-head">
+                        <h1 id="ph-reminders">Reminders</h1>
+                        <p>Schedule problem reviews locally. Email/push delivery is future work — we still notify you in <strong>Alerts</strong> when due (demo).</p>
+                    </div>
+                    <div class="dsa-udash-card">
+                        <h2 style="margin: 0 0 12px; font-size: 15px">New reminder</h2>
+                        <div class="dsa-udash-field">
+                            <label for="udash-rem-title">Title / problem</label>
+                            <input class="dsa-udash-input" id="udash-rem-title" type="text" placeholder="e.g. Redo binary search boundary" maxlength="120" />
+                        </div>
+                        <div class="dsa-udash-field">
+                            <label for="udash-rem-due">Due date</label>
+                            <input class="dsa-udash-input" id="udash-rem-due" type="datetime-local" />
+                        </div>
+                        <button type="button" class="dsa-udash-btn dsa-udash-btn--primary" id="udash-add-reminder">Add reminder</button>
+                    </div>
+                    <div class="dsa-udash-card">
+                        <h2 style="margin: 0 0 12px; font-size: 15px">Upcoming</h2>
+                        <ul class="dsa-udash-list" id="udash-reminder-list"></ul>
+                    </div>
+                    <div class="dsa-udash-gate" id="udash-gate-digest">
+                        <div class="dsa-udash-gate-content">
+                            <div class="dsa-udash-card">
+                                <h2 style="margin: 0 0 8px; font-size: 15px">Digest &amp; push (Pro)</h2>
+                                <p style="margin: 0 0 12px; font-size: 13px; color: var(--udash-muted)">When mobile ships, tie these prefs to your account.</p>
+                                <div class="dsa-udash-settings-row">
+                                    <span>Daily digest summary</span>
+                                    <button type="button" class="dsa-udash-toggle" id="udash-pref-digest" aria-pressed="false"></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dsa-udash-gate-banner">
+                            <div class="dsa-udash-gate-banner-inner">
+                                <strong>Pro</strong>
+                                <p style="margin: 8px 0 12px; font-size: 13px; color: var(--udash-muted)">Digest toggle for paid plans.</p>
+                                <button type="button" class="dsa-udash-btn dsa-udash-btn--primary" data-jump-panel="billing">Upgrade</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Billing -->
+                <section class="dsa-udash-panel" id="panel-billing" data-panel-id="billing" aria-labelledby="ph-billing">
+                    <div class="dsa-udash-panel-head">
+                        <h1 id="ph-billing">Billing</h1>
+                        <p>Your plan from the practice JWT. Checkout will connect to Stripe / app stores (roadmap).</p>
+                    </div>
+                    <div class="dsa-udash-card">
+                        <p style="margin: 0 0 6px; font-size: 14px">Current plan</p>
+                        <p style="margin: 0 0 16px; font-size: 18px; font-weight: 700" id="dsa-udash-profile-plan">free · user</p>
+                        <ul style="margin: 0; padding-left: 18px; font-size: 13px; color: var(--udash-ink2); line-height: 1.55">
+                            <li><strong>Free</strong> — full public map, local tools, quizzes on this hub.</li>
+                            <li><strong>Paid</strong> — customize graph (in app), personal graphs, shared inbox, collab links, quiz lab, digest toggle.</li>
+                        </ul>
+                        <div class="dsa-udash-btn-row" style="margin-top: 18px">
+                            <button type="button" class="dsa-udash-btn dsa-udash-btn--primary" id="udash-btn-upgrade">Upgrade to Pro</button>
+                            <button type="button" class="dsa-udash-btn" id="udash-btn-manage">Manage subscription</button>
+                            <button type="button" class="dsa-udash-btn" id="udash-btn-invoices">Invoices</button>
+                        </div>
+                        <p style="font-size: 12px; color: var(--udash-muted); margin-top: 12px" id="udash-billing-hint"></p>
+                    </div>
+                </section>
+
+                <!-- Alerts -->
+                <section class="dsa-udash-panel" id="panel-alerts" data-panel-id="alerts" aria-labelledby="ph-alerts">
+                    <div class="dsa-udash-panel-head">
+                        <h1 id="ph-alerts">Alerts</h1>
+                        <p>In-app notifications: reminders due, quiz milestones, and invites — stored locally for now.</p>
+                    </div>
+                    <div class="dsa-udash-card">
+                        <div class="dsa-udash-btn-row" style="margin-bottom: 14px">
+                            <button type="button" class="dsa-udash-btn" id="udash-alerts-readall">Mark all read</button>
+                            <button type="button" class="dsa-udash-btn" id="udash-alerts-clear">Clear all</button>
+                        </div>
+                        <ul class="dsa-udash-list" id="udash-alerts-list"></ul>
+                    </div>
+                </section>
+
+                <!-- Settings -->
+                <section class="dsa-udash-panel" id="panel-settings" data-panel-id="settings" aria-labelledby="ph-settings">
+                    <div class="dsa-udash-panel-head">
+                        <h1 id="ph-settings">Settings</h1>
+                        <p>Preferences saved in this browser. Server-backed settings come with cloud accounts.</p>
+                    </div>
+                    <div class="dsa-udash-card">
+                        <div class="dsa-udash-settings-row">
+                            <span>Product email tips (local flag)</span>
+                            <button type="button" class="dsa-udash-toggle" id="udash-pref-emailtips" aria-pressed="false"></button>
+                        </div>
+                        <div class="dsa-udash-settings-row">
+                            <span>Compact dashboard cards</span>
+                            <button type="button" class="dsa-udash-toggle" id="udash-pref-compact" aria-pressed="false"></button>
+                        </div>
+                        <div class="dsa-udash-settings-row">
+                            <span>Connect Google (OAuth)</span>
+                            <button type="button" class="dsa-udash-btn" id="udash-oauth-google">Connect</button>
+                        </div>
+                        <div class="dsa-udash-settings-row">
+                            <span>Connect Apple</span>
+                            <button type="button" class="dsa-udash-btn" id="udash-oauth-apple">Connect</button>
+                        </div>
+                        <div class="dsa-udash-settings-row">
+                            <span>Export dashboard data (JSON)</span>
+                            <button type="button" class="dsa-udash-btn" id="udash-export-all">Download</button>
+                        </div>
+                        <div class="dsa-udash-settings-row">
+                            <span>Reset local dashboard data</span>
+                            <button type="button" class="dsa-udash-btn" id="udash-reset-local">Reset…</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Profile -->
+                <section class="dsa-udash-panel" id="panel-profile" data-panel-id="profile" aria-labelledby="ph-profile">
+                    <div class="dsa-udash-panel-head">
+                        <h1 id="ph-profile">Profile</h1>
+                        <p>How you appear in future social features — saved locally until <code>user_profiles</code> API exists.</p>
+                    </div>
+                    <div class="dsa-udash-card">
+                        <p style="margin: 0 0 14px; font-size: 13px">Account email (from JWT): <strong id="dsa-udash-profile-email">—</strong></p>
+                        <div class="dsa-udash-field">
+                            <label for="udash-display-name">Display name</label>
+                            <input class="dsa-udash-input" id="udash-display-name" type="text" maxlength="80" placeholder="Your name" />
+                        </div>
+                        <div class="dsa-udash-field">
+                            <label for="udash-bio">Bio</label>
+                            <textarea class="dsa-udash-textarea" id="udash-bio" maxlength="500" placeholder="Short intro"></textarea>
+                        </div>
+                        <div class="dsa-udash-field">
+                            <label for="udash-tz">Timezone</label>
+                            <select class="dsa-udash-select" id="udash-tz"></select>
                         </div>
                         <div class="dsa-udash-btn-row">
-                            <button type="button" class="dsa-udash-btn dsa-udash-btn--primary" id="dsa-udash-open-customize" disabled>
-                                Customize graph
-                            </button>
+                            <button type="button" class="dsa-udash-btn dsa-udash-btn--primary" id="udash-save-profile">Save profile</button>
                         </div>
-                        <p style="margin: 0; font-size: 11px; color: var(--muted)">
-                            Tip: on the map page, switch to the <b>Customize</b> tab after opening — this button sends you there when your plan allows it.
-                        </p>
                     </div>
-                </div>
-            </section>
+                </section>
 
-            <!-- Overview -->
-            <section class="dsa-udash-section card" id="dash-home" style="padding: 22px">
-                <div class="dsa-udash-section-head">
-                    <h2>Overview</h2>
-                    <p>Snapshot of your practice — cloud sync and analytics will appear here (roadmap).</p>
-                </div>
-                <div class="dsa-udash-card-grid">
-                    <div class="dsa-udash-fcard" data-coming-soon>
-                        <span class="dsa-udash-tag dsa-udash-tag--soon">Soon</span>
-                        <h3>Synced progress</h3>
-                        <p>Done/starred problems and notes backed up to your account across devices (P0 backlog).</p>
-                        <div class="dsa-udash-fcard-footer">
-                            <button type="button" class="dsa-udash-btn">View status</button>
-                        </div>
-                    </div>
-                    <div class="dsa-udash-fcard" data-coming-soon>
-                        <span class="dsa-udash-tag dsa-udash-tag--soon">Soon</span>
-                        <h3>Streak &amp; goals</h3>
-                        <p>Daily streak, weekly target, and gentle nudges — optional for free, richer for paid.</p>
-                        <div class="dsa-udash-fcard-footer">
-                            <button type="button" class="dsa-udash-btn">Set goal</button>
-                        </div>
-                    </div>
-                    <div class="dsa-udash-fcard" data-coming-soon>
-                        <span class="dsa-udash-tag dsa-udash-tag--soon">Soon</span>
-                        <h3>Weak topics</h3>
-                        <p>Auto surface patterns you miss in quizzes or mark “hard” for spaced review.</p>
-                        <div class="dsa-udash-fcard-footer">
-                            <button type="button" class="dsa-udash-btn">Open insights</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Graph features -->
-            <section class="dsa-udash-section" id="dash-graph-features" aria-labelledby="dgf-title">
-                <div class="dsa-udash-section-head">
-                    <h2 id="dgf-title">Graph &amp; library</h2>
-                    <p>Everything you can do around maps — paid tiers unlock structure editing and sharing (see BACKLOG).</p>
-                </div>
-                <div class="dsa-udash-card-grid">
-                    <div class="dsa-udash-fcard">
-                        <span class="dsa-udash-tag">Live</span>
-                        <h3>Official public map</h3>
-                        <p>Everyone sees the same canonical DSA pattern graph; your overlays stay on-device until cloud sync ships.</p>
-                        <div class="dsa-udash-fcard-footer">
-                            <a class="dsa-udash-btn dsa-udash-btn--primary" href="./index.html">Open map</a>
-                        </div>
-                    </div>
-                    <div class="dsa-udash-fcard" data-requires-paid data-coming-soon>
-                        <span class="dsa-udash-tag dsa-udash-tag--pro">Paid</span>
-                        <span class="dsa-udash-tag dsa-udash-tag--soon">Soon</span>
-                        <h3>Personal graph copies</h3>
-                        <p>Fork the public map into private graphs, rename branches, keep multiple versions.</p>
-                        <div class="dsa-udash-fcard-footer">
-                            <button type="button" class="dsa-udash-btn" data-paid-control>New graph</button>
-                        </div>
-                    </div>
-                    <div class="dsa-udash-fcard" data-requires-paid data-coming-soon>
-                        <span class="dsa-udash-tag dsa-udash-tag--pro">Paid</span>
-                        <span class="dsa-udash-tag dsa-udash-tag--soon">Soon</span>
-                        <h3>Visibility &amp; links</h3>
-                        <p>Private, public, unlisted URL, or invite-only readers for each graph.</p>
-                        <div class="dsa-udash-fcard-footer">
-                            <button type="button" class="dsa-udash-btn" data-paid-control>Share settings</button>
-                        </div>
-                    </div>
-                    <div class="dsa-udash-fcard" data-requires-paid data-coming-soon>
-                        <span class="dsa-udash-tag dsa-udash-tag--pro">Paid</span>
-                        <span class="dsa-udash-tag dsa-udash-tag--soon">Soon</span>
-                        <h3>Import / export</h3>
-                        <p>JSON export exists locally today; server backups, Anki, and Markdown outlines planned.</p>
-                        <div class="dsa-udash-fcard-footer">
-                            <button type="button" class="dsa-udash-btn" data-paid-control>Export hub</button>
-                        </div>
-                    </div>
-                    <div class="dsa-udash-fcard" data-requires-paid data-coming-soon>
-                        <span class="dsa-udash-tag dsa-udash-tag--pro">Paid</span>
-                        <span class="dsa-udash-tag dsa-udash-tag--soon">Soon</span>
-                        <h3>Themes &amp; layout</h3>
-                        <p>Accent packs, compact mode, print-friendly tree for interviews.</p>
-                        <div class="dsa-udash-fcard-footer">
-                            <button type="button" class="dsa-udash-btn" data-paid-control>Customize look</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Study -->
-            <section class="dsa-udash-section card" id="dash-study" style="padding: 22px">
-                <div class="dsa-udash-section-head">
-                    <h2>Study paths</h2>
-                    <p>Guided journeys beyond the raw map — all backend-driven later.</p>
-                </div>
-                <div class="dsa-udash-card-grid">
-                    <div class="dsa-udash-fcard" data-coming-soon>
-                        <span class="dsa-udash-tag dsa-udash-tag--soon">Soon</span>
-                        <h3>Curated paths</h3>
-                        <p>FAANG prep, semester plans, “30-day patterns” — pick a path and track completion.</p>
-                        <div class="dsa-udash-fcard-footer">
-                            <button type="button" class="dsa-udash-btn">Browse paths</button>
-                        </div>
-                    </div>
-                    <div class="dsa-udash-fcard" data-requires-paid data-coming-soon>
-                        <span class="dsa-udash-tag dsa-udash-tag--pro">Paid</span>
-                        <span class="dsa-udash-tag dsa-udash-tag--soon">Soon</span>
-                        <h3>Spaced repetition</h3>
-                        <p>Cards tied to nodes; SM-2 style scheduling for pattern recall.</p>
-                        <div class="dsa-udash-fcard-footer">
-                            <button type="button" class="dsa-udash-btn" data-paid-control>Review queue</button>
-                        </div>
-                    </div>
-                    <div class="dsa-udash-fcard" data-coming-soon>
-                        <span class="dsa-udash-tag dsa-udash-tag--soon">Soon</span>
-                        <h3>Mistake log</h3>
-                        <p>Every quiz miss feeds a redo list with explanations.</p>
-                        <div class="dsa-udash-fcard-footer">
-                            <button type="button" class="dsa-udash-btn">Open log</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Shared -->
-            <section class="dsa-udash-section card" id="dash-shared" style="padding: 22px">
-                <div class="dsa-udash-section-head">
-                    <h2>Shared with you</h2>
-                    <p>Graphs others published or shared via email — requires sharing backend (P2).</p>
-                </div>
-                <div class="dsa-udash-card-grid">
-                    <div class="dsa-udash-fcard" data-requires-paid data-coming-soon>
-                        <span class="dsa-udash-tag dsa-udash-tag--pro">Paid</span>
-                        <span class="dsa-udash-tag dsa-udash-tag--soon">Soon</span>
-                        <h3>Inbox</h3>
-                        <p>Invites and “shared with me” graphs with viewer or comment access.</p>
-                        <div class="dsa-udash-fcard-footer">
-                            <button type="button" class="dsa-udash-btn" data-paid-control>Open inbox</button>
-                        </div>
-                    </div>
-                    <div class="dsa-udash-fcard" data-coming-soon>
-                        <span class="dsa-udash-tag dsa-udash-tag--soon">Soon</span>
-                        <h3>Public gallery</h3>
-                        <p>Discover community maps (moderated). Free: browse; paid: publish.</p>
-                        <div class="dsa-udash-fcard-footer">
-                            <button type="button" class="dsa-udash-btn">Explore</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Collaboration -->
-            <section class="dsa-udash-section card" id="dash-collab" style="padding: 22px">
-                <div class="dsa-udash-section-head">
-                    <h2>Collaboration</h2>
-                    <p>Study with a friend on a common graph — invite links and roles (roadmap).</p>
-                </div>
-                <div class="dsa-udash-card-grid">
-                    <div class="dsa-udash-fcard" data-requires-paid data-coming-soon>
-                        <span class="dsa-udash-tag dsa-udash-tag--pro">Paid</span>
-                        <span class="dsa-udash-tag dsa-udash-tag--soon">Soon</span>
-                        <h3>Friend invite link</h3>
-                        <p>Time-limited URL: viewer, commenter, or co-editor on one graph.</p>
-                        <div class="dsa-udash-invite-box" aria-label="Placeholder invite URL">https://your.app/c/invite/•••••••• (coming soon)</div>
-                        <div class="dsa-udash-fcard-footer">
-                            <button type="button" class="dsa-udash-btn" data-paid-control>Copy invite</button>
-                            <button type="button" class="dsa-udash-btn" data-paid-control>Revoke</button>
-                        </div>
-                    </div>
-                    <div class="dsa-udash-fcard" data-requires-paid data-coming-soon>
-                        <span class="dsa-udash-tag dsa-udash-tag--pro">Paid</span>
-                        <span class="dsa-udash-tag dsa-udash-tag--soon">Soon</span>
-                        <h3>Presence &amp; pins</h3>
-                        <p>See where your friend is on the map; optional voice room integration later.</p>
-                        <div class="dsa-udash-fcard-footer">
-                            <button type="button" class="dsa-udash-btn" data-paid-control>Start session</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Quizzes -->
-            <section class="dsa-udash-section card" id="dash-quizzes" style="padding: 22px">
-                <div class="dsa-udash-section-head">
-                    <h2>Quizzes &amp; drills</h2>
-                    <p>Pattern ID, complexity, topic classification — adaptive engine later (BACKLOG).</p>
-                </div>
-                <div class="dsa-udash-card-grid">
-                    <div class="dsa-udash-fcard" data-coming-soon>
-                        <span class="dsa-udash-tag dsa-udash-tag--soon">Soon</span>
-                        <h3>Pattern identification</h3>
-                        <p>Given a prompt, pick the right pattern tags; explain wrong options.</p>
-                        <div class="dsa-udash-fcard-footer">
-                            <button type="button" class="dsa-udash-btn">Try sample</button>
-                        </div>
-                    </div>
-                    <div class="dsa-udash-fcard" data-coming-soon>
-                        <span class="dsa-udash-tag dsa-udash-tag--soon">Soon</span>
-                        <h3>Time &amp; space complexity</h3>
-                        <p>Big-O drills from pseudocode or descriptions.</p>
-                        <div class="dsa-udash-fcard-footer">
-                            <button type="button" class="dsa-udash-btn">Try sample</button>
-                        </div>
-                    </div>
-                    <div class="dsa-udash-fcard" data-coming-soon>
-                        <span class="dsa-udash-tag dsa-udash-tag--soon">Soon</span>
-                        <h3>DSA topic ID</h3>
-                        <p>Classify into data structure vs algorithm family trees.</p>
-                        <div class="dsa-udash-fcard-footer">
-                            <button type="button" class="dsa-udash-btn">Try sample</button>
-                        </div>
-                    </div>
-                    <div class="dsa-udash-fcard" data-requires-paid data-coming-soon>
-                        <span class="dsa-udash-tag dsa-udash-tag--pro">Paid</span>
-                        <span class="dsa-udash-tag dsa-udash-tag--soon">Soon</span>
-                        <h3>Full bank + analytics</h3>
-                        <p>Unlimited timed sets, per-topic accuracy, export results.</p>
-                        <div class="dsa-udash-fcard-footer">
-                            <button type="button" class="dsa-udash-btn" data-paid-control>Open quiz lab</button>
-                        </div>
-                    </div>
-                    <div class="dsa-udash-fcard" data-requires-paid data-coming-soon>
-                        <span class="dsa-udash-tag dsa-udash-tag--pro">Paid</span>
-                        <span class="dsa-udash-tag dsa-udash-tag--soon">Soon</span>
-                        <h3>Custom packs</h3>
-                        <p>Build a quiz from your own graph subtree.</p>
-                        <div class="dsa-udash-fcard-footer">
-                            <button type="button" class="dsa-udash-btn" data-paid-control>Create pack</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Reminders -->
-            <section class="dsa-udash-section card" id="dash-reminders" style="padding: 22px">
-                <div class="dsa-udash-section-head">
-                    <h2>Reminders</h2>
-                    <p>“Remind me” on problems — email first, then push on mobile (BACKLOG).</p>
-                </div>
-                <div class="dsa-udash-card-grid">
-                    <div class="dsa-udash-fcard" data-coming-soon>
-                        <span class="dsa-udash-tag dsa-udash-tag--soon">Soon</span>
-                        <h3>Problem reminders</h3>
-                        <p>Snooze, repeat weekly, tie to calendar export.</p>
-                        <div class="dsa-udash-fcard-footer">
-                            <button type="button" class="dsa-udash-btn">Schedule</button>
-                        </div>
-                    </div>
-                    <div class="dsa-udash-fcard" data-requires-paid data-coming-soon>
-                        <span class="dsa-udash-tag dsa-udash-tag--pro">Paid</span>
-                        <span class="dsa-udash-tag dsa-udash-tag--soon">Soon</span>
-                        <h3>Push &amp; digest</h3>
-                        <p>Daily digest of due reviews + streak protection.</p>
-                        <div class="dsa-udash-fcard-footer">
-                            <button type="button" class="dsa-udash-btn" data-paid-control>Notification prefs</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Billing -->
-            <section class="dsa-udash-section card" id="dash-billing" style="padding: 22px">
-                <div class="dsa-udash-section-head">
-                    <h2>Billing &amp; upgrade</h2>
-                    <p>Buy on web or app later; Stripe / store hooks are P0 in BACKLOG2.</p>
-                </div>
-                <div class="dsa-udash-billing-card">
-                    <p style="margin: 0 0 8px; font-size: 14px">
-                        Current plan: <strong id="dsa-udash-profile-plan">free · user</strong>
-                    </p>
-                    <p style="margin: 0; font-size: 13px; color: var(--muted)">
-                        Upgrade unlocks Customize on the map (already in app), then future perks: personal graphs, sharing, full quizzes, pushes, mobile parity.
-                    </p>
-                    <ul>
-                        <li><strong>Free</strong> — public map, local progress until sync ships, limited quizzes (future).</li>
-                        <li><strong>Paid</strong> — customize graph + roadmap features: cloud library, sharing, collab invites, quiz lab, reminders.</li>
-                    </ul>
-                    <div class="dsa-udash-btn-row" style="margin-top: 16px">
-                        <button type="button" class="dsa-udash-btn dsa-udash-btn--primary" disabled title="Connect Stripe checkout (roadmap)">Upgrade to Pro</button>
-                        <button type="button" class="dsa-udash-btn" disabled title="Roadmap">Manage subscription</button>
-                        <button type="button" class="dsa-udash-btn" disabled title="Roadmap">Invoices</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Notifications -->
-            <section class="dsa-udash-section card" id="dash-notifications" style="padding: 22px">
-                <div class="dsa-udash-section-head">
-                    <h2>Notifications</h2>
-                    <p>Center for invites, billing, reminders, and product updates — empty until backend exists.</p>
-                </div>
-                <div class="dsa-udash-fcard" data-coming-soon style="min-height: auto">
-                    <span class="dsa-udash-tag dsa-udash-tag--soon">Soon</span>
-                    <p style="margin: 0">No notifications yet. When live, you’ll see read/unread state and deep links into graphs or quizzes.</p>
-                </div>
-            </section>
-
-            <!-- Settings -->
-            <section class="dsa-udash-section card" id="dash-settings" style="padding: 22px">
-                <div class="dsa-udash-section-head">
-                    <h2>Settings</h2>
-                    <p>Preferences and security — mostly placeholders.</p>
-                </div>
-                <div class="dsa-udash-settings-row">
-                    <span>Email notifications</span>
-                    <button type="button" class="dsa-udash-toggle" aria-disabled="true" disabled aria-label="Coming soon"></button>
-                </div>
-                <div class="dsa-udash-settings-row">
-                    <span>Push (mobile)</span>
-                    <button type="button" class="dsa-udash-toggle" aria-disabled="true" disabled aria-label="Coming soon"></button>
-                </div>
-                <div class="dsa-udash-settings-row">
-                    <span>Connect Google</span>
-                    <button type="button" class="dsa-udash-btn" disabled style="width: auto">Connect</button>
-                </div>
-                <div class="dsa-udash-settings-row">
-                    <span>Connect Apple</span>
-                    <button type="button" class="dsa-udash-btn" disabled style="width: auto">Connect</button>
-                </div>
-                <div class="dsa-udash-settings-row">
-                    <span>Timezone</span>
-                    <button type="button" class="dsa-udash-btn" disabled style="width: auto">Auto-detect</button>
-                </div>
-                <div class="dsa-udash-settings-row">
-                    <span>Export my data (GDPR-style)</span>
-                    <button type="button" class="dsa-udash-btn" disabled style="width: auto">Request</button>
-                </div>
-                <div class="dsa-udash-settings-row">
-                    <span>Delete account</span>
-                    <button type="button" class="dsa-udash-btn" disabled style="width: auto">Delete…</button>
-                </div>
-            </section>
-
-            <!-- Profile -->
-            <section class="dsa-udash-section card" id="dash-profile" style="padding: 22px">
-                <div class="dsa-udash-section-head">
-                    <h2>Profile</h2>
-                    <p>Public handle and avatar for future community features.</p>
-                </div>
-                <p class="meta-line">Signed in as <strong id="dsa-udash-profile-email">—</strong></p>
-                <div class="field" style="margin-top: 14px">
-                    <input id="dsa-udash-display-name" type="text" placeholder=" " disabled value="" />
-                    <label for="dsa-udash-display-name">Display name</label>
-                </div>
-                <div class="field">
-                    <input id="dsa-udash-bio" type="text" placeholder=" " disabled value="" />
-                    <label for="dsa-udash-bio">Bio</label>
-                </div>
-                <p style="font-size: 12px; color: var(--muted); margin-top: 12px">
-                    Profile editing ties to <code>user_profiles</code> API (roadmap). Use <a href="./account.html">Practice account</a> for password changes when that flow exists.
+                <p class="dsa-udash-foot">
+                    <a href="./index.html">← Practice map</a>
+                    ·
+                    <a href="./account.html">Account</a>
+                    ·
+                    <a href="./admin.html">Site admin</a>
                 </p>
-            </section>
+            </div>
 
-            <p class="foot" style="text-align: center; margin-top: 8px">
-                <a href="./index.html">← Back to map</a>
-                ·
-                <a href="./account.html">Account</a>
-                ·
-                <a href="./admin.html">Site admin</a> (operators only)
-            </p>
+            <nav class="dsa-udash-mnav" aria-label="Dashboard sections (scroll)">
+                <button type="button" data-panel="graph" class="is-active"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>Graph</button>
+                <button type="button" data-panel="study"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Study</button>
+                <button type="button" data-panel="shared"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Shared</button>
+                <button type="button" data-panel="collab"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/></svg>Collab</button>
+                <button type="button" data-panel="quizzes"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/></svg>Quiz</button>
+                <button type="button" data-panel="reminders"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>Remind</button>
+                <button type="button" data-panel="billing"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Bill</button>
+                <button type="button" data-panel="alerts"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>Alerts</button>
+                <button type="button" data-panel="settings"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg>Set</button>
+                <button type="button" data-panel="profile"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile</button>
+            </nav>
         </div>
-    </main>
+    </div>
+
+    <div class="dsa-udash-sidebar-backdrop" id="udash-sidebar-backdrop" hidden></div>
+    <div class="dsa-udash-toast" id="udash-toast" role="status"></div>
 
     <script src="./auth/dsa-member-roles.js?v=1"></script>
     <script src="./auth/dsa-user-auth.js?v=3"></script>
-    <script src="./auth/user-dashboard-page.js?v=1"></script>
-    <script>
-        (function () {
-            var btn = document.getElementById("dsa-udash-open-customize");
-            if (!btn) return;
-            btn.addEventListener("click", function () {
-                if (btn.disabled) return;
-                window.location.href = "./index.html";
-            });
-        })();
-    </script>
+    <script src="./auth/user-dashboard-page.js?v=2"></script>
 </body>
 </html>

@@ -861,13 +861,8 @@
                 });
             }
 
-            const hint = document.createElement("span");
-            hint.className = "adm-graph-tbar-hint";
-            hint.textContent = "Then expand, collapse, zoom →";
-
             host.appendChild(exp);
             host.appendChild(imp);
-            host.appendChild(hint);
         }
 
         wireAdminContentGraphToolbar();

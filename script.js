@@ -2496,8 +2496,10 @@ function dsaMountGraphExpandCollapseControls(hostEl, panel, scheduleRedraw) {
  */
 /**
  * @param {HTMLElement | null} [toolbarMountParent] — if set, map toolbar is appended here instead of inside the canvas (index shell).
+ * @param {{ suppressExternalHint?: boolean }} [layoutOpts] — admin preview: omit inline hint so expand/collapse + zoom stay one row.
  */
-function dsaCreateGraphCanvasLayout(toolbarMountParent) {
+function dsaCreateGraphCanvasLayout(toolbarMountParent, layoutOpts) {
+    const lo = layoutOpts || {};
     const canvas = document.createElement("div");
     canvas.className = "dsa-mind-canvas";
     canvas.id = "dsa-mind-canvas";
@@ -2513,7 +2515,7 @@ function dsaCreateGraphCanvasLayout(toolbarMountParent) {
     toolbarZoom.className = "dsa-graph-map-toolbar-cluster dsa-graph-map-toolbar-cluster--zoom";
 
     let toolbarHintSlot = null;
-    if (toolbarMountParent instanceof HTMLElement) {
+    if (toolbarMountParent instanceof HTMLElement && !lo.suppressExternalHint) {
         toolbarHintSlot = document.createElement("span");
         toolbarHintSlot.className = "dsa-graph-map-toolbar-hint";
         const hintDot = document.createElement("span");
@@ -5091,6 +5093,7 @@ function attachDsaMindCanvas(panel, buildTreeFragment, scheduleRedraw, mindOpts)
     }
     const { canvas, toolbarExpand, toolbarZoom, body } = dsaCreateGraphCanvasLayout(
         tp instanceof HTMLElement ? tp : null,
+        dsaGraphPreviewMode ? { suppressExternalHint: true } : undefined,
     );
 
     const svgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -7081,6 +7084,7 @@ function attachDsaCustomizePanel(panel, scheduleRedraw, restoredGraphUi, authCtx
 
     const { canvas, toolbarExpand, toolbarZoom, body } = dsaCreateGraphCanvasLayout(
         mapToolbarHost instanceof HTMLElement ? mapToolbarHost : null,
+        dsaGraphPreviewMode ? { suppressExternalHint: true } : undefined,
     );
 
     const svgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -7253,8 +7257,26 @@ function loadDsaPatternsPage(opts) {
     if (mapToolbarHost) {
         hint.classList.add("dsa-graph-hint--shell-external");
     }
+    if (dsaGraphPreviewMode) {
+        hint.hidden = true;
+        hint.setAttribute("aria-hidden", "true");
+    }
 
     function setMindHint(text) {
+        if (dsaGraphPreviewMode) {
+            hint.hidden = true;
+            const inlineHint = document.getElementById("dsa-map-toolbar-inline-hint");
+            if (inlineHint) {
+                inlineHint.textContent = "";
+                const wrap = inlineHint.closest(".dsa-graph-map-toolbar-hint");
+                if (wrap) {
+                    wrap.hidden = true;
+                }
+            }
+            return;
+        }
+        hint.hidden = false;
+        hint.removeAttribute("aria-hidden");
         const s = text == null ? "" : String(text);
         hint.textContent = s;
         const inlineHint = document.getElementById("dsa-map-toolbar-inline-hint");

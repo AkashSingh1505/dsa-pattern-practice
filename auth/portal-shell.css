@@ -354,20 +354,27 @@
             flex: 1 1 260px;
             min-width: 0;
         }
+        /* Admin preview: no inline hint — expand/collapse left, zoom right, single row */
+        .adm-graph-toolbar-map-host .dsa-graph-map-toolbar {
+            flex-wrap: nowrap;
+            align-items: center;
+        }
+        .adm-graph-toolbar-map-host .dsa-graph-map-toolbar-cluster {
+            flex-shrink: 0;
+        }
+        .adm-graph-toolbar-map-host .dsa-graph-map-toolbar-cluster--zoom {
+            margin-left: auto;
+        }
+        @media (max-width: 520px) {
+            .adm-graph-toolbar-map-host .dsa-graph-map-toolbar {
+                flex-wrap: wrap;
+            }
+            .adm-graph-toolbar-map-host .dsa-graph-map-toolbar-cluster--zoom {
+                margin-left: 0;
+            }
+        }
         .adm-graph-tbar-btn {
             flex: 0 0 auto;
-        }
-        .adm-graph-tbar-hint {
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--muted, #64748b);
-            white-space: nowrap;
-        }
-        @media (max-width: 640px) {
-            .adm-graph-tbar-hint {
-                width: 100%;
-                white-space: normal;
-            }
         }
         .adm-inline-label {
             font-size: 12px;

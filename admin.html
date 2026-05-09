@@ -33,7 +33,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev" />
     <title>Site admin — DSA Pattern Practice</title>
-    <link rel="stylesheet" href="./auth/portal-shell.css?v=8" />
+    <link rel="stylesheet" href="./auth/portal-shell.css?v=9" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -376,12 +376,6 @@
                                     </section>
                                 </div>
                             </div>
-                            <div class="cms-actions">
-                                <button id="cms-load" class="btn ghost" type="button">Reload from server</button>
-                                <button id="cms-save-draft" class="btn ghost" type="button">Save draft</button>
-                                <button id="cms-publish" class="btn" type="button">Publish live</button>
-                                <button id="cms-discard-draft" class="btn ghost" type="button">Discard draft</button>
-                            </div>
                         </div>
                         <div data-adm-panel="content-json" class="adm-hidden">
                             <p class="helper" style="margin-top:0">Raw mind map JSON (array). Use <b>Format JSON</b> before save. Switch to <b>UI</b> to preview the graph.</p>
@@ -389,8 +383,10 @@
                             <textarea id="cms-editor" class="cms-editor adm-json-input" spellcheck="false" rows="22" aria-label="Mind map JSON"></textarea>
                             <div class="cms-actions" style="margin-top:10px">
                                 <button id="cms-json-format" type="button" class="btn ghost">Format JSON</button>
+                                <button id="cms-load" class="btn ghost" type="button">Reload from server</button>
                                 <button id="cms-json-save-draft" type="button" class="btn ghost">Save draft</button>
                                 <button id="cms-json-publish" type="button" class="btn">Publish live</button>
+                                <button id="cms-discard-draft" class="btn ghost" type="button">Discard draft</button>
                             </div>
                         </div>
                         <p id="cms-status" class="status" style="margin-top:12px"></p>
@@ -464,8 +460,8 @@
     <script src="./auth/dsa-admin-auth.js?v=6"></script>
     <script src="./auth/dsa-user-auth.js?v=2"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
-    <script src="./script.js?v=22"></script>
-    <script src="./auth/account-admin-panel.js?v=11"></script>
+    <script src="./script.js?v=23"></script>
+    <script src="./auth/account-admin-panel.js?v=12"></script>
     <script src="./auth/admin-site-page.js?v=6"></script>
 </body>
 </html>

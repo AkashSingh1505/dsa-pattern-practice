@@ -283,7 +283,7 @@
             font-size: 13px;
             color: var(--ink-2);
         }
-        #portal-panel-cms { display: none; }
+        /* #portal-panel-cms: visible on standalone admin.html (do not hide globally). */
         .cms-form { display: grid; gap: 10px; margin-top: 12px; }
         .cms-form input { padding: 14px; }
         .cms-tabs { display: flex; gap: 8px; margin-top: 8px; }

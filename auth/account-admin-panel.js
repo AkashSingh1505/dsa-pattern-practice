@@ -97,7 +97,10 @@
             btn.classList.toggle("active", on);
         });
         document.querySelectorAll(".adm-pane[data-admin-pane]").forEach(function (pane) {
-            pane.hidden = pane.getAttribute("data-admin-pane") !== name;
+            const on = pane.getAttribute("data-admin-pane") === name;
+            pane.hidden = !on;
+            /* HTML uses .adm-hidden on panes (display:none !important); hidden="" alone does not remove it. */
+            pane.classList.toggle("adm-hidden", !on);
         });
     }
 

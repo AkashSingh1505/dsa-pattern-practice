@@ -678,6 +678,140 @@ body.dsa-index-ref .dsa-graph-hint--shell-external {
     border: 0;
 }
 
+/* —— Practice problem card + solution UI (glass, index only) —— */
+body.dsa-index-ref .dsa-h-problems-card {
+    position: relative;
+    background: var(--glass);
+    backdrop-filter: blur(28px) saturate(160%);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    overflow: visible;
+}
+
+body.dsa-index-ref .dsa-h-problems-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 38%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+body.dsa-index-ref .dsa-h-problems-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+body.dsa-index-ref .dsa-h-problems-card-title {
+    color: var(--ink-2);
+}
+
+body.dsa-index-ref .dsa-h-problems-empty {
+    color: var(--muted);
+}
+
+body.dsa-index-ref .dsa-h-problems-filter-tabs {
+    background: var(--glass-2);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid var(--line);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+body.dsa-index-ref .dsa-h-problems-tools-tab {
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(12px) saturate(130%);
+    -webkit-backdrop-filter: blur(12px) saturate(130%);
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+}
+
+body.dsa-index-ref .dsa-h-problems-tools-tab:hover {
+    background: rgba(255, 255, 255, 0.75);
+    color: var(--ink);
+    border-color: rgba(15, 23, 32, 0.12);
+}
+
+body.dsa-index-ref .dsa-h-problems-tools-panel {
+    background: var(--glass-2);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+}
+
+body.dsa-index-ref .dsa-h-problems-tools-search-input {
+    background: rgba(255, 255, 255, 0.72);
+    border-color: var(--line);
+    color: var(--ink);
+}
+
+body.dsa-index-ref .dsa-h-problems-diff-chip {
+    background: rgba(255, 255, 255, 0.45);
+    border-color: var(--line);
+    color: var(--ink-2);
+}
+
+body.dsa-index-ref .dsa-h-problems-diff-chip:hover {
+    background: rgba(255, 255, 255, 0.75);
+    border-color: rgba(15, 23, 32, 0.1);
+    color: var(--ink);
+}
+
+body.dsa-index-ref .dsa-h-problems-card-close,
+body.dsa-index-ref .dsa-h-problems-card-delete-all {
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+}
+
+body.dsa-index-ref .dsa-h-problems-card-close:hover,
+body.dsa-index-ref .dsa-h-problems-card-delete-all:hover {
+    background: #fff;
+    border-color: rgba(15, 23, 32, 0.12);
+    color: var(--ink);
+}
+
+body.dsa-index-ref .dsa-h-sol-modern {
+    background: var(--glass);
+    backdrop-filter: blur(28px) saturate(160%);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: var(--shadow);
+}
+
+body.dsa-index-ref .dsa-h-sol-heading {
+    color: var(--ink-2);
+}
+
+body.dsa-index-ref .dsa-h-sol-chip {
+    background: rgba(255, 255, 255, 0.5);
+    border-color: var(--line);
+    color: var(--ink);
+}
+
+body.dsa-index-ref .dsa-h-sol-chip:hover {
+    background: rgba(255, 255, 255, 0.82);
+    border-color: rgba(15, 23, 32, 0.1);
+}
+
+body.dsa-index-ref .dsa-h-prob-hint,
+body.dsa-index-ref .dsa-h-prob-companies {
+    background: var(--glass-2);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+}
+
+body.dsa-index-ref .dsa-h-prob-pane-img {
+    border-color: var(--line);
+}
+
 @media (max-width: 780px) {
     body.dsa-index-ref .head {
         flex-direction: column;

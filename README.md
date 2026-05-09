@@ -1,6 +1,6 @@
 # dsa-pattern-practice
 
-Pattern-led DSA practice: mind-map graph, one-topic mode, full map, **practice accounts** (email/password), **site admin CMS**, and gated **Customize graph** (site admin RSA JWT, or practice **pro** / **admin** role).
+Pattern-led DSA practice: mind-map graph, one-topic mode, full map, **practice accounts** (email/password), **site admin panel** (RSA JWT), and gated **Customize graph** (RSA session, or practice **subscriber** / **admin** role, or paid **plan**).
 
 ## Run locally
 
@@ -15,7 +15,7 @@ npx --yes serve . -p 4173
 ## Account page (`account.html`)
 
 - **Practice account** — register / sign-in → `POST /api/auth/register`, `POST /api/auth/login` (D1 **subscribers** DB + `USER_JWT_SECRET`).
-- **Site admin & CMS** — same password/TOTP flow as the portfolio → Worker in `meta dsa-admin-oauth-base`; JSON editor → `PUT /api/data?k=…` (D1 **content** DB + RSA admin JWT).
+- **Site admin** — same password/TOTP flow as the portfolio → Worker in `meta dsa-admin-oauth-base`. Full panel in **Admin & CMS** calls **`/api/admin/*`** (overview, users, graph draft/publish, audits, `app_kv`, contacts). Direct **`PUT /api/data?k=dsa`** still publishes live JSON (RSA JWT).
 
 `admin.html` redirects to **`account.html`**. Navbar **Sign in** opens the account page.
 
@@ -25,7 +25,7 @@ npx --yes serve . -p 4173
 |-----|----------------|
 | Anonymous / practice **free** / **user** | Same public graph only |
 | Site admin (RSA session) | Yes + import → CMS sync |
-| Practice **role = admin** or **plan** in `pro` / `team` / `lifetime` | Yes (local edit + export; CMS PUT still needs site admin) |
+| Practice **role** `subscriber` or `admin`, or **plan** `pro` / `team` / `lifetime` | Yes (local edit + export; publishing the live site map still needs RSA site admin) |
 
 ## Databases (Cloudflare D1)
 
@@ -47,9 +47,12 @@ Set **`USER_JWT_SECRET`** (≥16 chars, prefer 32+) in Pages environment variabl
 | `script.js` | Graph UI, customize gating |
 | `auth/dsa-user-auth.js` | Practice JWT in storage + `dsaHasCustomizeGraphAccess()` |
 | `auth/dsa-admin-auth.js` | Site-admin RSA JWT |
-| `functions/api/data.js` | CMS GET/PUT (`DB`) |
+| `auth/account-admin-panel.js` | Account page admin UI (calls `/api/admin/*`) |
+| `functions/api/data.js` | Public CMS GET + RSA PUT (`DB`) |
+| `functions/api/admin/*.js` | Site admin API: dashboard, users, user patch, CMS draft/publish, audits, `app_kv`, contacts |
 | `functions/api/auth/*.js` | Register, login, me (`DB_SUBSCRIBERS`) |
 | `functions/_lib/practice-jwt.js` | PBKDF2 + HS256 for practice tokens |
+| `functions/_lib/admin-rsa-jwt.js` | Shared RSA verification for `/api/data` PUT and `/api/admin/*` |
 | `migrations/` | Expandable schemas for both DBs |
 
 ## Deploy notes

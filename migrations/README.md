@@ -20,18 +20,26 @@ Binding: **`DB_SUBSCRIBERS`**. Also set **`USER_JWT_SECRET`** (32+ random chars)
 npx wrangler d1 execute dsa-pattern-practice-subscribers --remote --file=migrations/subscribers/0001_subscribers_expandable.sql
 ```
 
+After `0001`, add the **`subscriber`** practice role and normalize paid rows (see file header):
+
+```bash
+npx wrangler d1 execute dsa-pattern-practice-subscribers --remote --file=migrations/subscribers/0002_practice_users_subscriber_role.sql
+```
+
 ## Schema overview
 
 | Database    | Tables (high level) |
 |------------|----------------------|
 | **Content** | `cms_content` (published JSON + revision), `cms_content_drafts`, `app_kv`, `content_audit` |
-| **Subscribers** | `practice_users`, `user_profiles`, `user_entitlements`, `billing_*`, `subscriber_contacts`, `security_audit` |
+| **Subscribers** | `practice_users` (`role`: `user` \| `admin` \| `subscriber`), `user_profiles`, `user_entitlements`, `billing_*`, `subscriber_contacts`, `security_audit` |
 
-Promote a practice user to **admin** or **pro** (SQL examples):
+Practice roles: **`user`** (default), **`subscriber`** (paid tier label in JWT), **`admin`** (elevated staff). Promote or upgrade (examples):
 
 ```sql
 UPDATE practice_users SET role = 'admin' WHERE email = 'you@example.com';
-UPDATE practice_users SET plan = 'pro' WHERE email = 'you@example.com';
+UPDATE practice_users SET plan = 'pro', role = 'subscriber' WHERE email = 'you@example.com';
 ```
 
 Re-login to refresh JWT claims.
+
+Site **staff** CMS uses the RSA admin session on **Account → Admin & CMS** (`/api/admin/*` + graph draft/publish), not the practice `admin` role.

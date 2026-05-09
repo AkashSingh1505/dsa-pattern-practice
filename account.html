@@ -306,7 +306,88 @@
         .cms-toolbar { display: grid; gap: 8px; margin-bottom: 10px; }
         .cms-toolbar select { padding: 10px; height: 44px; }
         .cms-editor { min-height: 260px; padding: 12px; resize: vertical; }
-        .cms-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+        .cms-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+        @media (min-width: 520px) {
+            .cms-actions { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        }
+        .shell.shell--admin {
+            max-width: 980px;
+        }
+        .admin-pane { margin-top: 14px; }
+        .admin-inner-nav.cms-tabs { flex-wrap: wrap; }
+        .admin-table-wrap {
+            overflow: auto;
+            max-height: min(52vh, 420px);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.35);
+        }
+        table.admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .admin-table th,
+        .admin-table td {
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--line);
+            vertical-align: middle;
+        }
+        .admin-table th {
+            position: sticky;
+            top: 0;
+            background: rgba(255, 255, 255, 0.92);
+            z-index: 1;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--muted);
+        }
+        .admin-pre,
+        #admin-overview-mount {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 14px;
+            padding: 12px 14px;
+            font-size: 12px;
+            line-height: 1.45;
+            overflow: auto;
+            max-height: min(48vh, 380px);
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin: 0;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+        .btn-sm {
+            padding: 6px 10px;
+            font-size: 12px;
+            border-radius: 10px;
+        }
+        .admin-user-edit {
+            display: grid;
+            gap: 10px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--line);
+        }
+        .admin-user-edit label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--muted);
+            display: block;
+            margin-bottom: 4px;
+        }
+        .admin-user-edit select {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(15, 23, 32, 0.08);
+            background: rgba(255, 255, 255, 0.75);
+            font-family: inherit;
+        }
         .account-nav-back {
             display: inline-flex;
             align-items: center;
@@ -431,25 +512,112 @@
             </section>
 
             <section id="cms-editor-section" hidden>
-                <h2 class="card-title">CMS editor</h2>
-                <div class="cms-toolbar">
-                    <label for="cms-key">Dataset</label>
-                    <select id="cms-key">
-                        <option value="dsa">dsa (mind map JSON)</option>
-                    </select>
+                <h2 class="card-title">Site admin</h2>
+                <p class="helper" style="margin-top:0">Overview, practice users, published graph vs draft, audits, and remote config. RSA session required.</p>
+
+                <div class="cms-tabs admin-inner-nav" role="tablist" aria-label="Admin sections">
+                    <button type="button" class="active" data-admin-tab="overview">Overview</button>
+                    <button type="button" data-admin-tab="users">Users</button>
+                    <button type="button" data-admin-tab="graph">Graph CMS</button>
+                    <button type="button" data-admin-tab="data">Data &amp; audit</button>
                 </div>
-                <textarea id="cms-editor" class="cms-editor" spellcheck="false" placeholder="Load key and edit JSON..."></textarea>
-                <div class="cms-actions">
-                    <button id="cms-load" class="btn ghost" type="button">Load</button>
-                    <button id="cms-save" class="btn" type="button">Save</button>
+
+                <div class="admin-pane" data-admin-pane="overview">
+                    <pre id="admin-overview-mount" class="admin-pre"></pre>
                 </div>
-                <p id="cms-status" class="status"></p>
+
+                <div class="admin-pane" data-admin-pane="users" hidden>
+                    <p id="admin-users-meta" class="meta-line"></p>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" id="admin-users-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Plan</th>
+                                    <th>Status</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="admin-user-detail" class="admin-user-edit" hidden>
+                        <div class="card-title" style="font-size:15px">User detail</div>
+                        <pre id="admin-user-detail-json" class="admin-pre" style="max-height:220px"></pre>
+                    </div>
+                    <div class="admin-user-edit">
+                        <div class="card-title" style="font-size:15px">Quick edit</div>
+                        <div>
+                            <label for="admin-edit-user-id">User id</label>
+                            <input id="admin-edit-user-id" type="number" min="1" placeholder="e.g. 12" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(15,23,32,.08)" />
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+                            <div>
+                                <label for="admin-edit-role">Role</label>
+                                <select id="admin-edit-role">
+                                    <option value="user">user</option>
+                                    <option value="subscriber">subscriber</option>
+                                    <option value="admin">admin</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="admin-edit-plan">Plan</label>
+                                <select id="admin-edit-plan">
+                                    <option value="free">free</option>
+                                    <option value="pro">pro</option>
+                                    <option value="team">team</option>
+                                    <option value="lifetime">lifetime</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="admin-edit-status">Status</label>
+                                <select id="admin-edit-status">
+                                    <option value="active">active</option>
+                                    <option value="suspended">suspended</option>
+                                    <option value="deleted">deleted</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="button" class="btn" id="admin-save-user-patch">Apply to user</button>
+                        <p id="admin-edit-user-status" class="status"></p>
+                    </div>
+                </div>
+
+                <div class="admin-pane" data-admin-pane="graph" hidden>
+                    <div class="cms-toolbar">
+                        <label for="cms-key">Dataset</label>
+                        <select id="cms-key">
+                            <option value="dsa">dsa (mind map JSON)</option>
+                        </select>
+                    </div>
+                    <textarea id="cms-editor" class="cms-editor" spellcheck="false" placeholder="Draft or live JSON — Reload to refresh from server."></textarea>
+                    <div class="cms-actions">
+                        <button id="cms-load" class="btn ghost" type="button">Reload</button>
+                        <button id="cms-save-draft" class="btn ghost" type="button">Save draft</button>
+                        <button id="cms-publish" class="btn" type="button">Publish live</button>
+                        <button id="cms-discard-draft" class="btn ghost" type="button">Discard draft</button>
+                    </div>
+                    <p id="cms-status" class="status"></p>
+                </div>
+
+                <div class="admin-pane" data-admin-pane="data" hidden>
+                    <p class="meta-line">Content + security audit tail, <code>app_kv</code>, marketing contacts.</p>
+                    <div class="card-title" style="font-size:15px;margin-top:8px">Audits</div>
+                    <pre id="admin-audits-json" class="admin-pre"></pre>
+                    <div class="card-title" style="font-size:15px;margin-top:12px">app_kv</div>
+                    <pre id="admin-kv-json" class="admin-pre"></pre>
+                    <div class="card-title" style="font-size:15px;margin-top:12px">subscriber_contacts</div>
+                    <pre id="admin-contacts-json" class="admin-pre"></pre>
+                </div>
             </section>
         </section>
     </main>
 
     <script src="./auth/dsa-admin-auth.js?v=3"></script>
-    <script src="./auth/dsa-user-auth.js?v=1"></script>
+    <script src="./auth/account-admin-panel.js?v=1"></script>
+    <script src="./auth/dsa-user-auth.js?v=2"></script>
     <script>
         (function () {
             const tabPractice = document.getElementById("portal-tab-practice");
@@ -611,8 +779,6 @@
             setMode("signin");
             updatePracticeSignedInUi();
 
-            const keySel = document.getElementById("cms-key");
-            const editor = document.getElementById("cms-editor");
             const status = document.getElementById("cms-status");
             const authPanel = document.getElementById("cms-auth-panel");
             const editorSection = document.getElementById("cms-editor-section");
@@ -625,10 +791,6 @@
             function setStatus(msg, cls) {
                 status.textContent = msg || "";
                 status.className = "status" + (cls ? " " + cls : "");
-            }
-
-            function apiDataUrl(k) {
-                return new URL("api/data?k=" + encodeURIComponent(k), window.location.href).href;
             }
 
             function getWorkerBase() {
@@ -670,75 +832,7 @@
                 authPanel.hidden = ok;
             }
 
-            function getToken() {
-                if (typeof dsaGetAdminJwt === "function") {
-                    const tok = dsaGetAdminJwt();
-                    if (tok) return tok;
-                }
-                try {
-                    return localStorage.getItem("dsaAdminJwtV1") || sessionStorage.getItem("dsaAdminJwtV1");
-                } catch (e) {
-                    return null;
-                }
-            }
-
-            async function loadData() {
-                setStatus("Loading...");
-                try {
-                    const r = await fetch(apiDataUrl(keySel.value), { cache: "no-store" });
-                    const text = await r.text();
-                    if (!r.ok) {
-                        setStatus("Load failed: " + r.status + " " + text, "err");
-                        return;
-                    }
-                    try {
-                        editor.value = JSON.stringify(JSON.parse(text), null, 2);
-                    } catch (e) {
-                        editor.value = text;
-                    }
-                    setStatus("Loaded " + keySel.value + ".", "ok");
-                } catch (e) {
-                    setStatus(String(e), "err");
-                }
-            }
-
-            async function saveData() {
-                if (!(typeof dsaIsAdminSession === "function" && dsaIsAdminSession())) {
-                    setStatus("Sign in first.", "err");
-                    return;
-                }
-                let body = editor.value;
-                try {
-                    JSON.parse(body);
-                } catch (e) {
-                    setStatus("Invalid JSON: " + e.message, "err");
-                    return;
-                }
-                const tok = getToken();
-                if (!tok) {
-                    setStatus("No token in session.", "err");
-                    return;
-                }
-                setStatus("Saving...");
-                try {
-                    const r = await fetch(apiDataUrl(keySel.value), {
-                        method: "PUT",
-                        headers: { "Content-Type": "application/json", Authorization: "Bearer " + tok },
-                        body,
-                    });
-                    const text = await r.text();
-                    if (!r.ok) {
-                        setStatus("Save failed: " + r.status + " " + text, "err");
-                        return;
-                    }
-                    setStatus("Saved " + keySel.value + ".", "ok");
-                } catch (e) {
-                    setStatus(String(e), "err");
-                }
-            }
-
-            document.getElementById("cms-load").addEventListener("click", loadData);
-            document.getElementById("cms-save").addEventListener("click", saveData);
+            /* Graph CMS + admin panes: auth/account-admin-panel.js (draft / publish via /api/admin/cms). */
             document.getElementById("cms-tab-password").addEventListener("click", () => setCmsAuthMethod("password"));
             document.getElementById("cms-tab-totp").addEventListener("click", () => setCmsAuthMethod("totp"));
 
@@ -776,8 +870,8 @@
                     await dsaInitAdminAuth();
                 }
                 updateAdminUi();
-                if (typeof dsaIsAdminSession === "function" && dsaIsAdminSession()) {
-                    await loadData();
+                if (typeof dsaInitAccountAdminPanel === "function") {
+                    dsaInitAccountAdminPanel();
                 }
                 if (err) {
                     setStatus(AUTH_ERR_LABELS[err] || "Sign-in failed: " + err.replace(/_/g, " ") + ".", "err");

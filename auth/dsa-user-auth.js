@@ -86,7 +86,7 @@
     }
 
     /**
-     * Customize graph tab: site RSA admin, or practice account with plan pro (payment), or practice role admin.
+     * Customize graph tab: site RSA admin, or paid plan, or practice roles admin / subscriber.
      */
     function dsaHasCustomizeGraphAccess() {
         if (typeof dsaIsAdminSession === "function" && dsaIsAdminSession()) {
@@ -96,7 +96,7 @@
         if (!c) {
             return false;
         }
-        if (c.role === "admin") {
+        if (c.role === "admin" || c.role === "subscriber") {
             return true;
         }
         if (c.plan === "pro" || c.plan === "team" || c.plan === "lifetime") {

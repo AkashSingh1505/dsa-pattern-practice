@@ -16,7 +16,17 @@ npx --yes serve . -p 4173
 
 - **`index.html`** — practice map / graph (default). Navbar **Sign in** → `account.html`; **Admin** link → `admin.html`. When a site-admin RSA session exists, the primary auth link targets **`admin.html`** instead.
 - **`account.html`** — practice sign-in / sign-up only → `POST /api/auth/register`, `POST /api/auth/login` (D1 **subscribers** + `USER_JWT_SECRET`). After success, redirects to **`index.html`**.
-- **`admin.html`** (and **`/admin`** via `_redirects` on Cloudflare Pages) — site admin: RSA password/TOTP via Worker in `meta dsa-admin-oauth-base`. Set **`return`** to the URL you actually use (e.g. `https://<host>/admin.html` or `https://<host>/admin`); allow that prefix in **`ALLOWED_RETURN_PREFIXES`**. Admin UI calls **`/api/admin/*`**. **`PUT /api/data?k=dsa`** still publishes live JSON (RSA JWT).
+- **`admin.html`** — site admin: RSA password/TOTP via Worker in `meta dsa-admin-oauth-base`. Set **`return`** to your real admin URL (recommended: `https://<host>/admin.html`); allow that prefix in **`ALLOWED_RETURN_PREFIXES`**. Admin UI calls **`/api/admin/*`**. **`PUT /api/data?k=dsa`** still publishes live JSON (RSA JWT).
+
+### Cloudflare: admin / sign-in redirect loops (`/admin`, `/account`)
+
+If **`admin.html` or `account.html` never load** (browser errors, or `308` / infinite redirects), something in **Cloudflare** is rewriting `*.html` to extensionless paths (`/admin`, `/account`) without serving a real page there.
+
+1. **Cloudflare dashboard** → your zone or **Pages** project → **Rules** → **Redirect Rules** (and **Bulk Redirects** if you use them). Remove or edit any rule that sends **`/admin.html` → `/admin`** or **`/account.html` → `/account`** (or “strip `.html`” for those paths).
+2. **Pages** → **Settings**: if **SPA / fallback** sends unknown paths to `index.html`, that is fine; the problem is usually an extra **308 redirect** that targets `/admin` or `/account` specifically.
+3. Use the real files in links and bookmarks: **`/admin.html`** and **`/account.html`** (this repo’s nav already does).
+
+After the bad rules are removed, open **`https://<project>.pages.dev/admin.html`** and **`…/account.html`** — they should return **200** HTML, not a redirect chain.
 
 ### Customize graph access
 

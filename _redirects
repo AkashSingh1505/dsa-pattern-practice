@@ -1,5 +1,0 @@
-# Pretty URLs → same HTML (Cloudflare Pages). Keeps /admin working like admin.html.
-/admin    /admin.html    200
-/admin/   /admin.html    200
-/account  /account.html  200
-/account/ /account.html  200

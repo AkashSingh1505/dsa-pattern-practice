@@ -23,9 +23,10 @@ DSA admin (Customize graph) — setup
      ALLOWED_RETURN_PREFIXES = https://<user>.github.io/<repo>,http://127.0.0.1:5500
      (comma-separated; every ?return= URL must start with one of these)
 
-4) Portfolio page
-   - In skill pages/dsa-patterns.html set:
+4) Site HTML
+   - In admin.html set:
      <meta name="dsa-admin-oauth-base" content="https://<YOUR-WORKER-HOST>">
+   - ALLOWED_RETURN_PREFIXES must include the URL prefix of admin.html (same origin/path as your Pages deploy).
 
 5) Use
    - Open DSA Patterns → "Sign in with GitHub" → authorize → you return with a signed session; "Customize graph" appears.

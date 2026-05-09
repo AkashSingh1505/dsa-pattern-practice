@@ -6189,7 +6189,7 @@ a {
     }
 }
 
-/* —— Account portal (index.html#sign-in / #admin, auth/portal-shell.css) —— */
+/* —— Account / admin portal (account.html, admin.html; auth/portal-shell.css) —— */
 .account-portal-page .portal-main {
     max-width: 720px;
     margin: 0 auto;

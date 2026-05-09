@@ -1,6 +1,6 @@
 /**
  * Site admin dashboard: Dashboard, Site settings (app_kv), Users, Content, System.
- * Each area supports UI + JSON modes. Requires dsa-admin-auth.js + index.html portal markup (#admin).
+ * Each area supports UI + JSON modes. Requires dsa-admin-auth.js + admin.html portal markup (#portal-panel-cms).
  */
 (function () {
     const CMS_KEY = "dsa";

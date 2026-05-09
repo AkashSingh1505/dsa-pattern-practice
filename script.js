@@ -7920,7 +7920,7 @@ function syncNavbarAuthUi() {
     const practice = typeof dsaIsPracticeUser === "function" && dsaIsPracticeUser();
     if (link) {
         link.removeAttribute("title");
-        link.setAttribute("href", rsa ? "#admin" : "#sign-in");
+        link.setAttribute("href", rsa ? "./admin.html" : "./account.html");
         if (rsa && practice) {
             link.textContent = "Account";
             link.setAttribute("aria-label", "Account — site admin and practice user signed in");
@@ -7943,7 +7943,7 @@ function syncNavbarAuthUi() {
 function wireNavbarAdmin() {
     const link = document.getElementById("nav-admin-entry");
     if (link) {
-        link.setAttribute("href", "#sign-in");
+        link.setAttribute("href", "./account.html");
     }
     const signOut = document.getElementById("nav-admin-signout");
     if (signOut && signOut.dataset.wired !== "1") {
@@ -7954,10 +7954,6 @@ function wireNavbarAdmin() {
             }
             if (typeof dsaPracticeUserSignOut === "function") {
                 dsaPracticeUserSignOut();
-            }
-            window.location.hash = "#app";
-            if (typeof dsaApplyShellRoute === "function") {
-                dsaApplyShellRoute();
             }
             if (document.getElementById("dsa-hierarchy-root") && typeof loadDsaPatternsPage === "function") {
                 loadDsaPatternsPage();
@@ -8177,7 +8173,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadProjectDetails();
     } else if (
         window.location.pathname.includes("account.html") ||
-        window.location.pathname.includes("login-signup.html") ||
         window.location.pathname.includes("admin.html") ||
         /\/(account|admin)\/?$/.test(window.location.pathname || "")
     ) {

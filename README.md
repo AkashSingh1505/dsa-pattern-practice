@@ -12,13 +12,11 @@ npx --yes serve . -p 4173
 
 `GET /api/data?k=dsa` and `/api/auth/*` need your deployed **Pages Functions** + D1; locally you’ll see the placeholder graph until those exist.
 
-## Single entry: `index.html`
+## Pages (three HTML files)
 
-- **Practice map (default)** — `#app` or no hash: full DSA graph UI.
-- **Practice sign-in / sign-up** — `#sign-in`: embedded portal (same as the old account page) → `POST /api/auth/register`, `POST /api/auth/login` (D1 **subscribers** + `USER_JWT_SECRET`). After success, the shell returns to **`#app`**.
-- **Site admin** — `#admin`: RSA password/TOTP via Worker in `meta dsa-admin-oauth-base`. OAuth **`return`** URL should end with **`index.html#admin`** (add that prefix in `ALLOWED_RETURN_PREFIXES`). Admin UI calls **`/api/admin/*`**. **`PUT /api/data?k=dsa`** still publishes live JSON (RSA JWT).
-
-**Redirects (optional bookmarks / old Cloudflare routes):** `account.html`, **`login-signup.html`**, and **`admin.html`** → `index.html#sign-in` or `#admin`. Navbar **Sign in** → `#sign-in`; when site admin is signed in, the same control becomes **Admin** → `#admin`.
+- **`index.html`** — practice map / graph (default). Navbar **Sign in** → `account.html`; **Admin** link → `admin.html`. When a site-admin RSA session exists, the primary auth link targets **`admin.html`** instead.
+- **`account.html`** — practice sign-in / sign-up only → `POST /api/auth/register`, `POST /api/auth/login` (D1 **subscribers** + `USER_JWT_SECRET`). After success, redirects to **`index.html`**.
+- **`admin.html`** — site admin: RSA password/TOTP via Worker in `meta dsa-admin-oauth-base`. Set **`return`** to this page’s URL (e.g. `https://<host>/<path>/admin.html`); allow that origin prefix in **`ALLOWED_RETURN_PREFIXES`**. Admin UI calls **`/api/admin/*`**. **`PUT /api/data?k=dsa`** still publishes live JSON (RSA JWT).
 
 ### Customize graph access
 
@@ -43,13 +41,12 @@ Set **`USER_JWT_SECRET`** (≥16 chars, prefer 32+) in Pages environment variabl
 
 | Path | Purpose |
 |------|--------|
-| `index.html` | Practice map + embedded portal (`#sign-in`, `#admin`) |
-| `login-signup.html` | Redirect → `index.html#sign-in` |
-| `account.html` | Redirect → `index.html#sign-in` |
-| `admin.html` | Redirect → `index.html#admin` |
-| `auth/portal-shell.css` | Styles for the embedded portal / admin dashboard |
-| `auth/portal-practice.js` | Practice + CMS auth wiring on `index.html` |
-| `auth/dsa-shell-route.js` | Hash routing between map and portal |
+| `index.html` | Practice map / graph shell |
+| `account.html` | Practice account sign-in / sign-up |
+| `admin.html` | Site admin (RSA) dashboard |
+| `auth/portal-shell.css` | Styles for account + admin portal cards |
+| `auth/practice-account-page.js` | Practice form wiring on `account.html` |
+| `auth/admin-site-page.js` | CMS password/TOTP + dashboard init on `admin.html` |
 | `script.js` | Graph UI, customize gating, nav auth |
 | `auth/dsa-user-auth.js` | Practice JWT in storage + `dsaHasCustomizeGraphAccess()` |
 | `auth/dsa-admin-auth.js` | Site-admin RSA JWT |

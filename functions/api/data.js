@@ -34,10 +34,11 @@ export async function onRequestGet(context) {
     try {
         const row = await db.prepare("SELECT payload FROM cms_content WHERE key = ?").bind(key).first();
         if (row && row.payload) {
+            /* Avoid edge/browser serving stale graph after admin publish (was max-age=30). */
             return new Response(row.payload, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Cache-Control": "public, max-age=30",
+                    "Cache-Control": "private, no-cache, must-revalidate",
                 },
             });
         }

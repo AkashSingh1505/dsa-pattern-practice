@@ -768,6 +768,18 @@
             }
         }
 
+        function openLiveMapFresh(revision) {
+            try {
+                const u = new URL("index.html", document.baseURI);
+                u.searchParams.set("published", String(revision != null ? revision : Date.now()));
+                const w = window.open(u.href, "_blank", "noopener,noreferrer");
+                return !!w;
+            } catch (e) {
+                console.warn("openLiveMapFresh", e);
+                return false;
+            }
+        }
+
         async function publish() {
             graphSetStatus(status, "Publishing…", "");
             try {
@@ -779,7 +791,18 @@
                         body: "",
                     },
                 );
-                graphSetStatus(status, "Published — revision " + (r.revision != null ? r.revision : "") + ".", "ok");
+                const rev = r.revision != null ? r.revision : "";
+                const opened = openLiveMapFresh(rev);
+                graphSetStatus(
+                    status,
+                    "Published — revision " +
+                        rev +
+                        "." +
+                        (opened
+                            ? " Live map opened in a new tab (fresh URL)."
+                            : " Pop-up blocked — open index.html?published=" + encodeURIComponent(rev) + " to verify."),
+                    "ok",
+                );
                 await loadGraphState();
             } catch (e) {
                 graphSetStatus(status, e.message, "err");

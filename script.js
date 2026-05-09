@@ -8152,7 +8152,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             .then(() =>
                 typeof dsaInitAdminAuth === "function" ? dsaInitAdminAuth() : Promise.resolve(false)
             )
-            .then(() => loadDsaPatternsPage());
+            .then(() => loadDsaPatternsPage())
+            .then(() => {
+                try {
+                    const u = new URL(window.location.href);
+                    if (u.searchParams.has("published")) {
+                        u.searchParams.delete("published");
+                        const q = u.searchParams.toString();
+                        window.history.replaceState(null, "", u.pathname + (q ? "?" + q : "") + u.hash);
+                    }
+                } catch (e) {
+                    /* ignore */
+                }
+            });
     } else if (document.body.classList.contains("projects-page")) {
         filterProjects("all");
         const menuItems = document.querySelectorAll(".menu-item");

@@ -28,7 +28,7 @@
     }
 
     function adminReturnUrl() {
-        return new URL("admin.html", document.baseURI).href.split("#")[0];
+        return window.location.href.split("#")[0];
     }
 
     function consumeAdminErr() {
@@ -97,44 +97,54 @@
     });
 
     (async function initCms() {
-        const ret = adminReturnUrl();
-        document.getElementById("cms-return-password").value = ret;
-        document.getElementById("cms-return-totp").value = ret;
-        const wb = getWorkerBase();
-        const cfgWarn = document.getElementById("cms-config-warn");
-        if (!wb) {
-            cfgWarn.hidden = false;
-            cfgWarn.textContent = "Set meta dsa-admin-oauth-base in admin.html to your Worker URL.";
-        } else {
-            cfgWarn.hidden = true;
-            document.getElementById("cms-form-password").action = wb + "/auth/password";
-            document.getElementById("cms-form-totp").action = wb + "/auth/totp";
-        }
-        const err = consumeAdminErr();
-        let initialAuthMethod = "password";
+        let err = null;
         try {
-            const saved = sessionStorage.getItem("cmsAuthMethod");
-            if (saved === "totp" || saved === "password") {
-                initialAuthMethod = saved;
+            const ret = adminReturnUrl();
+            document.getElementById("cms-return-password").value = ret;
+            document.getElementById("cms-return-totp").value = ret;
+            const wb = getWorkerBase();
+            const cfgWarn = document.getElementById("cms-config-warn");
+            if (!wb) {
+                cfgWarn.hidden = false;
+                cfgWarn.textContent = "Set meta dsa-admin-oauth-base in admin.html to your Worker URL.";
+            } else {
+                cfgWarn.hidden = true;
+                document.getElementById("cms-form-password").action = wb + "/auth/password";
+                document.getElementById("cms-form-totp").action = wb + "/auth/totp";
             }
-        } catch (e) {}
-        if (err === "bad_totp") {
-            initialAuthMethod = "totp";
-        }
-        setCmsAuthMethod(initialAuthMethod);
+            err = consumeAdminErr();
+            let initialAuthMethod = "password";
+            try {
+                const saved = sessionStorage.getItem("cmsAuthMethod");
+                if (saved === "totp" || saved === "password") {
+                    initialAuthMethod = saved;
+                }
+            } catch (e) {}
+            if (err === "bad_totp") {
+                initialAuthMethod = "totp";
+            }
+            setCmsAuthMethod(initialAuthMethod);
 
-        if (typeof dsaInitAdminAuth === "function") {
-            await dsaInitAdminAuth();
-        }
-        updateAdminUi();
-        if (typeof dsaInitAccountAdminPanel === "function") {
-            dsaInitAccountAdminPanel();
-        }
-        if (err) {
-            setCmsStatus(
-                AUTH_ERR_LABELS[err] || "Sign-in failed: " + err.replace(/_/g, " ") + ".",
-                "err",
-            );
+            if (typeof dsaInitAdminAuth === "function") {
+                await dsaInitAdminAuth();
+            }
+            if (err) {
+                setCmsStatus(
+                    AUTH_ERR_LABELS[err] || "Sign-in failed: " + err.replace(/_/g, " ") + ".",
+                    "err",
+                );
+            }
+        } catch (e) {
+            console.warn("Site admin page init failed:", e);
+        } finally {
+            updateAdminUi();
+            if (typeof dsaInitAccountAdminPanel === "function") {
+                try {
+                    dsaInitAccountAdminPanel();
+                } catch (e2) {
+                    console.warn("Admin panel bind failed:", e2);
+                }
+            }
         }
     })();
 })();

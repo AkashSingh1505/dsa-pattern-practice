@@ -42,12 +42,12 @@
             <header class="head">
                 <div class="eyebrow">DSA Pattern Practice</div>
                 <h1>Site admin</h1>
-                <p class="lede">RSA session required. Manage config, users, and published graph.</p>
+                <p class="lede">Sign in below with your <b>site password</b> or <b>authenticator code</b> (RSA session from your Cloudflare Worker). Then you can manage config, users, and the published graph.</p>
             </header>
         <section id="portal-panel-cms" class="card">
             <p id="cms-config-warn" class="status err" hidden></p>
 
-            <section id="cms-auth-panel" hidden>
+            <section id="cms-auth-panel">
                 <h2 class="card-title">Site admin sign in</h2>
                 <div class="cms-tabs">
                     <button type="button" id="cms-tab-password" class="active">Password</button>
@@ -362,8 +362,8 @@
         </section>
         </div>
     </main>
-    <script src="./auth/dsa-admin-auth.js?v=4"></script>
+    <script src="./auth/dsa-admin-auth.js?v=5"></script>
     <script src="./auth/account-admin-panel.js?v=5"></script>
-    <script src="./auth/admin-site-page.js?v=2"></script>
+    <script src="./auth/admin-site-page.js?v=3"></script>
 </body>
 </html>

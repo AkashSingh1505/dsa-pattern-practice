@@ -28,6 +28,8 @@ If **`admin.html` or `account.html` never load** (browser errors, or `308` / inf
 
 After the bad rules are removed, open **`https://<project>.pages.dev/admin.html`** and **`…/account.html`** — they should return **200** HTML, not a redirect chain.
 
+**Admin Worker (`ALLOWED_RETURN_PREFIXES` or hostnames):** allow the URL you actually use after login, e.g. both `https://<project>.pages.dev/admin` and `https://<project>.pages.dev/admin.html` if you use pretty URLs. Set Worker secrets **`ADMIN_PASSWORD`** and/or **`ADMIN_TOTP_SECRET`** so the password / authenticator forms work.
+
 ### Customize graph access
 
 | Who | Customize tab |

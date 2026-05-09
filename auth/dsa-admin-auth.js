@@ -171,7 +171,13 @@
         if (!token) {
             return false;
         }
-        const ok = await verifyToken(token);
+        let ok = false;
+        try {
+            ok = await verifyToken(token);
+        } catch (e) {
+            console.warn("dsaInitAdminAuth: token verify failed", e);
+            ok = false;
+        }
         if (!ok) {
             storageRemoveToken();
             return false;

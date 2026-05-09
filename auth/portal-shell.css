@@ -327,6 +327,48 @@
         .adm-graph-preview.graph-card .graph-stage {
             min-height: 420px;
         }
+        .adm-content-graph-wrap {
+            margin: 16px 0 20px;
+        }
+        .adm-content-graph-wrap .dsa-graph-shell.dsa-index-ref {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .adm-content-graph-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px 16px;
+            margin: 0 !important;
+        }
+        .adm-graph-toolbar-extras {
+            display: inline-flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            flex: 0 1 auto;
+            max-width: 100%;
+        }
+        .adm-graph-toolbar-map-host {
+            flex: 1 1 260px;
+            min-width: 0;
+        }
+        .adm-graph-tbar-btn {
+            flex: 0 0 auto;
+        }
+        .adm-graph-tbar-hint {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--muted, #64748b);
+            white-space: nowrap;
+        }
+        @media (max-width: 640px) {
+            .adm-graph-tbar-hint {
+                width: 100%;
+                white-space: normal;
+            }
+        }
         .adm-inline-label {
             font-size: 12px;
             font-weight: 600;
@@ -780,8 +822,14 @@
         .admin-session-bar .nav-auth {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             margin-left: auto;
+        }
+        .admin-session-context {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted, #64748b);
+            white-space: nowrap;
         }
         .admin-session-bar .nav-signout-btn {
             padding: 8px 14px;

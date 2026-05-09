@@ -91,16 +91,12 @@
             authPanel.hidden = ok;
         }
         const preHead = document.getElementById("admin-prelogin-head");
-        const navBack = document.getElementById("admin-nav-back");
-        const sessionBar = document.getElementById("admin-session-bar");
+        const ctx = document.getElementById("admin-session-context");
         if (preHead) {
             preHead.hidden = !!ok;
         }
-        if (navBack) {
-            navBack.hidden = !!ok;
-        }
-        if (sessionBar) {
-            sessionBar.hidden = !ok;
+        if (ctx) {
+            ctx.textContent = ok ? "Signed in" : "Site admin";
         }
         if (typeof syncNavbarAuthUi === "function") {
             syncNavbarAuthUi();

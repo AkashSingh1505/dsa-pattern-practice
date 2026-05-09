@@ -784,6 +784,94 @@
             el.className = "status" + (cls ? " " + cls : "");
         }
 
+        function wireAdminContentGraphToolbar() {
+            const host = document.getElementById("admin-dsa-toolbar-extras");
+            const fileIn = document.getElementById("adm-mindmap-file-import");
+            if (!host || host.dataset.wired === "1") {
+                return;
+            }
+            host.dataset.wired = "1";
+
+            function mkBtn(label, title) {
+                const b = document.createElement("button");
+                b.type = "button";
+                b.className = "btn ghost btn-sm adm-graph-tbar-btn";
+                b.textContent = label;
+                if (title) {
+                    b.title = title;
+                }
+                return b;
+            }
+
+            const exp = mkBtn(
+                "Export map",
+                "Download current mind map JSON (same shape as the CMS draft array).",
+            );
+            exp.addEventListener("click", function () {
+                if (typeof dsaExportMindMapHierarchyJson === "function") {
+                    dsaExportMindMapHierarchyJson();
+                    graphSetStatus(status, "Exported mind map JSON.", "ok");
+                }
+            });
+
+            const imp = mkBtn("Import map…", "Load a JSON file (array) into the editor and preview.");
+            imp.addEventListener("click", function () {
+                if (fileIn) {
+                    fileIn.click();
+                }
+            });
+
+            if (fileIn) {
+                fileIn.addEventListener("change", function () {
+                    const f = fileIn.files && fileIn.files[0];
+                    if (!f) {
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = function () {
+                        try {
+                            const text = String(reader.result || "");
+                            const data = JSON.parse(text);
+                            if (!Array.isArray(data)) {
+                                throw new Error("File must contain a JSON array of root topics.");
+                            }
+                            const pretty = JSON.stringify(data, null, 2);
+                            editor.value = pretty;
+                            updateContentSummary(editor, lastCms);
+                            const r =
+                                typeof dsaReloadGraphFromEditorJson === "function"
+                                    ? dsaReloadGraphFromEditorJson(pretty, ADMIN_GRAPH_MOUNT)
+                                    : { ok: false };
+                            if (r.ok) {
+                                graphSetStatus(status, "Imported mind map — save draft when ready.", "ok");
+                            } else {
+                                const em = r.error && r.error.message;
+                                graphSetStatus(status, "Import failed: " + (em || "Invalid JSON"), "err");
+                            }
+                        } catch (err) {
+                            graphSetStatus(
+                                status,
+                                "Import failed: " + (err && err.message ? err.message : "invalid file"),
+                                "err",
+                            );
+                        }
+                        fileIn.value = "";
+                    };
+                    reader.readAsText(f);
+                });
+            }
+
+            const hint = document.createElement("span");
+            hint.className = "adm-graph-tbar-hint";
+            hint.textContent = "Then expand, collapse, zoom →";
+
+            host.appendChild(exp);
+            host.appendChild(imp);
+            host.appendChild(hint);
+        }
+
+        wireAdminContentGraphToolbar();
+
         async function loadGraphState() {
             graphSetStatus(status, "Loading…", "");
             try {

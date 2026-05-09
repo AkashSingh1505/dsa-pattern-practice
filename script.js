@@ -1302,6 +1302,19 @@ function dsaExportUserNodesJson() {
     URL.revokeObjectURL(a.href);
 }
 
+/** Current mind map roots (`dsaHierarchy`) — site CMS / draft shape. */
+function dsaExportMindMapHierarchyJson() {
+    const text = JSON.stringify(dsaHierarchy, null, 2);
+    const blob = new Blob([text], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "dsa-mind-map.json";
+    a.rel = "noopener";
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+window.dsaExportMindMapHierarchyJson = dsaExportMindMapHierarchyJson;
+
 function dsaImportUserNodesFromText(text) {
     const data = JSON.parse(text);
     const nodes = data && data.nodes ? data.nodes : [];
@@ -7003,7 +7016,10 @@ function attachDsaCustomizePanel(panel, scheduleRedraw, restoredGraphUi, authCtx
     topbar.className = "dsa-customize-topbar";
     const note = document.createElement("p");
     note.className = "dsa-customize-topbar-note";
-    if (siteAdmin) {
+    if (dsaGraphPreviewMode) {
+        note.textContent =
+            "Edit rings on nodes like on the public site. Use the toolbar above the graph for mind map Export / Import, expand/collapse, and zoom. Save draft or publish from the buttons below.";
+    } else if (siteAdmin) {
         note.textContent =
             "Ring on each node: − remove, count expand/collapse, + add Problem or Node. Pencil beside the ring edits that topic’s label; pencil on a problem row edits the problem. Import/Export can sync to site CMS when signed in as site admin. Toolbar matches Full map (expand / collapse / zoom).";
     } else if (canEditGraph) {
@@ -7013,52 +7029,55 @@ function attachDsaCustomizePanel(panel, scheduleRedraw, restoredGraphUi, authCtx
         note.textContent = "This view requires permission to customize the graph.";
     }
 
-    const importInput = document.createElement("input");
-    importInput.type = "file";
-    importInput.accept = "application/json,.json";
-    importInput.hidden = true;
-    importInput.setAttribute("aria-hidden", "true");
-
-    const btnExport = document.createElement("button");
-    btnExport.type = "button";
-    btnExport.className = "dsa-customize-topbar-btn";
-    btnExport.textContent = "Export JSON";
-    btnExport.addEventListener("click", () => dsaExportUserNodesJson());
-
-    const btnImport = document.createElement("button");
-    btnImport.type = "button";
-    btnImport.className = "dsa-customize-topbar-btn";
-    btnImport.textContent = "Import JSON…";
-    if (!siteAdmin) {
-        btnImport.hidden = true;
-        btnImport.setAttribute("aria-hidden", "true");
-    }
-    btnImport.addEventListener("click", () => importInput.click());
-    importInput.addEventListener("change", () => {
-        const file = importInput.files && importInput.files[0];
-        if (!file) {
-            return;
-        }
-        const reader = new FileReader();
-        reader.onload = () => {
-            try {
-                dsaImportUserNodesFromText(String(reader.result || ""));
-                refresh();
-                void dsaFlushDsaCmsSync();
-            } catch (err) {
-                alert("Could not import JSON. Check the file format.");
-            }
-            importInput.value = "";
-        };
-        reader.readAsText(file);
-    });
-
-    const btnRow = document.createElement("div");
-    btnRow.className = "dsa-customize-topbar-row";
-    btnRow.appendChild(btnExport);
-    btnRow.appendChild(btnImport);
     topbar.appendChild(note);
-    topbar.appendChild(btnRow);
+
+    if (!dsaGraphPreviewMode) {
+        const importInput = document.createElement("input");
+        importInput.type = "file";
+        importInput.accept = "application/json,.json";
+        importInput.hidden = true;
+        importInput.setAttribute("aria-hidden", "true");
+
+        const btnExport = document.createElement("button");
+        btnExport.type = "button";
+        btnExport.className = "dsa-customize-topbar-btn";
+        btnExport.textContent = "Export JSON";
+        btnExport.addEventListener("click", () => dsaExportUserNodesJson());
+
+        const btnImport = document.createElement("button");
+        btnImport.type = "button";
+        btnImport.className = "dsa-customize-topbar-btn";
+        btnImport.textContent = "Import JSON…";
+        if (!siteAdmin) {
+            btnImport.hidden = true;
+            btnImport.setAttribute("aria-hidden", "true");
+        }
+        btnImport.addEventListener("click", () => importInput.click());
+        importInput.addEventListener("change", () => {
+            const file = importInput.files && importInput.files[0];
+            if (!file) {
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    dsaImportUserNodesFromText(String(reader.result || ""));
+                    refresh();
+                    void dsaFlushDsaCmsSync();
+                } catch (err) {
+                    alert("Could not import JSON. Check the file format.");
+                }
+                importInput.value = "";
+            };
+            reader.readAsText(file);
+        });
+
+        const btnRow = document.createElement("div");
+        btnRow.className = "dsa-customize-topbar-row";
+        btnRow.appendChild(btnExport);
+        btnRow.appendChild(btnImport);
+        topbar.appendChild(btnRow);
+    }
 
     const { canvas, toolbarExpand, toolbarZoom, body } = dsaCreateGraphCanvasLayout(
         mapToolbarHost instanceof HTMLElement ? mapToolbarHost : null,

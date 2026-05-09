@@ -33,7 +33,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev" />
     <title>Site admin — DSA Pattern Practice</title>
-    <link rel="stylesheet" href="./auth/portal-shell.css?v=7" />
+    <link rel="stylesheet" href="./auth/portal-shell.css?v=8" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -43,18 +43,20 @@
 <body>
     <main class="dsa-portal-page">
         <div class="shell">
-            <header id="admin-session-bar" class="admin-session-bar" hidden>
+            <header id="admin-session-bar" class="admin-session-bar">
                 <div class="admin-session-bar-inner">
                     <a href="./index.html" class="admin-session-brand" aria-label="DSA Pattern Practice home">
                         <span class="admin-session-brand-mark" aria-hidden="true">D</span>
                         DSA Pattern Practice
                     </a>
                     <div class="nav-auth">
-                        <button type="button" id="nav-admin-signout" class="signout nav-signout-btn">Sign out</button>
+                        <span class="admin-session-context" id="admin-session-context">Site admin</span>
+                        <button type="button" id="nav-admin-signout" class="signout nav-signout-btn" hidden>
+                            Sign out
+                        </button>
                     </div>
                 </div>
             </header>
-            <a id="admin-nav-back" href="./index.html" class="account-nav-back">← Back to map</a>
             <header id="admin-prelogin-head" class="head">
                 <div class="eyebrow">DSA Pattern Practice</div>
                 <h1>Site admin</h1>
@@ -360,15 +362,19 @@
                                 </select>
                             </div>
                             <div class="adm-content-summary" id="adm-content-summary"></div>
-                            <div class="dsa-graph-shell dsa-index-ref">
-                                <section class="toolbar" aria-label="Preview graph toolbar">
-                                    <div class="tools-full" id="admin-dsa-map-toolbar-host"></div>
-                                </section>
-                                <section class="graph-card adm-graph-preview">
-                                    <div class="graph-stage">
-                                        <div id="admin-dsa-hierarchy-root" class="dsa-graph-viewport" aria-label="Mind map preview"></div>
-                                    </div>
-                                </section>
+                            <input type="file" id="adm-mindmap-file-import" accept="application/json,.json" hidden aria-hidden="true" />
+                            <div class="adm-content-graph-wrap">
+                                <div class="dsa-graph-shell dsa-index-ref">
+                                    <section class="toolbar adm-content-graph-toolbar" aria-label="Graph tools">
+                                        <div id="admin-dsa-toolbar-extras" class="adm-graph-toolbar-extras"></div>
+                                        <div class="tools-full adm-graph-toolbar-map-host" id="admin-dsa-map-toolbar-host"></div>
+                                    </section>
+                                    <section class="graph-card adm-graph-preview">
+                                        <div class="graph-stage">
+                                            <div id="admin-dsa-hierarchy-root" class="dsa-graph-viewport" aria-label="Mind map preview"></div>
+                                        </div>
+                                    </section>
+                                </div>
                             </div>
                             <div class="cms-actions">
                                 <button id="cms-load" class="btn ghost" type="button">Reload from server</button>
@@ -458,8 +464,8 @@
     <script src="./auth/dsa-admin-auth.js?v=6"></script>
     <script src="./auth/dsa-user-auth.js?v=2"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
-    <script src="./script.js?v=21"></script>
-    <script src="./auth/account-admin-panel.js?v=10"></script>
-    <script src="./auth/admin-site-page.js?v=5"></script>
+    <script src="./script.js?v=22"></script>
+    <script src="./auth/account-admin-panel.js?v=11"></script>
+    <script src="./auth/admin-site-page.js?v=6"></script>
 </body>
 </html>

@@ -2515,6 +2515,7 @@ function dsaMountGraphExpandCollapseControls(hostEl, panel, scheduleRedraw) {
     if (!hostEl || !panel) {
         return;
     }
+    hostEl.replaceChildren();
     const btnExpandAll = document.createElement("button");
     btnExpandAll.type = "button";
     btnExpandAll.className = "btn dsa-graph-expand-btn dsa-index-toolbar-expand-btn";
@@ -5159,7 +5160,11 @@ function attachDsaMindCanvas(panel, buildTreeFragment, scheduleRedraw, mindOpts)
     const mo = mindOpts || {};
     const tp = mo.toolbarParent;
     if (tp instanceof HTMLElement) {
-        tp.replaceChildren();
+        if (tp.dataset.dsaIndexToolbarSlots === "1") {
+            dsaClearIndexMapToolbarSlots(tp);
+        } else {
+            tp.replaceChildren();
+        }
     }
     const { canvas, toolbarExpand, toolbarZoom, body } = dsaCreateGraphCanvasLayout(
         tp instanceof HTMLElement ? tp : null,
@@ -7057,7 +7062,11 @@ function attachDsaCustomizePanel(panel, scheduleRedraw, restoredGraphUi, authCtx
     panel.classList.add("dsa-graph-panel--customize");
     const mapToolbarHost = document.getElementById(dsaGraphMount.mapToolbarHostId);
     if (mapToolbarHost) {
-        mapToolbarHost.replaceChildren();
+        if (mapToolbarHost.dataset.dsaIndexToolbarSlots === "1") {
+            dsaClearIndexMapToolbarSlots(mapToolbarHost);
+        } else {
+            mapToolbarHost.replaceChildren();
+        }
     }
     const siteAdmin = !!(authCtx && authCtx.siteAdmin);
     const canEditGraph = !!(authCtx && authCtx.canEditGraph);
@@ -7197,6 +7206,21 @@ function attachDsaCustomizePanel(panel, scheduleRedraw, restoredGraphUi, authCtx
     });
 }
 
+/** Clear only expand/zoom slots on index.html toolbar (keeps export/import, view tabs, hint chrome). */
+function dsaClearIndexMapToolbarSlots(host) {
+    if (!host || host.dataset.dsaIndexToolbarSlots !== "1") {
+        return;
+    }
+    const exp = host.querySelector("#dsa-toolbar-expand-slot");
+    const zm = host.querySelector("#dsa-toolbar-zoom-host");
+    if (exp) {
+        exp.replaceChildren();
+    }
+    if (zm) {
+        zm.replaceChildren();
+    }
+}
+
 /** Clear external map toolbar host (expand/collapse/zoom) so listeners are not orphaned. */
 function dsaClearExternalMapToolbarHost() {
     const id = dsaGraphMount && dsaGraphMount.mapToolbarHostId;
@@ -7205,14 +7229,7 @@ function dsaClearExternalMapToolbarHost() {
         return;
     }
     if (host.dataset.dsaIndexToolbarSlots === "1") {
-        const exp = host.querySelector("#dsa-toolbar-expand-slot");
-        const zm = host.querySelector("#dsa-toolbar-zoom-host");
-        if (exp) {
-            exp.replaceChildren();
-        }
-        if (zm) {
-            zm.replaceChildren();
-        }
+        dsaClearIndexMapToolbarSlots(host);
         return;
     }
     host.replaceChildren();

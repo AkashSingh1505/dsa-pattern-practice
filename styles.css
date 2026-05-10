@@ -4432,42 +4432,6 @@ label.dsa-h-prob-done {
     display: none !important;
 }
 
-.dsa-customize-topbar {
-    margin-bottom: 12px;
-    padding: 10px 12px;
-    background: #f9fafb;
-    border-radius: 10px;
-    border: 1px solid #e5e7eb;
-}
-
-.dsa-customize-topbar-note {
-    margin: 0 0 8px;
-    font-size: 0.8rem;
-    line-height: 1.45;
-    color: #6b7280;
-}
-
-.dsa-customize-topbar-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.dsa-customize-topbar-btn {
-    font-family: inherit;
-    font-size: 0.85rem;
-    font-weight: 600;
-    padding: 8px 14px;
-    border-radius: 8px;
-    border: 1px solid #d1d5db;
-    background: #ffffff;
-    cursor: pointer;
-}
-
-.dsa-customize-topbar-btn:hover {
-    border-color: #7b61ff;
-}
-
 .dsa-h-label--root {
     font-size: 1.05rem;
     font-weight: 700;
@@ -6664,90 +6628,6 @@ body.dsa-shell-layout .dsa-view-btn.dsa-view-btn--active {
     box-shadow:
         0 1px 2px rgba(0, 0, 0, 0.06),
         0 4px 14px rgba(0, 0, 0, 0.05);
-}
-
-/* Customize top bar + in-map toolbar → toolbar card */
-body.dsa-shell-layout .dsa-customize-topbar {
-    background: var(--dsa-shell-glass);
-    backdrop-filter: blur(28px) saturate(160%);
-    -webkit-backdrop-filter: blur(28px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.7);
-    border-radius: 18px;
-    padding: 18px 20px;
-    margin-bottom: 12px;
-    box-shadow: var(--dsa-shell-shadow);
-    position: relative;
-    overflow: hidden;
-}
-
-body.dsa-shell-layout .dsa-customize-topbar::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 40%);
-    pointer-events: none;
-}
-
-body.dsa-shell-layout .dsa-customize-topbar-note {
-    position: relative;
-    z-index: 1;
-    font-size: 12.5px;
-    color: var(--dsa-shell-muted);
-    margin: 0 0 14px;
-    line-height: 1.45;
-}
-
-body.dsa-shell-layout .dsa-customize-topbar-note b {
-    color: var(--dsa-shell-ink-2);
-    font-weight: 700;
-}
-
-body.dsa-shell-layout .dsa-customize-topbar-row {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-body.dsa-shell-layout .dsa-customize-topbar-btn {
-    appearance: none;
-    height: 40px;
-    padding: 0 16px;
-    border-radius: 11px;
-    font-size: 13px;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    border: 1px solid var(--dsa-shell-line);
-    background: rgba(255, 255, 255, 0.7);
-    color: var(--dsa-shell-ink-2);
-    transition:
-        background 0.2s ease,
-        transform 0.2s ease,
-        color 0.2s ease;
-}
-
-body.dsa-shell-layout .dsa-customize-topbar-btn:hover {
-    background: #fff;
-    transform: translateY(-1px);
-    color: var(--dsa-shell-ink);
-}
-
-body.dsa-shell-layout .dsa-customize-topbar-row .dsa-customize-topbar-btn:first-child {
-    background: linear-gradient(180deg, #2a3442, #0f1720);
-    color: #fff;
-    border-color: transparent;
-    box-shadow:
-        0 8px 20px rgba(15, 23, 32, 0.22),
-        inset 0 1px 0 rgba(255, 255, 255, 0.12);
-}
-
-body.dsa-shell-layout .dsa-customize-topbar-row .dsa-customize-topbar-btn:first-child:hover {
-    background: #000;
-    color: #fff;
-    transform: translateY(-1px);
 }
 
 body.dsa-shell-layout .dsa-graph-map-toolbar {

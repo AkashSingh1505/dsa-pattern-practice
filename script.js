@@ -47,7 +47,7 @@ let dsaGraphCustomizeMode = false;
 let dsaGraphMount = {
     viewportId: "dsa-hierarchy-root",
     mapToolbarHostId: "dsa-map-toolbar-host",
-    /** View tabs mount into `#dsa-toolbar-view-tabs-slot` on index (see loadDsaPatternsPage). */
+    /** View tabs mount into `#dsa-toolbar-view-tabs-slot` between `.head` and `.toolbar` on index. */
     shellToolbarId: null,
 };
 /** When true, keep `dsaHierarchy` from the editor — do not refetch /api/data on view switches. */
@@ -7094,73 +7094,6 @@ function attachDsaCustomizePanel(panel, scheduleRedraw, restoredGraphUi, authCtx
         }
     };
 
-    const topbar = document.createElement("div");
-    topbar.className = "dsa-customize-topbar";
-    const note = document.createElement("p");
-    note.className = "dsa-customize-topbar-note";
-    if (dsaGraphPreviewMode) {
-        note.textContent =
-            "Edit rings on nodes like on the public site. Use the toolbar above the graph for mind map Export / Import, expand/collapse, and zoom. Save draft or publish from the buttons below.";
-    } else if (siteAdmin) {
-        note.textContent =
-            "Ring on each node: − remove, count expand/collapse, + add Problem or Node. Pencil beside the ring edits that topic’s label; pencil on a problem row edits the problem. Import/Export can sync to site CMS when signed in as site admin. Toolbar matches Full map (expand / collapse / zoom).";
-    } else if (canEditGraph) {
-        note.textContent =
-            "You can customize the map locally (export JSON to back up). Pushing the shared site graph to the database still requires the site admin account. Upgrade or account type controls this access.";
-    } else {
-        note.textContent = "This view requires permission to customize the graph.";
-    }
-
-    topbar.appendChild(note);
-
-    if (!dsaGraphPreviewMode) {
-        const importInput = document.createElement("input");
-        importInput.type = "file";
-        importInput.accept = "application/json,.json";
-        importInput.hidden = true;
-        importInput.setAttribute("aria-hidden", "true");
-
-        const btnExport = document.createElement("button");
-        btnExport.type = "button";
-        btnExport.className = "dsa-customize-topbar-btn";
-        btnExport.textContent = "Export JSON";
-        btnExport.addEventListener("click", () => dsaExportUserNodesJson());
-
-        const btnImport = document.createElement("button");
-        btnImport.type = "button";
-        btnImport.className = "dsa-customize-topbar-btn";
-        btnImport.textContent = "Import JSON…";
-        if (!siteAdmin) {
-            btnImport.hidden = true;
-            btnImport.setAttribute("aria-hidden", "true");
-        }
-        btnImport.addEventListener("click", () => importInput.click());
-        importInput.addEventListener("change", () => {
-            const file = importInput.files && importInput.files[0];
-            if (!file) {
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = () => {
-                try {
-                    dsaImportUserNodesFromText(String(reader.result || ""));
-                    refresh();
-                    void dsaFlushDsaCmsSync();
-                } catch (err) {
-                    alert("Could not import JSON. Check the file format.");
-                }
-                importInput.value = "";
-            };
-            reader.readAsText(file);
-        });
-
-        const btnRow = document.createElement("div");
-        btnRow.className = "dsa-customize-topbar-row";
-        btnRow.appendChild(btnExport);
-        btnRow.appendChild(btnImport);
-        topbar.appendChild(btnRow);
-    }
-
     const { canvas, toolbarExpand, toolbarZoom, body } = dsaCreateGraphCanvasLayout(
         mapToolbarHost instanceof HTMLElement ? mapToolbarHost : null,
         dsaGraphPreviewMode ? { suppressExternalHint: true } : undefined,
@@ -7186,7 +7119,6 @@ function attachDsaCustomizePanel(panel, scheduleRedraw, restoredGraphUi, authCtx
     body.appendChild(scroll);
     dsaMountGraphExpandCollapseControls(toolbarExpand, panel, scheduleRedraw);
 
-    panel.appendChild(topbar);
     panel.appendChild(canvas);
 
     scroll.addEventListener("scroll", scheduleRedraw, { passive: true });
@@ -7206,7 +7138,7 @@ function attachDsaCustomizePanel(panel, scheduleRedraw, restoredGraphUi, authCtx
     });
 }
 
-/** Clear only expand/zoom slots on index.html toolbar (keeps export/import, view tabs, hint chrome). */
+/** Clear only expand/zoom slots on index.html map toolbar (keeps export/import, hint chrome). */
 function dsaClearIndexMapToolbarSlots(host) {
     if (!host || host.dataset.dsaIndexToolbarSlots !== "1") {
         return;

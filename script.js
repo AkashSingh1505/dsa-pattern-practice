@@ -47,7 +47,8 @@ let dsaGraphCustomizeMode = false;
 let dsaGraphMount = {
     viewportId: "dsa-hierarchy-root",
     mapToolbarHostId: "dsa-map-toolbar-host",
-    shellToolbarId: "dsa-shell-view-toolbar",
+    /** View tabs mount into `#dsa-toolbar-view-tabs-slot` on index (see loadDsaPatternsPage). */
+    shellToolbarId: null,
 };
 /** When true, keep `dsaHierarchy` from the editor — do not refetch /api/data on view switches. */
 let dsaGraphPreviewMode = false;
@@ -71,7 +72,7 @@ function dsaResetGraphMountAndPreview() {
     dsaGraphMount = {
         viewportId: "dsa-hierarchy-root",
         mapToolbarHostId: "dsa-map-toolbar-host",
-        shellToolbarId: "dsa-shell-view-toolbar",
+        shellToolbarId: null,
     };
     dsaGraphPreviewMode = false;
 }
@@ -7313,6 +7314,10 @@ function loadDsaPatternsPage(opts) {
     if (shellViewToolbarSlot) {
         shellViewToolbarSlot.replaceChildren();
     }
+    const viewTabsSlotEarly = document.getElementById("dsa-toolbar-view-tabs-slot");
+    if (viewTabsSlotEarly && !dsaGraphPreviewMode) {
+        viewTabsSlotEarly.replaceChildren();
+    }
     dsaClearExternalMapToolbarHost();
 
     const pendingCustomizeUi = captureDsaCustomizeGraphUiState();
@@ -7661,7 +7666,11 @@ function loadDsaPatternsPage(opts) {
         rootsRow.appendChild(btn);
     });
 
-    if (shellViewToolbarSlot) {
+    const viewTabsSlot = document.getElementById("dsa-toolbar-view-tabs-slot");
+    if (viewTabsSlot && !dsaGraphPreviewMode) {
+        viewTabsSlot.replaceChildren();
+        viewTabsSlot.appendChild(toolbar);
+    } else if (shellViewToolbarSlot) {
         shellViewToolbarSlot.appendChild(toolbar);
     } else {
         layer.appendChild(toolbar);

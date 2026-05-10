@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./styles.css?v=13">
-    <link rel="stylesheet" href="./dsa-index-shell.css?v=14">
+    <link rel="stylesheet" href="./dsa-index-shell.css?v=15">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 </head>
 <body class="dsa-page dsa-index-ref">
@@ -45,7 +45,6 @@
                     structure. The map flows left → right; scroll the shaded area when it’s wide.
                 </p>
             </div>
-            <div id="dsa-shell-view-toolbar"></div>
         </section>
 
         <!-- Graph toolbar: static chrome + script fills expand/collapse + zoom slots -->
@@ -56,6 +55,8 @@
                 data-dsa-index-toolbar-slots="1"
             >
                 <div class="tools-left">
+                    <div id="dsa-toolbar-view-tabs-slot" class="dsa-toolbar-view-tabs-slot" aria-label="Graph view mode"></div>
+                    <span class="divider dsa-toolbar-divider--after-tabs" aria-hidden="true"></span>
                     <button type="button" class="btn dark" id="dsa-map-export-json" title="Export mind map JSON">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M12 3v12"></path>
@@ -135,6 +136,6 @@
                 "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/";
         }
     </script>
-    <script src="./script.js?v=24"></script>
+    <script src="./script.js?v=25"></script>
 </body>
 </html>

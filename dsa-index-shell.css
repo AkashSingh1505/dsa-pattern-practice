@@ -320,10 +320,7 @@
 }
 
 :is(body, .dsa-graph-shell).dsa-index-ref .head {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 24px;
+    display: block;
     padding: 4px 4px 0;
 }
 
@@ -356,7 +353,9 @@
     color: var(--ink);
 }
 
-:is(body, .dsa-graph-shell).dsa-index-ref #dsa-shell-view-toolbar {
+:is(body, .dsa-graph-shell).dsa-index-ref #dsa-toolbar-view-tabs-slot {
+    display: flex;
+    align-items: center;
     flex-shrink: 0;
 }
 
@@ -494,6 +493,7 @@
     align-items: center;
     gap: 8px;
     min-width: 0;
+    flex: 1 1 auto;
 }
 
 :is(body, .dsa-graph-shell).dsa-index-ref #dsa-map-toolbar-host.dsa-index-toolbar-shell .tools-right {

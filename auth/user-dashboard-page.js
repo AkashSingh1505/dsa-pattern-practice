@@ -1210,11 +1210,7 @@
         }
     }
 
-    function init() {
-        if (!isPracticeUser()) {
-            window.location.href = "./account.html?next=" + encodeURIComponent("user-dashboard.html");
-            return;
-        }
+    function runDashboard() {
         load();
         updateVisitStreak();
         fillJwtProfile();
@@ -1245,6 +1241,25 @@
         refreshStats();
         setInterval(checkDueReminders, 30000);
         checkDueReminders();
+    }
+
+    function init() {
+        if (!isPracticeUser()) {
+            window.location.href = "./account.html?next=" + encodeURIComponent("user-dashboard.html");
+            return;
+        }
+        function afterFlags() {
+            if (typeof dsaSiteFeatureUse === "function" && !dsaSiteFeatureUse("member_dashboard")) {
+                window.location.href = "./index.html";
+                return;
+            }
+            runDashboard();
+        }
+        if (typeof dsaEnsureSiteFeaturesLoaded === "function") {
+            dsaEnsureSiteFeaturesLoaded().then(afterFlags).catch(afterFlags);
+        } else {
+            afterFlags();
+        }
     }
 
     if (document.readyState === "loading") {

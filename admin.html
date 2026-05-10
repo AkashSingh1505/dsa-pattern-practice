@@ -253,6 +253,20 @@
                         </div>
                         <div data-adm-panel="site-ui">
                             <p class="helper" style="margin-top:0">Remote key/value config in <code>app_kv</code>. Values are strings (often JSON). <b>Save</b> writes one key; <b>Delete key</b> removes it from D1. JSON tab can bulk-apply many rows.</p>
+                            <div class="adm-subcard adm-site-features-card">
+                                <h4>User-facing features</h4>
+                                <p class="helper" style="margin-top:0">
+                                    Controls what <b>all visitors and members</b> see on the public site (practice map, tabs, dashboard link, sign-in, OAuth buttons, footer, etc.).
+                                    Stored as JSON under key <code>site_user_features</code>. <b>Enabled</b> = works; <b>Visible</b> = shown in the UI (links, tabs). Uncheck either to turn off or hide.
+                                </p>
+                                <div id="adm-site-features-matrix" class="adm-site-features-matrix" aria-live="polite"></div>
+                                <div class="adm-toolbar-row" style="margin-top:12px">
+                                    <button type="button" class="btn btn-sm" id="adm-site-features-save">Save feature flags</button>
+                                    <button type="button" class="btn ghost btn-sm" id="adm-site-features-reload">Reload flags</button>
+                                    <button type="button" class="btn ghost btn-sm" id="adm-site-features-reset">All on (defaults)</button>
+                                </div>
+                                <p id="adm-site-features-msg" class="status" aria-live="polite"></p>
+                            </div>
                             <div class="adm-toolbar-row">
                                 <button type="button" class="btn ghost btn-sm" id="adm-kv-add">Add row</button>
                                 <button type="button" class="btn btn-sm" id="adm-kv-reload">Reload from server</button>
@@ -596,7 +610,7 @@
     <script src="./auth/dsa-user-auth.js?v=3"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
     <script src="./script.js?v=23"></script>
-    <script src="./auth/account-admin-panel.js?v=15"></script>
+    <script src="./auth/account-admin-panel.js?v=16"></script>
     <script src="./auth/admin-site-page.js?v=10"></script>
 </body>
 </html>

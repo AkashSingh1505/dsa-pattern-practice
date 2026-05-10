@@ -5,6 +5,23 @@
 (function () {
     const CMS_KEY = "dsa";
 
+    /** Stored in content D1 `app_kv`; public read via GET /api/site-features */
+    const SITE_USER_FEATURES_KV_KEY = "site_user_features";
+    const SITE_FEATURE_ROWS = [
+        { id: "practice_map", title: "Practice map", desc: "Home-page DSA mind map (visitors). Site admins still see the map if this is off." },
+        { id: "one_topic_mode", title: "One topic mode", desc: "Tab to focus on a single data-structure branch." },
+        {
+            id: "graph_customize_tab",
+            title: "Customize graph tab",
+            desc: "Tab for Pro-capable accounts. Site admins always keep Customize even when off for members.",
+        },
+        { id: "member_dashboard", title: "Member dashboard", desc: "Nav link and user-dashboard.html hub." },
+        { id: "practice_auth", title: "Practice sign-in / register", desc: "Account page and Sign in link (signed-out users)." },
+        { id: "social_oauth_ui", title: "Google / Apple buttons", desc: "OAuth placeholders on the account page." },
+        { id: "site_admin_link", title: "Site admin link", desc: "Footer link from the account page to admin." },
+        { id: "footer_visit_counter", title: "Visit counter", desc: "Footer visitor counter on the practice page (if API exists)." },
+    ];
+
     /** Mind map mount targets — must match admin.html preview markup. */
     const ADMIN_GRAPH_MOUNT = {
         viewportId: "admin-dsa-hierarchy-root",
@@ -597,6 +614,112 @@
         return wrap;
     }
 
+    async function loadSiteFeaturesEditor() {
+        const host = document.getElementById("adm-site-features-matrix");
+        if (!host) {
+            return;
+        }
+        let features = {};
+        try {
+            const r = await fetch(new URL("api/site-features", document.baseURI).href, {
+                headers: { Accept: "application/json" },
+            });
+            const j = await r.json();
+            features = (j && j.features) || {};
+        } catch (e) {
+            setStatus("adm-site-features-msg", String(e.message || e), "err");
+            host.innerHTML =
+                "<p class=\"meta-line\">Could not load flags. Deploy <code>/api/site-features</code> and bind content D1.</p>";
+            return;
+        }
+        host.innerHTML =
+            '<div class="adm-sf-head"><span>Feature</span><span title="Feature works when reached">On</span><span title="Shown in navigation / UI">Show</span></div>';
+        SITE_FEATURE_ROWS.forEach(function (meta) {
+            const st = features[meta.id] || { enabled: true, visible: true };
+            const row = document.createElement("div");
+            row.className = "adm-sf-data-row";
+            const title = document.createElement("div");
+            title.innerHTML =
+                '<div class="adm-sf-title">' +
+                escapeHtml(meta.title) +
+                '</div><div class="adm-sf-desc">' +
+                escapeHtml(meta.desc) +
+                "</div>";
+            const en = document.createElement("label");
+            en.className = "adm-sf-check";
+            en.innerHTML =
+                '<input type="checkbox" id="adm-sf-en-' +
+                meta.id +
+                '" ' +
+                (st.enabled !== false ? "checked" : "") +
+                " />";
+            const vis = document.createElement("label");
+            vis.className = "adm-sf-check";
+            vis.innerHTML =
+                '<input type="checkbox" id="adm-sf-vis-' +
+                meta.id +
+                '" ' +
+                (st.visible !== false ? "checked" : "") +
+                " />";
+            row.appendChild(title);
+            row.appendChild(en);
+            row.appendChild(vis);
+            host.appendChild(row);
+        });
+        setStatus("adm-site-features-msg", "Feature matrix ready. Save writes to app_kv.", "ok");
+    }
+
+    async function saveSiteFeaturesFromEditor() {
+        const obj = {};
+        SITE_FEATURE_ROWS.forEach(function (meta) {
+            const en = document.getElementById("adm-sf-en-" + meta.id);
+            const vis = document.getElementById("adm-sf-vis-" + meta.id);
+            obj[meta.id] = {
+                enabled: !!(en && en.checked),
+                visible: !!(vis && vis.checked),
+            };
+        });
+        setStatus("adm-site-features-msg", "Saving…", "");
+        try {
+            await fetchJson(apiAdmin("kv"), {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    k: SITE_USER_FEATURES_KV_KEY,
+                    v: JSON.stringify(obj),
+                    meta: "site_user_features_v1",
+                }),
+            });
+            setStatus("adm-site-features-msg", "Saved. Visitors pick up changes within ~30–60s (CDN cache).", "ok");
+            await loadKvUi();
+        } catch (e) {
+            setStatus("adm-site-features-msg", e.message, "err");
+        }
+    }
+
+    async function resetSiteFeaturesDefaults() {
+        const obj = {};
+        SITE_FEATURE_ROWS.forEach(function (meta) {
+            obj[meta.id] = { enabled: true, visible: true };
+        });
+        setStatus("adm-site-features-msg", "Resetting defaults…", "");
+        try {
+            await fetchJson(apiAdmin("kv"), {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    k: SITE_USER_FEATURES_KV_KEY,
+                    v: JSON.stringify(obj),
+                    meta: "site_user_features_v1",
+                }),
+            });
+            setStatus("adm-site-features-msg", "All features enabled & visible.", "ok");
+            await loadKvUi();
+        } catch (e) {
+            setStatus("adm-site-features-msg", e.message, "err");
+        }
+    }
+
     async function loadKvUi() {
         setStatus("adm-kv-msg", "Loading…", "");
         try {
@@ -605,6 +728,7 @@
             const sj = document.getElementById("adm-site-json");
             if (sj) sj.value = JSON.stringify(d.rows || [], null, 2);
             setStatus("adm-kv-msg", "Loaded " + (d.rows && d.rows.length) + " keys.", "ok");
+            await loadSiteFeaturesEditor();
         } catch (e) {
             setStatus("adm-kv-msg", e.message, "err");
         }
@@ -1425,6 +1549,12 @@
         });
         const kvReload = document.getElementById("adm-kv-reload");
         if (kvReload) kvReload.addEventListener("click", loadKvUi);
+        const sfSave = document.getElementById("adm-site-features-save");
+        if (sfSave) sfSave.addEventListener("click", saveSiteFeaturesFromEditor);
+        const sfRel = document.getElementById("adm-site-features-reload");
+        if (sfRel) sfRel.addEventListener("click", loadSiteFeaturesEditor);
+        const sfReset = document.getElementById("adm-site-features-reset");
+        if (sfReset) sfReset.addEventListener("click", resetSiteFeaturesDefaults);
         const siteJL = document.getElementById("adm-site-json-load");
         if (siteJL) siteJL.addEventListener("click", loadKvUi);
         const siteJA = document.getElementById("adm-site-json-apply");

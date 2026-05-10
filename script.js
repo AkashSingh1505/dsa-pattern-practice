@@ -7202,8 +7202,27 @@ function loadDsaPatternsPage(opts) {
     const siteAdmin = typeof dsaIsAdminSession === "function" && dsaIsAdminSession();
     const canCustomize =
         typeof dsaHasCustomizeGraphAccess === "function" && dsaHasCustomizeGraphAccess();
+    const sfOk = typeof dsaSiteFeatureUse === "function";
+    const showPracticeMap = !sfOk || dsaSiteFeatureUse("practice_map");
+    const showOneTopic = !sfOk || dsaSiteFeatureUse("one_topic_mode");
+    const showCustomizeForPublic = !sfOk || dsaSiteFeatureUse("graph_customize_tab");
+    /** Site admins keep Customize even when the flag is off for members. */
+    const allowCustomizeTab = canCustomize && (siteAdmin || showCustomizeForPublic);
     const viewport = document.getElementById(dsaGraphMount.viewportId);
     if (!viewport) {
+        return;
+    }
+
+    if (!dsaGraphPreviewMode && !showPracticeMap && !siteAdmin) {
+        viewport.innerHTML = "";
+        viewport.classList.remove("dsa-view-unified", "dsa-view-customize");
+        const blocked = document.createElement("div");
+        blocked.className = "dsa-site-feature-blocked";
+        blocked.setAttribute("role", "status");
+        blocked.innerHTML =
+            "<p><strong>Practice map unavailable</strong></p><p>This experience has been turned off in site settings. Try again later.</p>";
+        viewport.appendChild(blocked);
+        syncNavbarAuthUi();
         return;
     }
 
@@ -7319,7 +7338,7 @@ function loadDsaPatternsPage(opts) {
     btnSingleView.textContent = "One topic";
 
     let btnCustomizeView = null;
-    if (canCustomize) {
+    if (allowCustomizeTab) {
         btnCustomizeView = document.createElement("button");
         btnCustomizeView.type = "button";
         btnCustomizeView.className = "dsa-view-btn";
@@ -7331,7 +7350,12 @@ function loadDsaPatternsPage(opts) {
 
     tablist.appendChild(tabThumb);
     tablist.appendChild(btnUnifiedView);
-    tablist.appendChild(btnSingleView);
+    if (showOneTopic) {
+        tablist.appendChild(btnSingleView);
+    } else {
+        btnSingleView.hidden = true;
+        btnSingleView.style.display = "none";
+    }
     if (btnCustomizeView) {
         tablist.appendChild(btnCustomizeView);
     }
@@ -7455,6 +7479,9 @@ function loadDsaPatternsPage(opts) {
     }
 
     btnSingleView.addEventListener("click", async () => {
+        if (!showOneTopic) {
+            return;
+        }
         setGraphViewMode("single");
         await dsaReloadHierarchyAndUserIfLive();
         dsaRefreshRootsRowUi(rootsRow);
@@ -7506,6 +7533,9 @@ function loadDsaPatternsPage(opts) {
         btn.appendChild(rootInner);
         const dsIdSnapshot = ds.id;
         btn.addEventListener("click", async () => {
+            if (!showOneTopic) {
+                return;
+            }
             setGraphViewMode("single");
             dsaGraphCustomizeMode = false;
             dsaGraphUnifiedMode = false;
@@ -7597,7 +7627,7 @@ function loadDsaPatternsPage(opts) {
             enterUnifiedMap();
             return;
         }
-        if (restore.activeDsId) {
+        if (restore.activeDsId && showOneTopic) {
             const merged = getDsaHierarchyMerged();
             const ds = merged.find((d) => dsaDsIdEq(d.id, restore.activeDsId));
             const topicBtn = rootsRow.querySelector(`[data-ds-id="${restore.activeDsId}"]`);
@@ -8054,9 +8084,23 @@ function syncNavbarAuthUi() {
     const signOut = document.getElementById("nav-admin-signout");
     const rsa = typeof dsaIsAdminSession === "function" && dsaIsAdminSession();
     const practice = typeof dsaIsPracticeUser === "function" && dsaIsPracticeUser();
+    document.querySelectorAll('.nav-links a[href*="user-dashboard.html"]').forEach((a) => {
+        const show =
+            typeof dsaSiteFeatureUse !== "function" || dsaSiteFeatureUse("member_dashboard");
+        a.hidden = !show;
+        a.style.display = show ? "" : "none";
+    });
     if (link) {
         link.removeAttribute("title");
-        link.setAttribute("href", rsa ? "./admin.html" : "./account.html");
+        const authOn = typeof dsaSiteFeatureUse !== "function" || dsaSiteFeatureUse("practice_auth");
+        if (!rsa && !authOn) {
+            link.hidden = true;
+            link.style.display = "none";
+        } else {
+            link.hidden = false;
+            link.style.display = "";
+            link.setAttribute("href", rsa ? "./admin.html" : "./account.html");
+        }
         if (rsa && practice) {
             link.textContent = "Account";
             link.setAttribute("aria-label", "Account — site admin and practice user signed in");
@@ -8245,6 +8289,10 @@ function wireMobileNav() {
 async function footerVisitorsHit() {
     const el = document.getElementById("footer-visitors");
     if (!el) return;
+    if (typeof dsaSiteFeatureUse === "function" && !dsaSiteFeatureUse("footer_visit_counter")) {
+        el.hidden = true;
+        return;
+    }
     try {
         const r = await fetch(new URL("api/visitors", window.location.href).href, {
             method: "POST",
@@ -8269,6 +8317,10 @@ async function footerVisitorsHit() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    if (typeof dsaEnsureSiteFeaturesLoaded === "function") {
+        await dsaEnsureSiteFeaturesLoaded();
+    }
+
     if (typeof cmsBootstrap === "function") {
         await cmsBootstrap();
         projects = window.__CMS.projects || [];

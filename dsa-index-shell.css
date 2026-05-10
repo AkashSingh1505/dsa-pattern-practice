@@ -867,3 +867,20 @@
         justify-content: center;
     }
 }
+
+/* Site admin — feature flag: practice map off for visitors */
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-site-feature-blocked {
+    min-height: 320px;
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--ink-2);
+    font-size: 15px;
+    line-height: 1.55;
+    box-sizing: border-box;
+}
+
+:is(body, .dsa-graph-shell).dsa-index-ref .dsa-site-feature-blocked p:first-child {
+    margin-top: 0;
+    color: var(--ink);
+    font-size: 18px;
+}

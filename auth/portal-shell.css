@@ -711,6 +711,56 @@
             letter-spacing: 0.06em;
             color: var(--muted);
         }
+        .adm-site-features-matrix {
+            border: 1px solid rgba(15, 23, 32, 0.08);
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.35);
+        }
+        .adm-sf-head,
+        .adm-sf-data-row {
+            display: grid;
+            grid-template-columns: 1fr 72px 72px;
+            gap: 10px 12px;
+            align-items: center;
+            padding: 10px 12px;
+        }
+        .adm-sf-head {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--muted);
+            background: rgba(255, 255, 255, 0.6);
+            border-bottom: 1px solid rgba(15, 23, 32, 0.08);
+        }
+        .adm-sf-data-row {
+            border-bottom: 1px solid rgba(15, 23, 32, 0.06);
+            font-size: 13px;
+        }
+        .adm-sf-data-row:last-child {
+            border-bottom: 0;
+        }
+        .adm-sf-title {
+            font-weight: 600;
+            color: var(--ink);
+        }
+        .adm-sf-desc {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+        .adm-sf-check {
+            display: flex;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .adm-sf-check input {
+            width: 18px;
+            height: 18px;
+            accent-color: #0f1720;
+        }
         .adm-mini-table-wrap {
             overflow: auto;
             max-height: 220px;
@@ -1395,6 +1445,16 @@
         html[data-admin-theme="dark"] .adm-content-graph-toolbar {
             background: rgba(255, 255, 255, 0.04);
             border-color: var(--line);
+        }
+        html[data-admin-theme="dark"] .adm-site-features-matrix {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--line);
+        }
+        html[data-admin-theme="dark"] .adm-sf-head {
+            background: rgba(255, 255, 255, 0.06);
+        }
+        html[data-admin-theme="dark"] .adm-sf-title {
+            color: var(--ink-2);
         }
         html[data-admin-theme="dark"] .admin-table th {
             background: rgba(20, 24, 30, 0.96);

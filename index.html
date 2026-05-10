@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./styles.css?v=13">
-    <link rel="stylesheet" href="./dsa-index-shell.css?v=13">
+    <link rel="stylesheet" href="./dsa-index-shell.css?v=14">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 </head>
 <body class="dsa-page dsa-index-ref">
@@ -48,9 +48,44 @@
             <div id="dsa-shell-view-toolbar"></div>
         </section>
 
-        <!-- Toolbar (expand / collapse / zoom + inline hint — injected by script) -->
+        <!-- Graph toolbar: static chrome + script fills expand/collapse + zoom slots -->
         <section class="toolbar" aria-label="Graph toolbar">
-            <div class="tools-full" id="dsa-map-toolbar-host"></div>
+            <div
+                id="dsa-map-toolbar-host"
+                class="dsa-index-toolbar-shell"
+                data-dsa-index-toolbar-slots="1"
+            >
+                <div class="tools-left">
+                    <button type="button" class="btn dark" id="dsa-map-export-json" title="Export mind map JSON">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 3v12"></path>
+                            <path d="M7 10l5 5 5-5"></path>
+                            <path d="M5 21h14"></path>
+                        </svg>
+                        Export JSON
+                    </button>
+                    <button type="button" class="btn" id="dsa-map-import-json-trigger" title="Import mind map JSON">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 21V9"></path>
+                            <path d="M7 14l5-5 5 5"></path>
+                            <path d="M5 3h14"></path>
+                        </svg>
+                        Import JSON…
+                    </button>
+                    <input type="file" id="dsa-map-import-file" accept="application/json,.json" hidden aria-hidden="true" />
+                    <span class="divider" aria-hidden="true"></span>
+                    <div id="dsa-toolbar-expand-slot" class="dsa-toolbar-expand-slot"></div>
+                </div>
+                <div class="tools-right">
+                    <span class="hint dsa-graph-map-toolbar-hint">
+                        <span class="dot" aria-hidden="true"></span>
+                        <span id="dsa-map-toolbar-inline-hint" class="dsa-graph-map-toolbar-hint-text">
+                            Use ring on each node: <b>−</b> remove • <b>count</b> expand • <b>+</b> add
+                        </span>
+                    </span>
+                    <div id="dsa-toolbar-zoom-host" class="dsa-toolbar-zoom-host"></div>
+                </div>
+            </div>
         </section>
 
         <!-- Graph (live mind map — node UI unchanged) -->
@@ -100,6 +135,6 @@
                 "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/";
         }
     </script>
-    <script src="./script.js?v=23"></script>
+    <script src="./script.js?v=24"></script>
 </body>
 </html>

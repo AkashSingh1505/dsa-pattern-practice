@@ -1315,6 +1315,58 @@ function dsaExportMindMapHierarchyJson() {
 }
 window.dsaExportMindMapHierarchyJson = dsaExportMindMapHierarchyJson;
 
+/**
+ * Replace `dsaHierarchy` from mind-map JSON (array of roots) and redraw. Preserves view tab when possible.
+ * @param {string} text
+ */
+function dsaImportMindMapHierarchyFromText(text) {
+    const data = JSON.parse(String(text || ""));
+    if (!Array.isArray(data)) {
+        throw new Error("Mind map JSON must be an array of root topics.");
+    }
+    dsaHierarchy = data;
+    const st = typeof dsaCaptureGraphViewState === "function" ? dsaCaptureGraphViewState() : null;
+    loadDsaPatternsPage({ restore: st });
+}
+window.dsaImportMindMapHierarchyFromText = dsaImportMindMapHierarchyFromText;
+
+/** Wire Export/Import on index.html static toolbar (ids `dsa-map-export-json`, etc.). */
+function dsaWireIndexMapToolbarStatic() {
+    const exp = document.getElementById("dsa-map-export-json");
+    const impTrig = document.getElementById("dsa-map-import-json-trigger");
+    const impFile = document.getElementById("dsa-map-import-file");
+    if (!exp || !impTrig || !impFile) {
+        return;
+    }
+    if (exp.dataset.dsaBound === "1") {
+        return;
+    }
+    exp.dataset.dsaBound = "1";
+    exp.addEventListener("click", () => {
+        if (typeof dsaExportMindMapHierarchyJson === "function") {
+            dsaExportMindMapHierarchyJson();
+        }
+    });
+    impTrig.addEventListener("click", () => impFile.click());
+    impFile.addEventListener("change", () => {
+        const f = impFile.files && impFile.files[0];
+        if (!f) {
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+            try {
+                dsaImportMindMapHierarchyFromText(String(reader.result || ""));
+            } catch (e) {
+                window.alert((e && e.message) || "Could not import JSON.");
+            }
+            impFile.value = "";
+        };
+        reader.readAsText(f);
+    });
+}
+window.dsaWireIndexMapToolbarStatic = dsaWireIndexMapToolbarStatic;
+
 function dsaImportUserNodesFromText(text) {
     const data = JSON.parse(text);
     const nodes = data && data.nodes ? data.nodes : [];
@@ -2464,7 +2516,7 @@ function dsaMountGraphExpandCollapseControls(hostEl, panel, scheduleRedraw) {
     }
     const btnExpandAll = document.createElement("button");
     btnExpandAll.type = "button";
-    btnExpandAll.className = "btn dsa-graph-expand-btn";
+    btnExpandAll.className = "btn dsa-graph-expand-btn dsa-index-toolbar-expand-btn";
     btnExpandAll.appendChild(dsaToolbarChevronSvg("6 9 12 15 18 9"));
     btnExpandAll.appendChild(document.createTextNode("Expand all"));
     btnExpandAll.setAttribute("aria-label", "Expand all branches");
@@ -2476,7 +2528,7 @@ function dsaMountGraphExpandCollapseControls(hostEl, panel, scheduleRedraw) {
     });
     const btnCollapseAll = document.createElement("button");
     btnCollapseAll.type = "button";
-    btnCollapseAll.className = "btn dsa-graph-expand-btn";
+    btnCollapseAll.className = "btn dsa-graph-expand-btn dsa-index-toolbar-expand-btn";
     btnCollapseAll.appendChild(dsaToolbarChevronSvg("18 15 12 9 6 15"));
     btnCollapseAll.appendChild(document.createTextNode("Collapse all"));
     btnCollapseAll.setAttribute("aria-label", "Collapse all branches");
@@ -2504,14 +2556,35 @@ function dsaCreateGraphCanvasLayout(toolbarMountParent, layoutOpts) {
     canvas.className = "dsa-mind-canvas";
     canvas.id = "dsa-mind-canvas";
 
+    const body = document.createElement("div");
+    body.className = "dsa-mind-canvas-body";
+    body.id = "dsa-mind-canvas-body";
+
+    /** index.html: static shell — expand + zoom mount into slots only */
+    const useIndexSlots =
+        toolbarMountParent instanceof HTMLElement && toolbarMountParent.dataset.dsaIndexToolbarSlots === "1";
+    let toolbarExpand;
+    let toolbarZoom;
+    if (useIndexSlots) {
+        toolbarExpand = toolbarMountParent.querySelector("#dsa-toolbar-expand-slot");
+        toolbarZoom = toolbarMountParent.querySelector("#dsa-toolbar-zoom-host");
+        if (!toolbarExpand || !toolbarZoom) {
+            console.warn("DSA: index toolbar slots missing; falling back to inline toolbar");
+        }
+    }
+    if (useIndexSlots && toolbarExpand && toolbarZoom) {
+        canvas.appendChild(body);
+        return { canvas, toolbarExpand, toolbarZoom, body };
+    }
+
     const toolbar = document.createElement("div");
     toolbar.className = "dsa-graph-map-toolbar";
     toolbar.setAttribute("role", "toolbar");
     toolbar.setAttribute("aria-label", "Graph map controls");
 
-    const toolbarExpand = document.createElement("div");
+    toolbarExpand = document.createElement("div");
     toolbarExpand.className = "dsa-graph-map-toolbar-cluster";
-    const toolbarZoom = document.createElement("div");
+    toolbarZoom = document.createElement("div");
     toolbarZoom.className = "dsa-graph-map-toolbar-cluster dsa-graph-map-toolbar-cluster--zoom";
 
     let toolbarHintSlot = null;
@@ -2533,10 +2606,6 @@ function dsaCreateGraphCanvasLayout(toolbarMountParent, layoutOpts) {
         toolbar.appendChild(toolbarHintSlot);
     }
     toolbar.appendChild(toolbarZoom);
-
-    const body = document.createElement("div");
-    body.className = "dsa-mind-canvas-body";
-    body.id = "dsa-mind-canvas-body";
 
     if (toolbarMountParent instanceof HTMLElement) {
         toolbarMountParent.appendChild(toolbar);
@@ -7131,9 +7200,21 @@ function attachDsaCustomizePanel(panel, scheduleRedraw, restoredGraphUi, authCtx
 function dsaClearExternalMapToolbarHost() {
     const id = dsaGraphMount && dsaGraphMount.mapToolbarHostId;
     const host = id ? document.getElementById(id) : null;
-    if (host) {
-        host.replaceChildren();
+    if (!host) {
+        return;
     }
+    if (host.dataset.dsaIndexToolbarSlots === "1") {
+        const exp = host.querySelector("#dsa-toolbar-expand-slot");
+        const zm = host.querySelector("#dsa-toolbar-zoom-host");
+        if (exp) {
+            exp.replaceChildren();
+        }
+        if (zm) {
+            zm.replaceChildren();
+        }
+        return;
+    }
+    host.replaceChildren();
 }
 
 /**
@@ -8332,6 +8413,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     wireNavbarAdmin();
     wireMobileNav();
     footerVisitorsHit();
+    dsaWireIndexMapToolbarStatic();
 
     if (document.getElementById("dsa-hierarchy-root")) {
         /* DSA page — use DOM, not pathname (encoded paths / some hosts break includes("dsa-patterns.html")). */

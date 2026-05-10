@@ -479,6 +479,68 @@
     z-index: 1;
 }
 
+/* index.html — static toolbar row (export / import / expand / hint / zoom) */
+:is(body, .dsa-graph-shell).dsa-index-ref #dsa-map-toolbar-host.dsa-index-toolbar-shell {
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+:is(body, .dsa-graph-shell).dsa-index-ref #dsa-map-toolbar-host.dsa-index-toolbar-shell .tools-left {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+:is(body, .dsa-graph-shell).dsa-index-ref #dsa-map-toolbar-host.dsa-index-toolbar-shell .tools-right {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+:is(body, .dsa-graph-shell).dsa-index-ref #dsa-map-toolbar-host.dsa-index-toolbar-shell .divider {
+    width: 1px;
+    height: 22px;
+    background: var(--line);
+    margin: 0 2px;
+    flex-shrink: 0;
+}
+
+:is(body, .dsa-graph-shell).dsa-index-ref #dsa-map-toolbar-host.dsa-index-toolbar-shell .btn.dark {
+    background: var(--accent-2, #0f1720);
+    color: #fff;
+    border-color: rgba(15, 23, 32, 0.35);
+}
+
+:is(body, .dsa-graph-shell).dsa-index-ref #dsa-map-toolbar-host.dsa-index-toolbar-shell .btn.dark:hover {
+    background: #1e293b;
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+:is(body, .dsa-graph-shell).dsa-index-ref #dsa-map-toolbar-host.dsa-index-toolbar-shell .dsa-toolbar-expand-slot {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+:is(body, .dsa-graph-shell).dsa-index-ref #dsa-map-toolbar-host.dsa-index-toolbar-shell .tools-right .dsa-graph-map-toolbar-hint {
+    margin-left: 0;
+    max-width: min(520px, 52vw);
+}
+
+:is(body, .dsa-graph-shell).dsa-index-ref #dsa-map-toolbar-host.dsa-index-toolbar-shell .tools-right .hint b {
+    font-weight: 700;
+    color: var(--ink-2);
+}
+
 :is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .dsa-graph-map-toolbar {
     flex: 1;
     min-width: 0;

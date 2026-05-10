@@ -7163,12 +7163,7 @@ window.dsaTeardownAdminGraphPreview = dsaTeardownAdminGraphPreview;
  * @param {{ viewportId?: string, mapToolbarHostId?: string, shellToolbarId?: string|null }} [mount]
  * @returns {{ ok: boolean, error?: Error }}
  */
-/**
- * Replace `dsaHierarchy` from JSON and re-run `loadDsaPatternsPage`.
- * @param {string} jsonStr
- * @param {{ graphPreview?: boolean, mount?: { viewportId?: string, mapToolbarHostId?: string, shellToolbarId?: string|null }, restore?: unknown }} [opts]
- */
-function dsaApplyMindMapHierarchyJson(jsonStr, opts) {
+function dsaReloadGraphFromEditorJson(jsonStr, mount) {
     let parsed;
     try {
         parsed = JSON.parse(String(jsonStr || ""));
@@ -7182,18 +7177,7 @@ function dsaApplyMindMapHierarchyJson(jsonStr, opts) {
         };
     }
     dsaHierarchy = parsed;
-    const o = opts || {};
     loadDsaPatternsPage({
-        graphPreview: !!o.graphPreview,
-        mount: o.mount,
-        restore: o.restore,
-    });
-    return { ok: true };
-}
-window.dsaApplyMindMapHierarchyJson = dsaApplyMindMapHierarchyJson;
-
-function dsaReloadGraphFromEditorJson(jsonStr, mount) {
-    return dsaApplyMindMapHierarchyJson(jsonStr, {
         graphPreview: true,
         mount:
             mount ||
@@ -7203,16 +7187,9 @@ function dsaReloadGraphFromEditorJson(jsonStr, mount) {
                 shellToolbarId: null,
             },
     });
+    return { ok: true };
 }
 window.dsaReloadGraphFromEditorJson = dsaReloadGraphFromEditorJson;
-
-/** Mount ids for standalone `graph.html` (shared graph engine). */
-const DSA_GRAPH_ENGINE_MOUNT = {
-    viewportId: "graph-dsa-hierarchy-root",
-    mapToolbarHostId: "graph-dsa-map-toolbar-host",
-    shellToolbarId: "graph-dsa-shell-view-toolbar",
-};
-window.DSA_GRAPH_ENGINE_MOUNT = DSA_GRAPH_ENGINE_MOUNT;
 
 function loadDsaPatternsPage(opts) {
     const restore = opts && opts.restore;
@@ -8356,20 +8333,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     wireMobileNav();
     footerVisitorsHit();
 
-    if (document.getElementById("graph-dsa-hierarchy-root")) {
-        dsaMergeGraphMount(DSA_GRAPH_ENGINE_MOUNT);
-        await dsaLoadHierarchyFromSources();
-        await dsaInitUserData();
-        if (typeof dsaInitAdminAuth === "function") {
-            await dsaInitAdminAuth();
-        }
-        await loadDsaPatternsPage();
-        try {
-            document.dispatchEvent(new CustomEvent("dsa-graph-engine-ready"));
-        } catch (e) {
-            /* ignore */
-        }
-    } else if (document.getElementById("dsa-hierarchy-root")) {
+    if (document.getElementById("dsa-hierarchy-root")) {
         /* DSA page — use DOM, not pathname (encoded paths / some hosts break includes("dsa-patterns.html")). */
         await dsaLoadHierarchyFromSources();
         dsaInitUserData()

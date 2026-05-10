@@ -33,7 +33,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev" />
     <title>Site admin — DSA Pattern Practice</title>
-    <link rel="stylesheet" href="./auth/portal-shell.css?v=13" />
+    <link rel="stylesheet" href="./auth/portal-shell.css?v=14" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -256,13 +256,13 @@
                             <div class="adm-subcard adm-site-features-card">
                                 <h4>User-facing features</h4>
                                 <p class="helper" style="margin-top:0">
-                                    Controls what <b>all visitors and members</b> see on the public site (practice map, tabs, dashboard link, sign-in, OAuth buttons, footer, etc.).
-                                    Stored as JSON under key <code>site_user_features</code>. <b>Enabled</b> = works; <b>Visible</b> = shown in the UI (links, tabs). Uncheck either to turn off or hide.
+                                    Controls what <b>all visitors and members</b> see on the public site (practice map, tabs, dashboard link, sign-in, OAuth buttons, footer, member hub modules, etc.).
+                                    Stored as JSON under key <code>site_user_features</code>. <b>On</b> = feature works; <b>Show</b> = discoverable in the UI. Turning <b>Off</b> automatically turns <b>Show</b> off for that row. Use <b>Save</b> to persist, <b>Reload flags</b> to fetch the latest from the server (drops unsaved changes).
                                 </p>
                                 <div id="adm-site-features-matrix" class="adm-site-features-matrix" aria-live="polite"></div>
                                 <div class="adm-toolbar-row" style="margin-top:12px">
-                                    <button type="button" class="btn btn-sm" id="adm-site-features-save">Save feature flags</button>
-                                    <button type="button" class="btn ghost btn-sm" id="adm-site-features-reload">Reload flags</button>
+                                    <button type="button" class="btn btn-sm" id="adm-site-features-save">Save to server</button>
+                                    <button type="button" class="btn ghost btn-sm" id="adm-site-features-reload">Reload from server</button>
                                     <button type="button" class="btn ghost btn-sm" id="adm-site-features-reset">All on (defaults)</button>
                                 </div>
                                 <p id="adm-site-features-msg" class="status" aria-live="polite"></p>
@@ -610,7 +610,7 @@
     <script src="./auth/dsa-user-auth.js?v=3"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
     <script src="./script.js?v=23"></script>
-    <script src="./auth/account-admin-panel.js?v=16"></script>
+    <script src="./auth/account-admin-panel.js?v=17"></script>
     <script src="./auth/admin-site-page.js?v=10"></script>
 </body>
 </html>

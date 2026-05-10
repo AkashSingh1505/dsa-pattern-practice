@@ -632,11 +632,99 @@
         return wrap;
     }
 
-    async function loadSiteFeaturesEditor() {
+    let siteFeaturesMatrixLoading = false;
+
+    /**
+     * @returns {{ cell: HTMLDivElement, input: HTMLInputElement }}
+     */
+    function createSiteFeatureSwitch(inputId, checked, ariaLabel) {
+        const cell = document.createElement("div");
+        cell.className = "adm-sf-switch-cell";
+        const lab = document.createElement("label");
+        lab.className = "adm-sf-switch";
+        lab.htmlFor = inputId;
+        const inp = document.createElement("input");
+        inp.type = "checkbox";
+        inp.className = "adm-sf-switch-input";
+        inp.id = inputId;
+        inp.checked = !!checked;
+        if (ariaLabel) {
+            inp.setAttribute("aria-label", ariaLabel);
+        }
+        const track = document.createElement("span");
+        track.className = "adm-sf-switch-track";
+        track.setAttribute("aria-hidden", "true");
+        const thumb = document.createElement("span");
+        thumb.className = "adm-sf-switch-thumb";
+        track.appendChild(thumb);
+        lab.appendChild(inp);
+        lab.appendChild(track);
+        cell.appendChild(lab);
+        return { cell, input: inp };
+    }
+
+    function syncSiteFeatureRowCoupling(featureId) {
+        const en = document.getElementById("adm-sf-en-" + featureId);
+        const vis = document.getElementById("adm-sf-vis-" + featureId);
+        if (!en || !vis) {
+            return;
+        }
+        const visCell = vis.closest(".adm-sf-switch-cell");
+        if (!en.checked) {
+            vis.checked = false;
+            vis.disabled = true;
+            if (visCell) {
+                visCell.classList.add("is-slaved-off");
+            }
+        } else {
+            vis.disabled = false;
+            if (visCell) {
+                visCell.classList.remove("is-slaved-off");
+            }
+        }
+    }
+
+    function setSiteFeatureFlagButtonsDisabled(disabled) {
+        const saveBtn = document.getElementById("adm-site-features-save");
+        const relBtn = document.getElementById("adm-site-features-reload");
+        const resetBtn = document.getElementById("adm-site-features-reset");
+        if (saveBtn) {
+            saveBtn.disabled = !!disabled;
+        }
+        if (relBtn) {
+            relBtn.disabled = !!disabled;
+        }
+        if (resetBtn) {
+            resetBtn.disabled = !!disabled;
+        }
+    }
+
+    function setSiteFeaturesMatrixLoadingUi(host, busy) {
+        if (!host) {
+            return;
+        }
+        host.classList.toggle("is-busy", !!busy);
+        host.setAttribute("aria-busy", busy ? "true" : "false");
+    }
+
+    /**
+     * @param {{ lockToolbar?: boolean }} [options] — lockToolbar false when called from loadKvUi() during save/reset so buttons stay managed by the parent action.
+     */
+    async function loadSiteFeaturesEditor(options) {
+        const lockToolbar = !options || options.lockToolbar !== false;
         const host = document.getElementById("adm-site-features-matrix");
         if (!host) {
             return;
         }
+        if (siteFeaturesMatrixLoading) {
+            return;
+        }
+        siteFeaturesMatrixLoading = true;
+        if (lockToolbar) {
+            setSiteFeatureFlagButtonsDisabled(true);
+        }
+        setSiteFeaturesMatrixLoadingUi(host, true);
+        setStatus("adm-site-features-msg", "Loading flags from server…", "");
         let features = {};
         try {
             const r = await fetch(new URL("api/site-features", document.baseURI).href, {
@@ -648,49 +736,60 @@
             setStatus("adm-site-features-msg", String(e.message || e), "err");
             host.innerHTML =
                 "<p class=\"meta-line\">Could not load flags. Deploy <code>/api/site-features</code> and bind content D1.</p>";
+            siteFeaturesMatrixLoading = false;
+            setSiteFeaturesMatrixLoadingUi(host, false);
+            if (lockToolbar) {
+                setSiteFeatureFlagButtonsDisabled(false);
+            }
             return;
         }
         host.innerHTML =
             '<div class="adm-sf-head"><span>Feature</span><span title="Feature works when reached">On</span><span title="Shown in navigation / UI">Show</span></div>';
-        SITE_FEATURE_ROWS.forEach(function (meta) {
-            if (meta.section) {
-                const lab = document.createElement("div");
-                lab.className = "adm-sf-section-label";
-                lab.textContent = meta.section;
-                host.appendChild(lab);
+        try {
+            SITE_FEATURE_ROWS.forEach(function (meta) {
+                if (meta.section) {
+                    const lab = document.createElement("div");
+                    lab.className = "adm-sf-section-label";
+                    lab.textContent = meta.section;
+                    host.appendChild(lab);
+                }
+                const st = features[meta.id] || { enabled: true, visible: true };
+                const row = document.createElement("div");
+                row.className = "adm-sf-data-row";
+                const title = document.createElement("div");
+                title.innerHTML =
+                    '<div class="adm-sf-title">' +
+                    escapeHtml(meta.title) +
+                    '</div><div class="adm-sf-desc">' +
+                    escapeHtml(meta.desc) +
+                    "</div>";
+                const enPart = createSiteFeatureSwitch(
+                    "adm-sf-en-" + meta.id,
+                    st.enabled !== false,
+                    "Enabled: " + meta.title
+                );
+                const visPart = createSiteFeatureSwitch(
+                    "adm-sf-vis-" + meta.id,
+                    st.visible !== false,
+                    "Visible: " + meta.title
+                );
+                enPart.input.addEventListener("change", function () {
+                    syncSiteFeatureRowCoupling(meta.id);
+                });
+                row.appendChild(title);
+                row.appendChild(enPart.cell);
+                row.appendChild(visPart.cell);
+                host.appendChild(row);
+                syncSiteFeatureRowCoupling(meta.id);
+            });
+            setStatus("adm-site-features-msg", "Loaded from server. Save writes to app_kv; Reload discards unsaved edits.", "ok");
+        } finally {
+            siteFeaturesMatrixLoading = false;
+            setSiteFeaturesMatrixLoadingUi(host, false);
+            if (lockToolbar) {
+                setSiteFeatureFlagButtonsDisabled(false);
             }
-            const st = features[meta.id] || { enabled: true, visible: true };
-            const row = document.createElement("div");
-            row.className = "adm-sf-data-row";
-            const title = document.createElement("div");
-            title.innerHTML =
-                '<div class="adm-sf-title">' +
-                escapeHtml(meta.title) +
-                '</div><div class="adm-sf-desc">' +
-                escapeHtml(meta.desc) +
-                "</div>";
-            const en = document.createElement("label");
-            en.className = "adm-sf-check";
-            en.innerHTML =
-                '<input type="checkbox" id="adm-sf-en-' +
-                meta.id +
-                '" ' +
-                (st.enabled !== false ? "checked" : "") +
-                " />";
-            const vis = document.createElement("label");
-            vis.className = "adm-sf-check";
-            vis.innerHTML =
-                '<input type="checkbox" id="adm-sf-vis-' +
-                meta.id +
-                '" ' +
-                (st.visible !== false ? "checked" : "") +
-                " />";
-            row.appendChild(title);
-            row.appendChild(en);
-            row.appendChild(vis);
-            host.appendChild(row);
-        });
-        setStatus("adm-site-features-msg", "Feature matrix ready. Save writes to app_kv.", "ok");
+        }
     }
 
     async function saveSiteFeaturesFromEditor() {
@@ -698,12 +797,15 @@
         SITE_FEATURE_ROWS.forEach(function (meta) {
             const en = document.getElementById("adm-sf-en-" + meta.id);
             const vis = document.getElementById("adm-sf-vis-" + meta.id);
+            const enabled = !!(en && en.checked);
+            const visible = !!(vis && vis.checked && !vis.disabled);
             obj[meta.id] = {
-                enabled: !!(en && en.checked),
-                visible: !!(vis && vis.checked),
+                enabled,
+                visible,
             };
         });
-        setStatus("adm-site-features-msg", "Saving…", "");
+        setSiteFeatureFlagButtonsDisabled(true);
+        setStatus("adm-site-features-msg", "Saving to server…", "");
         try {
             await fetchJson(apiAdmin("kv"), {
                 method: "PUT",
@@ -714,10 +816,12 @@
                     meta: "site_user_features_v1",
                 }),
             });
-            setStatus("adm-site-features-msg", "Saved. Visitors pick up changes within ~30–60s (CDN cache).", "ok");
+            setStatus("adm-site-features-msg", "Saved. KV list and matrix refreshed from server. Visitors pick up changes within ~30–60s (CDN cache).", "ok");
             await loadKvUi();
         } catch (e) {
             setStatus("adm-site-features-msg", e.message, "err");
+        } finally {
+            setSiteFeatureFlagButtonsDisabled(false);
         }
     }
 
@@ -726,7 +830,8 @@
         SITE_FEATURE_ROWS.forEach(function (meta) {
             obj[meta.id] = { enabled: true, visible: true };
         });
-        setStatus("adm-site-features-msg", "Resetting defaults…", "");
+        setSiteFeatureFlagButtonsDisabled(true);
+        setStatus("adm-site-features-msg", "Writing defaults to server…", "");
         try {
             await fetchJson(apiAdmin("kv"), {
                 method: "PUT",
@@ -737,10 +842,12 @@
                     meta: "site_user_features_v1",
                 }),
             });
-            setStatus("adm-site-features-msg", "All features enabled & visible.", "ok");
+            setStatus("adm-site-features-msg", "Defaults saved. Matrix will refresh from server.", "ok");
             await loadKvUi();
         } catch (e) {
             setStatus("adm-site-features-msg", e.message, "err");
+        } finally {
+            setSiteFeatureFlagButtonsDisabled(false);
         }
     }
 
@@ -752,7 +859,7 @@
             const sj = document.getElementById("adm-site-json");
             if (sj) sj.value = JSON.stringify(d.rows || [], null, 2);
             setStatus("adm-kv-msg", "Loaded " + (d.rows && d.rows.length) + " keys.", "ok");
-            await loadSiteFeaturesEditor();
+            await loadSiteFeaturesEditor({ lockToolbar: false });
         } catch (e) {
             setStatus("adm-kv-msg", e.message, "err");
         }

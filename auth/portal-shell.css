@@ -716,11 +716,16 @@
             border-radius: 12px;
             overflow: hidden;
             background: rgba(255, 255, 255, 0.35);
+            transition: opacity 0.2s ease;
+        }
+        .adm-site-features-matrix.is-busy {
+            opacity: 0.62;
+            pointer-events: none;
         }
         .adm-sf-head,
         .adm-sf-data-row {
             display: grid;
-            grid-template-columns: 1fr 72px 72px;
+            grid-template-columns: 1fr 68px 68px;
             gap: 10px 12px;
             align-items: center;
             padding: 10px 12px;
@@ -761,15 +766,84 @@
             margin-top: 4px;
             line-height: 1.4;
         }
-        .adm-sf-check {
+        .adm-sf-switch-cell {
             display: flex;
+            align-items: center;
             justify-content: center;
-            cursor: pointer;
+            transition: opacity 0.22s ease;
         }
-        .adm-sf-check input {
-            width: 18px;
-            height: 18px;
-            accent-color: #0f1720;
+        .adm-sf-switch-cell.is-slaved-off {
+            opacity: 0.4;
+        }
+        .adm-sf-switch {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .adm-sf-switch:has(.adm-sf-switch-input:disabled) {
+            cursor: not-allowed;
+        }
+        .adm-sf-switch-input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+            opacity: 0;
+        }
+        .adm-sf-switch-track {
+            position: relative;
+            width: 44px;
+            height: 26px;
+            border-radius: 999px;
+            background: rgba(15, 23, 32, 0.16);
+            transition:
+                background 0.22s ease,
+                box-shadow 0.2s ease,
+                opacity 0.2s ease;
+            flex-shrink: 0;
+        }
+        .adm-sf-switch-input:checked + .adm-sf-switch-track {
+            background: #0f1720;
+        }
+        .adm-sf-switch-input:focus-visible + .adm-sf-switch-track {
+            box-shadow:
+                0 0 0 2px rgba(255, 255, 255, 0.9),
+                0 0 0 4px rgba(59, 130, 246, 0.45);
+        }
+        .adm-sf-switch-thumb {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(15, 23, 32, 0.22);
+            transition:
+                transform 0.24s cubic-bezier(0.33, 1, 0.68, 1),
+                box-shadow 0.2s ease;
+        }
+        .adm-sf-switch-input:checked + .adm-sf-switch-track .adm-sf-switch-thumb {
+            transform: translateX(18px);
+            box-shadow: 0 1px 4px rgba(15, 23, 32, 0.28);
+        }
+        .adm-sf-switch-input:disabled + .adm-sf-switch-track {
+            opacity: 0.5;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .adm-site-features-matrix,
+            .adm-sf-switch-cell,
+            .adm-sf-switch-track,
+            .adm-sf-switch-thumb {
+                transition: none;
+            }
         }
         .adm-mini-table-wrap {
             overflow: auto;
@@ -1467,6 +1541,17 @@
             background: rgba(255, 255, 255, 0.06);
             border-color: var(--line);
             color: var(--muted);
+        }
+        html[data-admin-theme="dark"] .adm-sf-switch-track {
+            background: rgba(255, 255, 255, 0.14);
+        }
+        html[data-admin-theme="dark"] .adm-sf-switch-input:checked + .adm-sf-switch-track {
+            background: rgba(96, 165, 250, 0.55);
+        }
+        html[data-admin-theme="dark"] .adm-sf-switch-input:focus-visible + .adm-sf-switch-track {
+            box-shadow:
+                0 0 0 2px rgba(20, 24, 30, 0.95),
+                0 0 0 4px rgba(96, 165, 250, 0.5);
         }
         html[data-admin-theme="dark"] .adm-sf-title {
             color: var(--ink-2);

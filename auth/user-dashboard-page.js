@@ -237,7 +237,8 @@
     }
 
     var PANEL_TITLES = {
-        graph: "Graph",
+        graph: "Graph workspace",
+        overview: "Overview",
         "map-tools": "Map tools",
         study: "Study",
         shared: "Shared",
@@ -252,6 +253,7 @@
 
     /** Site feature key per hub section (Graph has no key — always reachable). */
     var PANEL_NAV_SITE_KEY = {
+        overview: "sub_overview_stats",
         study: "sub_study_module",
         shared: "sub_shared_inbox",
         collab: "sub_collaboration",
@@ -347,6 +349,9 @@
     }
 
     function navigateDashboardPanel(id) {
+        if (!memberHubPanelAllowed(id)) {
+            id = "graph";
+        }
         showPanel(id);
         var sb = document.getElementById("udash-sidebar");
         var bd = document.getElementById("udash-sidebar-backdrop");
@@ -413,9 +418,14 @@
             panel.classList.toggle("is-site-disabled", showShade);
         });
 
-        var stats = document.getElementById("udash-overview-stats");
-        if (stats) {
-            stats.hidden = !siteUse("sub_overview_stats");
+        var overviewPanel = document.getElementById("panel-overview");
+        if (overviewPanel) {
+            var overviewOn = siteUse("sub_overview_stats");
+            overviewPanel.hidden = !overviewOn;
+            overviewPanel.setAttribute("aria-hidden", overviewOn ? "false" : "true");
+            if (!overviewOn && overviewPanel.classList.contains("is-active")) {
+                showPanel("graph");
+            }
         }
 
         document.querySelectorAll(".dsa-udash-nav-btn[data-panel], .dsa-udash-mnav button[data-panel]").forEach(function (btn) {
@@ -985,7 +995,7 @@
                     return;
                 }
                 var jid = t.getAttribute("data-jump-panel");
-                if (!jid || !PANEL_TITLES[jid]) {
+                if (!jid || !PANEL_TITLES[jid] || !memberHubPanelAllowed(jid)) {
                     return;
                 }
                 ev.preventDefault();
@@ -1058,7 +1068,7 @@
         if (cz) {
             cz.addEventListener("click", function () {
                 if (!cz.disabled) {
-                    navigateDashboardPanel("map-tools");
+                    navigateDashboardPanel("graph");
                     window.requestAnimationFrame(function () {
                         var seg = document.getElementById("udash-modeSeg");
                         var tab = seg && seg.querySelector('[data-mode="custom"]');

@@ -38,7 +38,7 @@
     <link rel="stylesheet" href="./auth/portal-shell.css?v=9" />
     <link rel="stylesheet" href="./styles.css?v=14" />
     <link rel="stylesheet" href="./dsa-index-shell.css?v=19" />
-    <link rel="stylesheet" href="./auth/user-dashboard.css?v=5" />
+    <link rel="stylesheet" href="./auth/user-dashboard.css?v=6" />
 </head>
 <body class="dsa-udash-body">
     <div class="dsa-udash-app" id="dsa-user-dashboard-main">
@@ -46,6 +46,10 @@
             <button type="button" class="dsa-udash-nav-btn is-active" data-panel="graph" aria-current="page">
                 <svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
                 Graph
+            </button>
+            <button type="button" class="dsa-udash-nav-btn" data-panel="overview">
+                <svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 5-6"/></svg>
+                Overview
             </button>
             <button type="button" class="dsa-udash-nav-btn" data-panel="map-tools">
                 <svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
@@ -95,7 +99,7 @@
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
             </button>
             <a class="dsa-udash-topbar-brand" href="./index.html">DSA Patterns</a>
-            <span class="dsa-udash-topbar-title" id="udash-topbar-section">Graph</span>
+            <span class="dsa-udash-topbar-title" id="udash-topbar-section">Graph workspace</span>
             <div class="dsa-udash-topbar-actions">
                 <span class="dsa-udash-plan-pill" id="dsa-udash-plan-pill">Free</span>
                 <button type="button" class="dsa-udash-icon-btn" id="dsa-udash-notif-bell" aria-label="Open alerts">
@@ -108,33 +112,127 @@
 
         <div class="dsa-udash-main-wrap">
             <div class="dsa-udash-scroll">
-                <!-- Graph — mind map only -->
+                <!-- Graph workspace — tree + view modes + map toolbar -->
                 <section class="dsa-udash-panel is-active" id="panel-graph" data-panel-id="graph" aria-labelledby="ph-graph">
-                    <div class="dsa-udash-panel-head dsa-udash-panel-head--graph-only">
-                        <h1 id="ph-graph">Graph</h1>
-                        <p>
-                            Full-screen practice map.
-                            <button type="button" class="dsa-udash-text-btn" data-jump-panel="map-tools">Map tools</button>
-                            for Full map / One topic / Customize, import &amp; export, and your stats.
-                        </p>
-                    </div>
-                    <div class="dsa-udash-graph-map-frame dsa-graph-shell dsa-index-ref">
-                        <section class="graph-card">
-                            <div class="graph-stage">
-                                <div id="udash-dsa-hierarchy-root" class="dsa-graph-viewport" aria-label="DSA pattern graph"></div>
+                    <div class="dsa-udash-graph-workspace dsa-graph-shell dsa-index-ref">
+                        <section class="head">
+                            <div class="head-text">
+                                <div class="eyebrow">Workspace</div>
+                                <h1 id="ph-graph">Graph workspace</h1>
+                                <p>
+                                    DSA pattern tree: choose <b>Full map</b>, <b>One topic</b>, or <b>Customize</b>, then use
+                                    export, import, expand/collapse, and zoom. Hub numbers live under
+                                    <button type="button" class="dsa-udash-text-btn" data-jump-panel="overview">Overview</button>.
+                                    Personal graphs:
+                                    <button type="button" class="dsa-udash-text-btn" data-jump-panel="map-tools">Map tools</button>.
+                                </p>
+                            </div>
+                            <nav
+                                class="seg dsa-view-tabs dsa-seg-track"
+                                role="tablist"
+                                id="udash-modeSeg"
+                                aria-label="Graph layout"
+                            >
+                                <span class="dsa-seg-thumb" aria-hidden="true"></span>
+                                <button type="button" class="dsa-view-btn" role="tab" data-mode="full" aria-selected="false">
+                                    Full map
+                                </button>
+                                <button type="button" class="dsa-view-btn" role="tab" data-mode="one" aria-selected="false">
+                                    One topic
+                                </button>
+                                <button type="button" class="dsa-view-btn" role="tab" data-mode="custom" aria-selected="false">
+                                    Customize
+                                </button>
+                            </nav>
+                        </section>
+                        <section class="toolbar" aria-label="Graph toolbar">
+                            <div
+                                id="udash-dsa-map-toolbar-host"
+                                class="dsa-index-toolbar-shell"
+                                data-dsa-index-toolbar-slots="1"
+                            >
+                                <div class="tools-left">
+                                    <button
+                                        type="button"
+                                        class="btn dark"
+                                        id="udash-dsa-map-export-json"
+                                        title="Export mind map JSON"
+                                    >
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2.2"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            aria-hidden="true"
+                                        >
+                                            <path d="M12 3v12"></path>
+                                            <path d="M7 10l5 5 5-5"></path>
+                                            <path d="M5 21h14"></path>
+                                        </svg>
+                                        Export JSON
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn"
+                                        id="udash-dsa-map-import-json-trigger"
+                                        title="Import mind map JSON"
+                                    >
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2.2"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            aria-hidden="true"
+                                        >
+                                            <path d="M12 21V9"></path>
+                                            <path d="M7 14l5-5 5 5"></path>
+                                            <path d="M5 3h14"></path>
+                                        </svg>
+                                        Import JSON…
+                                    </button>
+                                    <input
+                                        type="file"
+                                        id="udash-dsa-map-import-file"
+                                        accept="application/json,.json"
+                                        hidden
+                                        aria-hidden="true"
+                                    />
+                                    <span class="divider" aria-hidden="true"></span>
+                                    <div class="dsa-toolbar-expand-slot"></div>
+                                </div>
+                                <div class="tools-right">
+                                    <span class="hint dsa-graph-map-toolbar-hint">
+                                        <span class="dot" aria-hidden="true"></span>
+                                        <span
+                                            id="udash-dsa-map-toolbar-inline-hint"
+                                            class="dsa-graph-map-toolbar-hint-text"
+                                        >
+                                            Use ring on each node: <b>−</b> remove • <b>count</b> expand • <b>+</b> add
+                                        </span>
+                                    </span>
+                                    <div class="dsa-toolbar-zoom-host"></div>
+                                </div>
                             </div>
                         </section>
+                        <div class="dsa-udash-graph-map-frame">
+                            <section class="graph-card">
+                                <div class="graph-stage">
+                                    <div id="udash-dsa-hierarchy-root" class="dsa-graph-viewport" aria-label="DSA pattern graph"></div>
+                                </div>
+                            </section>
+                        </div>
                     </div>
                 </section>
 
-                <!-- Map tools — modes, toolbar, stats, library -->
-                <section class="dsa-udash-panel" id="panel-map-tools" data-panel-id="map-tools" aria-labelledby="ph-map-tools">
+                <!-- Overview — hub stats only (not part of graph workspace) -->
+                <section class="dsa-udash-panel" id="panel-overview" data-panel-id="overview" aria-labelledby="ph-overview">
                     <div class="dsa-udash-panel-head">
-                        <h1 id="ph-map-tools">Map tools</h1>
-                        <p>
-                            Switch layout modes, use the same toolbar as the public site, and review hub stats. The live map
-                            stays on <strong>Graph</strong>.
-                        </p>
+                        <h1 id="ph-overview">Overview</h1>
+                        <p>Quick counts from this member hub. Stored locally on this device unless noted.</p>
                     </div>
                     <div class="dsa-udash-stat-row" id="udash-overview-stats">
                         <div class="dsa-udash-stat"><b id="udash-stat-quiz">0</b><span>Quiz answers today</span></div>
@@ -142,118 +240,20 @@
                         <div class="dsa-udash-stat"><b id="udash-stat-graphs">0</b><span>My graphs (paid)</span></div>
                         <div class="dsa-udash-stat"><b id="udash-stat-streak">0</b><span>Local visit streak</span></div>
                     </div>
-                    <div class="dsa-udash-graph-studio-wrap dsa-graph-shell dsa-index-ref">
-                        <main class="page dsa-udash-graph-studio">
-                            <section class="head">
-                                <div class="head-text">
-                                    <div class="eyebrow">Knowledge Map</div>
-                                    <h1>DSA problem patterns</h1>
-                                    <p>
-                                        Full map opens by default — all topics under DSA Patterns. Use <b>One topic</b> to
-                                        focus on a single structure. The map flows left → right; scroll the shaded area when
-                                        it’s wide.
-                                    </p>
-                                </div>
-                                <nav
-                                    class="seg dsa-view-tabs dsa-seg-track"
-                                    role="tablist"
-                                    id="udash-modeSeg"
-                                    aria-label="Graph layout"
-                                >
-                                    <span class="dsa-seg-thumb" aria-hidden="true"></span>
-                                    <button type="button" class="dsa-view-btn" role="tab" data-mode="full" aria-selected="false">
-                                        Full map
-                                    </button>
-                                    <button type="button" class="dsa-view-btn" role="tab" data-mode="one" aria-selected="false">
-                                        One topic
-                                    </button>
-                                    <button type="button" class="dsa-view-btn" role="tab" data-mode="custom" aria-selected="false">
-                                        Customize
-                                    </button>
-                                </nav>
-                            </section>
-                            <section class="toolbar" aria-label="Graph toolbar">
-                                <div
-                                    id="udash-dsa-map-toolbar-host"
-                                    class="dsa-index-toolbar-shell"
-                                    data-dsa-index-toolbar-slots="1"
-                                >
-                                    <div class="tools-left">
-                                        <button
-                                            type="button"
-                                            class="btn dark"
-                                            id="udash-dsa-map-export-json"
-                                            title="Export mind map JSON"
-                                        >
-                                            <svg
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="2.2"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                aria-hidden="true"
-                                            >
-                                                <path d="M12 3v12"></path>
-                                                <path d="M7 10l5 5 5-5"></path>
-                                                <path d="M5 21h14"></path>
-                                            </svg>
-                                            Export JSON
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="btn"
-                                            id="udash-dsa-map-import-json-trigger"
-                                            title="Import mind map JSON"
-                                        >
-                                            <svg
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="2.2"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                aria-hidden="true"
-                                            >
-                                                <path d="M12 21V9"></path>
-                                                <path d="M7 14l5-5 5 5"></path>
-                                                <path d="M5 3h14"></path>
-                                            </svg>
-                                            Import JSON…
-                                        </button>
-                                        <input
-                                            type="file"
-                                            id="udash-dsa-map-import-file"
-                                            accept="application/json,.json"
-                                            hidden
-                                            aria-hidden="true"
-                                        />
-                                        <span class="divider" aria-hidden="true"></span>
-                                        <div class="dsa-toolbar-expand-slot"></div>
-                                    </div>
-                                    <div class="tools-right">
-                                        <span class="hint dsa-graph-map-toolbar-hint">
-                                            <span class="dot" aria-hidden="true"></span>
-                                            <span
-                                                id="udash-dsa-map-toolbar-inline-hint"
-                                                class="dsa-graph-map-toolbar-hint-text"
-                                            >
-                                                Use ring on each node: <b>−</b> remove • <b>count</b> expand • <b>+</b> add
-                                            </span>
-                                        </span>
-                                        <div class="dsa-toolbar-zoom-host"></div>
-                                    </div>
-                                </div>
-                            </section>
-                            <p class="foot">
-                                Tip: switch to <b>One topic</b> to drill into a single structure, or use <b>Customize</b> to
-                                tune your graph when available. Open <button type="button" class="dsa-udash-text-btn" data-jump-panel="graph">Graph</button> to see the map full width.
-                            </p>
-                        </main>
+                </section>
+
+                <!-- Map tools — personal graph library & shortcuts -->
+                <section class="dsa-udash-panel" id="panel-map-tools" data-panel-id="map-tools" aria-labelledby="ph-map-tools">
+                    <div class="dsa-udash-panel-head">
+                        <h1 id="ph-map-tools">Map tools</h1>
+                        <p>
+                            Extra graph features. The live tree, view modes, and export/import toolbar are on
+                            <button type="button" class="dsa-udash-text-btn" data-jump-panel="graph">Graph workspace</button>.
+                        </p>
                     </div>
-                    <div class="dsa-udash-btn-row" style="margin: 12px 0 8px">
+                    <div class="dsa-udash-btn-row" style="margin: 0 0 16px">
                         <button type="button" class="dsa-udash-btn dsa-udash-btn--primary" id="dsa-udash-open-customize" disabled>
-                            Jump to Customize tab
+                            Open Customize (Graph workspace)
                         </button>
                     </div>
                     <div class="dsa-udash-gate" id="udash-gate-graphs">
@@ -545,6 +545,7 @@
 
             <nav class="dsa-udash-mnav" aria-label="Dashboard sections (scroll)">
                 <button type="button" data-panel="graph" class="is-active"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>Graph</button>
+                <button type="button" data-panel="overview"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 5-6"/></svg>Hub</button>
                 <button type="button" data-panel="map-tools"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4"/></svg>Tools</button>
                 <button type="button" data-panel="study"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Study</button>
                 <button type="button" data-panel="shared"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Shared</button>
@@ -569,6 +570,6 @@
     <script src="./cms-bootstrap.js?v=3"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
     <script src="./script.js?v=30"></script>
-    <script src="./auth/user-dashboard-page.js?v=6"></script>
+    <script src="./auth/user-dashboard-page.js?v=7"></script>
 </body>
 </html>

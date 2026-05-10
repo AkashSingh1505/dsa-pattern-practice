@@ -32,7 +32,9 @@ npx wrangler d1 execute dsa-pattern-practice-subscribers --remote --file=migrati
 npx wrangler d1 execute dsa-pattern-practice-subscribers --remote --file=migrations/subscribers/0003_graph_library.sql
 ```
 
-Publish catalog entries with **RSA site admin** JWT or a practice account with **`role = admin`**: `POST /api/admin/graph-catalog` (see `functions/api/admin/graph-catalog.js`). Members use **`GET /api/graph-library/public`**, **`POST /api/graph-library/download`**, and **`/api/graph-library/mine*`** with the practice Bearer token.
+Publish catalog entries from **Site admin → Library** (signed in with RSA), or with **`POST /api/admin/graph-catalog`** (RSA JWT or practice **`role = admin`**). Members use **`GET /api/graph-library/public`**, **`POST /api/graph-library/download`**, and **`/api/graph-library/mine*`** with the practice Bearer token.
+
+**D1 console only (no Wrangler):** run the schema in `0003_graph_library.sql` if needed, then paste the **`INSERT`** statements from [`migrations/subscribers/seed_graph_catalog_manual.sql`](subscribers/seed_graph_catalog_manual.sql) into the Cloudflare dashboard SQL editor for the subscribers database.
 
 ## Schema overview
 

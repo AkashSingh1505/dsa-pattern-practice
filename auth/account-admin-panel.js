@@ -38,6 +38,11 @@
         { id: "sub_settings_module", title: "Settings panel", desc: "Preferences on the hub." },
         { id: "sub_profile_module", title: "Profile panel", desc: "Display name, bio, timezone." },
         { id: "sub_overview_stats", title: "Overview stat row", desc: "Quiz / reminders / graphs / streak chips on the Graph panel." },
+        {
+            id: "sub_graph_library",
+            title: "Graph library (community)",
+            desc: "Member hub: community catalog + personal cloud copies (D1). Turn off to hide Library nav site-wide.",
+        },
     ];
 
     /** Mind map mount targets — must match admin.html preview markup. */
@@ -52,6 +57,7 @@
         site: "ui",
         users: "ui",
         content: "ui",
+        library: "ui",
         system: "ui",
     };
 
@@ -63,13 +69,27 @@
     let lastUserPayload = null;
     let lastDashboardPayload = null;
     let adminMainTabName = "dashboard";
+    let graphCatalogListCache = [];
+    let graphCatalogSelectedId = null;
+
+    const DEFAULT_GLIB_PAYLOAD_TEXT = JSON.stringify(
+        [
+            {
+                id: "catalog-new-root",
+                name: "New pattern map",
+                tree: [{ name: "First topic", problems: [] }],
+            },
+        ],
+        null,
+        2,
+    );
 
     const ADMIN_THEME_KEY = "dsaAdminThemeV1";
     const ADMIN_CONSOLE_HEAD = {
         dashboard: {
             title: "Admin dashboard",
             blurb:
-                "Manage site config, practice accounts, published graph, and audit data. Every section supports a visual editor and a raw JSON view.",
+                "Manage site config, practice accounts, published graph, member graph library, and audit data. Each section has a polished UI plus an optional JSON view.",
         },
         site: {
             title: "Site",
@@ -82,6 +102,11 @@
         content: {
             title: "Content",
             blurb: "Published mind map — UI preview or JSON editor, then publish.",
+        },
+        library: {
+            title: "Graph library",
+            blurb:
+                "Community maps for the member hub (Library → Community). Same JSON shape as Content → dsa. Public = downloadable by signed-in members.",
         },
         system: {
             title: "System",
@@ -259,6 +284,12 @@
                 window.__dsaAdminRefreshContentGraph(true);
             }
         }
+        if (section === "library" && mode === "json") {
+            const ta = document.getElementById("adm-glib-json");
+            if (ta) {
+                ta.value = JSON.stringify({ ok: true, graphs: graphCatalogListCache }, null, 2);
+            }
+        }
     }
 
     function statCard(lbl, val, sub) {
@@ -304,6 +335,432 @@
             return new Date(n * 1000).toISOString().slice(0, 10);
         } catch (e) {
             return null;
+        }
+    }
+
+    function admGlibVisClass(v) {
+        const s = String(v || "").toLowerCase();
+        if (s === "public") {
+            return "adm-glib-vis adm-glib-vis--public";
+        }
+        if (s === "unlisted") {
+            return "adm-glib-vis adm-glib-vis--unlisted";
+        }
+        return "adm-glib-vis adm-glib-vis--private";
+    }
+
+    function setGlibStatus(msg, cls) {
+        setStatus("adm-glib-msg", msg, cls);
+    }
+
+    function renderGraphCatalogCards() {
+        const host = document.getElementById("adm-glib-card-host");
+        if (!host) {
+            return;
+        }
+        host.innerHTML = "";
+        if (!graphCatalogListCache.length) {
+            host.innerHTML = '<p class="adm-glib-empty">No catalog graphs yet. Click <b>New graph</b> or paste SQL seeds in D1.</p>';
+            return;
+        }
+        graphCatalogListCache.forEach(function (g) {
+            const id = g.id;
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "adm-glib-pick" + (graphCatalogSelectedId === id ? " is-active" : "");
+            btn.setAttribute("role", "listitem");
+            const vis = escapeHtml(String(g.visibility || "public"));
+            const slug = escapeHtml(String(g.slug || ""));
+            const dl = g.download_count != null ? String(g.download_count) : "0";
+            btn.innerHTML =
+                '<div class="adm-glib-pick-title">' +
+                escapeHtml(String(g.title || "Untitled")) +
+                '</div><div class="adm-glib-pick-meta"><span class="' +
+                admGlibVisClass(g.visibility) +
+                '">' +
+                vis +
+                "</span><span>" +
+                slug +
+                '</span><span>↓ ' +
+                escapeHtml(dl) +
+                "</span><span>Updated " +
+                escapeHtml(fmtTime(g.updated_at)) +
+                "</span></div>";
+            btn.addEventListener("click", function () {
+                void selectGraphCatalogItem(id);
+            });
+            host.appendChild(btn);
+        });
+    }
+
+    function updateGlibDeleteEnabled() {
+        const del = document.getElementById("adm-glib-delete");
+        const idEl = document.getElementById("adm-glib-edit-id");
+        if (del) {
+            del.disabled = !(idEl && idEl.value.trim());
+        }
+        const h = document.getElementById("adm-glib-form-heading");
+        if (h && idEl) {
+            h.textContent = idEl.value.trim() ? "Edit catalog graph" : "New catalog graph";
+        }
+    }
+
+    function clearGraphCatalogForm() {
+        graphCatalogSelectedId = null;
+        const idEl = document.getElementById("adm-glib-edit-id");
+        if (idEl) {
+            idEl.value = "";
+        }
+        const t = document.getElementById("adm-glib-title");
+        if (t) {
+            t.value = "";
+        }
+        const slug = document.getElementById("adm-glib-slug-new");
+        if (slug) {
+            slug.value = "";
+        }
+        const vis = document.getElementById("adm-glib-visibility");
+        if (vis) {
+            vis.value = "public";
+        }
+        const desc = document.getElementById("adm-glib-description");
+        if (desc) {
+            desc.value = "";
+        }
+        const acc = document.getElementById("adm-glib-accent");
+        if (acc) {
+            acc.value = "";
+        }
+        const est = document.getElementById("adm-glib-estimated");
+        if (est) {
+            est.value = "";
+        }
+        const diff = document.getElementById("adm-glib-difficulty");
+        if (diff) {
+            diff.value = "";
+        }
+        const tags = document.getElementById("adm-glib-tags");
+        if (tags) {
+            tags.value = "";
+        }
+        const pay = document.getElementById("adm-glib-payload");
+        if (pay) {
+            pay.value = DEFAULT_GLIB_PAYLOAD_TEXT;
+        }
+        renderGraphCatalogCards();
+        updateGlibDeleteEnabled();
+    }
+
+    function fillGraphCatalogForm(graph) {
+        if (!graph) {
+            return;
+        }
+        graphCatalogSelectedId = graph.id;
+        const idEl = document.getElementById("adm-glib-edit-id");
+        if (idEl) {
+            idEl.value = graph.id || "";
+        }
+        const t = document.getElementById("adm-glib-title");
+        if (t) {
+            t.value = graph.title || "";
+        }
+        const vis = document.getElementById("adm-glib-visibility");
+        if (vis) {
+            vis.value = graph.visibility || "public";
+        }
+        const desc = document.getElementById("adm-glib-description");
+        if (desc) {
+            desc.value = graph.description || "";
+        }
+        const acc = document.getElementById("adm-glib-accent");
+        if (acc) {
+            acc.value = graph.accentHue != null && graph.accentHue !== "" ? String(graph.accentHue) : "";
+        }
+        const est = document.getElementById("adm-glib-estimated");
+        if (est) {
+            est.value =
+                graph.estimatedMinutes != null && graph.estimatedMinutes !== "" ? String(graph.estimatedMinutes) : "";
+        }
+        const diff = document.getElementById("adm-glib-difficulty");
+        if (diff) {
+            diff.value = graph.difficulty || "";
+        }
+        const tags = document.getElementById("adm-glib-tags");
+        if (tags) {
+            tags.value = Array.isArray(graph.tags) ? graph.tags.join(", ") : "";
+        }
+        const slugNew = document.getElementById("adm-glib-slug-new");
+        if (slugNew) {
+            slugNew.value = "";
+            slugNew.placeholder = graph.slug ? String(graph.slug) + " (fixed after publish)" : "auto from title if empty";
+        }
+        const pay = document.getElementById("adm-glib-payload");
+        if (pay && graph.payload) {
+            try {
+                pay.value = JSON.stringify(graph.payload, null, 2);
+            } catch (e) {
+                pay.value = DEFAULT_GLIB_PAYLOAD_TEXT;
+            }
+        }
+        renderGraphCatalogCards();
+        updateGlibDeleteEnabled();
+    }
+
+    async function loadGraphCatalogList() {
+        setGlibStatus("Loading catalog…", "");
+        try {
+            const j = await fetchJson(apiAdmin("graph-catalog"));
+            graphCatalogListCache = j.graphs || [];
+            const ta = document.getElementById("adm-glib-json");
+            if (ta && dualMode.library === "json") {
+                ta.value = JSON.stringify({ ok: true, graphs: graphCatalogListCache }, null, 2);
+            }
+            renderGraphCatalogCards();
+            setGlibStatus(graphCatalogListCache.length + " catalog graph(s) loaded.", "ok");
+        } catch (e) {
+            setGlibStatus(e.message || "Load failed", "err");
+        }
+    }
+
+    async function selectGraphCatalogItem(id) {
+        if (!id) {
+            return;
+        }
+        graphCatalogSelectedId = id;
+        renderGraphCatalogCards();
+        setGlibStatus("Loading graph…", "");
+        try {
+            const j = await fetchJson(apiAdmin("graph-catalog") + "?id=" + encodeURIComponent(id));
+            fillGraphCatalogForm(j.graph);
+            const ta = document.getElementById("adm-glib-json");
+            if (ta && dualMode.library === "json") {
+                ta.value = JSON.stringify(j, null, 2);
+            }
+            setGlibStatus("Editing: " + (j.graph && j.graph.title ? j.graph.title : id), "ok");
+        } catch (e) {
+            setGlibStatus(e.message || "Load failed", "err");
+        }
+    }
+
+    function parseGlibPayload() {
+        const pay = document.getElementById("adm-glib-payload");
+        if (!pay) {
+            throw new Error("Missing payload field");
+        }
+        let payload;
+        try {
+            payload = JSON.parse(pay.value);
+        } catch (e) {
+            throw new Error("Invalid JSON: " + (e && e.message ? e.message : "parse error"));
+        }
+        if (!Array.isArray(payload)) {
+            throw new Error("Payload must be a JSON array of mind-map roots.");
+        }
+        return payload;
+    }
+
+    function readGlibOptionalNumber(elId) {
+        const el = document.getElementById(elId);
+        if (!el || el.value === "" || el.value == null) {
+            return null;
+        }
+        const n = Number(el.value);
+        return Number.isFinite(n) ? n : null;
+    }
+
+    async function saveGraphCatalogFromForm() {
+        const id = (document.getElementById("adm-glib-edit-id") && document.getElementById("adm-glib-edit-id").value) || "";
+        const titleEl = document.getElementById("adm-glib-title");
+        const title = titleEl ? String(titleEl.value || "").trim() : "";
+        if (!title) {
+            setGlibStatus("Title is required.", "err");
+            return;
+        }
+        let payload;
+        try {
+            payload = parseGlibPayload();
+        } catch (e) {
+            setGlibStatus(e.message, "err");
+            return;
+        }
+        const visibility = (document.getElementById("adm-glib-visibility") && document.getElementById("adm-glib-visibility").value) || "public";
+        const description = (document.getElementById("adm-glib-description") && document.getElementById("adm-glib-description").value) || "";
+        const tagsRaw = (document.getElementById("adm-glib-tags") && document.getElementById("adm-glib-tags").value) || "";
+        const tags = tagsRaw
+            .split(",")
+            .map(function (s) {
+                return s.trim();
+            })
+            .filter(Boolean);
+        const difficultyRaw = (document.getElementById("adm-glib-difficulty") && document.getElementById("adm-glib-difficulty").value) || "";
+        const difficulty = difficultyRaw.trim() ? difficultyRaw.trim().slice(0, 32) : null;
+        const accentRaw = readGlibOptionalNumber("adm-glib-accent");
+        const accentHue = accentRaw != null ? Math.floor(accentRaw) % 360 : null;
+        const estRaw = readGlibOptionalNumber("adm-glib-estimated");
+        const estimatedMinutes = estRaw != null ? Math.max(0, Math.floor(estRaw)) : null;
+
+        setGlibStatus("Saving…", "");
+        try {
+            if (id.trim()) {
+                await fetchJson(apiAdmin("graph-catalog"), {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        id: id.trim(),
+                        title,
+                        description,
+                        visibility,
+                        payload,
+                        tags,
+                        difficulty,
+                        accentHue,
+                        estimatedMinutes,
+                    }),
+                });
+                setGlibStatus("Saved.", "ok");
+            } else {
+                const slugEl = document.getElementById("adm-glib-slug-new");
+                const slugHint = slugEl ? String(slugEl.value || "").trim() : "";
+                const body = {
+                    title,
+                    description,
+                    visibility,
+                    payload,
+                    tags,
+                    difficulty,
+                    accentHue,
+                    estimatedMinutes,
+                };
+                if (slugHint) {
+                    body.slug = slugHint;
+                }
+                const r = await fetchJson(apiAdmin("graph-catalog"), {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body),
+                });
+                setGlibStatus("Created — slug: " + (r.slug || "") + ".", "ok");
+                if (r.id) {
+                    await selectGraphCatalogItem(r.id);
+                }
+            }
+            await loadGraphCatalogList();
+            if (graphCatalogSelectedId) {
+                await selectGraphCatalogItem(graphCatalogSelectedId);
+            }
+        } catch (e) {
+            setGlibStatus(e.message || "Save failed", "err");
+        }
+    }
+
+    async function deleteGraphCatalogFromForm() {
+        const idEl = document.getElementById("adm-glib-edit-id");
+        const id = idEl ? idEl.value.trim() : "";
+        if (!id) {
+            return;
+        }
+        if (!window.confirm("Remove this graph from the catalog? Members keep their downloaded copies; this only hides the source entry.")) {
+            return;
+        }
+        setGlibStatus("Removing…", "");
+        try {
+            await fetchJson(apiAdmin("graph-catalog") + "?id=" + encodeURIComponent(id), { method: "DELETE" });
+            clearGraphCatalogForm();
+            await loadGraphCatalogList();
+            setGlibStatus("Removed from catalog.", "ok");
+        } catch (e) {
+            setGlibStatus(e.message || "Delete failed", "err");
+        }
+    }
+
+    async function admGlibImportPayloadFromCms() {
+        setGlibStatus("Loading Content…", "");
+        try {
+            const d = await fetchJson(apiAdmin("cms") + "?k=" + encodeURIComponent(CMS_KEY));
+            const src =
+                d.draft && d.draft.payload
+                    ? d.draft.payload
+                    : d.published && d.published.payload
+                      ? d.published.payload
+                      : "[]";
+            const arr = JSON.parse(typeof src === "string" ? src : JSON.stringify(src));
+            if (!Array.isArray(arr)) {
+                throw new Error("Content payload is not an array.");
+            }
+            const pay = document.getElementById("adm-glib-payload");
+            if (pay) {
+                pay.value = JSON.stringify(arr, null, 2);
+            }
+            setGlibStatus("Payload filled from Content (" + (d.draft && d.draft.payload ? "draft" : "live") + ").", "ok");
+        } catch (e) {
+            setGlibStatus(e.message || "Import failed", "err");
+        }
+    }
+
+    function admGlibFormatPayload() {
+        try {
+            const payload = parseGlibPayload();
+            const pay = document.getElementById("adm-glib-payload");
+            if (pay) {
+                pay.value = JSON.stringify(payload, null, 2);
+            }
+            setGlibStatus("Payload formatted.", "ok");
+        } catch (e) {
+            setGlibStatus(e.message, "err");
+        }
+    }
+
+    function wireGraphLibraryPanel() {
+        const root = document.getElementById("cms-editor-section");
+        if (!root || root.dataset.admGlibBound === "1") {
+            return;
+        }
+        if (!document.getElementById("adm-glib-card-host")) {
+            return;
+        }
+        root.dataset.admGlibBound = "1";
+
+        document.getElementById("adm-glib-reload") &&
+            document.getElementById("adm-glib-reload").addEventListener("click", function () {
+                void loadGraphCatalogList();
+            });
+        document.getElementById("adm-glib-new") &&
+            document.getElementById("adm-glib-new").addEventListener("click", function () {
+                clearGraphCatalogForm();
+                setGlibStatus("New graph — fill fields and Save.", "ok");
+            });
+        document.getElementById("adm-glib-import-cms") &&
+            document.getElementById("adm-glib-import-cms").addEventListener("click", function () {
+                void admGlibImportPayloadFromCms();
+            });
+        document.getElementById("adm-glib-format-payload") &&
+            document.getElementById("adm-glib-format-payload").addEventListener("click", function () {
+                admGlibFormatPayload();
+            });
+        document.getElementById("adm-glib-save") &&
+            document.getElementById("adm-glib-save").addEventListener("click", function () {
+                void saveGraphCatalogFromForm();
+            });
+        document.getElementById("adm-glib-delete") &&
+            document.getElementById("adm-glib-delete").addEventListener("click", function () {
+                void deleteGraphCatalogFromForm();
+            });
+        const jc = document.getElementById("adm-glib-json-copy");
+        if (jc) {
+            jc.addEventListener("click", function () {
+                const t = document.getElementById("adm-glib-json");
+                if (!t) {
+                    return;
+                }
+                navigator.clipboard.writeText(t.value).then(
+                    function () {
+                        setGlibStatus("JSON copied.", "ok");
+                    },
+                    function () {
+                        setGlibStatus("Copy failed.", "err");
+                    },
+                );
+            });
         }
     }
 
@@ -1630,6 +2087,9 @@
                     const cl = document.getElementById("cms-load");
                     if (cl) cl.click();
                 }
+                if (name === "library") {
+                    void loadGraphCatalogList();
+                }
                 if (name === "system") loadSystemUi();
             });
         });
@@ -1650,6 +2110,8 @@
             else if (name === "content") {
                 const cl = document.getElementById("cms-load");
                 if (cl) cl.click();
+            } else if (name === "library") {
+                void loadGraphCatalogList();
             } else if (name === "system") loadSystemUi();
         }
 
@@ -1778,6 +2240,7 @@
             );
         });
 
+        wireGraphLibraryPanel();
         activeMainTab("dashboard");
         loadDashboard();
         initContentCms();

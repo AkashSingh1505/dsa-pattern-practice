@@ -25,6 +25,18 @@ async function uniqueSlug(db, base) {
     return `${base}-${newGraphId().slice(0, 8)}`;
 }
 
+function parseTagsJson(s) {
+    if (!s || typeof s !== "string") {
+        return [];
+    }
+    try {
+        const x = JSON.parse(s);
+        return Array.isArray(x) ? x.map((t) => String(t)) : [];
+    } catch {
+        return [];
+    }
+}
+
 export async function onRequestGet(context) {
     const { request, env } = context;
     const gate = await requireGraphCatalogWriter(request, env);
@@ -32,6 +44,61 @@ export async function onRequestGet(context) {
         return gate.response;
     }
     const { db } = gate;
+    const url = new URL(request.url);
+    const oneId = String(url.searchParams.get("id") || "").trim();
+
+    if (oneId) {
+        let row;
+        try {
+            row = await db
+                .prepare(
+                    `SELECT c.id, c.slug, c.title, c.description, c.visibility, c.creator_user_id, c.payload_json, c.accent_hue, c.tags_json, c.difficulty,
+                            c.estimated_minutes, c.download_count, c.created_at, c.updated_at,
+                            pu.email AS creator_email
+                     FROM graph_catalog c
+                     LEFT JOIN practice_users pu ON pu.id = c.creator_user_id
+                     WHERE c.id = ? AND c.deleted_at IS NULL`,
+                )
+                .bind(oneId)
+                .first();
+        } catch (e) {
+            console.error("admin graph-catalog get one", e);
+            return json({ error: "server error" }, 500);
+        }
+        if (!row) {
+            return json({ error: "not found" }, 404);
+        }
+        let payload;
+        try {
+            payload = JSON.parse(row.payload_json);
+        } catch {
+            return json({ error: "invalid payload in database" }, 500);
+        }
+        if (!Array.isArray(payload)) {
+            return json({ error: "invalid payload in database" }, 500);
+        }
+        return json({
+            ok: true,
+            graph: {
+                id: row.id,
+                slug: row.slug,
+                title: row.title,
+                description: row.description || "",
+                visibility: row.visibility,
+                creatorUserId: row.creator_user_id,
+                creatorEmail: row.creator_email || null,
+                accentHue: row.accent_hue,
+                tags: parseTagsJson(row.tags_json),
+                difficulty: row.difficulty || null,
+                estimatedMinutes: row.estimated_minutes,
+                downloadCount: row.download_count || 0,
+                createdAt: row.created_at,
+                updatedAt: row.updated_at,
+                payload,
+            },
+        });
+    }
+
     let rows;
     try {
         rows = await db

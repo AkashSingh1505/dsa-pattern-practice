@@ -167,7 +167,7 @@
         host.innerHTML = "";
         if (!state.public.length) {
             host.innerHTML =
-                '<p class="dsa-glib-empty">No public graphs yet. Staff can publish via <code class="dsa-glib-code">POST /api/admin/graph-catalog</code> (RSA admin JWT or practice <strong>admin</strong> role).</p>';
+                '<p class="dsa-glib-empty">No public graphs yet. Site staff can add them in <strong>Site admin → Library</strong>, or seed D1 / use the catalog API.</p>';
             return;
         }
         state.public.forEach(function (g) {

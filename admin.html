@@ -39,6 +39,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css?v=14" />
     <link rel="stylesheet" href="./dsa-index-shell.css?v=19" />
+    <link rel="stylesheet" href="./auth/admin-graph-library.css?v=1" />
 </head>
 <body class="dsa-admin-body">
     <script>
@@ -105,6 +106,7 @@
                             <button type="button" class="admin-session-pill" data-admin-tab="site">Site</button>
                             <button type="button" class="admin-session-pill" data-admin-tab="users">Users</button>
                             <button type="button" class="admin-session-pill" data-admin-tab="content">Content</button>
+                            <button type="button" class="admin-session-pill" data-admin-tab="library">Library</button>
                             <button type="button" class="admin-session-pill" data-admin-tab="system">System</button>
                             <span class="admin-session-pill-gap" aria-hidden="true"></span>
                             <button type="button" class="admin-session-pill admin-session-pill--soon" disabled title="Coming soon">
@@ -181,7 +183,7 @@
                         <div class="adm-topbar-copy">
                             <h2 id="adm-console-title">Admin dashboard</h2>
                             <p id="adm-console-blurb" class="adm-topbar-blurb">
-                                Manage site config, practice accounts, published graph, and audit data. Every section supports a visual editor and a raw JSON view.
+                                Manage site config, practice accounts, published graph, member graph library, and audit data. Each section has a polished UI plus an optional JSON view.
                             </p>
                         </div>
                         <div class="adm-topbar-actions">
@@ -668,6 +670,104 @@
                         <p id="cms-status" class="status" style="margin-top:12px"></p>
                     </div>
 
+                    <!-- Graph library (member hub — community catalog) -->
+                    <div class="adm-pane adm-hidden" data-admin-pane="library">
+                        <div class="adm-pane-head adm-glib-head">
+                            <div>
+                                <h3>Graph library</h3>
+                                <p class="adm-glib-sub">Curate public maps for the member hub. Same mind-map JSON shape as Content → <code>dsa</code>.</p>
+                            </div>
+                            <div class="adm-seg" data-adm-dual-wrap="library">
+                                <button type="button" class="active" data-adm-dual="library" data-adm-mode="ui">UI</button>
+                                <button type="button" data-adm-dual="library" data-adm-mode="json">JSON</button>
+                            </div>
+                        </div>
+
+                        <div data-adm-panel="library-ui">
+                            <div class="adm-glib-toolbar">
+                                <button type="button" class="btn btn-sm" id="adm-glib-reload">Reload list</button>
+                                <button type="button" class="btn ghost btn-sm" id="adm-glib-new">New graph</button>
+                                <button type="button" class="btn ghost btn-sm" id="adm-glib-import-cms">Fill payload from Content</button>
+                                <button type="button" class="btn ghost btn-sm" id="adm-glib-format-payload">Format payload JSON</button>
+                            </div>
+
+                            <div class="adm-glib-split">
+                                <div class="adm-glib-column adm-glib-column--list">
+                                    <h4 class="adm-glib-h4">Catalog</h4>
+                                    <p class="helper adm-glib-hint">Select a row to edit. <strong>Public</strong> appears in the community tab for all signed-in members.</p>
+                                    <div id="adm-glib-card-host" class="adm-glib-card-host" role="list"></div>
+                                </div>
+                                <div class="adm-glib-column adm-glib-column--form">
+                                    <div class="adm-subcard adm-glib-form-card">
+                                        <h4 class="adm-glib-h4" id="adm-glib-form-heading">Editor</h4>
+                                        <input type="hidden" id="adm-glib-edit-id" value="" autocomplete="off" />
+
+                                        <div class="adm-form-grid cols-2">
+                                            <div class="adm-field adm-field--span-2">
+                                                <label for="adm-glib-title">Title</label>
+                                                <input id="adm-glib-title" type="text" placeholder="e.g. Interview patterns sprint" maxlength="200" autocomplete="off" />
+                                            </div>
+                                            <div class="adm-field">
+                                                <label for="adm-glib-slug-new">Slug hint <span class="adm-glib-label-muted">(new only)</span></label>
+                                                <input id="adm-glib-slug-new" type="text" placeholder="auto from title if empty" maxlength="64" autocomplete="off" />
+                                            </div>
+                                            <div class="adm-field">
+                                                <label for="adm-glib-visibility">Visibility</label>
+                                                <select id="adm-glib-visibility" class="adm-select-enhanced">
+                                                    <option value="public">public — community library</option>
+                                                    <option value="unlisted">unlisted — link/API only</option>
+                                                    <option value="private">private — staff drafts</option>
+                                                </select>
+                                            </div>
+                                            <div class="adm-field adm-field--span-2">
+                                                <label for="adm-glib-description">Description</label>
+                                                <textarea id="adm-glib-description" class="adm-textarea-prose" rows="3" placeholder="Shown on library cards"></textarea>
+                                            </div>
+                                            <div class="adm-field">
+                                                <label for="adm-glib-accent">Accent hue <span class="adm-glib-label-muted">0–359</span></label>
+                                                <input id="adm-glib-accent" type="number" min="0" max="359" placeholder="optional" autocomplete="off" />
+                                            </div>
+                                            <div class="adm-field">
+                                                <label for="adm-glib-estimated">Est. minutes</label>
+                                                <input id="adm-glib-estimated" type="number" min="0" step="1" placeholder="optional" autocomplete="off" />
+                                            </div>
+                                            <div class="adm-field">
+                                                <label for="adm-glib-difficulty">Difficulty</label>
+                                                <input id="adm-glib-difficulty" type="text" placeholder="e.g. beginner" maxlength="32" autocomplete="off" />
+                                            </div>
+                                            <div class="adm-field adm-field--span-2">
+                                                <label for="adm-glib-tags">Tags <span class="adm-glib-label-muted">comma-separated</span></label>
+                                                <input id="adm-glib-tags" type="text" placeholder="interview, graphs, …" autocomplete="off" />
+                                            </div>
+                                        </div>
+
+                                        <div class="adm-field" style="margin-top: 14px">
+                                            <label for="adm-glib-payload">Mind map JSON <span class="adm-glib-label-muted">array of roots</span></label>
+                                            <textarea id="adm-glib-payload" class="adm-json-input adm-glib-payload-ta" spellcheck="false" rows="16" aria-describedby="adm-glib-payload-hint"></textarea>
+                                            <p id="adm-glib-payload-hint" class="adm-field-hint">Must match the published graph format (see Content → JSON). Use <b>Fill payload from Content</b> to copy the live or draft map.</p>
+                                        </div>
+
+                                        <div class="adm-glib-actions">
+                                            <button type="button" class="btn" id="adm-glib-save">Save</button>
+                                            <button type="button" class="btn ghost" id="adm-glib-delete" disabled>Remove from catalog…</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p id="adm-glib-msg" class="status adm-glib-status" aria-live="polite"></p>
+                        </div>
+
+                        <div data-adm-panel="library-json" class="adm-hidden">
+                            <p class="helper adm-glib-json-lede">
+                                Read-only snapshot of <code>GET /api/admin/graph-catalog</code> (list without full payloads). Reload the Library tab or use <b>Reload list</b> to refresh.
+                            </p>
+                            <textarea id="adm-glib-json" class="adm-json-input adm-glib-json-ta" spellcheck="false" readonly></textarea>
+                            <div class="adm-toolbar-row">
+                                <button type="button" class="btn ghost btn-sm" id="adm-glib-json-copy">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- System -->
                     <div class="adm-pane adm-hidden" data-admin-pane="system">
                         <div class="adm-pane-head">
@@ -737,8 +837,8 @@
     <script src="./auth/dsa-member-roles.js?v=1"></script>
     <script src="./auth/dsa-user-auth.js?v=3"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
-    <script src="./script.js?v=30"></script>
-    <script src="./auth/account-admin-panel.js?v=18"></script>
+    <script src="./script.js?v=31"></script>
+    <script src="./auth/account-admin-panel.js?v=19"></script>
     <script src="./auth/admin-site-page.js?v=10"></script>
 </body>
 </html>

@@ -463,9 +463,10 @@
     align-items: center;
     justify-content: flex-start;
     gap: 14px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     position: relative;
     overflow: hidden;
+    min-width: 0;
 }
 
 :is(body, .dsa-graph-shell).dsa-index-ref .toolbar::before {
@@ -492,15 +493,21 @@
     justify-content: space-between;
     align-items: center;
     gap: 14px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
 }
 
 :is(body, .dsa-graph-shell).dsa-index-ref
     :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host).dsa-index-toolbar-shell
     .tools-left {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: row;
+    flex-wrap: nowrap;
     align-items: center;
     gap: 8px;
     min-width: 0;
@@ -511,10 +518,25 @@
     :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host).dsa-index-toolbar-shell
     .tools-right {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: row;
+    flex-wrap: nowrap;
     align-items: center;
     gap: 12px;
     flex-shrink: 0;
+}
+
+/* Keep map toolbar buttons in one row (avoid full-width stacking in narrow embeds). */
+:is(body, .dsa-graph-shell).dsa-index-ref
+    :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host).dsa-index-toolbar-shell
+    .tools-left
+    > .btn,
+:is(body, .dsa-graph-shell).dsa-index-ref
+    :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host).dsa-index-toolbar-shell
+    .dsa-toolbar-expand-slot
+    .btn {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 0;
 }
 
 :is(body, .dsa-graph-shell).dsa-index-ref
@@ -547,9 +569,11 @@
     :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host).dsa-index-toolbar-shell
     .dsa-toolbar-expand-slot {
     display: inline-flex;
-    flex-wrap: wrap;
+    flex-direction: row;
+    flex-wrap: nowrap;
     align-items: center;
     gap: 8px;
+    flex: 0 0 auto;
 }
 
 :is(body, .dsa-graph-shell).dsa-index-ref

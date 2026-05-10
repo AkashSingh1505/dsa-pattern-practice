@@ -1,6 +1,6 @@
 /* Member dashboard — full-viewport app shell */
 
-/* Embedded practice graph (mirrors index.html main.page) */
+/* Map tools panel — same chrome as index main.page (no graph card here) */
 .dsa-udash-graph-studio-wrap {
     width: 100%;
     max-width: 100%;
@@ -19,6 +19,53 @@
     .dsa-udash-graph-studio.page {
         padding: 18px 16px 28px;
     }
+}
+
+/* Graph panel — viewport only */
+#panel-graph.is-active {
+    display: flex;
+    flex-direction: column;
+    min-height: min(78vh, 920px);
+}
+.dsa-udash-panel-head--graph-only {
+    flex-shrink: 0;
+}
+.dsa-udash-graph-map-frame {
+    flex: 1;
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: var(--udash-shadow);
+}
+.dsa-udash-graph-map-frame .graph-card {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+}
+.dsa-udash-graph-map-frame .graph-stage {
+    flex: 1;
+    min-height: min(70vh, 820px);
+}
+
+.dsa-udash-text-btn {
+    display: inline;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-weight: 600;
+    color: var(--udash-ink);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+}
+.dsa-udash-text-btn:hover {
+    color: #1e293b;
 }
 
 :root {

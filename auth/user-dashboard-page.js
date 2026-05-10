@@ -238,6 +238,7 @@
 
     var PANEL_TITLES = {
         graph: "Graph",
+        "map-tools": "Map tools",
         study: "Study",
         shared: "Shared",
         collab: "Collab",
@@ -313,7 +314,7 @@
     }
 
     function memberHubPanelAllowed(panelId) {
-        if (panelId === "graph") {
+        if (panelId === "graph" || panelId === "map-tools") {
             return true;
         }
         var k = PANEL_NAV_SITE_KEY[panelId];
@@ -419,7 +420,7 @@
 
         document.querySelectorAll(".dsa-udash-nav-btn[data-panel], .dsa-udash-mnav button[data-panel]").forEach(function (btn) {
             var pid = btn.getAttribute("data-panel");
-            if (!pid || pid === "graph") {
+            if (!pid || pid === "graph" || pid === "map-tools") {
                 return;
             }
             var key = PANEL_NAV_SITE_KEY[pid];
@@ -1057,18 +1058,19 @@
         if (cz) {
             cz.addEventListener("click", function () {
                 if (!cz.disabled) {
-                    var seg = document.getElementById("udash-modeSeg");
-                    var tab = seg && seg.querySelector('[data-mode="custom"]');
-                    if (tab) {
-                        tab.click();
-                        try {
-                            tab.scrollIntoView({ block: "nearest", behavior: "smooth" });
-                        } catch (e) {
-                            /* ignore */
+                    navigateDashboardPanel("map-tools");
+                    window.requestAnimationFrame(function () {
+                        var seg = document.getElementById("udash-modeSeg");
+                        var tab = seg && seg.querySelector('[data-mode="custom"]');
+                        if (tab) {
+                            tab.click();
+                            try {
+                                tab.scrollIntoView({ block: "nearest", behavior: "smooth" });
+                            } catch (e) {
+                                /* ignore */
+                            }
                         }
-                    } else {
-                        window.location.href = "./index.html";
-                    }
+                    });
                 }
             });
         }

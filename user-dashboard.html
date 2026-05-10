@@ -37,8 +37,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./auth/portal-shell.css?v=9" />
     <link rel="stylesheet" href="./styles.css?v=14" />
-    <link rel="stylesheet" href="./dsa-index-shell.css?v=18" />
-    <link rel="stylesheet" href="./auth/user-dashboard.css?v=4" />
+    <link rel="stylesheet" href="./dsa-index-shell.css?v=19" />
+    <link rel="stylesheet" href="./auth/user-dashboard.css?v=5" />
 </head>
 <body class="dsa-udash-body">
     <div class="dsa-udash-app" id="dsa-user-dashboard-main">
@@ -46,6 +46,10 @@
             <button type="button" class="dsa-udash-nav-btn is-active" data-panel="graph" aria-current="page">
                 <svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
                 Graph
+            </button>
+            <button type="button" class="dsa-udash-nav-btn" data-panel="map-tools">
+                <svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+                Map tools
             </button>
             <button type="button" class="dsa-udash-nav-btn" data-panel="study">
                 <svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
@@ -104,13 +108,32 @@
 
         <div class="dsa-udash-main-wrap">
             <div class="dsa-udash-scroll">
-                <!-- Graph -->
+                <!-- Graph — mind map only -->
                 <section class="dsa-udash-panel is-active" id="panel-graph" data-panel-id="graph" aria-labelledby="ph-graph">
-                    <div class="dsa-udash-panel-head">
-                        <h1 id="ph-graph">Graph workspace</h1>
+                    <div class="dsa-udash-panel-head dsa-udash-panel-head--graph-only">
+                        <h1 id="ph-graph">Graph</h1>
                         <p>
-                            Same practice experience as the public map — full mind map, one-topic drill-down, and customize
-                            (when your account allows it). Stats below are local to this hub.
+                            Full-screen practice map.
+                            <button type="button" class="dsa-udash-text-btn" data-jump-panel="map-tools">Map tools</button>
+                            for Full map / One topic / Customize, import &amp; export, and your stats.
+                        </p>
+                    </div>
+                    <div class="dsa-udash-graph-map-frame dsa-graph-shell dsa-index-ref">
+                        <section class="graph-card">
+                            <div class="graph-stage">
+                                <div id="udash-dsa-hierarchy-root" class="dsa-graph-viewport" aria-label="DSA pattern graph"></div>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+
+                <!-- Map tools — modes, toolbar, stats, library -->
+                <section class="dsa-udash-panel" id="panel-map-tools" data-panel-id="map-tools" aria-labelledby="ph-map-tools">
+                    <div class="dsa-udash-panel-head">
+                        <h1 id="ph-map-tools">Map tools</h1>
+                        <p>
+                            Switch layout modes, use the same toolbar as the public site, and review hub stats. The live map
+                            stays on <strong>Graph</strong>.
                         </p>
                     </div>
                     <div class="dsa-udash-stat-row" id="udash-overview-stats">
@@ -222,20 +245,15 @@
                                     </div>
                                 </div>
                             </section>
-                            <section class="graph-card">
-                                <div class="graph-stage">
-                                    <div id="udash-dsa-hierarchy-root" class="dsa-graph-viewport" aria-label="DSA pattern graph"></div>
-                                </div>
-                            </section>
                             <p class="foot">
                                 Tip: switch to <b>One topic</b> to drill into a single structure, or use <b>Customize</b> to
-                                tune your graph when available. Your progress syncs across devices from the practice site.
+                                tune your graph when available. Open <button type="button" class="dsa-udash-text-btn" data-jump-panel="graph">Graph</button> to see the map full width.
                             </p>
                         </main>
                     </div>
                     <div class="dsa-udash-btn-row" style="margin: 12px 0 8px">
                         <button type="button" class="dsa-udash-btn dsa-udash-btn--primary" id="dsa-udash-open-customize" disabled>
-                            Open customize (plan)
+                            Jump to Customize tab
                         </button>
                     </div>
                     <div class="dsa-udash-gate" id="udash-gate-graphs">
@@ -527,6 +545,7 @@
 
             <nav class="dsa-udash-mnav" aria-label="Dashboard sections (scroll)">
                 <button type="button" data-panel="graph" class="is-active"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>Graph</button>
+                <button type="button" data-panel="map-tools"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4"/></svg>Tools</button>
                 <button type="button" data-panel="study"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Study</button>
                 <button type="button" data-panel="shared"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Shared</button>
                 <button type="button" data-panel="collab"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/></svg>Collab</button>
@@ -549,7 +568,7 @@
     <script src="./auth/dsa-user-auth.js?v=3"></script>
     <script src="./cms-bootstrap.js?v=3"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
-    <script src="./script.js?v=29"></script>
-    <script src="./auth/user-dashboard-page.js?v=5"></script>
+    <script src="./script.js?v=30"></script>
+    <script src="./auth/user-dashboard-page.js?v=6"></script>
 </body>
 </html>

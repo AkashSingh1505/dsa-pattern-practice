@@ -32,14 +32,42 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: 16px;
     width: 100%;
     box-sizing: border-box;
 }
 .dsa-udash-graph-workspace > .head {
     flex-shrink: 0;
+    margin: 0;
+    padding: 0 2px 2px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    row-gap: 14px;
+    column-gap: 20px;
 }
 .dsa-udash-graph-workspace > .toolbar {
+    flex-shrink: 0;
+    margin: 0;
+}
+/* Toolbar: keep export/expand on the left, zoom flush right (no hint column) */
+.dsa-udash-body #udash-dsa-map-toolbar-host.dsa-index-toolbar-shell {
+    justify-content: flex-start;
+    align-items: center;
+    gap: 12px;
+}
+.dsa-udash-body #udash-dsa-map-toolbar-host.dsa-index-toolbar-shell .tools-left {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.dsa-udash-body #udash-dsa-map-toolbar-host.dsa-index-toolbar-shell .tools-right {
+    flex: 0 0 auto;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0;
+}
+.dsa-udash-body #udash-dsa-map-toolbar-host .dsa-toolbar-zoom-host {
     flex-shrink: 0;
 }
 .dsa-udash-graph-map-frame {
@@ -61,6 +89,37 @@
 .dsa-udash-graph-map-frame .graph-stage {
     flex: 1;
     min-height: min(70vh, 820px);
+}
+
+/* Map tools — shortcuts row aligned with hub cards */
+#panel-map-tools .dsa-udash-panel-head {
+    margin-bottom: 4px;
+}
+#panel-map-tools .dsa-udash-panel-head p {
+    margin-bottom: 0;
+}
+.dsa-udash-map-tools-shortcuts {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0 0 22px;
+    padding: 14px 16px;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.58);
+    border: 1px solid var(--udash-line);
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(20, 30, 50, 0.06);
+}
+.dsa-udash-map-tools-shortcuts .dsa-udash-btn {
+    margin: 0;
+}
+.dsa-udash-map-tools-hint {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--udash-muted);
+    max-width: 42rem;
 }
 
 .dsa-udash-text-btn {

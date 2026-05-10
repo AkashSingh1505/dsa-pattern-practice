@@ -38,7 +38,7 @@
     <link rel="stylesheet" href="./auth/portal-shell.css?v=9" />
     <link rel="stylesheet" href="./styles.css?v=14" />
     <link rel="stylesheet" href="./dsa-index-shell.css?v=19" />
-    <link rel="stylesheet" href="./auth/user-dashboard.css?v=6" />
+    <link rel="stylesheet" href="./auth/user-dashboard.css?v=7" />
 </head>
 <body class="dsa-udash-body">
     <div class="dsa-udash-app" id="dsa-user-dashboard-main">
@@ -205,15 +205,6 @@
                                     <div class="dsa-toolbar-expand-slot"></div>
                                 </div>
                                 <div class="tools-right">
-                                    <span class="hint dsa-graph-map-toolbar-hint">
-                                        <span class="dot" aria-hidden="true"></span>
-                                        <span
-                                            id="udash-dsa-map-toolbar-inline-hint"
-                                            class="dsa-graph-map-toolbar-hint-text"
-                                        >
-                                            Use ring on each node: <b>−</b> remove • <b>count</b> expand • <b>+</b> add
-                                        </span>
-                                    </span>
                                     <div class="dsa-toolbar-zoom-host"></div>
                                 </div>
                             </div>
@@ -251,10 +242,14 @@
                             <button type="button" class="dsa-udash-text-btn" data-jump-panel="graph">Graph workspace</button>.
                         </p>
                     </div>
-                    <div class="dsa-udash-btn-row" style="margin: 0 0 16px">
-                        <button type="button" class="dsa-udash-btn dsa-udash-btn--primary" id="dsa-udash-open-customize" disabled>
+                    <div class="dsa-udash-map-tools-shortcuts" id="udash-map-tools-shortcuts">
+                        <button type="button" class="dsa-udash-btn dsa-udash-btn--primary" id="dsa-udash-open-customize" hidden>
                             Open Customize (Graph workspace)
                         </button>
+                        <p class="dsa-udash-map-tools-hint" id="udash-customize-map-tools-hint" hidden>
+                            Customize is available on Pro and eligible practice plans.
+                            <button type="button" class="dsa-udash-text-btn" data-jump-panel="billing">View billing</button>
+                        </p>
                     </div>
                     <div class="dsa-udash-gate" id="udash-gate-graphs">
                         <div class="dsa-udash-gate-content">
@@ -570,6 +565,6 @@
     <script src="./cms-bootstrap.js?v=3"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
     <script src="./script.js?v=30"></script>
-    <script src="./auth/user-dashboard-page.js?v=7"></script>
+    <script src="./auth/user-dashboard-page.js?v=8"></script>
 </body>
 </html>

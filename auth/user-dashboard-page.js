@@ -457,10 +457,17 @@
             pill.classList.toggle("dsa-udash-plan-pill--pro", paid);
         }
         var customizeBtn = document.getElementById("dsa-udash-open-customize");
-        if (customizeBtn) {
-            var can =
+        var customizeMapToolsHint = document.getElementById("udash-customize-map-tools-hint");
+        if (customizeBtn || customizeMapToolsHint) {
+            var canCustomize =
                 typeof dsaHasCustomizeGraphAccess === "function" && dsaHasCustomizeGraphAccess();
-            customizeBtn.disabled = !can;
+            if (customizeBtn) {
+                customizeBtn.hidden = !canCustomize;
+                customizeBtn.disabled = false;
+            }
+            if (customizeMapToolsHint) {
+                customizeMapToolsHint.hidden = canCustomize;
+            }
         }
         var bh = document.getElementById("udash-billing-hint");
         if (bh) {
@@ -1067,6 +1074,9 @@
         var cz = document.getElementById("dsa-udash-open-customize");
         if (cz) {
             cz.addEventListener("click", function () {
+                if (cz.hidden) {
+                    return;
+                }
                 if (!cz.disabled) {
                     navigateDashboardPanel("graph");
                     window.requestAnimationFrame(function () {

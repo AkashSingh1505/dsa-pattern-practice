@@ -8,7 +8,7 @@
     /** Stored in content D1 `app_kv`; public read via GET /api/site-features */
     const SITE_USER_FEATURES_KV_KEY = "site_user_features";
     const SITE_FEATURE_ROWS = [
-        { id: "practice_map", title: "Practice map", desc: "Home-page DSA mind map (visitors). Site admins still see the map if this is off." },
+        { section: "Public & account", id: "practice_map", title: "Practice map", desc: "Home-page DSA mind map (visitors). Site admins still see the map if this is off." },
         { id: "one_topic_mode", title: "One topic mode", desc: "Tab to focus on a single data-structure branch." },
         {
             id: "graph_customize_tab",
@@ -20,6 +20,24 @@
         { id: "social_oauth_ui", title: "Google / Apple buttons", desc: "OAuth placeholders on the account page." },
         { id: "site_admin_link", title: "Site admin link", desc: "Footer link from the account page to admin." },
         { id: "footer_visit_counter", title: "Visit counter", desc: "Footer visitor counter on the practice page (if API exists)." },
+        {
+            section: "Member hub — subscribers",
+            id: "sub_personal_graphs",
+            title: "Personal graph library",
+            desc: "Paid graph list + add/remove on the member hub (site can disable before launch).",
+        },
+        { id: "sub_shared_inbox", title: "Shared inbox", desc: "Shared-with-you panel (Pro-gated; site-wide off hides nav + locks area)." },
+        { id: "sub_collaboration", title: "Collaboration / invites", desc: "Invite link demo panel (Pro-gated)." },
+        { id: "sub_quiz_lab", title: "Quiz lab stats", desc: "Aggregated quiz stats card (Pro-gated) inside Quizzes." },
+        { id: "sub_digest", title: "Digest & push prefs", desc: "Digest toggle block (Pro-gated) inside Reminders." },
+        { id: "sub_study_module", title: "Study module", desc: "Study paths + mistake log panel." },
+        { id: "sub_quizzes_module", title: "Quizzes module", desc: "Whole Quizzes section (tabs + quiz lab)." },
+        { id: "sub_reminders_module", title: "Reminders module", desc: "Reminders + digest block section." },
+        { id: "sub_billing_module", title: "Billing panel", desc: "Plan + upgrade copy on the hub." },
+        { id: "sub_alerts_module", title: "Alerts panel", desc: "In-app notifications list + bell shortcut." },
+        { id: "sub_settings_module", title: "Settings panel", desc: "Preferences on the hub." },
+        { id: "sub_profile_module", title: "Profile panel", desc: "Display name, bio, timezone." },
+        { id: "sub_overview_stats", title: "Overview stat row", desc: "Quiz / reminders / graphs / streak chips on the Graph panel." },
     ];
 
     /** Mind map mount targets — must match admin.html preview markup. */
@@ -635,6 +653,12 @@
         host.innerHTML =
             '<div class="adm-sf-head"><span>Feature</span><span title="Feature works when reached">On</span><span title="Shown in navigation / UI">Show</span></div>';
         SITE_FEATURE_ROWS.forEach(function (meta) {
+            if (meta.section) {
+                const lab = document.createElement("div");
+                lab.className = "adm-sf-section-label";
+                lab.textContent = meta.section;
+                host.appendChild(lab);
+            }
             const st = features[meta.id] || { enabled: true, visible: true };
             const row = document.createElement("div");
             row.className = "adm-sf-data-row";

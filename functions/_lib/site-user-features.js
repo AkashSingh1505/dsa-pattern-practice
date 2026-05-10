@@ -15,6 +15,20 @@ export function defaultSiteUserFeatures() {
         social_oauth_ui: { enabled: true, visible: true },
         site_admin_link: { enabled: true, visible: true },
         footer_visit_counter: { enabled: true, visible: true },
+        /** Member hub — Pro / roadmap (admin can pre-disable before launch) */
+        sub_personal_graphs: { enabled: true, visible: true },
+        sub_shared_inbox: { enabled: true, visible: true },
+        sub_collaboration: { enabled: true, visible: true },
+        sub_quiz_lab: { enabled: true, visible: true },
+        sub_digest: { enabled: true, visible: true },
+        sub_study_module: { enabled: true, visible: true },
+        sub_quizzes_module: { enabled: true, visible: true },
+        sub_reminders_module: { enabled: true, visible: true },
+        sub_billing_module: { enabled: true, visible: true },
+        sub_alerts_module: { enabled: true, visible: true },
+        sub_settings_module: { enabled: true, visible: true },
+        sub_profile_module: { enabled: true, visible: true },
+        sub_overview_stats: { enabled: true, visible: true },
     };
 }
 

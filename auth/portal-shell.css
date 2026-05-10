@@ -725,6 +725,16 @@
             align-items: center;
             padding: 10px 12px;
         }
+        .adm-sf-section-label {
+            padding: 10px 12px 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--muted);
+            background: rgba(15, 23, 32, 0.04);
+            border-bottom: 1px solid rgba(15, 23, 32, 0.06);
+        }
         .adm-sf-head {
             font-size: 10px;
             font-weight: 700;
@@ -1452,6 +1462,11 @@
         }
         html[data-admin-theme="dark"] .adm-sf-head {
             background: rgba(255, 255, 255, 0.06);
+        }
+        html[data-admin-theme="dark"] .adm-sf-section-label {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--line);
+            color: var(--muted);
         }
         html[data-admin-theme="dark"] .adm-sf-title {
             color: var(--ink-2);

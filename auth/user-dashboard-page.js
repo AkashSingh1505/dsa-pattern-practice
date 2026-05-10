@@ -249,6 +249,77 @@
         profile: "Profile",
     };
 
+    /** Site feature key per hub section (Graph has no key — always reachable). */
+    var PANEL_NAV_SITE_KEY = {
+        study: "sub_study_module",
+        shared: "sub_shared_inbox",
+        collab: "sub_collaboration",
+        quizzes: "sub_quizzes_module",
+        reminders: "sub_reminders_module",
+        billing: "sub_billing_module",
+        alerts: "sub_alerts_module",
+        settings: "sub_settings_module",
+        profile: "sub_profile_module",
+    };
+
+    var SITE_SHADE_PANELS = [
+        { panelId: "panel-study", siteKey: "sub_study_module" },
+        { panelId: "panel-quizzes", siteKey: "sub_quizzes_module" },
+        { panelId: "panel-reminders", siteKey: "sub_reminders_module" },
+        { panelId: "panel-billing", siteKey: "sub_billing_module" },
+        { panelId: "panel-alerts", siteKey: "sub_alerts_module" },
+        { panelId: "panel-settings", siteKey: "sub_settings_module" },
+        { panelId: "panel-profile", siteKey: "sub_profile_module" },
+    ];
+
+    var MEMBER_HUB_GATE_ROWS = [
+        {
+            gateId: "udash-gate-graphs",
+            siteKey: "sub_personal_graphs",
+            proHtml:
+                '<strong>Pro feature</strong><p style="margin: 8px 0 12px; font-size: 13px; color: var(--udash-muted)">Upgrade to manage personal graphs, sharing presets, and exports.</p><button type="button" class="dsa-udash-btn dsa-udash-btn--primary" data-jump-panel="billing">View billing</button>',
+        },
+        {
+            gateId: "udash-gate-shared",
+            siteKey: "sub_shared_inbox",
+            proHtml:
+                '<strong>Pro inbox</strong><p style="margin: 8px 0 12px; font-size: 13px; color: var(--udash-muted)">Paid members get shared-graph inbox and publish presets.</p><button type="button" class="dsa-udash-btn dsa-udash-btn--primary" data-jump-panel="billing">Upgrade</button>',
+        },
+        {
+            gateId: "udash-gate-collab",
+            siteKey: "sub_collaboration",
+            proHtml:
+                '<strong>Pro collaboration</strong><p style="margin: 8px 0 12px; font-size: 13px; color: var(--udash-muted)">Invite links and roles for paid members.</p><button type="button" class="dsa-udash-btn dsa-udash-btn--primary" data-jump-panel="billing">Upgrade</button>',
+        },
+        {
+            gateId: "udash-gate-quizlab",
+            siteKey: "sub_quiz_lab",
+            proHtml:
+                '<strong>Pro analytics</strong><p style="margin: 8px 0 12px; font-size: 13px; color: var(--udash-muted)">Unlock aggregated quiz lab on this device.</p><button type="button" class="dsa-udash-btn dsa-udash-btn--primary" data-jump-panel="billing">Upgrade</button>',
+        },
+        {
+            gateId: "udash-gate-digest",
+            siteKey: "sub_digest",
+            proHtml:
+                '<strong>Pro</strong><p style="margin: 8px 0 12px; font-size: 13px; color: var(--udash-muted)">Digest toggle for paid plans.</p><button type="button" class="dsa-udash-btn dsa-udash-btn--primary" data-jump-panel="billing">Upgrade</button>',
+        },
+    ];
+
+    function siteUse(featureId) {
+        if (typeof dsaSiteFeatureUse !== "function") {
+            return true;
+        }
+        return dsaSiteFeatureUse(featureId);
+    }
+
+    function memberHubPanelAllowed(panelId) {
+        if (panelId === "graph") {
+            return true;
+        }
+        var k = PANEL_NAV_SITE_KEY[panelId];
+        return k ? siteUse(k) : true;
+    }
+
     function showPanel(id) {
         document.querySelectorAll(".dsa-udash-panel").forEach(function (p) {
             p.classList.toggle("is-active", p.getAttribute("data-panel-id") === id);
@@ -274,14 +345,101 @@
         } catch (e) {}
     }
 
-    function applyPaidGates() {
+    function navigateDashboardPanel(id) {
+        showPanel(id);
+        var sb = document.getElementById("udash-sidebar");
+        var bd = document.getElementById("udash-sidebar-backdrop");
+        var mb = document.getElementById("udash-menu-btn");
+        if (sb) {
+            sb.classList.remove("is-open");
+        }
+        if (bd) {
+            bd.setAttribute("hidden", "");
+            bd.classList.remove("is-visible");
+        }
+        if (mb) {
+            mb.setAttribute("aria-expanded", "false");
+        }
+    }
+
+    function applyMemberHubFeatureUi() {
         var paid = isPaidMember();
-        ["udash-gate-graphs", "udash-gate-shared", "udash-gate-collab", "udash-gate-quizlab", "udash-gate-digest"].forEach(function (gid) {
-            var el = document.getElementById(gid);
-            if (el) {
-                el.classList.toggle("is-locked", !paid);
+        var siteOffInner =
+            "<strong>Unavailable on this site</strong><p style=\"margin: 8px 0 12px; font-size: 13px; color: var(--udash-muted)\">This feature is turned off in Admin → Site → User-facing features.</p>";
+
+        MEMBER_HUB_GATE_ROWS.forEach(function (row) {
+            var gate = document.getElementById(row.gateId);
+            if (!gate) {
+                return;
+            }
+            var inner = gate.querySelector(".dsa-udash-gate-banner-inner");
+            if (!inner) {
+                return;
+            }
+            var siteOn = siteUse(row.siteKey);
+            if (!siteOn) {
+                gate.classList.add("is-locked", "is-site-off");
+                inner.innerHTML = siteOffInner;
+                return;
+            }
+            gate.classList.remove("is-site-off");
+            if (paid) {
+                gate.classList.remove("is-locked");
+            } else {
+                gate.classList.add("is-locked");
+                inner.innerHTML = row.proHtml;
             }
         });
+
+        SITE_SHADE_PANELS.forEach(function (x) {
+            var panel = document.getElementById(x.panelId);
+            if (!panel) {
+                return;
+            }
+            panel.classList.add("dsa-udash-panel--shade-host");
+            var sid = x.panelId + "-site-shade";
+            var el = document.getElementById(sid);
+            if (!el) {
+                el = document.createElement("div");
+                el.id = sid;
+                el.className = "dsa-udash-site-shade";
+                el.setAttribute("role", "presentation");
+                el.innerHTML = '<div class="dsa-udash-site-shade-inner">' + siteOffInner + "</div>";
+                panel.appendChild(el);
+            }
+            var showShade = !siteUse(x.siteKey);
+            el.classList.toggle("is-active", showShade);
+            panel.classList.toggle("is-site-disabled", showShade);
+        });
+
+        var stats = document.getElementById("udash-overview-stats");
+        if (stats) {
+            stats.hidden = !siteUse("sub_overview_stats");
+        }
+
+        document.querySelectorAll(".dsa-udash-nav-btn[data-panel], .dsa-udash-mnav button[data-panel]").forEach(function (btn) {
+            var pid = btn.getAttribute("data-panel");
+            if (!pid || pid === "graph") {
+                return;
+            }
+            var key = PANEL_NAV_SITE_KEY[pid];
+            if (!key) {
+                return;
+            }
+            var on = siteUse(key);
+            btn.hidden = !on;
+            btn.setAttribute("aria-hidden", on ? "false" : "true");
+            if (!on) {
+                btn.classList.remove("is-active");
+                btn.removeAttribute("aria-current");
+            }
+        });
+
+        var bell = document.getElementById("dsa-udash-notif-bell");
+        if (bell) {
+            bell.hidden = !siteUse("sub_alerts_module");
+        }
+
         var pill = document.getElementById("dsa-udash-plan-pill");
         if (pill) {
             pill.textContent = paid ? "Pro / paid" : "Free";
@@ -810,39 +968,33 @@
     }
 
     function wireNav() {
-        function go(id) {
-            showPanel(id);
-            var sb = document.getElementById("udash-sidebar");
-            var bd = document.getElementById("udash-sidebar-backdrop");
-            var mb = document.getElementById("udash-menu-btn");
-            if (sb) {
-                sb.classList.remove("is-open");
-            }
-            if (bd) {
-                bd.setAttribute("hidden", "");
-                bd.classList.remove("is-visible");
-            }
-            if (mb) {
-                mb.setAttribute("aria-expanded", "false");
-            }
-        }
         document.querySelectorAll("[data-panel]").forEach(function (btn) {
             btn.addEventListener("click", function () {
                 var id = btn.getAttribute("data-panel");
                 if (id) {
-                    go(id);
+                    navigateDashboardPanel(id);
                 }
             });
         });
-        document.querySelectorAll("[data-jump-panel]").forEach(function (btn) {
-            btn.addEventListener("click", function () {
-                go(btn.getAttribute("data-jump-panel"));
+        if (!window.__dsaUdashJumpDelegation) {
+            window.__dsaUdashJumpDelegation = true;
+            document.addEventListener("click", function (ev) {
+                var t = ev.target && ev.target.closest && ev.target.closest("[data-jump-panel]");
+                if (!t || !document.body.classList.contains("dsa-udash-body")) {
+                    return;
+                }
+                var jid = t.getAttribute("data-jump-panel");
+                if (!jid || !PANEL_TITLES[jid]) {
+                    return;
+                }
+                ev.preventDefault();
+                navigateDashboardPanel(jid);
             });
-        });
+        }
         var bell = document.getElementById("dsa-udash-notif-bell");
         if (bell) {
             bell.addEventListener("click", function () {
-                go("alerts");
+                navigateDashboardPanel("alerts");
             });
         }
         var mb = document.getElementById("udash-menu-btn");
@@ -868,8 +1020,12 @@
             });
         }
         var hash = (location.hash || "").replace(/^#/, "");
-        if (hash && PANEL_TITLES[hash]) {
-            showPanel(hash);
+        var target = hash && PANEL_TITLES[hash] && memberHubPanelAllowed(hash) ? hash : "graph";
+        showPanel(target);
+        if (hash && PANEL_TITLES[hash] && target !== hash) {
+            try {
+                history.replaceState(null, "", "#" + target);
+            } catch (e) {}
         }
     }
 
@@ -1214,7 +1370,7 @@
         load();
         updateVisitStreak();
         fillJwtProfile();
-        applyPaidGates();
+        applyMemberHubFeatureUi();
         seedWelcome();
         wireNav();
         wireGraph();

@@ -303,6 +303,55 @@ html.dsa-udash-html,
     display: none;
     max-width: 1200px;
     margin: 0 auto;
+    position: relative;
+}
+
+.dsa-udash-panel--shade-host {
+    position: relative;
+}
+
+.dsa-udash-site-shade {
+    display: none;
+    position: absolute;
+    inset: 0;
+    z-index: 6;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(3px);
+    border-radius: 14px;
+}
+
+.dsa-udash-site-shade.is-active {
+    display: flex;
+}
+
+.dsa-udash-site-shade-inner {
+    max-width: 320px;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--udash-ink2);
+    padding: 16px 18px;
+    background: #fff;
+    border: 1px solid var(--udash-line);
+    border-radius: 14px;
+    box-shadow: var(--udash-shadow);
+}
+
+.dsa-udash-site-shade-inner strong {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--udash-ink);
+}
+
+.dsa-udash-panel.is-site-disabled {
+    pointer-events: none;
+}
+
+.dsa-udash-panel.is-site-disabled .dsa-udash-site-shade {
+    pointer-events: auto;
 }
 
 .dsa-udash-panel.is-active {
@@ -542,6 +591,10 @@ html.dsa-udash-html,
 
 .dsa-udash-gate.is-locked .dsa-udash-gate-banner {
     display: flex;
+}
+
+.dsa-udash-gate.is-site-off .dsa-udash-gate-banner-inner {
+    border-color: rgba(15, 23, 32, 0.14);
 }
 
 .dsa-udash-gate-banner-inner {

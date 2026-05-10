@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./styles.css?v=14">
-    <link rel="stylesheet" href="./dsa-index-shell.css?v=16">
+    <link rel="stylesheet" href="./dsa-index-shell.css?v=17">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 </head>
 <body class="dsa-page dsa-index-ref">
@@ -35,7 +35,7 @@
 
     <main class="page">
 
-        <!-- Header -->
+        <!-- Header + view mode (Full map / One topic / Customize) -->
         <section class="head">
             <div class="head-text">
                 <div class="eyebrow">Knowledge Map</div>
@@ -45,11 +45,18 @@
                     structure. The map flows left → right; scroll the shaded area when it’s wide.
                 </p>
             </div>
-        </section>
-
-        <!-- Full map / One topic / Customize — above map chrome (older layout) -->
-        <section class="dsa-index-view-toolbar" aria-label="Graph view mode">
-            <div id="dsa-toolbar-view-tabs-slot" class="dsa-toolbar-view-tabs-slot"></div>
+            <nav class="seg dsa-view-tabs dsa-seg-track" role="tablist" id="modeSeg" aria-label="Graph layout">
+                <span class="dsa-seg-thumb" aria-hidden="true"></span>
+                <button type="button" class="dsa-view-btn" role="tab" data-mode="full" aria-selected="false">
+                    Full map
+                </button>
+                <button type="button" class="dsa-view-btn" role="tab" data-mode="one" aria-selected="false">
+                    One topic
+                </button>
+                <button type="button" class="dsa-view-btn" role="tab" data-mode="custom" aria-selected="false">
+                    Customize
+                </button>
+            </nav>
         </section>
 
         <!-- Graph toolbar: static chrome + script fills expand/collapse + zoom slots -->
@@ -139,6 +146,6 @@
                 "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/";
         }
     </script>
-    <script src="./script.js?v=27"></script>
+    <script src="./script.js?v=28"></script>
 </body>
 </html>

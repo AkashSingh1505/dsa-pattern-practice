@@ -47,7 +47,7 @@ let dsaGraphCustomizeMode = false;
 let dsaGraphMount = {
     viewportId: "dsa-hierarchy-root",
     mapToolbarHostId: "dsa-map-toolbar-host",
-    /** View tabs mount into `#dsa-toolbar-view-tabs-slot` between `.head` and `.toolbar` on index. */
+    /** Index: static `#modeSeg` in `.head`. Preview / legacy: `#dsa-toolbar-view-tabs-slot` or layer. */
     shellToolbarId: null,
 };
 /** When true, keep `dsaHierarchy` from the editor — do not refetch /api/data on view switches. */
@@ -7263,9 +7263,9 @@ function loadDsaPatternsPage(opts) {
     if (shellViewToolbarSlot) {
         shellViewToolbarSlot.replaceChildren();
     }
-    const viewTabsSlotEarly = document.getElementById("dsa-toolbar-view-tabs-slot");
-    if (viewTabsSlotEarly && !dsaGraphPreviewMode) {
-        viewTabsSlotEarly.replaceChildren();
+    const legacyViewTabsSlotEarly = document.getElementById("dsa-toolbar-view-tabs-slot");
+    if (legacyViewTabsSlotEarly && !dsaGraphPreviewMode) {
+        legacyViewTabsSlotEarly.replaceChildren();
     }
     dsaClearExternalMapToolbarHost();
 
@@ -7344,59 +7344,88 @@ function loadDsaPatternsPage(opts) {
         }
     }
 
-    const toolbar = document.createElement("div");
-    toolbar.className = "dsa-view-toolbar";
-
-    const tablist = document.createElement("div");
-    tablist.className = "dsa-view-tabs seg dsa-seg-track";
-    tablist.setAttribute("role", "tablist");
-    tablist.setAttribute("aria-label", "Graph layout");
-
-    const tabThumb = document.createElement("span");
-    tabThumb.className = "dsa-seg-thumb";
-    tabThumb.setAttribute("aria-hidden", "true");
-
-    const btnUnifiedView = document.createElement("button");
-    btnUnifiedView.type = "button";
-    btnUnifiedView.className = "dsa-view-btn dsa-view-btn--active";
-    btnUnifiedView.setAttribute("role", "tab");
-    btnUnifiedView.setAttribute("aria-selected", "true");
-    btnUnifiedView.dataset.mode = "unified";
-    btnUnifiedView.textContent = "Full map";
-
-    const btnSingleView = document.createElement("button");
-    btnSingleView.type = "button";
-    btnSingleView.className = "dsa-view-btn";
-    btnSingleView.setAttribute("role", "tab");
-    btnSingleView.setAttribute("aria-selected", "false");
-    btnSingleView.dataset.mode = "single";
-    btnSingleView.textContent = "One topic";
-
+    const modeSegEl = document.getElementById("modeSeg");
+    let staticTabsOk = false;
+    let toolbar = null;
+    let tablist;
+    let btnUnifiedView;
+    let btnSingleView;
     let btnCustomizeView = null;
-    if (allowCustomizeTab) {
-        btnCustomizeView = document.createElement("button");
-        btnCustomizeView.type = "button";
-        btnCustomizeView.className = "dsa-view-btn";
-        btnCustomizeView.setAttribute("role", "tab");
-        btnCustomizeView.setAttribute("aria-selected", "false");
-        btnCustomizeView.dataset.mode = "customize";
-        btnCustomizeView.textContent = "Customize";
+
+    if (modeSegEl instanceof HTMLElement && !dsaGraphPreviewMode) {
+        btnUnifiedView = modeSegEl.querySelector('[data-mode="full"]');
+        btnSingleView = modeSegEl.querySelector('[data-mode="one"]');
+        btnCustomizeView = modeSegEl.querySelector('[data-mode="custom"]');
+        if (btnUnifiedView && btnSingleView) {
+            staticTabsOk = true;
+            tablist = modeSegEl;
+        }
     }
 
-    tablist.appendChild(tabThumb);
-    tablist.appendChild(btnUnifiedView);
-    if (showOneTopic) {
-        tablist.appendChild(btnSingleView);
+    if (!staticTabsOk) {
+        toolbar = document.createElement("div");
+        toolbar.className = "dsa-view-toolbar";
+
+        tablist = document.createElement("div");
+        tablist.className = "dsa-view-tabs seg dsa-seg-track";
+        tablist.setAttribute("role", "tablist");
+        tablist.setAttribute("aria-label", "Graph layout");
+
+        const tabThumb = document.createElement("span");
+        tabThumb.className = "dsa-seg-thumb";
+        tabThumb.setAttribute("aria-hidden", "true");
+
+        btnUnifiedView = document.createElement("button");
+        btnUnifiedView.type = "button";
+        btnUnifiedView.className = "dsa-view-btn dsa-view-btn--active";
+        btnUnifiedView.setAttribute("role", "tab");
+        btnUnifiedView.setAttribute("aria-selected", "true");
+        btnUnifiedView.dataset.mode = "unified";
+        btnUnifiedView.textContent = "Full map";
+
+        btnSingleView = document.createElement("button");
+        btnSingleView.type = "button";
+        btnSingleView.className = "dsa-view-btn";
+        btnSingleView.setAttribute("role", "tab");
+        btnSingleView.setAttribute("aria-selected", "false");
+        btnSingleView.dataset.mode = "single";
+        btnSingleView.textContent = "One topic";
+
+        btnCustomizeView = null;
+        if (allowCustomizeTab) {
+            btnCustomizeView = document.createElement("button");
+            btnCustomizeView.type = "button";
+            btnCustomizeView.className = "dsa-view-btn";
+            btnCustomizeView.setAttribute("role", "tab");
+            btnCustomizeView.setAttribute("aria-selected", "false");
+            btnCustomizeView.dataset.mode = "customize";
+            btnCustomizeView.textContent = "Customize";
+        }
+
+        tablist.appendChild(tabThumb);
+        tablist.appendChild(btnUnifiedView);
+        if (showOneTopic) {
+            tablist.appendChild(btnSingleView);
+        } else {
+            btnSingleView.hidden = true;
+            btnSingleView.style.display = "none";
+        }
+        if (btnCustomizeView) {
+            tablist.appendChild(btnCustomizeView);
+        }
+        toolbar.appendChild(tablist);
     } else {
-        btnSingleView.hidden = true;
-        btnSingleView.style.display = "none";
+        if (!allowCustomizeTab && btnCustomizeView) {
+            btnCustomizeView.remove();
+            btnCustomizeView = null;
+        }
+        if (!showOneTopic && btnSingleView) {
+            btnSingleView.hidden = true;
+            btnSingleView.style.display = "none";
+        }
     }
-    if (btnCustomizeView) {
-        tablist.appendChild(btnCustomizeView);
-    }
-    toolbar.appendChild(tablist);
 
-    if (typeof ResizeObserver !== "undefined") {
+    if (typeof ResizeObserver !== "undefined" && tablist) {
         const tablistThumbRo = new ResizeObserver(() => dsaSyncSegThumbTrack(tablist));
         tablistThumbRo.observe(tablist);
     }
@@ -7615,14 +7644,16 @@ function loadDsaPatternsPage(opts) {
         rootsRow.appendChild(btn);
     });
 
-    const viewTabsSlot = document.getElementById("dsa-toolbar-view-tabs-slot");
-    if (viewTabsSlot && !dsaGraphPreviewMode) {
-        viewTabsSlot.replaceChildren();
-        viewTabsSlot.appendChild(toolbar);
-    } else if (shellViewToolbarSlot) {
-        shellViewToolbarSlot.appendChild(toolbar);
-    } else {
-        layer.appendChild(toolbar);
+    if (!staticTabsOk && toolbar) {
+        const viewTabsSlot = document.getElementById("dsa-toolbar-view-tabs-slot");
+        if (viewTabsSlot && !dsaGraphPreviewMode) {
+            viewTabsSlot.replaceChildren();
+            viewTabsSlot.appendChild(toolbar);
+        } else if (shellViewToolbarSlot) {
+            shellViewToolbarSlot.appendChild(toolbar);
+        } else {
+            layer.appendChild(toolbar);
+        }
     }
     layer.appendChild(hint);
     layer.appendChild(rootsRow);

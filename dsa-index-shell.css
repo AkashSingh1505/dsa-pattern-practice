@@ -320,7 +320,11 @@
 }
 
 :is(body, .dsa-graph-shell).dsa-index-ref .head {
-    display: block;
+    box-sizing: border-box;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
     padding: 4px 4px 0;
 }
 
@@ -353,14 +357,7 @@
     color: var(--ink);
 }
 
-:is(body, .dsa-graph-shell).dsa-index-ref .dsa-index-view-toolbar {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    padding: 0 4px;
-}
-
+:is(body, .dsa-graph-shell).dsa-index-ref #modeSeg,
 :is(body, .dsa-graph-shell).dsa-index-ref #dsa-toolbar-view-tabs-slot {
     display: flex;
     align-items: center;
@@ -906,8 +903,8 @@
 @media (max-width: 780px) {
     :is(body, .dsa-graph-shell).dsa-index-ref .head {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 14px;
+        align-items: stretch;
+        gap: 16px;
     }
 
     :is(body, .dsa-graph-shell).dsa-index-ref .head-text h1 {
@@ -932,7 +929,8 @@
         justify-content: stretch;
     }
 
-    :is(body, .dsa-graph-shell).dsa-index-ref .dsa-view-toolbar .dsa-view-tabs.seg {
+    :is(body, .dsa-graph-shell).dsa-index-ref .dsa-view-toolbar .dsa-view-tabs.seg,
+    :is(body, .dsa-graph-shell).dsa-index-ref #modeSeg.seg {
         width: 100%;
         justify-content: center;
     }

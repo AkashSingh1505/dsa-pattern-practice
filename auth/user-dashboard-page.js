@@ -1057,7 +1057,18 @@
         if (cz) {
             cz.addEventListener("click", function () {
                 if (!cz.disabled) {
-                    window.location.href = "./index.html";
+                    var seg = document.getElementById("udash-modeSeg");
+                    var tab = seg && seg.querySelector('[data-mode="custom"]');
+                    if (tab) {
+                        tab.click();
+                        try {
+                            tab.scrollIntoView({ block: "nearest", behavior: "smooth" });
+                        } catch (e) {
+                            /* ignore */
+                        }
+                    } else {
+                        window.location.href = "./index.html";
+                    }
                 }
             });
         }

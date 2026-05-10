@@ -1331,11 +1331,11 @@ function dsaImportMindMapHierarchyFromText(text) {
 }
 window.dsaImportMindMapHierarchyFromText = dsaImportMindMapHierarchyFromText;
 
-/** Wire Export/Import on index.html static toolbar (ids `dsa-map-export-json`, etc.). */
-function dsaWireIndexMapToolbarStatic() {
-    const exp = document.getElementById("dsa-map-export-json");
-    const impTrig = document.getElementById("dsa-map-import-json-trigger");
-    const impFile = document.getElementById("dsa-map-import-file");
+/** Wire one Export / Import trio (practice graph JSON). Skips if any element missing. */
+function dsaWireMapToolbarExportImport(expId, impTrigId, impFileId) {
+    const exp = document.getElementById(expId);
+    const impTrig = document.getElementById(impTrigId);
+    const impFile = document.getElementById(impFileId);
     if (!exp || !impTrig || !impFile) {
         return;
     }
@@ -1365,6 +1365,16 @@ function dsaWireIndexMapToolbarStatic() {
         };
         reader.readAsText(f);
     });
+}
+
+/** Wire Export/Import on index + embedded graph studios (not admin CMS — that uses editor sync). */
+function dsaWireIndexMapToolbarStatic() {
+    dsaWireMapToolbarExportImport("dsa-map-export-json", "dsa-map-import-json-trigger", "dsa-map-import-file");
+    dsaWireMapToolbarExportImport(
+        "udash-dsa-map-export-json",
+        "udash-dsa-map-import-json-trigger",
+        "udash-dsa-map-import-file",
+    );
 }
 window.dsaWireIndexMapToolbarStatic = dsaWireIndexMapToolbarStatic;
 
@@ -2568,8 +2578,8 @@ function dsaCreateGraphCanvasLayout(toolbarMountParent, layoutOpts) {
     let toolbarExpand;
     let toolbarZoom;
     if (useIndexSlots) {
-        toolbarExpand = toolbarMountParent.querySelector("#dsa-toolbar-expand-slot");
-        toolbarZoom = toolbarMountParent.querySelector("#dsa-toolbar-zoom-host");
+        toolbarExpand = toolbarMountParent.querySelector(".dsa-toolbar-expand-slot");
+        toolbarZoom = toolbarMountParent.querySelector(".dsa-toolbar-zoom-host");
         if (!toolbarExpand || !toolbarZoom) {
             console.warn("DSA: index toolbar slots missing; falling back to inline toolbar");
         }
@@ -7143,8 +7153,8 @@ function dsaClearIndexMapToolbarSlots(host) {
     if (!host || host.dataset.dsaIndexToolbarSlots !== "1") {
         return;
     }
-    const exp = host.querySelector("#dsa-toolbar-expand-slot");
-    const zm = host.querySelector("#dsa-toolbar-zoom-host");
+    const exp = host.querySelector(".dsa-toolbar-expand-slot");
+    const zm = host.querySelector(".dsa-toolbar-zoom-host");
     if (exp) {
         exp.replaceChildren();
     }
@@ -7221,6 +7231,17 @@ function dsaReloadGraphFromEditorJson(jsonStr, mount) {
     return { ok: true };
 }
 window.dsaReloadGraphFromEditorJson = dsaReloadGraphFromEditorJson;
+
+/** Inline hint next to zoom for the currently mounted map toolbar host. */
+function dsaGetActiveMapToolbarInlineHintEl() {
+    const hostId = dsaGraphMount && dsaGraphMount.mapToolbarHostId;
+    const host = hostId ? document.getElementById(hostId) : null;
+    const scoped = host && host.querySelector(".dsa-graph-map-toolbar-hint-text");
+    if (scoped) {
+        return scoped;
+    }
+    return document.getElementById("dsa-map-toolbar-inline-hint");
+}
 
 function loadDsaPatternsPage(opts) {
     const restore = opts && opts.restore;
@@ -7319,7 +7340,7 @@ function loadDsaPatternsPage(opts) {
     function setMindHint(text) {
         if (dsaGraphPreviewMode) {
             hint.hidden = true;
-            const inlineHint = document.getElementById("dsa-map-toolbar-inline-hint");
+            const inlineHint = dsaGetActiveMapToolbarInlineHintEl();
             if (inlineHint) {
                 inlineHint.textContent = "";
                 const wrap = inlineHint.closest(".dsa-graph-map-toolbar-hint");
@@ -7333,7 +7354,7 @@ function loadDsaPatternsPage(opts) {
         hint.removeAttribute("aria-hidden");
         const s = text == null ? "" : String(text);
         hint.textContent = s;
-        const inlineHint = document.getElementById("dsa-map-toolbar-inline-hint");
+        const inlineHint = dsaGetActiveMapToolbarInlineHintEl();
         if (inlineHint) {
             inlineHint.textContent = s;
             const wrap = inlineHint.closest(".dsa-graph-map-toolbar-hint");
@@ -7344,7 +7365,10 @@ function loadDsaPatternsPage(opts) {
         }
     }
 
-    const modeSegEl = document.getElementById("modeSeg");
+    const modeSegEl =
+        document.getElementById("modeSeg") ||
+        document.getElementById("admin-modeSeg") ||
+        document.getElementById("udash-modeSeg");
     let staticTabsOk = false;
     let toolbar = null;
     let tablist;
@@ -7352,7 +7376,7 @@ function loadDsaPatternsPage(opts) {
     let btnSingleView;
     let btnCustomizeView = null;
 
-    if (modeSegEl instanceof HTMLElement && !dsaGraphPreviewMode) {
+    if (modeSegEl instanceof HTMLElement) {
         btnUnifiedView = modeSegEl.querySelector('[data-mode="full"]');
         btnSingleView = modeSegEl.querySelector('[data-mode="one"]');
         btnCustomizeView = modeSegEl.querySelector('[data-mode="custom"]');
@@ -8205,7 +8229,11 @@ function wireNavbarAdmin() {
             if (typeof dsaPracticeUserSignOut === "function") {
                 dsaPracticeUserSignOut();
             }
-            if (document.getElementById("dsa-hierarchy-root") && typeof loadDsaPatternsPage === "function") {
+            if (
+                (document.getElementById("dsa-hierarchy-root") ||
+                    document.getElementById("udash-dsa-hierarchy-root")) &&
+                typeof loadDsaPatternsPage === "function"
+            ) {
                 loadDsaPatternsPage();
             }
             syncNavbarAuthUi();
@@ -8424,6 +8452,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                     /* ignore */
                 }
             });
+    } else if (document.getElementById("udash-dsa-hierarchy-root")) {
+        dsaMergeGraphMount({
+            viewportId: "udash-dsa-hierarchy-root",
+            mapToolbarHostId: "udash-dsa-map-toolbar-host",
+            shellToolbarId: null,
+        });
+        await dsaLoadHierarchyFromSources();
+        await dsaInitUserData();
+        if (typeof dsaInitAdminAuth === "function") {
+            await dsaInitAdminAuth();
+        }
+        loadDsaPatternsPage();
     } else if (document.body.classList.contains("projects-page")) {
         filterProjects("all");
         const menuItems = document.querySelectorAll(".menu-item");

@@ -363,7 +363,13 @@
         .adm-content-graph-wrap .dsa-graph-shell.dsa-index-ref {
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 0;
+        }
+        .adm-content-graph-studio.page {
+            max-width: 100%;
+            margin: 0;
+            padding: 8px 0 20px;
+            box-sizing: border-box;
         }
         .adm-content-graph-toolbar {
             display: flex;

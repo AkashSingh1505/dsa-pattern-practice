@@ -358,6 +358,8 @@
 }
 
 :is(body, .dsa-graph-shell).dsa-index-ref #modeSeg,
+:is(body, .dsa-graph-shell).dsa-index-ref #admin-modeSeg,
+:is(body, .dsa-graph-shell).dsa-index-ref #udash-modeSeg,
 :is(body, .dsa-graph-shell).dsa-index-ref #dsa-toolbar-view-tabs-slot {
     display: flex;
     align-items: center;
@@ -474,7 +476,8 @@
     pointer-events: none;
 }
 
-:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) {
+:is(body, .dsa-graph-shell).dsa-index-ref
+    :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host) {
     display: flex;
     align-items: center;
     flex: 1;
@@ -484,7 +487,8 @@
 }
 
 /* index.html — static toolbar row (export / import / expand / hint / zoom) */
-:is(body, .dsa-graph-shell).dsa-index-ref #dsa-map-toolbar-host.dsa-index-toolbar-shell {
+:is(body, .dsa-graph-shell).dsa-index-ref
+    :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host).dsa-index-toolbar-shell {
     justify-content: space-between;
     align-items: center;
     gap: 14px;
@@ -492,7 +496,9 @@
     width: 100%;
 }
 
-:is(body, .dsa-graph-shell).dsa-index-ref #dsa-map-toolbar-host.dsa-index-toolbar-shell .tools-left {
+:is(body, .dsa-graph-shell).dsa-index-ref
+    :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host).dsa-index-toolbar-shell
+    .tools-left {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -501,7 +507,9 @@
     flex: 1 1 auto;
 }
 
-:is(body, .dsa-graph-shell).dsa-index-ref #dsa-map-toolbar-host.dsa-index-toolbar-shell .tools-right {
+:is(body, .dsa-graph-shell).dsa-index-ref
+    :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host).dsa-index-toolbar-shell
+    .tools-right {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -509,7 +517,9 @@
     flex-shrink: 0;
 }
 
-:is(body, .dsa-graph-shell).dsa-index-ref #dsa-map-toolbar-host.dsa-index-toolbar-shell .divider {
+:is(body, .dsa-graph-shell).dsa-index-ref
+    :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host).dsa-index-toolbar-shell
+    .divider {
     width: 1px;
     height: 22px;
     background: var(--line);
@@ -517,36 +527,51 @@
     flex-shrink: 0;
 }
 
-:is(body, .dsa-graph-shell).dsa-index-ref #dsa-map-toolbar-host.dsa-index-toolbar-shell .btn.dark {
+:is(body, .dsa-graph-shell).dsa-index-ref
+    :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host).dsa-index-toolbar-shell
+    .btn.dark {
     background: var(--accent-2, #0f1720);
     color: #fff;
     border-color: rgba(15, 23, 32, 0.35);
 }
 
-:is(body, .dsa-graph-shell).dsa-index-ref #dsa-map-toolbar-host.dsa-index-toolbar-shell .btn.dark:hover {
+:is(body, .dsa-graph-shell).dsa-index-ref
+    :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host).dsa-index-toolbar-shell
+    .btn.dark:hover {
     background: #1e293b;
     color: #fff;
     transform: translateY(-1px);
 }
 
-:is(body, .dsa-graph-shell).dsa-index-ref #dsa-map-toolbar-host.dsa-index-toolbar-shell .dsa-toolbar-expand-slot {
+:is(body, .dsa-graph-shell).dsa-index-ref
+    :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host).dsa-index-toolbar-shell
+    .dsa-toolbar-expand-slot {
     display: inline-flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
 }
 
-:is(body, .dsa-graph-shell).dsa-index-ref #dsa-map-toolbar-host.dsa-index-toolbar-shell .tools-right .dsa-graph-map-toolbar-hint {
+:is(body, .dsa-graph-shell).dsa-index-ref
+    :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host).dsa-index-toolbar-shell
+    .tools-right
+    .dsa-graph-map-toolbar-hint {
     margin-left: 0;
     max-width: min(520px, 52vw);
 }
 
-:is(body, .dsa-graph-shell).dsa-index-ref #dsa-map-toolbar-host.dsa-index-toolbar-shell .tools-right .hint b {
+:is(body, .dsa-graph-shell).dsa-index-ref
+    :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host).dsa-index-toolbar-shell
+    .tools-right
+    .hint
+    b {
     font-weight: 700;
     color: var(--ink-2);
 }
 
-:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .dsa-graph-map-toolbar {
+:is(body, .dsa-graph-shell).dsa-index-ref
+    :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host)
+    .dsa-graph-map-toolbar {
     flex: 1;
     min-width: 0;
     margin: 0;
@@ -559,17 +584,19 @@
     border-radius: 0;
 }
 
-:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .dsa-graph-map-toolbar::before {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host) .dsa-graph-map-toolbar::before {
     display: none;
 }
 
-:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .dsa-graph-map-toolbar {
+:is(body, .dsa-graph-shell).dsa-index-ref
+    :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host)
+    .dsa-graph-map-toolbar {
     justify-content: flex-start;
     flex-wrap: nowrap;
     gap: 10px 14px;
 }
 
-:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .dsa-graph-map-toolbar-cluster {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host) .dsa-graph-map-toolbar-cluster {
     gap: 8px;
 }
 
@@ -581,7 +608,7 @@
 }
 
 /* Hint + leading dot, immediately left of zoom (margin-left: auto pulls hint+zoom right). */
-:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .dsa-graph-map-toolbar-hint {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host) .dsa-graph-map-toolbar-hint {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -595,7 +622,7 @@
     color: var(--muted);
 }
 
-:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .dsa-graph-map-toolbar-hint .dot {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host) .dsa-graph-map-toolbar-hint .dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
@@ -603,7 +630,7 @@
     flex-shrink: 0;
 }
 
-:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .dsa-graph-map-toolbar-hint-text {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host) .dsa-graph-map-toolbar-hint-text {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -611,13 +638,13 @@
     text-align: left;
 }
 
-:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .dsa-graph-map-toolbar-cluster--zoom {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host) .dsa-graph-map-toolbar-cluster--zoom {
     margin-left: 0;
     flex-shrink: 0;
 }
 
 /* Expand / collapse — match reference .btn */
-:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .btn {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host) .btn {
     height: 36px;
     padding: 0 12px;
     border-radius: 10px;
@@ -635,20 +662,20 @@
     box-shadow: none;
 }
 
-:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .btn:hover {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host) .btn:hover {
     background: #fff;
     transform: translateY(-1px);
     color: var(--ink);
 }
 
-:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .btn svg {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host) .btn svg {
     width: 14px;
     height: 14px;
     flex-shrink: 0;
 }
 
 /* Zoom — match reference .zoom (mounted toolbar only) */
-:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .zoom {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host) .zoom {
     display: inline-flex;
     align-items: center;
     background: rgba(255, 255, 255, 0.6);
@@ -657,7 +684,7 @@
     overflow: hidden;
 }
 
-:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .zoom button {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host) .zoom button {
     width: 32px;
     height: 34px;
     border: 0;
@@ -673,12 +700,12 @@
     padding: 0;
 }
 
-:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .zoom button:hover {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host) .zoom button:hover {
     background: rgba(255, 255, 255, 0.9);
     color: var(--ink);
 }
 
-:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host) .zoom .val {
+:is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host) .zoom .val {
     padding: 0 10px;
     font-size: 12px;
     font-weight: 600;
@@ -930,7 +957,9 @@
     }
 
     :is(body, .dsa-graph-shell).dsa-index-ref .dsa-view-toolbar .dsa-view-tabs.seg,
-    :is(body, .dsa-graph-shell).dsa-index-ref #modeSeg.seg {
+    :is(body, .dsa-graph-shell).dsa-index-ref #modeSeg.seg,
+    :is(body, .dsa-graph-shell).dsa-index-ref #admin-modeSeg.seg,
+    :is(body, .dsa-graph-shell).dsa-index-ref #udash-modeSeg.seg {
         width: 100%;
         justify-content: center;
     }

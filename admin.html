@@ -37,8 +37,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=13" />
-    <link rel="stylesheet" href="./dsa-index-shell.css?v=15" />
+    <link rel="stylesheet" href="./styles.css?v=14" />
+    <link rel="stylesheet" href="./dsa-index-shell.css?v=18" />
 </head>
 <body class="dsa-admin-body">
     <script>
@@ -257,7 +257,7 @@
                                 <h4>User-facing features</h4>
                                 <p class="helper" style="margin-top:0">
                                     Controls what <b>all visitors and members</b> see on the public site (practice map, tabs, dashboard link, sign-in, OAuth buttons, footer, member hub modules, etc.).
-                                    Stored as JSON under key <code>site_user_features</code>. <b>On</b> = feature works; <b>Show</b> = discoverable in the UI. Turning <b>Off</b> automatically turns <b>Show</b> off for that row. Use <b>Save</b> to persist, <b>Reload flags</b> to fetch the latest from the server (drops unsaved changes).
+                                    Stored as JSON under key <code>site_user_features</code>. <b>Enabled</b> = the feature works when reached; <b>Visibility</b> = it appears in navigation and other UI. Turning <b>Enabled</b> off automatically turns <b>Visibility</b> off for that row. Use <b>Save to server</b> to persist, <b>Reload from server</b> to refresh the matrix (drops unsaved edits).
                                 </p>
                                 <div id="adm-site-features-matrix" class="adm-site-features-matrix" aria-live="polite"></div>
                                 <div class="adm-toolbar-row" style="margin-top:12px">
@@ -510,18 +510,146 @@
                                 </select>
                             </div>
                             <div class="adm-content-summary" id="adm-content-summary"></div>
-                            <input type="file" id="adm-mindmap-file-import" accept="application/json,.json" hidden aria-hidden="true" />
                             <div class="adm-content-graph-wrap">
                                 <div class="dsa-graph-shell dsa-index-ref">
-                                    <section class="toolbar adm-content-graph-toolbar" aria-label="Graph tools">
-                                        <div id="admin-dsa-toolbar-extras" class="adm-graph-toolbar-extras"></div>
-                                        <div class="tools-full adm-graph-toolbar-map-host" id="admin-dsa-map-toolbar-host"></div>
-                                    </section>
-                                    <section class="graph-card adm-graph-preview">
-                                        <div class="graph-stage">
-                                            <div id="admin-dsa-hierarchy-root" class="dsa-graph-viewport" aria-label="Mind map preview"></div>
-                                        </div>
-                                    </section>
+                                    <main class="page adm-content-graph-studio">
+                                        <section class="head">
+                                            <div class="head-text">
+                                                <div class="eyebrow">Knowledge Map</div>
+                                                <h1>DSA problem patterns</h1>
+                                                <p>
+                                                    Full map opens by default — all topics under DSA Patterns. Use
+                                                    <b>One topic</b> to focus on a single structure. The map flows left →
+                                                    right; scroll the shaded area when it’s wide.
+                                                </p>
+                                            </div>
+                                            <nav
+                                                class="seg dsa-view-tabs dsa-seg-track"
+                                                role="tablist"
+                                                id="admin-modeSeg"
+                                                aria-label="Graph layout"
+                                            >
+                                                <span class="dsa-seg-thumb" aria-hidden="true"></span>
+                                                <button
+                                                    type="button"
+                                                    class="dsa-view-btn"
+                                                    role="tab"
+                                                    data-mode="full"
+                                                    aria-selected="false"
+                                                >
+                                                    Full map
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="dsa-view-btn"
+                                                    role="tab"
+                                                    data-mode="one"
+                                                    aria-selected="false"
+                                                >
+                                                    One topic
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="dsa-view-btn"
+                                                    role="tab"
+                                                    data-mode="custom"
+                                                    aria-selected="false"
+                                                >
+                                                    Customize
+                                                </button>
+                                            </nav>
+                                        </section>
+                                        <section class="toolbar" aria-label="Graph toolbar">
+                                            <div
+                                                id="admin-dsa-map-toolbar-host"
+                                                class="dsa-index-toolbar-shell"
+                                                data-dsa-index-toolbar-slots="1"
+                                            >
+                                                <div class="tools-left">
+                                                    <button
+                                                        type="button"
+                                                        class="btn dark"
+                                                        id="admin-dsa-map-export-json"
+                                                        title="Export mind map JSON"
+                                                    >
+                                                        <svg
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            stroke-width="2.2"
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            aria-hidden="true"
+                                                        >
+                                                            <path d="M12 3v12"></path>
+                                                            <path d="M7 10l5 5 5-5"></path>
+                                                            <path d="M5 21h14"></path>
+                                                        </svg>
+                                                        Export JSON
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        class="btn"
+                                                        id="admin-dsa-map-import-json-trigger"
+                                                        title="Import mind map JSON"
+                                                    >
+                                                        <svg
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            stroke-width="2.2"
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            aria-hidden="true"
+                                                        >
+                                                            <path d="M12 21V9"></path>
+                                                            <path d="M7 14l5-5 5 5"></path>
+                                                            <path d="M5 3h14"></path>
+                                                        </svg>
+                                                        Import JSON…
+                                                    </button>
+                                                    <input
+                                                        type="file"
+                                                        id="admin-dsa-map-import-file"
+                                                        accept="application/json,.json"
+                                                        hidden
+                                                        aria-hidden="true"
+                                                    />
+                                                    <span class="divider" aria-hidden="true"></span>
+                                                    <div
+                                                        id="admin-dsa-toolbar-expand-slot"
+                                                        class="dsa-toolbar-expand-slot"
+                                                    ></div>
+                                                </div>
+                                                <div class="tools-right">
+                                                    <span class="hint dsa-graph-map-toolbar-hint">
+                                                        <span class="dot" aria-hidden="true"></span>
+                                                        <span
+                                                            id="admin-dsa-map-toolbar-inline-hint"
+                                                            class="dsa-graph-map-toolbar-hint-text"
+                                                        ></span>
+                                                    </span>
+                                                    <div
+                                                        id="admin-dsa-toolbar-zoom-host"
+                                                        class="dsa-toolbar-zoom-host"
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                        </section>
+                                        <section class="graph-card adm-graph-preview">
+                                            <div class="graph-stage">
+                                                <div
+                                                    id="admin-dsa-hierarchy-root"
+                                                    class="dsa-graph-viewport"
+                                                    aria-label="Mind map preview"
+                                                ></div>
+                                            </div>
+                                        </section>
+                                        <p class="foot">
+                                            Tip: switch to <b>One topic</b> to drill into a single structure, or use
+                                            <b>Customize</b> to tune the graph. Save draft or publish from the JSON tab.
+                                        </p>
+                                    </main>
                                 </div>
                             </div>
                         </div>
@@ -609,8 +737,8 @@
     <script src="./auth/dsa-member-roles.js?v=1"></script>
     <script src="./auth/dsa-user-auth.js?v=3"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
-    <script src="./script.js?v=28"></script>
-    <script src="./auth/account-admin-panel.js?v=17"></script>
+    <script src="./script.js?v=29"></script>
+    <script src="./auth/account-admin-panel.js?v=18"></script>
     <script src="./auth/admin-site-page.js?v=10"></script>
 </body>
 </html>

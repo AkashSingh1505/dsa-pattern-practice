@@ -637,15 +637,18 @@
     /**
      * @returns {{ cell: HTMLDivElement, input: HTMLInputElement }}
      */
-    function createSiteFeatureSwitch(inputId, checked, ariaLabel) {
+    /**
+     * @param {"en" | "vis"} kind — scoped save uses .adm-sf-switch-en / .adm-sf-switch-vis inside each row.
+     */
+    function createSiteFeatureSwitch(inputId, checked, ariaLabel, kind) {
         const cell = document.createElement("div");
         cell.className = "adm-sf-switch-cell";
         const lab = document.createElement("label");
         lab.className = "adm-sf-switch";
-        lab.htmlFor = inputId;
         const inp = document.createElement("input");
         inp.type = "checkbox";
-        inp.className = "adm-sf-switch-input";
+        inp.className =
+            "adm-sf-switch-input " + (kind === "vis" ? "adm-sf-switch-vis" : "adm-sf-switch-en");
         inp.id = inputId;
         inp.checked = !!checked;
         if (ariaLabel) {
@@ -727,8 +730,15 @@
         setStatus("adm-site-features-msg", "Loading flags from server…", "");
         let features = {};
         try {
-            const r = await fetch(new URL("api/site-features", document.baseURI).href, {
-                headers: { Accept: "application/json" },
+            const sfUrl = new URL("api/site-features", document.baseURI);
+            sfUrl.searchParams.set("_", String(Date.now()));
+            const r = await fetch(sfUrl.href, {
+                headers: {
+                    Accept: "application/json",
+                    "Cache-Control": "no-cache",
+                    Pragma: "no-cache",
+                },
+                cache: "no-store",
             });
             const j = await r.json();
             features = (j && j.features) || {};
@@ -744,7 +754,7 @@
             return;
         }
         host.innerHTML =
-            '<div class="adm-sf-head"><span>Feature</span><span title="Feature works when reached">On</span><span title="Shown in navigation / UI">Show</span></div>';
+            '<div class="adm-sf-head"><span>Feature</span><span title="When on, the feature works if the user reaches it">Enabled</span><span title="When on, the feature is discoverable in navigation and UI chrome">Visibility</span></div>';
         try {
             SITE_FEATURE_ROWS.forEach(function (meta) {
                 if (meta.section) {
@@ -756,6 +766,7 @@
                 const st = features[meta.id] || { enabled: true, visible: true };
                 const row = document.createElement("div");
                 row.className = "adm-sf-data-row";
+                row.dataset.sfRow = meta.id;
                 const title = document.createElement("div");
                 title.innerHTML =
                     '<div class="adm-sf-title">' +
@@ -766,12 +777,14 @@
                 const enPart = createSiteFeatureSwitch(
                     "adm-sf-en-" + meta.id,
                     st.enabled !== false,
-                    "Enabled: " + meta.title
+                    "Enabled: " + meta.title,
+                    "en"
                 );
                 const visPart = createSiteFeatureSwitch(
                     "adm-sf-vis-" + meta.id,
                     st.visible !== false,
-                    "Visible: " + meta.title
+                    "Visibility: " + meta.title,
+                    "vis"
                 );
                 enPart.input.addEventListener("change", function () {
                     syncSiteFeatureRowCoupling(meta.id);
@@ -793,12 +806,14 @@
     }
 
     async function saveSiteFeaturesFromEditor() {
+        const host = document.getElementById("adm-site-features-matrix");
         const obj = {};
         SITE_FEATURE_ROWS.forEach(function (meta) {
-            const en = document.getElementById("adm-sf-en-" + meta.id);
-            const vis = document.getElementById("adm-sf-vis-" + meta.id);
+            const row = host && host.querySelector('.adm-sf-data-row[data-sf-row="' + meta.id + '"]');
+            const en = row && row.querySelector("input.adm-sf-switch-en");
+            const vis = row && row.querySelector("input.adm-sf-switch-vis");
             const enabled = !!(en && en.checked);
-            const visible = !!(vis && vis.checked && !vis.disabled);
+            const visible = !!(enabled && vis && vis.checked);
             obj[meta.id] = {
                 enabled,
                 visible,
@@ -1305,84 +1320,69 @@
         }
 
         function wireAdminContentGraphToolbar() {
-            const host = document.getElementById("admin-dsa-toolbar-extras");
-            const fileIn = document.getElementById("adm-mindmap-file-import");
-            if (!host || host.dataset.wired === "1") {
+            const fileIn =
+                document.getElementById("admin-dsa-map-import-file") ||
+                document.getElementById("adm-mindmap-file-import");
+            const expBtn = document.getElementById("admin-dsa-map-export-json");
+            const impTrig = document.getElementById("admin-dsa-map-import-json-trigger");
+            if (!fileIn || !editor || fileIn.dataset.dsaCmsFileWired === "1") {
                 return;
             }
-            host.dataset.wired = "1";
+            fileIn.dataset.dsaCmsFileWired = "1";
 
-            function mkBtn(label, title) {
-                const b = document.createElement("button");
-                b.type = "button";
-                b.className = "btn ghost btn-sm adm-graph-tbar-btn";
-                b.textContent = label;
-                if (title) {
-                    b.title = title;
+            fileIn.addEventListener("change", function () {
+                const f = fileIn.files && fileIn.files[0];
+                if (!f) {
+                    return;
                 }
-                return b;
-            }
-
-            const exp = mkBtn(
-                "Export map",
-                "Download current mind map JSON (same shape as the CMS draft array).",
-            );
-            exp.addEventListener("click", function () {
-                if (typeof dsaExportMindMapHierarchyJson === "function") {
-                    dsaExportMindMapHierarchyJson();
-                    graphSetStatus(status, "Exported mind map JSON.", "ok");
-                }
-            });
-
-            const imp = mkBtn("Import map…", "Load a JSON file (array) into the editor and preview.");
-            imp.addEventListener("click", function () {
-                if (fileIn) {
-                    fileIn.click();
-                }
-            });
-
-            if (fileIn) {
-                fileIn.addEventListener("change", function () {
-                    const f = fileIn.files && fileIn.files[0];
-                    if (!f) {
-                        return;
-                    }
-                    const reader = new FileReader();
-                    reader.onload = function () {
-                        try {
-                            const text = String(reader.result || "");
-                            const data = JSON.parse(text);
-                            if (!Array.isArray(data)) {
-                                throw new Error("File must contain a JSON array of root topics.");
-                            }
-                            const pretty = JSON.stringify(data, null, 2);
-                            editor.value = pretty;
-                            updateContentSummary(editor, lastCms);
-                            const r =
-                                typeof dsaReloadGraphFromEditorJson === "function"
-                                    ? dsaReloadGraphFromEditorJson(pretty, ADMIN_GRAPH_MOUNT)
-                                    : { ok: false };
-                            if (r.ok) {
-                                graphSetStatus(status, "Imported mind map — save draft when ready.", "ok");
-                            } else {
-                                const em = r.error && r.error.message;
-                                graphSetStatus(status, "Import failed: " + (em || "Invalid JSON"), "err");
-                            }
-                        } catch (err) {
-                            graphSetStatus(
-                                status,
-                                "Import failed: " + (err && err.message ? err.message : "invalid file"),
-                                "err",
-                            );
+                const reader = new FileReader();
+                reader.onload = function () {
+                    try {
+                        const text = String(reader.result || "");
+                        const data = JSON.parse(text);
+                        if (!Array.isArray(data)) {
+                            throw new Error("File must contain a JSON array of root topics.");
                         }
-                        fileIn.value = "";
-                    };
-                    reader.readAsText(f);
+                        const pretty = JSON.stringify(data, null, 2);
+                        editor.value = pretty;
+                        updateContentSummary(editor, lastCms);
+                        const r =
+                            typeof dsaReloadGraphFromEditorJson === "function"
+                                ? dsaReloadGraphFromEditorJson(pretty, ADMIN_GRAPH_MOUNT)
+                                : { ok: false };
+                        if (r.ok) {
+                            graphSetStatus(status, "Imported mind map — save draft when ready.", "ok");
+                        } else {
+                            const em = r.error && r.error.message;
+                            graphSetStatus(status, "Import failed: " + (em || "Invalid JSON"), "err");
+                        }
+                    } catch (err) {
+                        graphSetStatus(
+                            status,
+                            "Import failed: " + (err && err.message ? err.message : "invalid file"),
+                            "err",
+                        );
+                    }
+                    fileIn.value = "";
+                };
+                reader.readAsText(f);
+            });
+
+            if (expBtn && expBtn.dataset.dsaCmsBound !== "1") {
+                expBtn.dataset.dsaCmsBound = "1";
+                expBtn.addEventListener("click", function () {
+                    if (typeof dsaExportMindMapHierarchyJson === "function") {
+                        dsaExportMindMapHierarchyJson();
+                        graphSetStatus(status, "Exported mind map JSON.", "ok");
+                    }
                 });
             }
-
-            host.appendChild(exp);
-            host.appendChild(imp);
+            if (impTrig && impTrig.dataset.dsaCmsBound !== "1") {
+                impTrig.dataset.dsaCmsBound = "1";
+                impTrig.addEventListener("click", function () {
+                    fileIn.click();
+                });
+            }
         }
 
         wireAdminContentGraphToolbar();

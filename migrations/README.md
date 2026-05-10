@@ -26,12 +26,20 @@ After `0001`, add the **`subscriber`** practice role and normalize paid rows (se
 npx wrangler d1 execute dsa-pattern-practice-subscribers --remote --file=migrations/subscribers/0002_practice_users_subscriber_role.sql
 ```
 
+**Graph library** (community catalog + personal copies, member hub):
+
+```bash
+npx wrangler d1 execute dsa-pattern-practice-subscribers --remote --file=migrations/subscribers/0003_graph_library.sql
+```
+
+Publish catalog entries with **RSA site admin** JWT or a practice account with **`role = admin`**: `POST /api/admin/graph-catalog` (see `functions/api/admin/graph-catalog.js`). Members use **`GET /api/graph-library/public`**, **`POST /api/graph-library/download`**, and **`/api/graph-library/mine*`** with the practice Bearer token.
+
 ## Schema overview
 
 | Database    | Tables (high level) |
 |------------|----------------------|
 | **Content** | `cms_content` (published JSON + revision), `cms_content_drafts`, `app_kv`, `content_audit` |
-| **Subscribers** | `practice_users` (`role`: `user` \| `admin` \| `subscriber`), `user_profiles`, `user_entitlements`, `billing_*`, `subscriber_contacts`, `security_audit` |
+| **Subscribers** | `practice_users` (`role`: `user` \| `admin` \| `subscriber`), `user_profiles`, `user_entitlements`, `billing_*`, `subscriber_contacts`, `security_audit`, **`graph_catalog`**, **`graph_catalog_downloads`**, **`user_graphs`** (library) |
 
 Practice roles: **`user`** (default), **`subscriber`** (paid tier label in JWT), **`admin`** (elevated staff). Promote or upgrade (examples):
 

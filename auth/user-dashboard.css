@@ -1031,3 +1031,289 @@ html.dsa-udash-html,
     padding: 0 14px;
     font-size: 13px;
 }
+
+/* ——— Cloud graph workspace bar ——— */
+.dsa-udash-cloud-graph-bar {
+    width: 100%;
+    flex-basis: 100%;
+    margin: 4px 0 8px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: linear-gradient(120deg, rgba(99, 102, 241, 0.12), rgba(168, 85, 247, 0.1));
+    border: 1px solid rgba(99, 102, 241, 0.28);
+    box-sizing: border-box;
+}
+.dsa-udash-cloud-graph-bar__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+.dsa-udash-cloud-graph-bar__ico {
+    flex-shrink: 0;
+    color: #6366f1;
+    display: flex;
+}
+.dsa-udash-cloud-graph-bar__text {
+    flex: 1 1 160px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.dsa-udash-cloud-graph-bar__text strong {
+    font-size: 14px;
+    font-weight: 600;
+}
+.dsa-udash-cloud-graph-bar__meta {
+    font-size: 12px;
+    color: var(--udash-muted);
+}
+.dsa-udash-cloud-graph-bar__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* ——— Confirm modal (graph library) ——— */
+.dsa-udash-modal[hidden] {
+    display: none !important;
+}
+.dsa-udash-modal:not([hidden]) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 220;
+}
+.dsa-udash-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(3px);
+}
+.dsa-udash-modal__box {
+    position: absolute;
+    left: 50%;
+    top: 45%;
+    transform: translate(-50%, -50%);
+    width: min(400px, calc(100vw - 32px));
+    padding: 22px 22px 18px;
+    border-radius: 16px;
+    background: var(--udash-surface, #fff);
+    box-shadow: 0 24px 48px rgba(15, 23, 42, 0.18);
+    border: 1px solid var(--udash-line);
+    box-sizing: border-box;
+}
+.dsa-udash-modal__title {
+    margin: 0 0 10px;
+    font-size: 17px;
+    font-weight: 700;
+}
+.dsa-udash-modal__body {
+    margin: 0 0 18px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--udash-ink2);
+}
+.dsa-udash-modal__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ——— Graph library panel ——— */
+.dsa-glib-head p {
+    max-width: 62ch;
+}
+.dsa-glib-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+.dsa-glib-tab {
+    border: 1px solid var(--udash-line);
+    background: transparent;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--udash-ink2);
+}
+.dsa-glib-tab.is-active {
+    background: var(--udash-ink);
+    color: #fff;
+    border-color: var(--udash-ink);
+}
+.dsa-glib-tab-panel {
+    display: none;
+}
+.dsa-glib-tab-panel.is-active {
+    display: block;
+}
+.dsa-glib-lead {
+    font-size: 13px;
+    color: var(--udash-muted);
+    margin: 0 0 16px;
+    max-width: 62ch;
+}
+.dsa-glib-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 18px;
+}
+.dsa-glib-card {
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid var(--udash-line);
+    background: var(--udash-surface, #fff);
+    box-shadow: var(--udash-shadow);
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.dsa-glib-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
+}
+.dsa-glib-card__hero {
+    min-height: 108px;
+    padding: 16px 16px 14px;
+    color: #fff;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 8px;
+}
+.dsa-glib-card__hero--mine {
+    min-height: 96px;
+}
+.dsa-glib-card__badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(6px);
+}
+.dsa-glib-card__hero-title {
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.25;
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.2);
+}
+.dsa-glib-card__body {
+    padding: 14px 16px 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.dsa-glib-card__desc {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--udash-ink2);
+    flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.dsa-glib-card__stats {
+    display: flex;
+    gap: 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--udash-muted);
+}
+.dsa-glib-card__stats span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.dsa-glib-ico {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+    opacity: 0.85;
+}
+.dsa-glib-card__meta {
+    font-size: 11px;
+    color: var(--udash-muted);
+}
+.dsa-glib-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+}
+.dsa-glib-empty {
+    grid-column: 1 / -1;
+    font-size: 14px;
+    color: var(--udash-muted);
+    padding: 24px 8px;
+}
+.dsa-glib-code {
+    font-size: 12px;
+    background: rgba(15, 23, 42, 0.06);
+    padding: 2px 6px;
+    border-radius: 6px;
+}
+.dsa-glib-pill {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.25);
+}
+.dsa-glib-pill--dl {
+    background: rgba(34, 197, 94, 0.35);
+}
+.dsa-glib-pill--cr {
+    background: rgba(59, 130, 246, 0.35);
+}
+.dsa-glib-pill--sh {
+    background: rgba(249, 115, 22, 0.35);
+}
+.dsa-glib-personal-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.dsa-glib-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.dsa-glib-chip {
+    border: 1px solid var(--udash-line);
+    background: transparent;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--udash-ink2);
+}
+.dsa-glib-chip.is-active {
+    border-color: #6366f1;
+    color: #4f46e5;
+    background: rgba(99, 102, 241, 0.1);
+}

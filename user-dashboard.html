@@ -38,7 +38,7 @@
     <link rel="stylesheet" href="./auth/portal-shell.css?v=9" />
     <link rel="stylesheet" href="./styles.css?v=14" />
     <link rel="stylesheet" href="./dsa-index-shell.css?v=19" />
-    <link rel="stylesheet" href="./auth/user-dashboard.css?v=7" />
+    <link rel="stylesheet" href="./auth/user-dashboard.css?v=8" />
 </head>
 <body class="dsa-udash-body">
     <div class="dsa-udash-app" id="dsa-user-dashboard-main">
@@ -46,6 +46,10 @@
             <button type="button" class="dsa-udash-nav-btn is-active" data-panel="graph" aria-current="page">
                 <svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
                 Graph
+            </button>
+            <button type="button" class="dsa-udash-nav-btn" data-panel="library">
+                <svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8M8 11h8M8 15h4"/></svg>
+                Library
             </button>
             <button type="button" class="dsa-udash-nav-btn" data-panel="overview">
                 <svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 5-6"/></svg>
@@ -123,9 +127,26 @@
                                     DSA pattern tree: choose <b>Full map</b>, <b>One topic</b>, or <b>Customize</b>, then use
                                     export, import, expand/collapse, and zoom. Hub numbers live under
                                     <button type="button" class="dsa-udash-text-btn" data-jump-panel="overview">Overview</button>.
-                                    Personal graphs:
+                                    Cloud library:
+                                    <button type="button" class="dsa-udash-text-btn" data-jump-panel="library">Graph library</button>
+                                    · Local list:
                                     <button type="button" class="dsa-udash-text-btn" data-jump-panel="map-tools">Map tools</button>.
                                 </p>
+                            </div>
+                            <div class="dsa-udash-cloud-graph-bar" id="udash-cloud-graph-bar" hidden>
+                                <div class="dsa-udash-cloud-graph-bar__inner">
+                                    <span class="dsa-udash-cloud-graph-bar__ico" aria-hidden="true">
+                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg>
+                                    </span>
+                                    <div class="dsa-udash-cloud-graph-bar__text">
+                                        <strong id="udash-cloud-graph-title">Cloud graph</strong>
+                                        <span class="dsa-udash-cloud-graph-bar__meta" id="udash-cloud-graph-meta"></span>
+                                    </div>
+                                    <div class="dsa-udash-cloud-graph-bar__actions">
+                                        <button type="button" class="dsa-udash-btn dsa-udash-btn--primary" id="udash-cloud-graph-save">Save to cloud</button>
+                                        <button type="button" class="dsa-udash-btn" id="udash-cloud-graph-site-default">Site default map</button>
+                                    </div>
+                                </div>
                             </div>
                             <nav
                                 class="seg dsa-view-tabs dsa-seg-track"
@@ -216,6 +237,38 @@
                                 </div>
                             </section>
                         </div>
+                    </div>
+                </section>
+
+                <!-- Graph library — community + personal cloud copies -->
+                <section class="dsa-udash-panel" id="panel-library" data-panel-id="library" aria-labelledby="ph-library">
+                    <div class="dsa-udash-panel-head dsa-glib-head">
+                        <h1 id="ph-library">Graph library</h1>
+                        <p>
+                            <strong>Graph</strong> is the right DSA term here (nodes + edges; a tree is a special kind of graph). Browse public pattern maps, save copies to your account, and open them in
+                            <button type="button" class="dsa-udash-text-btn" data-jump-panel="graph">Graph workspace</button>.
+                        </p>
+                    </div>
+                    <div class="dsa-glib-tabs" role="tablist" aria-label="Library sections">
+                        <button type="button" class="dsa-glib-tab is-active" data-glib-tab="community" role="tab" aria-selected="true">Community</button>
+                        <button type="button" class="dsa-glib-tab" data-glib-tab="personal" role="tab" aria-selected="false">Personal</button>
+                    </div>
+                    <div class="dsa-glib-tab-panel is-active" data-glib-panel="community">
+                        <p class="dsa-glib-lead">Public graphs curated by the team or practice admins. Downloads create your own editable copy.</p>
+                        <div class="dsa-glib-grid" id="udash-glib-public-grid"></div>
+                    </div>
+                    <div class="dsa-glib-tab-panel" data-glib-panel="personal">
+                        <div class="dsa-glib-personal-toolbar">
+                            <button type="button" class="dsa-udash-btn dsa-udash-btn--primary" id="udash-glib-create">New graph</button>
+                            <div class="dsa-glib-filters" role="group" aria-label="Filter by origin">
+                                <button type="button" class="dsa-glib-chip is-active" data-glib-filter="all">All</button>
+                                <button type="button" class="dsa-glib-chip" data-glib-filter="downloaded">Downloaded</button>
+                                <button type="button" class="dsa-glib-chip" data-glib-filter="created">Created</button>
+                                <button type="button" class="dsa-glib-chip" data-glib-filter="shared">Shared</button>
+                            </div>
+                        </div>
+                        <p class="dsa-glib-lead">Everything here is stored on your account. Delete only affects your copy.</p>
+                        <div class="dsa-glib-grid" id="udash-glib-mine-grid"></div>
                     </div>
                 </section>
 
@@ -540,6 +593,7 @@
 
             <nav class="dsa-udash-mnav" aria-label="Dashboard sections (scroll)">
                 <button type="button" data-panel="graph" class="is-active"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>Graph</button>
+                <button type="button" data-panel="library"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Library</button>
                 <button type="button" data-panel="overview"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 5-6"/></svg>Hub</button>
                 <button type="button" data-panel="map-tools"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4"/></svg>Tools</button>
                 <button type="button" data-panel="study"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Study</button>
@@ -556,6 +610,17 @@
     </div>
 
     <div class="dsa-udash-sidebar-backdrop" id="udash-sidebar-backdrop" hidden></div>
+    <div class="dsa-udash-modal" id="udash-glib-confirm" hidden>
+        <div class="dsa-udash-modal__backdrop" aria-hidden="true"></div>
+        <div class="dsa-udash-modal__box" role="alertdialog" aria-modal="true" aria-labelledby="udash-glib-confirm-title">
+            <h3 class="dsa-udash-modal__title" id="udash-glib-confirm-title">Confirm</h3>
+            <p class="dsa-udash-modal__body" id="udash-glib-confirm-body"></p>
+            <div class="dsa-udash-modal__actions">
+                <button type="button" class="dsa-udash-btn" id="udash-glib-confirm-cancel">Cancel</button>
+                <button type="button" class="dsa-udash-btn dsa-udash-btn--primary" id="udash-glib-confirm-ok">Continue</button>
+            </div>
+        </div>
+    </div>
     <div class="dsa-udash-toast" id="udash-toast" role="status"></div>
 
     <script src="./auth/dsa-admin-auth.js?v=5"></script>
@@ -564,7 +629,8 @@
     <script src="./auth/dsa-user-auth.js?v=3"></script>
     <script src="./cms-bootstrap.js?v=3"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
-    <script src="./script.js?v=30"></script>
-    <script src="./auth/user-dashboard-page.js?v=8"></script>
+    <script src="./script.js?v=31"></script>
+    <script src="./auth/user-dashboard-page.js?v=9"></script>
+    <script src="./auth/graph-library-panel.js?v=1"></script>
 </body>
 </html>

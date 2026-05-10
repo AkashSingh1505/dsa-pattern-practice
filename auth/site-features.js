@@ -29,6 +29,7 @@
             sub_settings_module: { enabled: true, visible: true },
             sub_profile_module: { enabled: true, visible: true },
             sub_overview_stats: { enabled: true, visible: true },
+            sub_graph_library: { enabled: true, visible: true },
         };
     }
 

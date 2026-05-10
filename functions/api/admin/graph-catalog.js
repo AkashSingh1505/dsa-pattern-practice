@@ -1,0 +1,254 @@
+import { json } from "../../_lib/admin-api.js";
+import { verifyPracticeToken } from "../../_lib/practice-jwt.js";
+import { newGraphId, requireGraphCatalogWriter } from "../../_lib/practice-auth-request.js";
+
+function slugify(s) {
+    return String(s || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")
+        .slice(0, 64) || "graph";
+}
+
+async function uniqueSlug(db, base) {
+    let slug = base;
+    let n = 0;
+    while (n < 50) {
+        const row = await db.prepare("SELECT id FROM graph_catalog WHERE slug = ? AND deleted_at IS NULL").bind(slug).first();
+        if (!row) {
+            return slug;
+        }
+        n += 1;
+        slug = `${base}-${n}`;
+    }
+    return `${base}-${newGraphId().slice(0, 8)}`;
+}
+
+export async function onRequestGet(context) {
+    const { request, env } = context;
+    const gate = await requireGraphCatalogWriter(request, env);
+    if (!gate.ok) {
+        return gate.response;
+    }
+    const { db } = gate;
+    let rows;
+    try {
+        rows = await db
+            .prepare(
+                `SELECT c.id, c.slug, c.title, c.description, c.visibility, c.accent_hue, c.tags_json, c.difficulty,
+                        c.estimated_minutes, c.download_count, c.created_at, c.updated_at, c.deleted_at,
+                        pu.email AS creator_email
+                 FROM graph_catalog c
+                 LEFT JOIN practice_users pu ON pu.id = c.creator_user_id
+                 WHERE c.deleted_at IS NULL
+                 ORDER BY c.updated_at DESC`,
+            )
+            .all();
+    } catch (e) {
+        console.error("admin graph-catalog list", e);
+        return json({ error: "server error" }, 500);
+    }
+    return json({ ok: true, graphs: rows.results || [] });
+}
+
+export async function onRequestPost(context) {
+    const { request, env } = context;
+    const gate = await requireGraphCatalogWriter(request, env);
+    if (!gate.ok) {
+        return gate.response;
+    }
+    let body;
+    try {
+        body = await request.json();
+    } catch {
+        return json({ error: "invalid JSON" }, 400);
+    }
+    const title = String(body.title || "").trim();
+    if (!title) {
+        return json({ error: "title required" }, 400);
+    }
+    const payload = body.payload;
+    if (!Array.isArray(payload)) {
+        return json({ error: "payload must be array (mind map roots)" }, 400);
+    }
+    let payloadJson;
+    try {
+        payloadJson = JSON.stringify(payload);
+    } catch {
+        return json({ error: "payload not serializable" }, 400);
+    }
+    const visibility = ["public", "unlisted", "private"].includes(String(body.visibility))
+        ? String(body.visibility)
+        : "public";
+    const description = String(body.description || "").trim();
+    const tags = Array.isArray(body.tags) ? JSON.stringify(body.tags.map((x) => String(x))) : null;
+    const difficulty = body.difficulty != null ? String(body.difficulty).slice(0, 32) : null;
+    const estimatedMinutes =
+        typeof body.estimatedMinutes === "number" && Number.isFinite(body.estimatedMinutes)
+            ? Math.max(0, Math.floor(body.estimatedMinutes))
+            : null;
+    const accentHue =
+        typeof body.accentHue === "number" && Number.isFinite(body.accentHue)
+            ? Math.floor(body.accentHue) % 360
+            : null;
+    const slugIn = String(body.slug || "").trim();
+    const base = slugify(slugIn || title);
+
+    const { db } = gate;
+    const slug = await uniqueSlug(db, base);
+    const id = newGraphId();
+    const now = Math.floor(Date.now() / 1000);
+
+    let creatorUserId = null;
+    if (gate.via === "practice_admin") {
+        const auth = request.headers.get("Authorization") || "";
+        const m = auth.match(/^Bearer\s+(.+)$/i);
+        if (m && env.USER_JWT_SECRET) {
+            const p = await verifyPracticeToken(m[1].trim(), env.USER_JWT_SECRET);
+            if (p && p.sub) {
+                const u = await db
+                    .prepare("SELECT id FROM practice_users WHERE email = ?")
+                    .bind(String(p.sub).toLowerCase())
+                    .first();
+                if (u) {
+                    creatorUserId = u.id;
+                }
+            }
+        }
+    }
+
+    try {
+        await db
+            .prepare(
+                `INSERT INTO graph_catalog (id, slug, title, description, visibility, creator_user_id, payload_json, accent_hue, tags_json, difficulty, estimated_minutes, download_count, created_at, updated_at, deleted_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, NULL)`,
+            )
+            .bind(
+                id,
+                slug,
+                title,
+                description || null,
+                visibility,
+                creatorUserId,
+                payloadJson,
+                accentHue,
+                tags,
+                difficulty,
+                estimatedMinutes,
+                now,
+                now,
+            )
+            .run();
+    } catch (e) {
+        console.error("admin graph-catalog insert", e);
+        return json({ error: "server error" }, 500);
+    }
+    return json({ ok: true, id, slug });
+}
+
+export async function onRequestPatch(context) {
+    const { request, env } = context;
+    const gate = await requireGraphCatalogWriter(request, env);
+    if (!gate.ok) {
+        return gate.response;
+    }
+    let body;
+    try {
+        body = await request.json();
+    } catch {
+        return json({ error: "invalid JSON" }, 400);
+    }
+    const id = String(body.id || "").trim();
+    if (!id) {
+        return json({ error: "id required" }, 400);
+    }
+    const { db } = gate;
+    const row = await db.prepare("SELECT id FROM graph_catalog WHERE id = ? AND deleted_at IS NULL").bind(id).first();
+    if (!row) {
+        return json({ error: "not found" }, 404);
+    }
+    const updates = [];
+    const binds = [];
+    if (typeof body.title === "string" && body.title.trim()) {
+        updates.push("title = ?");
+        binds.push(body.title.trim());
+    }
+    if (typeof body.description === "string") {
+        updates.push("description = ?");
+        binds.push(body.description.trim());
+    }
+    if (["public", "unlisted", "private"].includes(String(body.visibility))) {
+        updates.push("visibility = ?");
+        binds.push(String(body.visibility));
+    }
+    if (body.payload != null) {
+        if (!Array.isArray(body.payload)) {
+            return json({ error: "payload must be array" }, 400);
+        }
+        try {
+            updates.push("payload_json = ?");
+            binds.push(JSON.stringify(body.payload));
+        } catch {
+            return json({ error: "invalid payload" }, 400);
+        }
+    }
+    if (Array.isArray(body.tags)) {
+        updates.push("tags_json = ?");
+        binds.push(JSON.stringify(body.tags.map((x) => String(x))));
+    }
+    if (body.difficulty != null) {
+        updates.push("difficulty = ?");
+        binds.push(String(body.difficulty).slice(0, 32));
+    }
+    if (typeof body.estimatedMinutes === "number" && Number.isFinite(body.estimatedMinutes)) {
+        updates.push("estimated_minutes = ?");
+        binds.push(Math.max(0, Math.floor(body.estimatedMinutes)));
+    }
+    if (typeof body.accentHue === "number" && Number.isFinite(body.accentHue)) {
+        updates.push("accent_hue = ?");
+        binds.push(Math.floor(body.accentHue) % 360);
+    }
+    if (!updates.length) {
+        return json({ error: "nothing to update" }, 400);
+    }
+    const now = Math.floor(Date.now() / 1000);
+    updates.push("updated_at = ?");
+    binds.push(now);
+    binds.push(id);
+    try {
+        await db.prepare(`UPDATE graph_catalog SET ${updates.join(", ")} WHERE id = ?`).bind(...binds).run();
+    } catch (e) {
+        console.error("admin graph-catalog patch", e);
+        return json({ error: "server error" }, 500);
+    }
+    return json({ ok: true, updatedAt: now });
+}
+
+export async function onRequestDelete(context) {
+    const { request, env } = context;
+    const gate = await requireGraphCatalogWriter(request, env);
+    if (!gate.ok) {
+        return gate.response;
+    }
+    const url = new URL(request.url);
+    const id = String(url.searchParams.get("id") || "").trim();
+    if (!id) {
+        return json({ error: "id required" }, 400);
+    }
+    const { db } = gate;
+    const now = Math.floor(Date.now() / 1000);
+    try {
+        const res = await db
+            .prepare(`UPDATE graph_catalog SET deleted_at = ?, updated_at = ? WHERE id = ? AND deleted_at IS NULL`)
+            .bind(now, now, id)
+            .run();
+        if (!res.meta || res.meta.changes === 0) {
+            return json({ error: "not found" }, 404);
+        }
+    } catch (e) {
+        console.error("admin graph-catalog delete", e);
+        return json({ error: "server error" }, 500);
+    }
+    return json({ ok: true });
+}

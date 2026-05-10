@@ -238,6 +238,7 @@
 
     var PANEL_TITLES = {
         graph: "Graph workspace",
+        library: "Graph library",
         overview: "Overview",
         "map-tools": "Map tools",
         study: "Study",
@@ -253,6 +254,7 @@
 
     /** Site feature key per hub section (Graph has no key — always reachable). */
     var PANEL_NAV_SITE_KEY = {
+        library: "sub_graph_library",
         overview: "sub_overview_stats",
         study: "sub_study_module",
         shared: "sub_shared_inbox",
@@ -266,6 +268,7 @@
     };
 
     var SITE_SHADE_PANELS = [
+        { panelId: "panel-library", siteKey: "sub_graph_library" },
         { panelId: "panel-study", siteKey: "sub_study_module" },
         { panelId: "panel-quizzes", siteKey: "sub_quizzes_module" },
         { panelId: "panel-reminders", siteKey: "sub_reminders_module" },
@@ -319,6 +322,9 @@
         if (panelId === "graph" || panelId === "map-tools") {
             return true;
         }
+        if (panelId === "library") {
+            return siteUse("sub_graph_library");
+        }
         var k = PANEL_NAV_SITE_KEY[panelId];
         return k ? siteUse(k) : true;
     }
@@ -367,6 +373,10 @@
             mb.setAttribute("aria-expanded", "false");
         }
     }
+
+    try {
+        window.__dsaUdashNavigatePanel = navigateDashboardPanel;
+    } catch (e) {}
 
     function applyMemberHubFeatureUi() {
         var paid = isPaidMember();
@@ -424,6 +434,16 @@
             overviewPanel.hidden = !overviewOn;
             overviewPanel.setAttribute("aria-hidden", overviewOn ? "false" : "true");
             if (!overviewOn && overviewPanel.classList.contains("is-active")) {
+                showPanel("graph");
+            }
+        }
+
+        var libraryPanel = document.getElementById("panel-library");
+        if (libraryPanel) {
+            var libOn = siteUse("sub_graph_library");
+            libraryPanel.hidden = !libOn;
+            libraryPanel.setAttribute("aria-hidden", libOn ? "false" : "true");
+            if (!libOn && libraryPanel.classList.contains("is-active")) {
                 showPanel("graph");
             }
         }
@@ -592,6 +612,9 @@
             del.className = "dsa-udash-btn";
             del.textContent = "Remove";
             del.addEventListener("click", function () {
+                if (!confirm('Remove "' + g.name + '" from this device list?')) {
+                    return;
+                }
                 state.graphs = state.graphs.filter(function (x) {
                     return x.id !== g.id;
                 });

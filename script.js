@@ -1331,6 +1331,20 @@ function dsaImportMindMapHierarchyFromText(text) {
 }
 window.dsaImportMindMapHierarchyFromText = dsaImportMindMapHierarchyFromText;
 
+/** Serialize current mind map roots for cloud save (member library). */
+function dsaGetMindMapHierarchyJsonString() {
+    return JSON.stringify(dsaHierarchy);
+}
+window.dsaGetMindMapHierarchyJsonString = dsaGetMindMapHierarchyJsonString;
+
+/** Reload published CMS map (`/api/data?k=dsa`) and redraw (e.g. leave a personal cloud graph). */
+async function dsaReloadSiteDefaultMapInView() {
+    await dsaLoadHierarchyFromSources();
+    const st = typeof dsaCaptureGraphViewState === "function" ? dsaCaptureGraphViewState() : null;
+    loadDsaPatternsPage({ restore: st });
+}
+window.dsaReloadSiteDefaultMapInView = dsaReloadSiteDefaultMapInView;
+
 /** Wire one Export / Import trio (practice graph JSON). Skips if any element missing. */
 function dsaWireMapToolbarExportImport(expId, impTrigId, impFileId) {
     const exp = document.getElementById(expId);

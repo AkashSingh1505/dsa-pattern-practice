@@ -40,7 +40,7 @@
     <link rel="stylesheet" href="./styles.css?v=14" />
     <link rel="stylesheet" href="./dsa-index-shell.css?v=19" />
     <link rel="stylesheet" href="./auth/admin-graph-library.css?v=4" />
-    <link rel="stylesheet" href="./auth/admin-workspace.css?v=2" />
+    <link rel="stylesheet" href="./auth/admin-workspace.css?v=3" />
     <link rel="stylesheet" href="./auth/admin-loader.css?v=1" />
 </head>
 <body class="dsa-admin-body">
@@ -530,12 +530,16 @@
                         <p id="cms-status" class="status" style="margin-top:12px"></p>
                     </div>
 
-                    <!-- Workspace: graph studio + inventory picker -->
+                    <!-- Workspace: mind map editor (UI + JSON); recents on the left -->
                     <div class="adm-pane adm-hidden" data-admin-pane="workspace">
                         <div class="adm-pane-head adm-ws-head adm-ws-head--split">
                             <div>
-                                <h3>Graph workspace</h3>
-                                <p class="helper adm-ws-sub">Search the full inventory (catalog + members’ personal copies). User copies are <strong>view-only</strong>. Catalog &amp; site map can be saved from here.</p>
+                                <h3 class="adm-ws-pane-title">Workspace</h3>
+                                <p class="helper adm-ws-sub">
+                                    Edit the practice graph in <strong>UI</strong> or raw <strong>JSON</strong>. Use the toolbar below the chart for import/export. Browse or create graphs in
+                                    <button type="button" class="dsa-udash-text-btn adm-tab-jump adm-tab-jump--compact" data-admin-tab-jump="library">Graph library</button>
+                                    — recently opened items appear on the left (last <span id="adm-ws-recents-cap-num">8</span>). Member-owned copies stay <strong>view-only</strong>.
+                                </p>
                             </div>
                             <div class="adm-glib-segmented" role="tablist" aria-label="Workspace view">
                                 <button type="button" class="active" data-adm-dual="workspace" data-adm-mode="ui">UI</button>
@@ -544,55 +548,12 @@
                         </div>
                         <div data-adm-panel="workspace-ui">
                         <div class="adm-ws-layout">
-                            <aside class="adm-ws-sidebar adm-subcard" aria-label="Graph inventory">
-                                <div class="adm-ws-filters">
-                                    <label class="adm-ws-flabel" for="adm-ws-q">Search</label>
-                                    <input type="search" id="adm-ws-q" class="adm-ws-input" placeholder="Title, slug, email…" autocomplete="off" />
-                                    <label class="adm-ws-flabel" for="adm-ws-scope">Scope</label>
-                                    <select id="adm-ws-scope" class="adm-select-enhanced">
-                                        <option value="all">All (catalog + users)</option>
-                                        <option value="catalog">Catalog only</option>
-                                        <option value="user">User copies only</option>
-                                    </select>
-                                    <label class="adm-ws-flabel" for="adm-ws-vis">Catalog visibility</label>
-                                    <select id="adm-ws-vis" class="adm-select-enhanced">
-                                        <option value="all">Any</option>
-                                        <option value="public">Public</option>
-                                        <option value="unlisted">Unlisted</option>
-                                        <option value="private">Private</option>
-                                    </select>
-                                    <label class="adm-ws-flabel" for="adm-ws-user-kind">User graph kind</label>
-                                    <select id="adm-ws-user-kind" class="adm-select-enhanced">
-                                        <option value="all">Any</option>
-                                        <option value="created">Created</option>
-                                        <option value="downloaded">Downloaded</option>
-                                        <option value="shared">Shared</option>
-                                    </select>
-                                    <label class="adm-ws-flabel" for="adm-ws-sort">Sort</label>
-                                    <select id="adm-ws-sort" class="adm-select-enhanced">
-                                        <option value="updated_desc">Updated · newest</option>
-                                        <option value="updated_asc">Updated · oldest</option>
-                                        <option value="title_asc">Title A→Z</option>
-                                        <option value="title_desc">Title Z→A</option>
-                                        <option value="downloads_desc">Downloads</option>
-                                        <option value="created_desc">Created · newest</option>
-                                    </select>
-                                    <label class="adm-ws-flabel" for="adm-ws-date-field">Date filter on</label>
-                                    <select id="adm-ws-date-field" class="adm-select-enhanced">
-                                        <option value="updated">Updated</option>
-                                        <option value="created">Created</option>
-                                    </select>
-                                    <label class="adm-ws-flabel" for="adm-ws-date-from">From</label>
-                                    <input type="date" id="adm-ws-date-from" class="adm-ws-input" />
-                                    <label class="adm-ws-flabel" for="adm-ws-date-to">To</label>
-                                    <input type="date" id="adm-ws-date-to" class="adm-ws-input" />
-                                    <div class="adm-ws-filter-actions">
-                                        <button type="button" class="btn btn-sm" id="adm-ws-apply">Apply</button>
-                                        <button type="button" class="btn ghost btn-sm" id="adm-ws-reset-filters">Reset</button>
-                                    </div>
+                            <aside class="adm-ws-recents" aria-label="Recently opened graphs">
+                                <div class="adm-ws-recents-head">
+                                    <span class="adm-ws-recents-title">Recent</span>
+                                    <span class="adm-ws-recents-meta" id="adm-ws-recents-meta">Up to 8</span>
                                 </div>
-                                <div id="adm-ws-list" class="adm-ws-list" role="list"></div>
-                                <p id="adm-ws-list-meta" class="meta-line adm-ws-list-meta"></p>
+                                <div id="adm-ws-recents-list" class="adm-ws-recents-list" role="list"></div>
                             </aside>
                             <div class="adm-ws-main">
                                 <div id="adm-ws-context-banner" class="adm-ws-banner" hidden></div>
@@ -613,12 +574,10 @@
                                 <div class="adm-content-graph-wrap adm-ws-graph-wrap">
                                     <div class="dsa-graph-shell dsa-index-ref">
                                         <main class="page adm-content-graph-studio">
-                                            <section class="head">
-                                                <div class="head-text">
-                                                    <div class="eyebrow">Workspace</div>
-                                                    <h1>Graph studio</h1>
-                                                    <p>
-                                                        Pick a graph from the list or load the site map. Export / import JSON with the toolbar below.
+                                            <section class="head adm-ws-studio-head">
+                                                <div class="head-text adm-ws-studio-head-text">
+                                                    <p class="adm-ws-studio-lede">
+                                                        Layout tabs and zoom live here; load the site map or a saved graph from <strong>Recent</strong> or <strong>Graph library</strong>.
                                                     </p>
                                                 </div>
                                                 <nav
@@ -1036,7 +995,7 @@
     <script src="./auth/dsa-user-auth.js?v=3"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
     <script src="./script.js?v=31"></script>
-    <script src="./auth/account-admin-panel.js?v=23"></script>
+    <script src="./auth/account-admin-panel.js?v=24"></script>
     <script src="./auth/admin-site-page.js?v=10"></script>
 </body>
 </html>

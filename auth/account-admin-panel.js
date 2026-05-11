@@ -76,7 +76,10 @@
 
     /** Workspace: which graph is loaded in the studio */
     let wsContext = { mode: "idle" };
-    let wsInventoryCache = [];
+    /** Recently opened graphs in workspace (persisted) */
+    const WS_RECENTS_MAX = 8;
+    const WS_RECENTS_STORAGE_KEY = "dsaAdminWsRecentsV1";
+    let wsRecentsList = [];
     let wsSelectedRecordType = null;
     let wsSelectedCatalogId = null;
     let wsSelectedUserGraphId = null;
@@ -436,36 +439,6 @@
         }
         if (dt && dt.value) {
             p.set("dateTo", dt.value);
-        }
-        p.set("limit", "300");
-        return p.toString();
-    }
-
-    function buildWsInventoryQuery() {
-        const p = new URLSearchParams();
-        const qEl = document.getElementById("adm-ws-q");
-        const sc = document.getElementById("adm-ws-scope");
-        const vi = document.getElementById("adm-ws-vis");
-        const uk = document.getElementById("adm-ws-user-kind");
-        const so = document.getElementById("adm-ws-sort");
-        const df = document.getElementById("adm-ws-date-field");
-        const dfrom = document.getElementById("adm-ws-date-from");
-        const dto = document.getElementById("adm-ws-date-to");
-        if (qEl && qEl.value.trim()) {
-            p.set("q", qEl.value.trim());
-        }
-        p.set("scope", (sc && sc.value) || "all");
-        p.set("visibility", (vi && vi.value) || "all");
-        if (uk && uk.value) {
-            p.set("userKind", uk.value);
-        }
-        p.set("sort", (so && so.value) || "updated_desc");
-        p.set("dateField", (df && df.value) || "updated");
-        if (dfrom && dfrom.value) {
-            p.set("dateFrom", dfrom.value);
-        }
-        if (dto && dto.value) {
-            p.set("dateTo", dto.value);
         }
         p.set("limit", "300");
         return p.toString();
@@ -1362,99 +1335,124 @@
         setStatus("adm-ws-msg", msg, cls);
     }
 
-    function isWsRowSelected(it) {
-        if (!it || !it.id) {
-            return false;
+    function wsRecentDedupeKey(rec) {
+        if (!rec || !rec.recordType) {
+            return "";
         }
-        if (it.recordType === "catalog") {
-            return wsSelectedRecordType === "catalog" && wsSelectedCatalogId === it.id;
+        if (rec.recordType === "cms") {
+            return "cms";
         }
-        if (it.recordType === "user_graph") {
-            return wsSelectedRecordType === "user_graph" && wsSelectedUserGraphId === it.id;
+        return String(rec.recordType) + ":" + String(rec.id || "");
+    }
+
+    function isWsRecentSelected(rec) {
+        if (rec.recordType === "cms") {
+            return wsContext.mode === "cms";
+        }
+        if (rec.recordType === "catalog") {
+            return wsContext.mode === "catalog" && wsContext.catalogId === rec.id;
+        }
+        if (rec.recordType === "user_graph") {
+            return wsContext.mode === "user_graph" && wsContext.userGraphId === rec.id;
         }
         return false;
     }
 
-    function renderWsInventoryCards() {
-        const host = document.getElementById("adm-ws-list");
+    function pushWsRecent(entry) {
+        const rec = {
+            recordType: entry.recordType,
+            id: entry.id != null ? entry.id : undefined,
+            title: entry.title ? String(entry.title) : "Untitled",
+            ts: Date.now(),
+        };
+        const key = wsRecentDedupeKey(rec);
+        wsRecentsList = wsRecentsList.filter(function (x) {
+            return wsRecentDedupeKey(x) !== key;
+        });
+        wsRecentsList.unshift(rec);
+        while (wsRecentsList.length > WS_RECENTS_MAX) {
+            wsRecentsList.pop();
+        }
+        try {
+            localStorage.setItem(WS_RECENTS_STORAGE_KEY, JSON.stringify(wsRecentsList));
+        } catch (e) {
+            /* ignore */
+        }
+    }
+
+    function loadWsRecentsFromStorage() {
+        try {
+            const raw = localStorage.getItem(WS_RECENTS_STORAGE_KEY);
+            if (!raw) {
+                return;
+            }
+            const arr = JSON.parse(raw);
+            if (!Array.isArray(arr)) {
+                return;
+            }
+            wsRecentsList = arr
+                .filter(function (x) {
+                    return (
+                        x &&
+                        x.recordType &&
+                        (x.recordType === "cms" || (x.id != null && String(x.id).trim() !== ""))
+                    );
+                })
+                .slice(0, WS_RECENTS_MAX);
+        } catch (e) {
+            wsRecentsList = [];
+        }
+    }
+
+    function renderWsRecents() {
+        const host = document.getElementById("adm-ws-recents-list");
+        const capNum = document.getElementById("adm-ws-recents-cap-num");
+        const meta = document.getElementById("adm-ws-recents-meta");
+        if (capNum) {
+            capNum.textContent = String(WS_RECENTS_MAX);
+        }
+        if (meta) {
+            meta.textContent = "Up to " + WS_RECENTS_MAX;
+        }
         if (!host) {
             return;
         }
         host.innerHTML = "";
-        if (!wsInventoryCache.length) {
-            host.innerHTML = '<p class="adm-glib-empty">No graphs match these filters.</p>';
+        if (!wsRecentsList.length) {
+            host.innerHTML =
+                '<p class="adm-ws-recents-empty">Open a graph from Graph library or load the site map — it will appear here.</p>';
             return;
         }
-        wsInventoryCache.forEach(function (g) {
+        wsRecentsList.forEach(function (rec) {
             const btn = document.createElement("button");
             btn.type = "button";
-            const isUser = g.recordType === "user_graph";
-            btn.className =
-                "adm-glib-pick" +
-                (isWsRowSelected(g) ? " is-active" : "") +
-                (isUser ? " adm-glib-pick--user" : "");
+            btn.className = "adm-ws-recent-item" + (isWsRecentSelected(rec) ? " is-active" : "");
             btn.setAttribute("role", "listitem");
-            let meta = "";
-            if (isUser) {
-                meta =
-                    '<span class="adm-glib-pick-badge adm-glib-pick-badge--user">User</span>' +
-                    '<span>' +
-                    escapeHtml(String(g.kind || "")) +
-                    "</span>" +
-                    '<span>' +
-                    escapeHtml(String(g.ownerEmail || "")) +
-                    "</span>" +
-                    "<span>Updated " +
-                    escapeHtml(fmtTime(g.updatedAt)) +
-                    "</span>";
+            let badge = "";
+            if (rec.recordType === "cms") {
+                badge = '<span class="adm-ws-recent-badge adm-ws-recent-badge--cms">CMS</span>';
+            } else if (rec.recordType === "user_graph") {
+                badge = '<span class="adm-ws-recent-badge adm-ws-recent-badge--user">User</span>';
             } else {
-                const vis = escapeHtml(String(g.visibility || "public"));
-                const slug = escapeHtml(String(g.slug || ""));
-                const dl = g.downloadCount != null ? String(g.downloadCount) : "0";
-                meta =
-                    '<span class="adm-glib-pick-badge">Catalog</span><span class="' +
-                    admGlibVisClass(g.visibility) +
-                    '">' +
-                    vis +
-                    "</span><span>" +
-                    slug +
-                    '</span><span>↓ ' +
-                    escapeHtml(dl) +
-                    "</span><span>Updated " +
-                    escapeHtml(fmtTime(g.updatedAt)) +
-                    "</span>";
+                badge = '<span class="adm-ws-recent-badge adm-ws-recent-badge--cat">Catalog</span>';
             }
             btn.innerHTML =
-                '<div class="adm-glib-pick-title">' +
-                escapeHtml(String(g.title || "Untitled")) +
-                '</div><div class="adm-glib-pick-meta">' +
-                meta +
+                '<div class="adm-ws-recent-title">' +
+                escapeHtml(rec.title) +
+                '</div><div class="adm-ws-recent-meta">' +
+                badge +
                 "</div>";
             btn.addEventListener("click", function () {
-                void wsSelectInventoryItem(g.recordType, g.id);
+                if (rec.recordType === "cms") {
+                    void wsLoadCmsIntoViewport();
+                } else if (rec.recordType === "catalog") {
+                    void wsSelectInventoryItem("catalog", rec.id);
+                } else {
+                    void wsSelectInventoryItem("user_graph", rec.id);
+                }
             });
             host.appendChild(btn);
         });
-        const metaEl = document.getElementById("adm-ws-list-meta");
-        if (metaEl) {
-            metaEl.textContent = wsInventoryCache.length + " row(s)";
-        }
-    }
-
-    async function loadWsInventoryList() {
-        wsSetMsg("Loading inventory…", "");
-        admShowLoader("Loading workspace list…");
-        try {
-            const qs = buildWsInventoryQuery();
-            const j = await fetchJson(apiAdmin("graph-inventory") + "?" + qs);
-            wsInventoryCache = j.items || [];
-            renderWsInventoryCards();
-            wsSetMsg(wsInventoryCache.length + " graph(s) in this view.", "ok");
-        } catch (e) {
-            wsSetMsg(e.message || "Load failed", "err");
-        } finally {
-            admHideLoader();
-        }
     }
 
     function wsRefreshChrome() {
@@ -1495,6 +1493,7 @@
                 ban.innerHTML = line;
             }
         }
+        renderWsRecents();
     }
 
     async function wsLoadGraphFromInventory(recordType, id) {
@@ -1528,7 +1527,11 @@
             wsSelectedUserGraphId = id;
             wsSelectedCatalogId = null;
         }
-        renderWsInventoryCards();
+        pushWsRecent({
+            recordType: recordType === "catalog" ? "catalog" : "user_graph",
+            id: id,
+            title: j.graph.title || "",
+        });
         wsRefreshChrome();
     }
 
@@ -1537,20 +1540,6 @@
             return;
         }
         activeMainTab("workspace");
-        void loadWsInventoryList();
-        await new Promise(function (resolve) {
-            requestAnimationFrame(function () {
-                requestAnimationFrame(resolve);
-            });
-        });
-        const graphWrap = document.querySelector(".adm-ws-graph-wrap");
-        if (graphWrap) {
-            try {
-                graphWrap.scrollIntoView({ behavior: "smooth", block: "nearest" });
-            } catch (e) {
-                graphWrap.scrollIntoView();
-            }
-        }
         admShowLoader("Opening graph…");
         wsSetMsg("Loading…", "");
         try {
@@ -1559,6 +1548,14 @@
                 window.dispatchEvent(new Event("resize"));
             } catch (e) {
                 /* ignore */
+            }
+            const graphWrap = document.querySelector(".adm-ws-graph-wrap");
+            if (graphWrap) {
+                try {
+                    graphWrap.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                } catch (e) {
+                    graphWrap.scrollIntoView();
+                }
             }
             wsSetMsg("Graph loaded in the studio.", "ok");
         } catch (e) {
@@ -1607,7 +1604,7 @@
             wsSelectedRecordType = null;
             wsSelectedCatalogId = null;
             wsSelectedUserGraphId = null;
-            renderWsInventoryCards();
+            pushWsRecent({ recordType: "cms", title: "Site map (CMS)" });
             wsRefreshChrome();
             wsSetMsg("Loaded site map from Content (" + (d.draft && d.draft.payload ? "draft" : "live") + ").", "ok");
         } catch (e) {
@@ -1651,7 +1648,7 @@
                 body: JSON.stringify({ id: wsContext.catalogId, payload }),
             });
             wsSetMsg("Catalog mind map saved.", "ok");
-            await loadWsInventoryList();
+            renderWsRecents();
         } catch (e) {
             wsSetMsg(e.message || "Save failed", "err");
         } finally {
@@ -1703,45 +1700,12 @@
         if (!pane || pane.dataset.admWsBound === "1") {
             return;
         }
-        if (!document.getElementById("adm-ws-list")) {
+        if (!document.getElementById("adm-ws-recents-list")) {
             return;
         }
         pane.dataset.admWsBound = "1";
-        document.getElementById("adm-ws-apply") &&
-            document.getElementById("adm-ws-apply").addEventListener("click", function () {
-                void loadWsInventoryList();
-            });
-        document.getElementById("adm-ws-reset-filters") &&
-            document.getElementById("adm-ws-reset-filters").addEventListener("click", function () {
-                const ids = ["adm-ws-q", "adm-ws-date-from", "adm-ws-date-to"];
-                ids.forEach(function (id) {
-                    const el = document.getElementById(id);
-                    if (el) {
-                        el.value = "";
-                    }
-                });
-                const sc = document.getElementById("adm-ws-scope");
-                if (sc) {
-                    sc.value = "all";
-                }
-                const vi = document.getElementById("adm-ws-vis");
-                if (vi) {
-                    vi.value = "all";
-                }
-                const uk = document.getElementById("adm-ws-user-kind");
-                if (uk) {
-                    uk.value = "all";
-                }
-                const so = document.getElementById("adm-ws-sort");
-                if (so) {
-                    so.value = "updated_desc";
-                }
-                const df = document.getElementById("adm-ws-date-field");
-                if (df) {
-                    df.value = "updated";
-                }
-                void loadWsInventoryList();
-            });
+        loadWsRecentsFromStorage();
+        renderWsRecents();
         document.getElementById("adm-ws-open-cms") &&
             document.getElementById("adm-ws-open-cms").addEventListener("click", function () {
                 void wsLoadCmsIntoViewport();
@@ -3268,7 +3232,7 @@
                     if (cl) cl.click();
                 }
                 if (name === "workspace") {
-                    void loadWsInventoryList();
+                    void renderWsRecents();
                 }
                 if (name === "library") {
                     void loadGraphInventoryList();
@@ -3285,7 +3249,7 @@
                 }
                 activeMainTab(name);
                 if (name === "workspace") {
-                    void loadWsInventoryList();
+                    void renderWsRecents();
                 }
                 if (name === "library") {
                     void loadGraphInventoryList();
@@ -3316,7 +3280,7 @@
                 const cl = document.getElementById("cms-load");
                 if (cl) cl.click();
             } else if (name === "workspace") {
-                void loadWsInventoryList();
+                void renderWsRecents();
             } else if (name === "library") {
                 void loadGraphInventoryList();
             } else if (name === "system") loadSystemUi();

@@ -412,10 +412,51 @@
     function releaseMemberHubSiteFeaturesPendingGate() {
         try {
             document.documentElement.classList.remove("dsa-udash-sf-pending");
+            document.documentElement.classList.remove("dsa-udash-reload-handoff");
         } catch (e) {}
+        ["dsa-user-dashboard-main", "udash-sidebar-backdrop", "udash-glib-confirm", "udash-toast"].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (!el) {
+                return;
+            }
+            el.style.opacity = "";
+            el.style.visibility = "";
+            el.style.pointerEvents = "";
+        });
+    }
+
+    function engageMemberHubReloadHandoff() {
+        try {
+            document.documentElement.classList.add("dsa-udash-reload-handoff");
+        } catch (e) {}
+        var root = document.getElementById("dsa-user-dashboard-main");
+        if (root) {
+            root.style.opacity = "0";
+            root.style.visibility = "hidden";
+            root.style.pointerEvents = "none";
+        }
+        var backdrop = document.getElementById("udash-sidebar-backdrop");
+        if (backdrop) {
+            backdrop.style.opacity = "0";
+            backdrop.style.visibility = "hidden";
+            backdrop.style.pointerEvents = "none";
+        }
+        var modal = document.getElementById("udash-glib-confirm");
+        if (modal) {
+            modal.style.opacity = "0";
+            modal.style.visibility = "hidden";
+            modal.style.pointerEvents = "none";
+        }
+        var toast = document.getElementById("udash-toast");
+        if (toast) {
+            toast.style.opacity = "0";
+            toast.style.visibility = "hidden";
+            toast.style.pointerEvents = "none";
+        }
     }
 
     function armMemberHubSiteFeaturesPendingGate() {
+        engageMemberHubReloadHandoff();
         try {
             document.documentElement.classList.add("dsa-udash-sf-pending");
         } catch (e) {}

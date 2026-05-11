@@ -11,6 +11,19 @@ html.dsa-udash-sf-pending #dsa-udash-notif-bell {
     visibility: hidden !important;
 }
 
+/*
+ * During a rapid reload, some browsers can keep the old painted page visible for a moment
+ * while the next navigation starts. Blank the outgoing shell so stale gated items do not flash.
+ */
+html.dsa-udash-reload-handoff #dsa-user-dashboard-main,
+html.dsa-udash-reload-handoff #udash-sidebar-backdrop,
+html.dsa-udash-reload-handoff #udash-glib-confirm,
+html.dsa-udash-reload-handoff #udash-toast {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
 /* Map tools panel — same chrome as index main.page (no graph card here) */
 .dsa-udash-graph-studio-wrap {
     width: 100%;

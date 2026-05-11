@@ -631,6 +631,11 @@
     align-items: center;
 }
 
+/* Site admin workspace: no map hint next to zoom (recents + studio context carry affordances). */
+#admin-dsa-map-toolbar-host .dsa-graph-map-toolbar-hint {
+    display: none !important;
+}
+
 /* Hint + leading dot, immediately left of zoom (margin-left: auto pulls hint+zoom right). */
 :is(body, .dsa-graph-shell).dsa-index-ref :is(#dsa-map-toolbar-host, #admin-dsa-map-toolbar-host, #udash-dsa-map-toolbar-host) .dsa-graph-map-toolbar-hint {
     display: inline-flex;

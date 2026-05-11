@@ -32,7 +32,7 @@
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Practice account — DSA Pattern Practice</title>
-    <link rel="stylesheet" href="./auth/portal-shell.css?v=9" />
+    <link rel="stylesheet" href="./auth/portal-shell.css?v=16" />
 </head>
 <body>
     <main class="dsa-portal-page">
@@ -69,13 +69,13 @@
                 <form id="practice-step-form">
                     <div class="field">
                         <input id="practice-email" type="email" placeholder=" " required autocomplete="email" />
-                        <label for="practice-email">Email address</label>
+                        <label for="practice-email">Email address <span class="adm-req" aria-hidden="true">*</span></label>
                         <button type="submit" class="icon" aria-label="Continue">→</button>
                     </div>
 
                     <div class="field" id="passField" style="display:none">
                         <input id="practice-password" type="password" placeholder=" " minlength="8" autocomplete="current-password" />
-                        <label for="practice-password">Password</label>
+                        <label for="practice-password">Password <span class="adm-req" aria-hidden="true">*</span></label>
                         <button type="button" class="icon" id="passToggle" aria-label="Toggle visibility">•••</button>
                     </div>
 

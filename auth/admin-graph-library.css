@@ -821,7 +821,9 @@ html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-glib-badge--public {
 
 .dsa-portal-page--admin .adm-glib-toolbar--with-title .adm-glib-h1 {
     margin: 0 0 4px;
-    font-size: 20px;
+    font-size: clamp(1.45rem, 2.2vw, 1.85rem);
+    letter-spacing: -0.02em;
+    line-height: 1.15;
 }
 
 .dsa-portal-page--admin .adm-glib-toolbar--with-title .adm-glib-lede {
@@ -831,6 +833,12 @@ html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-glib-badge--public {
 .dsa-portal-page--admin .adm-glib-segmented--masthead {
     flex-shrink: 0;
     align-self: flex-start;
+}
+
+.dsa-portal-page--admin .adm-glib-toolbar--with-title > .adm-section-reload-btn {
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 2px;
 }
 
 /* Idle catalog editor */

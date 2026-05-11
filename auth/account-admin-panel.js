@@ -1832,10 +1832,6 @@
         }
         root.dataset.admGlibBound = "1";
 
-        document.getElementById("adm-glib-reload") &&
-            document.getElementById("adm-glib-reload").addEventListener("click", function () {
-                void loadGraphInventoryList();
-            });
         document.getElementById("adm-glib-filter-apply") &&
             document.getElementById("adm-glib-filter-apply").addEventListener("click", function () {
                 void loadGraphInventoryList();
@@ -2226,7 +2222,7 @@
 
         const f1 = document.createElement("div");
         f1.className = "adm-field";
-        f1.innerHTML = "<label>Key</label>";
+        f1.innerHTML = '<label>Key <span class="adm-req" aria-hidden="true">*</span></label>';
         const inpK = document.createElement("input");
         inpK.type = "text";
         inpK.className = "adm-kv-k";
@@ -3286,10 +3282,11 @@
             } else if (name === "system") loadSystemUi();
         }
 
-        const refreshBtn = document.getElementById("adm-refresh-all");
-        if (refreshBtn) {
-            refreshBtn.addEventListener("click", refreshCurrentAdminSection);
-        }
+        document.querySelectorAll(".adm-refresh-trigger").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                void refreshCurrentAdminSection();
+            });
+        });
 
         const dashCopy = document.getElementById("adm-dash-json-copy");
         if (dashCopy) dashCopy.addEventListener("click", function () {

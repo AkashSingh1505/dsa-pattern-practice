@@ -33,14 +33,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev" />
     <title>Site admin — DSA Pattern Practice</title>
-    <link rel="stylesheet" href="./auth/portal-shell.css?v=15" />
+    <link rel="stylesheet" href="./auth/portal-shell.css?v=16" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css?v=14" />
-    <link rel="stylesheet" href="./dsa-index-shell.css?v=19" />
-    <link rel="stylesheet" href="./auth/admin-graph-library.css?v=4" />
-    <link rel="stylesheet" href="./auth/admin-workspace.css?v=3" />
+    <link rel="stylesheet" href="./dsa-index-shell.css?v=20" />
+    <link rel="stylesheet" href="./auth/admin-graph-library.css?v=5" />
+    <link rel="stylesheet" href="./auth/admin-workspace.css?v=4" />
     <link rel="stylesheet" href="./auth/admin-loader.css?v=1" />
 </head>
 <body class="dsa-admin-body">
@@ -165,14 +165,20 @@
 
                 <div id="cms-auth-pane-password">
                     <form id="cms-form-password" class="cms-form" method="POST" autocomplete="on">
-                        <input type="password" name="password" placeholder="Site password" required />
+                        <div class="adm-field">
+                            <label for="cms-password-input">Site password <span class="adm-req" aria-hidden="true">*</span></label>
+                            <input id="cms-password-input" type="password" name="password" placeholder="Enter site password" required autocomplete="current-password" />
+                        </div>
                         <input type="hidden" name="return" id="cms-return-password" value="" />
                         <button class="btn" type="submit">Continue</button>
                     </form>
                 </div>
                 <div id="cms-auth-pane-totp" hidden>
                     <form id="cms-form-totp" class="cms-form" method="POST">
-                        <input type="text" name="code" inputmode="numeric" pattern="[0-9]*" maxlength="12" placeholder="6-digit code" required />
+                        <div class="adm-field">
+                            <label for="cms-totp-input">Authenticator code <span class="adm-req" aria-hidden="true">*</span></label>
+                            <input id="cms-totp-input" type="text" name="code" inputmode="numeric" pattern="[0-9]*" maxlength="12" placeholder="6-digit code" required autocomplete="one-time-code" />
+                        </div>
                         <input type="hidden" name="return" id="cms-return-totp" value="" />
                         <button class="btn" type="submit">Continue</button>
                     </form>
@@ -182,30 +188,25 @@
 
             <section id="cms-editor-section" hidden>
                 <div class="adm-dashboard">
-                    <div class="adm-section-reload-bar" role="toolbar" aria-label="Current section">
-                        <button
-                            type="button"
-                            class="adm-section-reload-btn"
-                            id="adm-refresh-all"
-                            title="Reload this section (same as the section’s own Reload where available)"
-                            aria-label="Reload current section"
-                        >
-                            <svg class="adm-section-reload-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M23 4v6h-6" />
-                                <path d="M1 20v-6h6" />
-                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-                            </svg>
-                            <span>Reload section</span>
-                        </button>
-                    </div>
-
                     <!-- Dashboard -->
                     <div class="adm-pane" data-admin-pane="dashboard">
                         <div class="adm-pane-head">
-                            <h3>Overview</h3>
-                            <div class="adm-seg" data-adm-dual-wrap="dashboard">
-                                <button type="button" class="active" data-adm-dual="dashboard" data-adm-mode="ui">UI</button>
-                                <button type="button" data-adm-dual="dashboard" data-adm-mode="json">JSON</button>
+                            <div class="adm-pane-head-main">
+                                <h3>Overview</h3>
+                            </div>
+                            <div class="adm-pane-head-controls">
+                                <button type="button" class="adm-section-reload-btn adm-refresh-trigger" title="Reload current section" aria-label="Reload current section">
+                                    <svg class="adm-section-reload-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M23 4v6h-6" />
+                                        <path d="M1 20v-6h6" />
+                                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                                    </svg>
+                                    <span>Reload</span>
+                                </button>
+                                <div class="adm-seg" data-adm-dual-wrap="dashboard">
+                                    <button type="button" class="active" data-adm-dual="dashboard" data-adm-mode="ui">UI</button>
+                                    <button type="button" data-adm-dual="dashboard" data-adm-mode="json">JSON</button>
+                                </div>
                             </div>
                         </div>
                         <div data-adm-panel="dashboard-ui">
@@ -243,10 +244,22 @@
                     <!-- Site settings (app_kv) -->
                     <div class="adm-pane adm-hidden" data-admin-pane="site">
                         <div class="adm-pane-head">
-                            <h3>Site settings</h3>
-                            <div class="adm-seg" data-adm-dual-wrap="site">
-                                <button type="button" class="active" data-adm-dual="site" data-adm-mode="ui">UI</button>
-                                <button type="button" data-adm-dual="site" data-adm-mode="json">JSON</button>
+                            <div class="adm-pane-head-main">
+                                <h3>Site settings</h3>
+                            </div>
+                            <div class="adm-pane-head-controls">
+                                <button type="button" class="adm-section-reload-btn adm-refresh-trigger" title="Reload current section" aria-label="Reload current section">
+                                    <svg class="adm-section-reload-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M23 4v6h-6" />
+                                        <path d="M1 20v-6h6" />
+                                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                                    </svg>
+                                    <span>Reload</span>
+                                </button>
+                                <div class="adm-seg" data-adm-dual-wrap="site">
+                                    <button type="button" class="active" data-adm-dual="site" data-adm-mode="ui">UI</button>
+                                    <button type="button" data-adm-dual="site" data-adm-mode="json">JSON</button>
+                                </div>
                             </div>
                         </div>
                         <div data-adm-panel="site-ui">
@@ -286,10 +299,22 @@
                     <!-- Users -->
                     <div class="adm-pane adm-hidden" data-admin-pane="users">
                         <div class="adm-pane-head">
-                            <h3>User settings</h3>
-                            <div class="adm-seg" data-adm-dual-wrap="users">
-                                <button type="button" class="active" data-adm-dual="users" data-adm-mode="ui">UI</button>
-                                <button type="button" data-adm-dual="users" data-adm-mode="json">JSON</button>
+                            <div class="adm-pane-head-main">
+                                <h3>User settings</h3>
+                            </div>
+                            <div class="adm-pane-head-controls">
+                                <button type="button" class="adm-section-reload-btn adm-refresh-trigger" title="Reload current section" aria-label="Reload current section">
+                                    <svg class="adm-section-reload-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M23 4v6h-6" />
+                                        <path d="M1 20v-6h6" />
+                                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                                    </svg>
+                                    <span>Reload</span>
+                                </button>
+                                <div class="adm-seg" data-adm-dual-wrap="users">
+                                    <button type="button" class="active" data-adm-dual="users" data-adm-mode="ui">UI</button>
+                                    <button type="button" data-adm-dual="users" data-adm-mode="json">JSON</button>
+                                </div>
                             </div>
                         </div>
                         <div data-adm-panel="users-ui">
@@ -493,10 +518,10 @@
 
                     <!-- Content: live site mind map (JSON + publish). Visual editing → Workspace. -->
                     <div class="adm-pane adm-hidden" data-admin-pane="content">
-                        <div class="adm-pane-head">
-                            <div>
+                        <div class="adm-pane-head adm-pane-head--stack">
+                            <div class="adm-pane-head-main">
                                 <h3>Content — site map (<code>dsa</code>)</h3>
-                                <p class="helper" style="margin:6px 0 0;max-width:62ch">
+                                <p class="helper adm-pane-head-lede">
                                     Edit raw JSON here, then publish to the public practice page. Open the
                                     <button type="button" class="adm-tab-jump adm-tab-jump--ws" data-admin-tab-jump="workspace">
                                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -510,6 +535,16 @@
                                     for the visual studio (preview, tabs, zoom).
                                 </p>
                             </div>
+                            <div class="adm-pane-head-controls">
+                                <button type="button" class="adm-section-reload-btn adm-refresh-trigger" title="Reload current section" aria-label="Reload current section">
+                                    <svg class="adm-section-reload-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M23 4v6h-6" />
+                                        <path d="M1 20v-6h6" />
+                                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                                    </svg>
+                                    <span>Reload</span>
+                                </button>
+                            </div>
                         </div>
                         <div class="cms-toolbar" style="margin-top:8px">
                             <label for="cms-key">Dataset</label>
@@ -518,7 +553,7 @@
                             </select>
                         </div>
                         <div class="adm-content-summary" id="adm-content-summary"></div>
-                        <label for="cms-editor" class="adm-inline-label" style="display:block;margin-top:10px">Mind map JSON</label>
+                        <label for="cms-editor" class="adm-inline-label" style="display:block;margin-top:10px">Mind map JSON <span class="adm-req" aria-hidden="true">*</span></label>
                         <textarea id="cms-editor" class="cms-editor adm-json-input" spellcheck="false" rows="22" aria-label="Mind map JSON"></textarea>
                         <div class="cms-actions" style="margin-top:10px">
                             <button id="cms-json-format" type="button" class="btn ghost">Format JSON</button>
@@ -530,31 +565,39 @@
                         <p id="cms-status" class="status" style="margin-top:12px"></p>
                     </div>
 
-                    <!-- Workspace: mind map editor (UI + JSON); recents on the left -->
+                    <!-- Workspace: mind map editor (UI + JSON); recents in compact strip -->
                     <div class="adm-pane adm-hidden" data-admin-pane="workspace">
                         <div class="adm-pane-head adm-ws-head adm-ws-head--split">
-                            <div>
+                            <div class="adm-pane-head-main">
                                 <h3 class="adm-ws-pane-title">Workspace</h3>
                                 <p class="helper adm-ws-sub">
                                     Edit the practice graph in <strong>UI</strong> or raw <strong>JSON</strong>. Use the toolbar below the chart for import/export. Browse or create graphs in
                                     <button type="button" class="dsa-udash-text-btn adm-tab-jump adm-tab-jump--compact" data-admin-tab-jump="library">Graph library</button>
-                                    — recently opened items appear on the left (last <span id="adm-ws-recents-cap-num">8</span>). Member-owned copies stay <strong>view-only</strong>.
+                                    — recently opened graphs appear in the strip below (last <span id="adm-ws-recents-cap-num">8</span>). Member-owned copies stay <strong>view-only</strong>.
                                 </p>
                             </div>
-                            <div class="adm-glib-segmented" role="tablist" aria-label="Workspace view">
-                                <button type="button" class="active" data-adm-dual="workspace" data-adm-mode="ui">UI</button>
-                                <button type="button" data-adm-dual="workspace" data-adm-mode="json">JSON</button>
+                            <div class="adm-pane-head-controls">
+                                <button type="button" class="adm-section-reload-btn adm-refresh-trigger" title="Reload current section" aria-label="Reload current section">
+                                    <svg class="adm-section-reload-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M23 4v6h-6" />
+                                        <path d="M1 20v-6h6" />
+                                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                                    </svg>
+                                    <span>Reload</span>
+                                </button>
+                                <div class="adm-glib-segmented" role="tablist" aria-label="Workspace view">
+                                    <button type="button" class="active" data-adm-dual="workspace" data-adm-mode="ui">UI</button>
+                                    <button type="button" data-adm-dual="workspace" data-adm-mode="json">JSON</button>
+                                </div>
                             </div>
                         </div>
                         <div data-adm-panel="workspace-ui">
-                        <div class="adm-ws-layout">
-                            <aside class="adm-ws-recents" aria-label="Recently opened graphs">
-                                <div class="adm-ws-recents-head">
-                                    <span class="adm-ws-recents-title">Recent</span>
-                                    <span class="adm-ws-recents-meta" id="adm-ws-recents-meta">Up to 8</span>
-                                </div>
-                                <div id="adm-ws-recents-list" class="adm-ws-recents-list" role="list"></div>
-                            </aside>
+                        <div class="adm-ws-single-col">
+                            <div class="adm-ws-recents-bar" aria-label="Recently opened graphs">
+                                <span class="adm-ws-recents-bar-label">Recent</span>
+                                <span class="adm-ws-recents-meta" id="adm-ws-recents-meta">Up to 8</span>
+                                <div id="adm-ws-recents-list" class="adm-ws-recents-inline" role="list"></div>
+                            </div>
                             <div class="adm-ws-main">
                                 <div id="adm-ws-context-banner" class="adm-ws-banner" hidden></div>
                                 <div class="adm-ws-actions-bar adm-toolbar-row">
@@ -620,10 +663,6 @@
                                                         <div id="admin-dsa-toolbar-expand-slot" class="dsa-toolbar-expand-slot"></div>
                                                     </div>
                                                     <div class="tools-right">
-                                                        <span class="hint dsa-graph-map-toolbar-hint">
-                                                            <span class="dot" aria-hidden="true"></span>
-                                                            <span id="admin-dsa-map-toolbar-inline-hint" class="dsa-graph-map-toolbar-hint-text"></span>
-                                                        </span>
                                                         <div id="admin-dsa-toolbar-zoom-host" class="dsa-toolbar-zoom-host"></div>
                                                     </div>
                                                 </div>
@@ -644,7 +683,7 @@
                             <p class="helper adm-ws-json-lede" style="margin-top:0">
                                 Raw mind-map array (same shape as Content → <code>dsa</code>). <strong>Apply to graph</strong> updates the studio; use UI mode to edit visually.
                             </p>
-                            <label for="adm-ws-json-editor" class="adm-inline-label" style="display:block;margin-top:10px">Graph JSON</label>
+                            <label for="adm-ws-json-editor" class="adm-inline-label" style="display:block;margin-top:10px">Graph JSON <span class="adm-req" aria-hidden="true">*</span></label>
                             <textarea id="adm-ws-json-editor" class="cms-editor adm-json-input" spellcheck="false" rows="26" aria-label="Graph JSON"></textarea>
                             <div class="adm-toolbar-row" style="margin-top:10px">
                                 <button type="button" class="btn btn-sm" id="adm-ws-json-apply">Apply to graph</button>
@@ -679,16 +718,15 @@
                                     <button type="button" class="active" data-adm-dual="library" data-adm-mode="ui">UI</button>
                                     <button type="button" data-adm-dual="library" data-adm-mode="json">JSON</button>
                                 </div>
+                                <button type="button" class="adm-section-reload-btn adm-refresh-trigger" id="adm-glib-reload" title="Reload list" aria-label="Reload graph library">
+                                    <svg class="adm-section-reload-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M23 4v6h-6" />
+                                        <path d="M1 20v-6h6" />
+                                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                                    </svg>
+                                    <span>Reload</span>
+                                </button>
                                 <div class="adm-glib-tool-group">
-                                    <button type="button" class="adm-glib-btn adm-glib-btn--primary" id="adm-glib-reload" title="Reload list">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                            <polyline points="23 4 23 10 17 10"></polyline>
-                                            <polyline points="1 20 1 14 7 14"></polyline>
-                                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                                        </svg>
-                                        Reload
-                                    </button>
-                                    <span class="adm-glib-toolbar-divider" aria-hidden="true"></span>
                                     <button type="button" class="adm-glib-btn" id="adm-glib-new">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                             <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -834,7 +872,7 @@
                                         <input type="hidden" id="adm-glib-edit-id" value="" autocomplete="off" />
                                         <div class="adm-form-grid cols-2">
                                             <div class="adm-field adm-field--span-2">
-                                                <label for="adm-glib-title">Title</label>
+                                                <label for="adm-glib-title">Title <span class="adm-req" aria-hidden="true">*</span></label>
                                                 <input id="adm-glib-title" type="text" placeholder="Graph name (becomes the root topic)" maxlength="200" autocomplete="off" />
                                             </div>
                                             <div class="adm-field">
@@ -896,7 +934,7 @@
                                 Inventory export from <code>GET /api/admin/graph-inventory</code>. Mind map body for editing lives in the JSON tab below (or use Workspace).
                             </p>
                             <textarea id="adm-glib-json" class="adm-json-input adm-glib-json-ta" spellcheck="false" readonly></textarea>
-                            <label for="adm-glib-payload" class="adm-inline-label" style="display:block;margin-top:14px">Mind map body (array of roots)</label>
+                            <label for="adm-glib-payload" class="adm-inline-label" style="display:block;margin-top:14px">Mind map body (array of roots) <span class="adm-req" aria-hidden="true">*</span></label>
                             <textarea id="adm-glib-payload" class="adm-json-input adm-glib-payload-ta" spellcheck="false" rows="18" aria-describedby="adm-glib-payload-hint"></textarea>
                             <p id="adm-glib-payload-hint" class="adm-field-hint">Synced with the selected catalog row. <strong>Format JSON</strong> is in the toolbar on the UI view.</p>
                             <div class="adm-toolbar-row" style="margin-top:10px">
@@ -909,10 +947,22 @@
                     <!-- System -->
                     <div class="adm-pane adm-hidden" data-admin-pane="system">
                         <div class="adm-pane-head">
-                            <h3>System</h3>
-                            <div class="adm-seg" data-adm-dual-wrap="system">
-                                <button type="button" class="active" data-adm-dual="system" data-adm-mode="ui">UI</button>
-                                <button type="button" data-adm-dual="system" data-adm-mode="json">JSON</button>
+                            <div class="adm-pane-head-main">
+                                <h3>System</h3>
+                            </div>
+                            <div class="adm-pane-head-controls">
+                                <button type="button" class="adm-section-reload-btn adm-refresh-trigger" title="Reload current section" aria-label="Reload current section">
+                                    <svg class="adm-section-reload-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M23 4v6h-6" />
+                                        <path d="M1 20v-6h6" />
+                                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                                    </svg>
+                                    <span>Reload</span>
+                                </button>
+                                <div class="adm-seg" data-adm-dual-wrap="system">
+                                    <button type="button" class="active" data-adm-dual="system" data-adm-mode="ui">UI</button>
+                                    <button type="button" data-adm-dual="system" data-adm-mode="json">JSON</button>
+                                </div>
                             </div>
                         </div>
                         <div data-adm-panel="system-ui">
@@ -995,7 +1045,7 @@
     <script src="./auth/dsa-user-auth.js?v=3"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
     <script src="./script.js?v=31"></script>
-    <script src="./auth/account-admin-panel.js?v=24"></script>
+    <script src="./auth/account-admin-panel.js?v=25"></script>
     <script src="./auth/admin-site-page.js?v=10"></script>
 </body>
 </html>

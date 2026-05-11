@@ -132,6 +132,17 @@
             line-height: 1.45;
             margin: 0 0 16px;
         }
+        .adm-req {
+            color: #dc2626;
+            font-weight: 700;
+            margin-left: 2px;
+            text-transform: none;
+            letter-spacing: normal;
+            font-style: normal;
+        }
+        html[data-admin-theme="dark"] .adm-req {
+            color: #f87171;
+        }
         .field {
             position: relative;
             margin-bottom: 10px;
@@ -221,6 +232,15 @@
             border: 1px solid var(--line);
             height: 42px;
         }
+        .cta:disabled,
+        .btn:disabled,
+        button.cta:disabled,
+        button.btn:disabled {
+            opacity: 0.48;
+            cursor: not-allowed;
+            box-shadow: none;
+            filter: grayscale(0.15);
+        }
         .steps {
             display: flex;
             gap: 6px;
@@ -308,6 +328,13 @@
         /* #portal-panel-cms: visible on standalone admin.html (do not hide globally). */
         .cms-form { display: grid; gap: 10px; margin-top: 12px; }
         .cms-form input { padding: 14px; }
+        #cms-auth-panel .cms-form .adm-field label {
+            text-transform: none;
+            letter-spacing: normal;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ink);
+        }
         .cms-tabs { display: flex; gap: 8px; margin-top: 8px; }
         .cms-tabs button {
             border: 1px solid var(--line);
@@ -533,6 +560,17 @@
             background: rgba(255, 255, 255, 0.95);
             border-color: rgba(15, 23, 32, 0.18);
         }
+        .adm-section-reload-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+        .dsa-admin-body .admin-session-pill:disabled,
+        .dsa-admin-body .admin-session-pill[disabled],
+        .dsa-admin-body .adm-glib-btn:disabled,
+        .dsa-admin-body .adm-glib-btn[disabled] {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
         .adm-section-reload-ico {
             flex-shrink: 0;
             opacity: 0.85;
@@ -615,15 +653,44 @@
         .adm-pane-head {
             display: flex;
             flex-wrap: wrap;
-            align-items: center;
+            align-items: flex-start;
             justify-content: space-between;
+            gap: 12px 16px;
+            margin-bottom: 14px;
+        }
+        .adm-pane-head-main {
+            flex: 1 1 280px;
+            min-width: min(100%, 560px);
+        }
+        .adm-pane-head-main h3 {
+            margin: 0;
+        }
+        .adm-pane-head-controls {
+            display: inline-flex;
+            align-items: center;
             gap: 10px;
-            margin-bottom: 12px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+        .adm-pane-head--stack .adm-pane-head-controls {
+            align-self: flex-start;
+            padding-top: 2px;
+        }
+        .adm-pane-head-lede {
+            margin: 8px 0 0;
+            max-width: min(72ch, 100%);
         }
         .adm-pane-head h3 {
             margin: 0;
-            font-size: 15px;
+            font-size: clamp(1.35rem, 2.4vw, 1.75rem);
             font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.15;
+        }
+        .adm-pane-head-controls .adm-section-reload-btn {
+            padding: 7px 12px;
+            font-size: 12px;
+            border-radius: 9px;
         }
         .adm-seg {
             display: inline-flex;
@@ -1140,6 +1207,7 @@
             font-size: 12px;
             border-radius: 10px;
             height: auto;
+            min-height: 36px;
             width: auto;
             min-width: 0;
         }

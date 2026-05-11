@@ -32,6 +32,7 @@ function formatProfile(row) {
         timezone: row.timezone || "",
         locale: row.locale || "",
         avatar_url: row.avatar_url || "",
+        avatar_data_url: row.avatar_data_url || "",
         prefs_json: row.prefs_json || "",
         gender: row.gender || "",
         location: row.location || "",
@@ -105,6 +106,7 @@ const PROFILE_STRING_FIELDS = [
     "timezone",
     "locale",
     "avatar_url",
+    "avatar_data_url",
     "prefs_json",
     "social_json",
     "gender",
@@ -161,6 +163,7 @@ export async function onRequestPatch(context) {
         user_id: uid,
         display_name: prev && prev.display_name != null ? prev.display_name : null,
         avatar_url: prev && prev.avatar_url != null ? prev.avatar_url : null,
+        avatar_data_url: prev && prev.avatar_data_url != null ? prev.avatar_data_url : null,
         locale: prev && prev.locale != null ? prev.locale : null,
         timezone: prev && prev.timezone != null ? prev.timezone : null,
         prefs_json: prev && prev.prefs_json != null ? prev.prefs_json : null,
@@ -216,11 +219,12 @@ export async function onRequestPatch(context) {
     try {
         await db
             .prepare(
-                `INSERT INTO user_profiles (user_id, display_name, avatar_url, locale, timezone, prefs_json, bio, social_json, gender, location, birthday, experience_json, updated_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                `INSERT INTO user_profiles (user_id, display_name, avatar_url, avatar_data_url, locale, timezone, prefs_json, bio, social_json, gender, location, birthday, experience_json, updated_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                  ON CONFLICT(user_id) DO UPDATE SET
                    display_name = excluded.display_name,
                    avatar_url = excluded.avatar_url,
+                   avatar_data_url = excluded.avatar_data_url,
                    locale = excluded.locale,
                    timezone = excluded.timezone,
                    prefs_json = excluded.prefs_json,
@@ -236,6 +240,7 @@ export async function onRequestPatch(context) {
                 row.user_id,
                 row.display_name,
                 row.avatar_url,
+                row.avatar_data_url,
                 row.locale,
                 row.timezone,
                 row.prefs_json,

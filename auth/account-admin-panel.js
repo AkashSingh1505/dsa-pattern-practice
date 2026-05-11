@@ -2449,27 +2449,6 @@
         return { cell, input: inp };
     }
 
-    function syncSiteFeatureRowCoupling(featureId) {
-        const en = document.getElementById("adm-sf-en-" + featureId);
-        const vis = document.getElementById("adm-sf-vis-" + featureId);
-        if (!en || !vis) {
-            return;
-        }
-        const visCell = vis.closest(".adm-sf-switch-cell");
-        if (!en.checked) {
-            vis.checked = false;
-            vis.disabled = true;
-            if (visCell) {
-                visCell.classList.add("is-slaved-off");
-            }
-        } else {
-            vis.disabled = false;
-            if (visCell) {
-                visCell.classList.remove("is-slaved-off");
-            }
-        }
-    }
-
     function setSiteFeatureFlagButtonsDisabled(disabled) {
         const saveBtn = document.getElementById("adm-site-features-save");
         const relBtn = document.getElementById("adm-site-features-reload");
@@ -2569,14 +2548,10 @@
                     "Visibility: " + meta.title,
                     "vis"
                 );
-                enPart.input.addEventListener("change", function () {
-                    syncSiteFeatureRowCoupling(meta.id);
-                });
                 row.appendChild(title);
                 row.appendChild(enPart.cell);
                 row.appendChild(visPart.cell);
                 host.appendChild(row);
-                syncSiteFeatureRowCoupling(meta.id);
             });
             setStatus("adm-site-features-msg", "Loaded from server. Save writes to app_kv; Reload discards unsaved edits.", "ok");
         } finally {
@@ -2596,7 +2571,7 @@
             const en = row && row.querySelector("input.adm-sf-switch-en");
             const vis = row && row.querySelector("input.adm-sf-switch-vis");
             const enabled = !!(en && en.checked);
-            const visible = !!(enabled && vis && vis.checked);
+            const visible = !!(vis && vis.checked);
             obj[meta.id] = {
                 enabled,
                 visible,

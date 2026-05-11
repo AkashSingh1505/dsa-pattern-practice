@@ -38,7 +38,7 @@
     <link rel="stylesheet" href="./auth/portal-shell.css?v=9" />
     <link rel="stylesheet" href="./styles.css?v=14" />
     <link rel="stylesheet" href="./dsa-index-shell.css?v=20" />
-    <link rel="stylesheet" href="./auth/user-dashboard.css?v=10" />
+    <link rel="stylesheet" href="./auth/user-dashboard.css?v=11" />
 </head>
 <body class="dsa-udash-body">
     <div class="dsa-udash-app" id="dsa-user-dashboard-main">
@@ -569,12 +569,17 @@
                                 <img id="udash-profile-avatar-preview" class="dsa-udash-profile-avatar-img" src="" alt="" width="96" height="96" hidden />
                                 <div id="udash-profile-avatar-fallback" class="dsa-udash-profile-avatar-fallback" aria-hidden="true"></div>
                             </div>
+                            <div class="dsa-udash-profile-avatar-actions">
+                                <input type="file" id="udash-avatar-file" accept="image/*" hidden />
+                                <button type="button" class="dsa-udash-btn" id="udash-avatar-pick">Choose photo…</button>
+                                <button type="button" class="dsa-udash-btn dsa-udash-btn--ghost" id="udash-avatar-clear">Use initial only</button>
+                            </div>
                             <p class="dsa-udash-profile-account-email"><span class="dsa-udash-profile-email-label">Signed in as</span> <strong id="dsa-udash-profile-email">—</strong></p>
                             <p class="dsa-udash-profile-plan-line" id="dsa-udash-profile-plan-summary">—</p>
                             <div class="dsa-udash-field">
-                                <label for="udash-avatar-url">Profile photo URL</label>
+                                <label for="udash-avatar-url">Or image URL</label>
                                 <input class="dsa-udash-input" id="udash-avatar-url" type="url" inputmode="url" placeholder="https://…" autocomplete="off" />
-                                <p class="dsa-udash-field-hint">Paste an image link (e.g. GitHub avatar). Optional.</p>
+                                <p class="dsa-udash-field-hint">Optional link (e.g. GitHub). Upload above takes priority until you clear the photo.</p>
                             </div>
                         </div>
 
@@ -588,7 +593,13 @@
                                 </div>
                                 <div class="dsa-udash-field">
                                     <label for="udash-gender">Gender</label>
-                                    <input class="dsa-udash-input" id="udash-gender" type="text" maxlength="40" placeholder="e.g. Male" />
+                                    <select class="dsa-udash-select" id="udash-gender">
+                                        <option value="">Prefer not to say</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Non-binary">Non-binary</option>
+                                        <option value="Other">Other</option>
+                                    </select>
                                 </div>
                                 <div class="dsa-udash-field dsa-udash-field--full">
                                     <label for="udash-location">Location</label>
@@ -708,7 +719,7 @@
     <script src="./cms-bootstrap.js?v=3"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
     <script src="./script.js?v=35"></script>
-    <script src="./auth/user-dashboard-page.js?v=12"></script>
+    <script src="./auth/user-dashboard-page.js?v=13"></script>
     <script src="./auth/graph-library-panel.js?v=1"></script>
 </body>
 </html>

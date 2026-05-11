@@ -96,6 +96,7 @@
             tz: "",
             locale: "",
             avatarUrl: "",
+            avatarDataUrl: "",
             gender: "",
             location: "",
             birthday: "",
@@ -620,6 +621,7 @@
         state.profile.tz = p.timezone || "";
         state.profile.locale = p.locale || "";
         state.profile.avatarUrl = p.avatar_url || "";
+        state.profile.avatarDataUrl = p.avatar_data_url || "";
         state.profile.gender = p.gender || "";
         state.profile.location = p.location || "";
         state.profile.birthday = p.birthday || "";
@@ -634,29 +636,96 @@
         state.profile.expSkills = ex.skills || "";
     }
 
+    var MAX_AVATAR_DATA_URL_LEN = 400000;
+
+    function profileAvatarLetter() {
+        var name = (state.profile.displayName || "").trim();
+        return name.length ? name.charAt(0).toUpperCase() : "?";
+    }
+
+    function compressImageToDataUrl(file, cb) {
+        if (!file || !/^image\//.test(file.type)) {
+            cb(new Error("Choose an image file."));
+            return;
+        }
+        var objectUrl = URL.createObjectURL(file);
+        var img = new Image();
+        img.onload = function () {
+            URL.revokeObjectURL(objectUrl);
+            var maxSide = 384;
+            var w = img.naturalWidth || img.width || 1;
+            var h = img.naturalHeight || img.height || 1;
+            var scale = Math.min(1, maxSide / Math.max(w, h));
+            var cw = Math.max(1, Math.round(w * scale));
+            var ch = Math.max(1, Math.round(h * scale));
+            var canvas = document.createElement("canvas");
+            canvas.width = cw;
+            canvas.height = ch;
+            var ctx = canvas.getContext("2d");
+            if (!ctx) {
+                cb(new Error("Could not process image in this browser."));
+                return;
+            }
+            ctx.drawImage(img, 0, 0, cw, ch);
+            var q = 0.88;
+            function attempt() {
+                var dataUrl = canvas.toDataURL("image/jpeg", q);
+                if (dataUrl.length <= MAX_AVATAR_DATA_URL_LEN || q < 0.48) {
+                    if (dataUrl.length <= MAX_AVATAR_DATA_URL_LEN) {
+                        cb(null, dataUrl);
+                    } else {
+                        cb(new Error("Image is still too large after compression; try a smaller photo."));
+                    }
+                    return;
+                }
+                q -= 0.07;
+                attempt();
+            }
+            attempt();
+        };
+        img.onerror = function () {
+            URL.revokeObjectURL(objectUrl);
+            cb(new Error("Could not read that image."));
+        };
+        img.src = objectUrl;
+    }
+
     function refreshProfileAvatarPreview() {
         var img = document.getElementById("udash-profile-avatar-preview");
         var fb = document.getElementById("udash-profile-avatar-fallback");
+        var data = (state.profile.avatarDataUrl || "").trim();
         var url = (state.profile.avatarUrl || "").trim();
         if (!img || !fb) {
             return;
         }
+        var alt = state.profile.displayName || "Profile";
+        if (data) {
+            img.onerror = null;
+            img.onload = null;
+            img.src = data;
+            img.alt = alt;
+            img.hidden = false;
+            fb.hidden = true;
+            return;
+        }
         if (url) {
+            img.onload = null;
             img.src = url;
-            img.alt = state.profile.displayName || "Profile";
+            img.alt = alt;
             img.hidden = false;
             fb.hidden = true;
             img.onerror = function () {
                 img.hidden = true;
                 fb.hidden = false;
+                fb.textContent = profileAvatarLetter();
             };
-        } else {
-            img.hidden = true;
-            img.removeAttribute("src");
-            fb.hidden = false;
-            var initials = (state.profile.displayName || "You").trim().slice(0, 2).toUpperCase();
-            fb.textContent = initials || "?";
+            return;
         }
+        img.hidden = true;
+        img.removeAttribute("src");
+        img.onerror = null;
+        fb.hidden = false;
+        fb.textContent = profileAvatarLetter();
     }
 
     async function fetchProfileFromServer() {
@@ -725,7 +794,8 @@
             loc.value = state.profile.locale || "";
         }
         if (gen) {
-            gen.value = state.profile.gender || "";
+            var g = state.profile.gender || "";
+            gen.value = g;
         }
         if (loca) {
             loca.value = state.profile.location || "";
@@ -1661,15 +1731,76 @@
 
     function wireProfile() {
         wireProfileFieldsIntoDom();
-        document.getElementById("udash-avatar-url") &&
-            document.getElementById("udash-avatar-url").addEventListener("input", function () {
+        var avUrl = document.getElementById("udash-avatar-url");
+        if (avUrl) {
+            avUrl.addEventListener("input", function () {
+                readProfileFromDom();
+                if ((state.profile.avatarUrl || "").trim()) {
+                    state.profile.avatarDataUrl = "";
+                }
+                refreshProfileAvatarPreview();
+                save();
+            });
+        }
+        var avFile = document.getElementById("udash-avatar-file");
+        var avPick = document.getElementById("udash-avatar-pick");
+        if (avPick && avFile) {
+            avPick.addEventListener("click", function () {
+                avFile.click();
+            });
+            avFile.addEventListener("change", function (ev) {
+                var f = ev.target.files && ev.target.files[0];
+                ev.target.value = "";
+                if (!f) {
+                    return;
+                }
+                if (!/^image\//.test(f.type)) {
+                    toast("Please choose an image file.");
+                    return;
+                }
+                if (f.size > 8 * 1024 * 1024) {
+                    toast("Image too large (max 8 MB).");
+                    return;
+                }
+                compressImageToDataUrl(f, function (err, dataUrl) {
+                    if (err || !dataUrl) {
+                        toast(err ? err.message : "Could not process image.");
+                        return;
+                    }
+                    state.profile.avatarDataUrl = dataUrl;
+                    state.profile.avatarUrl = "";
+                    if (avUrl) {
+                        avUrl.value = "";
+                    }
+                    readProfileFromDom();
+                    refreshProfileAvatarPreview();
+                    save();
+                    toast("Photo ready — click Save profile to sync to your account.");
+                });
+            });
+        }
+        var avClear = document.getElementById("udash-avatar-clear");
+        if (avClear) {
+            avClear.addEventListener("click", function () {
+                state.profile.avatarDataUrl = "";
+                state.profile.avatarUrl = "";
+                if (avUrl) {
+                    avUrl.value = "";
+                }
                 readProfileFromDom();
                 refreshProfileAvatarPreview();
+                save();
             });
+        }
         document.getElementById("udash-display-name") &&
             document.getElementById("udash-display-name").addEventListener("input", function () {
                 readProfileFromDom();
                 refreshProfileAvatarPreview();
+            });
+        document.getElementById("udash-gender") &&
+            document.getElementById("udash-gender").addEventListener("change", function () {
+                readProfileFromDom();
+                save();
             });
         document.getElementById("udash-save-profile") &&
             document.getElementById("udash-save-profile").addEventListener("click", function () {
@@ -1687,6 +1818,7 @@
                         timezone: state.profile.tz,
                         locale: state.profile.locale,
                         avatar_url: state.profile.avatarUrl,
+                        avatar_data_url: state.profile.avatarDataUrl,
                         gender: state.profile.gender,
                         location: state.profile.location,
                         birthday: state.profile.birthday,

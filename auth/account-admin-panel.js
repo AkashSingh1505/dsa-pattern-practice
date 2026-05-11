@@ -57,6 +57,7 @@
         site: "ui",
         users: "ui",
         library: "ui",
+        workspace: "ui",
         system: "ui",
     };
 
@@ -80,17 +81,25 @@
     let wsSelectedCatalogId = null;
     let wsSelectedUserGraphId = null;
 
-    const DEFAULT_GLIB_PAYLOAD_TEXT = JSON.stringify(
-        [
+    /** Serialized snapshot for catalog form dirty detection */
+    let glibFormBaselineStr = "";
+
+    function glibClientRootId() {
+        return "glib-root-" + Math.random().toString(36).slice(2, 11);
+    }
+
+    function buildDefaultGraphPayloadFromTitle(title) {
+        const name = String(title || "").trim() || "Untitled graph";
+        return [
             {
-                id: "catalog-new-root",
-                name: "New pattern map",
-                tree: [{ name: "First topic", problems: [] }],
+                id: glibClientRootId(),
+                name: name,
+                tree: [{ name: "Topic", problems: [] }],
             },
-        ],
-        null,
-        2,
-    );
+        ];
+    }
+
+    const DEFAULT_GLIB_PAYLOAD_TEXT = JSON.stringify(buildDefaultGraphPayloadFromTitle("Untitled graph"), null, 2);
 
     const ADMIN_THEME_KEY = "dsaAdminThemeV1";
     const ADMIN_CONSOLE_HEAD = {
@@ -293,6 +302,26 @@
                 ta.value = JSON.stringify({ ok: true, items: graphInventoryCache }, null, 2);
             }
         }
+        if (section === "workspace" && mode === "json") {
+            refreshWorkspaceJsonFromGraph();
+        }
+    }
+
+    function refreshWorkspaceJsonFromGraph() {
+        const ta = document.getElementById("adm-ws-json-editor");
+        if (!ta) {
+            return;
+        }
+        if (typeof dsaGetMindMapHierarchyJsonString !== "function") {
+            ta.value = "[]";
+            return;
+        }
+        try {
+            const s = dsaGetMindMapHierarchyJsonString();
+            ta.value = JSON.stringify(JSON.parse(s), null, 2);
+        } catch (e) {
+            ta.value = String(dsaGetMindMapHierarchyJsonString());
+        }
     }
 
     function statCard(lbl, val, sub) {
@@ -489,6 +518,145 @@
         return false;
     }
 
+    function captureGlibFormSnapshot() {
+        const id = (document.getElementById("adm-glib-edit-id") && document.getElementById("adm-glib-edit-id").value) || "";
+        const title = (document.getElementById("adm-glib-title") && document.getElementById("adm-glib-title").value) || "";
+        const slugNew = (document.getElementById("adm-glib-slug-new") && document.getElementById("adm-glib-slug-new").value) || "";
+        const vis = (document.getElementById("adm-glib-visibility") && document.getElementById("adm-glib-visibility").value) || "";
+        const desc = (document.getElementById("adm-glib-description") && document.getElementById("adm-glib-description").value) || "";
+        const accent = (document.getElementById("adm-glib-accent") && document.getElementById("adm-glib-accent").value) || "";
+        const est = (document.getElementById("adm-glib-estimated") && document.getElementById("adm-glib-estimated").value) || "";
+        const diff = (document.getElementById("adm-glib-difficulty") && document.getElementById("adm-glib-difficulty").value) || "";
+        const tags = (document.getElementById("adm-glib-tags") && document.getElementById("adm-glib-tags").value) || "";
+        const pay = document.getElementById("adm-glib-payload");
+        const payload = pay ? pay.value : "";
+        return JSON.stringify({
+            id: id,
+            title: title,
+            slugNew: slugNew,
+            vis: vis,
+            desc: desc,
+            accent: accent,
+            est: est,
+            diff: diff,
+            tags: tags,
+            payload: payload,
+        });
+    }
+
+    function snapshotGlibFormBaseline() {
+        glibFormBaselineStr = captureGlibFormSnapshot();
+    }
+
+    function isGlibFormDirty() {
+        return captureGlibFormSnapshot() !== glibFormBaselineStr;
+    }
+
+    function refreshGlibSaveAndWorkspaceUi() {
+        const id = (document.getElementById("adm-glib-edit-id") && document.getElementById("adm-glib-edit-id").value) || "";
+        const idTrim = id.trim();
+        const title = (document.getElementById("adm-glib-title") && document.getElementById("adm-glib-title").value) || "";
+        const titleTrim = title.trim();
+        const saveBtn = document.getElementById("adm-glib-save");
+        const openBtn = document.getElementById("adm-glib-open-workspace");
+        const isUser = glibSelectedRecordType === "user_graph";
+        if (saveBtn) {
+            if (isUser) {
+                saveBtn.hidden = true;
+            } else {
+                saveBtn.hidden = false;
+                if (!idTrim) {
+                    saveBtn.disabled = !titleTrim;
+                } else {
+                    saveBtn.disabled = !isGlibFormDirty();
+                }
+            }
+        }
+        if (openBtn) {
+            if (isUser && idTrim) {
+                openBtn.hidden = false;
+            } else if (!isUser) {
+                openBtn.hidden = !idTrim;
+            } else {
+                openBtn.hidden = true;
+            }
+        }
+    }
+
+    function syncGlibHiddenPayloadRootTitleFromTitle() {
+        const idTrim = (document.getElementById("adm-glib-edit-id") && document.getElementById("adm-glib-edit-id").value) || "";
+        if (idTrim.trim()) {
+            return;
+        }
+        const title = (document.getElementById("adm-glib-title") && document.getElementById("adm-glib-title").value) || "";
+        const pay = document.getElementById("adm-glib-payload");
+        if (!pay) {
+            return;
+        }
+        try {
+            const arr = JSON.parse(pay.value || "[]");
+            if (Array.isArray(arr) && arr[0] && typeof arr[0] === "object") {
+                arr[0].name = title.trim() || "Untitled graph";
+                pay.value = JSON.stringify(arr, null, 2);
+            }
+        } catch (e) {
+            pay.value = JSON.stringify(buildDefaultGraphPayloadFromTitle(title), null, 2);
+        }
+        refreshGlibSaveAndWorkspaceUi();
+    }
+
+    function refreshGlibFilterChips() {
+        const host = document.getElementById("adm-glib-filter-chips");
+        if (!host) {
+            return;
+        }
+        const q = (document.getElementById("adm-glib-filter-q") && document.getElementById("adm-glib-filter-q").value.trim()) || "";
+        const sc = document.getElementById("adm-glib-filter-scope");
+        const vi = document.getElementById("adm-glib-filter-vis");
+        const so = document.getElementById("adm-glib-filter-sort");
+        const df = document.getElementById("adm-glib-filter-dfrom");
+        const dt = document.getElementById("adm-glib-filter-dto");
+        const chips = [];
+        if (q) {
+            chips.push({ key: "q", label: "Search", val: q });
+        }
+        if (sc && sc.value !== "all") {
+            chips.push({ key: "scope", label: "Scope", val: sc.options[sc.selectedIndex].text });
+        }
+        if (vi && vi.value !== "all") {
+            chips.push({ key: "vis", label: "Visibility", val: vi.options[vi.selectedIndex].text });
+        }
+        if (so && so.value !== "updated_desc") {
+            chips.push({ key: "sort", label: "Sort", val: so.options[so.selectedIndex].text });
+        }
+        if (df && df.value && dt && dt.value) {
+            chips.push({ key: "dates", label: "Updated", val: df.value + " – " + dt.value });
+        } else if (df && df.value) {
+            chips.push({ key: "dfrom", label: "From", val: df.value });
+        } else if (dt && dt.value) {
+            chips.push({ key: "dto", label: "To", val: dt.value });
+        }
+        if (!chips.length) {
+            host.innerHTML = "";
+            host.hidden = true;
+            return;
+        }
+        host.hidden = false;
+        host.innerHTML = chips
+            .map(function (c) {
+                return (
+                    '<span class="adm-glib-chip" data-chip-key="' +
+                    escapeHtml(c.key) +
+                    '"><strong>' +
+                    escapeHtml(c.label) +
+                    ":</strong> " +
+                    escapeHtml(c.val) +
+                    ' <button type="button" class="adm-glib-chip-remove" aria-label="Remove filter">×</button></span>'
+                );
+            })
+            .join("");
+    }
+
     function renderGraphInventoryCards() {
         const host = document.getElementById("adm-glib-card-host");
         if (!host) {
@@ -497,6 +665,7 @@
         host.innerHTML = "";
         if (!graphInventoryCache.length) {
             host.innerHTML = '<p class="adm-glib-empty">No graphs match these filters.</p>';
+            refreshGlibFilterChips();
             return;
         }
         graphInventoryCache.forEach(function (g) {
@@ -504,44 +673,42 @@
             btn.type = "button";
             const isUser = g.recordType === "user_graph";
             btn.className =
-                "adm-glib-pick" +
-                (isGlibRowSelected(g) ? " is-active" : "") +
-                (isUser ? " adm-glib-pick--user" : "");
+                "adm-glib-item" +
+                (isGlibRowSelected(g) ? " adm-glib-item--active" : "") +
+                (isUser ? " adm-glib-item--user" : "");
             btn.setAttribute("role", "listitem");
+            let badges = "";
             let meta = "";
             if (isUser) {
+                badges = '<span class="adm-glib-badge adm-glib-badge--user">User</span>';
                 meta =
-                    '<span class="adm-glib-pick-badge adm-glib-pick-badge--user">User</span>' +
-                    '<span>' +
                     escapeHtml(String(g.kind || "")) +
-                    "</span>" +
-                    '<span>' +
+                    " · " +
                     escapeHtml(String(g.ownerEmail || "")) +
-                    "</span>" +
-                    "<span>Updated " +
-                    escapeHtml(fmtTime(g.updatedAt)) +
-                    "</span>";
+                    " · " +
+                    escapeHtml(fmtTime(g.updatedAt));
             } else {
-                const vis = escapeHtml(String(g.visibility || "public"));
-                const slug = escapeHtml(String(g.slug || ""));
-                const dl = g.downloadCount != null ? String(g.downloadCount) : "0";
+                const vis = String(g.visibility || "public").toLowerCase();
+                badges =
+                    '<span class="adm-glib-badge adm-glib-badge--catalog">Catalog</span>' +
+                    (vis === "public"
+                        ? '<span class="adm-glib-badge adm-glib-badge--public">Public</span>'
+                        : vis === "unlisted"
+                          ? '<span class="adm-glib-badge adm-glib-badge--unlisted">Unlisted</span>'
+                          : '<span class="adm-glib-badge adm-glib-badge--private">Private</span>');
                 meta =
-                    '<span class="adm-glib-pick-badge">Catalog</span><span class="' +
-                    admGlibVisClass(g.visibility) +
-                    '">' +
-                    vis +
-                    "</span><span>" +
-                    slug +
-                    '</span><span>↓ ' +
-                    escapeHtml(dl) +
-                    "</span><span>Updated " +
-                    escapeHtml(fmtTime(g.updatedAt)) +
-                    "</span>";
+                    escapeHtml(String(g.slug || "")) +
+                    " · ↓ " +
+                    escapeHtml(String(g.downloadCount != null ? g.downloadCount : 0)) +
+                    " · " +
+                    escapeHtml(fmtTime(g.updatedAt));
             }
             btn.innerHTML =
-                '<div class="adm-glib-pick-title">' +
+                '<div class="adm-glib-item-title">' +
                 escapeHtml(String(g.title || "Untitled")) +
-                '</div><div class="adm-glib-pick-meta">' +
+                '</div><div class="adm-glib-badges">' +
+                badges +
+                '</div><div class="adm-glib-item-meta">' +
                 meta +
                 "</div>";
             btn.addEventListener("click", function () {
@@ -549,6 +716,7 @@
             });
             host.appendChild(btn);
         });
+        refreshGlibFilterChips();
     }
 
     function setGlibFormEditable(editable) {
@@ -569,10 +737,6 @@
                 el.disabled = !editable;
             }
         });
-        const save = document.getElementById("adm-glib-save");
-        if (save) {
-            save.disabled = !editable;
-        }
         const del = document.getElementById("adm-glib-delete");
         if (del) {
             del.disabled = !editable || !(document.getElementById("adm-glib-edit-id") && document.getElementById("adm-glib-edit-id").value.trim());
@@ -591,6 +755,7 @@
         if (hard) {
             hard.disabled = !editable || !(document.getElementById("adm-glib-edit-id") && document.getElementById("adm-glib-edit-id").value.trim());
         }
+        refreshGlibSaveAndWorkspaceUi();
     }
 
     function updateGlibDeleteEnabled() {
@@ -652,11 +817,18 @@
         }
         const pay = document.getElementById("adm-glib-payload");
         if (pay) {
-            pay.value = DEFAULT_GLIB_PAYLOAD_TEXT;
+            pay.value = JSON.stringify(buildDefaultGraphPayloadFromTitle(""), null, 2);
+        }
+        const sub = document.getElementById("adm-glib-form-sub");
+        if (sub) {
+            sub.innerHTML =
+                "Set title and details, then <strong>Save</strong> to create the graph body (root node = graph name). Then open <strong>Workspace</strong> to edit the map.";
         }
         setGlibFormEditable(true);
         renderGraphInventoryCards();
         updateGlibDeleteEnabled();
+        snapshotGlibFormBaseline();
+        refreshGlibSaveAndWorkspaceUi();
     }
 
     function fillCatalogGraphForm(graph) {
@@ -715,6 +887,19 @@
         setGlibFormEditable(true);
         renderGraphInventoryCards();
         updateGlibDeleteEnabled();
+        const sub = document.getElementById("adm-glib-form-sub");
+        if (sub) {
+            const slug = graph.slug ? String(graph.slug) : "";
+            if (slug === "dsa-site-map") {
+                sub.innerHTML =
+                    "Mirrors the live <strong>Content → dsa</strong> publish (public). Edit the map in <strong>Workspace</strong>; adjust listing fields here. <strong>Save</strong> is disabled until you change something.";
+            } else {
+                sub.innerHTML =
+                    "Edit listing fields; <strong>Save</strong> enables only when something changes. Mind map body: use <strong>Open in workspace</strong>.";
+            }
+        }
+        snapshotGlibFormBaseline();
+        refreshGlibSaveAndWorkspaceUi();
     }
 
     function fillUserGraphForm(graph) {
@@ -772,6 +957,13 @@
         setGlibFormEditable(false);
         renderGraphInventoryCards();
         updateGlibDeleteEnabled();
+        const sub = document.getElementById("adm-glib-form-sub");
+        if (sub) {
+            sub.textContent =
+                "Member-owned copy — read-only here. Open workspace to inspect the map; changes are not written back to the member.";
+        }
+        snapshotGlibFormBaseline();
+        refreshGlibSaveAndWorkspaceUi();
     }
 
     async function loadGraphInventoryList() {
@@ -853,6 +1045,16 @@
         return payload;
     }
 
+    function getGlibPayloadForSave() {
+        const pay = document.getElementById("adm-glib-payload");
+        const titleEl = document.getElementById("adm-glib-title");
+        const title = titleEl ? String(titleEl.value || "").trim() : "";
+        if (!pay || !String(pay.value || "").trim()) {
+            return buildDefaultGraphPayloadFromTitle(title);
+        }
+        return parseGlibPayload();
+    }
+
     function readGlibOptionalNumber(elId) {
         const el = document.getElementById(elId);
         if (!el || el.value === "" || el.value == null) {
@@ -876,7 +1078,7 @@
         }
         let payload;
         try {
-            payload = parseGlibPayload();
+            payload = getGlibPayloadForSave();
         } catch (e) {
             setGlibStatus(e.message, "err");
             return;
@@ -1083,38 +1285,22 @@
         setGlibStatus("Opened in Workspace tab.", "ok");
     }
 
-    async function admGlibImportPayloadFromCms() {
-        setGlibStatus("Loading Content…", "");
-        try {
-            const d = await fetchJson(apiAdmin("cms") + "?k=" + encodeURIComponent(CMS_KEY));
-            const src =
-                d.draft && d.draft.payload
-                    ? d.draft.payload
-                    : d.published && d.published.payload
-                      ? d.published.payload
-                      : "[]";
-            const arr = JSON.parse(typeof src === "string" ? src : JSON.stringify(src));
-            if (!Array.isArray(arr)) {
-                throw new Error("Content payload is not an array.");
-            }
-            const pay = document.getElementById("adm-glib-payload");
-            if (pay) {
-                pay.value = JSON.stringify(arr, null, 2);
-            }
-            setGlibStatus("Payload filled from Content (" + (d.draft && d.draft.payload ? "draft" : "live") + ").", "ok");
-        } catch (e) {
-            setGlibStatus(e.message || "Import failed", "err");
-        }
-    }
-
     function admGlibFormatPayload() {
         try {
-            const payload = parseGlibPayload();
+            const title = (document.getElementById("adm-glib-title") && document.getElementById("adm-glib-title").value) || "";
             const pay = document.getElementById("adm-glib-payload");
-            if (pay) {
-                pay.value = JSON.stringify(payload, null, 2);
+            if (!pay) {
+                return;
             }
+            let payload;
+            if (!String(pay.value || "").trim()) {
+                payload = buildDefaultGraphPayloadFromTitle(title);
+            } else {
+                payload = parseGlibPayload();
+            }
+            pay.value = JSON.stringify(payload, null, 2);
             setGlibStatus("Payload formatted.", "ok");
+            refreshGlibSaveAndWorkspaceUi();
         } catch (e) {
             setGlibStatus(e.message, "err");
         }
@@ -1558,6 +1744,45 @@
             });
         }
 
+        const wsJsonApply = document.getElementById("adm-ws-json-apply");
+        if (wsJsonApply && wsJsonApply.dataset.admWsJsonBound !== "1") {
+            wsJsonApply.dataset.admWsJsonBound = "1";
+            wsJsonApply.addEventListener("click", function () {
+                const ta = document.getElementById("adm-ws-json-editor");
+                if (!ta || typeof dsaReloadGraphFromEditorJson !== "function") {
+                    return;
+                }
+                try {
+                    JSON.parse(ta.value);
+                } catch (e) {
+                    wsSetMsg("Invalid JSON: " + e.message, "err");
+                    return;
+                }
+                const r = dsaReloadGraphFromEditorJson(ta.value, ADMIN_GRAPH_MOUNT);
+                if (!r.ok) {
+                    wsSetMsg((r.error && r.error.message) || "Could not apply graph", "err");
+                    return;
+                }
+                wsSetMsg("Graph updated from JSON editor.", "ok");
+            });
+        }
+        const wsJsonFmt = document.getElementById("adm-ws-json-format");
+        if (wsJsonFmt && wsJsonFmt.dataset.admWsJsonBound !== "1") {
+            wsJsonFmt.dataset.admWsJsonBound = "1";
+            wsJsonFmt.addEventListener("click", function () {
+                const ta = document.getElementById("adm-ws-json-editor");
+                if (!ta) {
+                    return;
+                }
+                try {
+                    ta.value = JSON.stringify(JSON.parse(ta.value), null, 2);
+                    wsSetMsg("Formatted.", "ok");
+                } catch (e) {
+                    wsSetMsg("Format failed: " + e.message, "err");
+                }
+            });
+        }
+
         wsContext = { mode: "idle" };
         wsRefreshChrome();
     }
@@ -1613,10 +1838,82 @@
                 clearGraphCatalogForm();
                 setGlibStatus("New graph — fill fields and Save.", "ok");
             });
-        document.getElementById("adm-glib-import-cms") &&
-            document.getElementById("adm-glib-import-cms").addEventListener("click", function () {
-                void admGlibImportPayloadFromCms();
+
+        const chipHost = document.getElementById("adm-glib-filter-chips");
+        if (chipHost && chipHost.dataset.admGlibChipBound !== "1") {
+            chipHost.dataset.admGlibChipBound = "1";
+            chipHost.addEventListener("click", function (ev) {
+                if (!ev.target.closest(".adm-glib-chip-remove")) {
+                    return;
+                }
+                const chip = ev.target.closest("[data-chip-key]");
+                const key = chip && chip.getAttribute("data-chip-key");
+                if (key === "q") {
+                    const el = document.getElementById("adm-glib-filter-q");
+                    if (el) {
+                        el.value = "";
+                    }
+                } else if (key === "scope") {
+                    const el = document.getElementById("adm-glib-filter-scope");
+                    if (el) {
+                        el.value = "all";
+                    }
+                } else if (key === "vis") {
+                    const el = document.getElementById("adm-glib-filter-vis");
+                    if (el) {
+                        el.value = "all";
+                    }
+                } else if (key === "sort") {
+                    const el = document.getElementById("adm-glib-filter-sort");
+                    if (el) {
+                        el.value = "updated_desc";
+                    }
+                } else if (key === "dates" || key === "dfrom" || key === "dto") {
+                    const df = document.getElementById("adm-glib-filter-dfrom");
+                    const dt = document.getElementById("adm-glib-filter-dto");
+                    if (key === "dates" || key === "dfrom") {
+                        if (df) {
+                            df.value = "";
+                        }
+                    }
+                    if (key === "dates" || key === "dto") {
+                        if (dt) {
+                            dt.value = "";
+                        }
+                    }
+                }
+                void loadGraphInventoryList();
             });
+        }
+
+        [
+            "adm-glib-title",
+            "adm-glib-slug-new",
+            "adm-glib-visibility",
+            "adm-glib-description",
+            "adm-glib-accent",
+            "adm-glib-estimated",
+            "adm-glib-difficulty",
+            "adm-glib-tags",
+            "adm-glib-payload",
+        ].forEach(function (fid) {
+            const el = document.getElementById(fid);
+            if (!el || el.dataset.admGlibInputBound === "1") {
+                return;
+            }
+            el.dataset.admGlibInputBound = "1";
+            el.addEventListener("input", function () {
+                if (fid === "adm-glib-title") {
+                    syncGlibHiddenPayloadRootTitleFromTitle();
+                } else {
+                    refreshGlibSaveAndWorkspaceUi();
+                }
+            });
+            el.addEventListener("change", function () {
+                refreshGlibSaveAndWorkspaceUi();
+            });
+        });
+
         document.getElementById("adm-glib-format-payload") &&
             document.getElementById("adm-glib-format-payload").addEventListener("click", function () {
                 admGlibFormatPayload();
@@ -1662,6 +1959,8 @@
                 );
             });
         }
+
+        refreshGlibSaveAndWorkspaceUi();
     }
 
     function renderAdmDashboardViz(d) {
@@ -2660,7 +2959,12 @@
                 const hint = d.draft
                     ? "Draft in progress — live revision " + (d.published && d.published.revision) + "."
                     : "No draft — editor shows live published JSON.";
-                graphSetStatus(status, hint + " Use Workspace for the visual studio.", "ok");
+                graphSetStatus(
+                    status,
+                    hint +
+                        " Use Workspace for the visual studio. Publishing live also mirrors this map to the public catalog slug <code>dsa-site-map</code> when Subscribers D1 is bound.",
+                    "ok",
+                );
             } catch (e) {
                 graphSetStatus(status, "Load failed: " + e.message, "err");
             }
@@ -2713,6 +3017,15 @@
                 );
                 const rev = r.revision != null ? r.revision : "";
                 const opened = openLiveMapFresh(rev);
+                const sync = r.graph_catalog_sync;
+                let syncTail = "";
+                if (sync && sync.ok) {
+                    syncTail = " Public library entry <code>dsa-site-map</code> updated.";
+                } else if (sync && sync.reason === "no_subscribers_db") {
+                    syncTail = " (Subscribers D1 not bound — library mirror skipped.)";
+                } else if (sync && !sync.ok && sync.reason) {
+                    syncTail = " (Library mirror: " + sync.reason + ".)";
+                }
                 graphSetStatus(
                     status,
                     "Published — revision " +
@@ -2720,7 +3033,8 @@
                         "." +
                         (opened
                             ? " Live map opened in a new tab (fresh URL)."
-                            : " Pop-up blocked — open index.html?published=" + encodeURIComponent(rev) + " to verify."),
+                            : " Pop-up blocked — open index.html?published=" + encodeURIComponent(rev) + " to verify.") +
+                        syncTail,
                     "ok",
                 );
                 await loadGraphState();

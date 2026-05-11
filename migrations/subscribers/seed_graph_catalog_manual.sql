@@ -1,6 +1,7 @@
 -- Paste into Cloudflare D1 → your subscribers database → Query (SQL editor).
 -- Requires table graph_catalog from 0003_graph_library.sql.
 -- Prefer Site admin → Library (RSA) for day-to-day publishing; use SQL for bulk seeds or automation.
+-- Reserved slug: dsa-site-map — upserted automatically when admin publishes Content → dsa (public catalog mirror).
 -- Re-run safe: uses INSERT OR IGNORE on id (change ids/slugs if you need duplicates).
 
 -- ---------------------------------------------------------------------------

@@ -6,10 +6,73 @@
  * DELETE /api/admin/cms?k=dsa           — remove draft row only
  */
 
-import { contentDb } from "../../_lib/d1-bindings.js";
+import { contentDb, subscribersDb } from "../../_lib/d1-bindings.js";
 import { json, requireAdmin } from "../../_lib/admin-api.js";
+import { newGraphId } from "../../_lib/practice-auth-request.js";
 
 const ALLOWED = new Set(["dsa"]);
+
+/** Canonical public catalog row for the live site mind map (member library). */
+const SITE_MAP_CATALOG_SLUG = "dsa-site-map";
+
+/**
+ * Mirror published `dsa` CMS JSON into subscribers `graph_catalog` as a public graph.
+ * @param {Record<string, unknown>} env
+ * @param {string} payloadText
+ * @param {number} nowSec
+ */
+async function upsertSiteMapPublicCatalog(env, payloadText, nowSec) {
+    const sub = subscribersDb(env);
+    if (!sub) {
+        return { ok: false, reason: "no_subscribers_db" };
+    }
+    let payload;
+    try {
+        payload = JSON.parse(payloadText);
+    } catch {
+        return { ok: false, reason: "bad_json" };
+    }
+    if (!Array.isArray(payload)) {
+        return { ok: false, reason: "not_array" };
+    }
+    const title = "Practice map (site)";
+    const description = "Live site mind map (Content → dsa). Public in the member graph library.";
+    const payloadJson = JSON.stringify(payload);
+    let row;
+    try {
+        row = await sub
+            .prepare("SELECT id FROM graph_catalog WHERE slug = ? AND deleted_at IS NULL")
+            .bind(SITE_MAP_CATALOG_SLUG)
+            .first();
+    } catch (e) {
+        console.error("site map catalog lookup", e);
+        return { ok: false, reason: "lookup_error" };
+    }
+    try {
+        if (row && row.id) {
+            await sub
+                .prepare(
+                    `UPDATE graph_catalog SET title = ?, description = ?, visibility = 'public', payload_json = ?, updated_at = ?
+                     WHERE id = ? AND deleted_at IS NULL`,
+                )
+                .bind(title, description, payloadJson, nowSec, row.id)
+                .run();
+        } else {
+            const id = newGraphId();
+            await sub
+                .prepare(
+                    `INSERT INTO graph_catalog (id, slug, title, description, visibility, creator_user_id, payload_json, accent_hue, tags_json, difficulty, estimated_minutes, download_count, created_at, updated_at, deleted_at)
+                     VALUES (?, ?, ?, ?, 'public', NULL, ?, NULL, NULL, NULL, NULL, 0, ?, ?, NULL)`,
+                )
+                .bind(id, SITE_MAP_CATALOG_SLUG, title, description, payloadJson, nowSec, nowSec)
+                .run();
+        }
+    } catch (e) {
+        console.error("site map catalog upsert", e);
+        return { ok: false, reason: "write_error" };
+    }
+    return { ok: true };
+}
 
 export async function onRequestGet(context) {
     const { request, env } = context;
@@ -217,7 +280,12 @@ export async function onRequestPost(context) {
         /* optional */
     }
 
-    return json({ ok: true, key, updated_at: now, revision });
+    let graphCatalogSync = null;
+    if (key === "dsa") {
+        graphCatalogSync = await upsertSiteMapPublicCatalog(env, text, now);
+    }
+
+    return json({ ok: true, key, updated_at: now, revision, graph_catalog_sync: graphCatalogSync });
 }
 
 export async function onRequestDelete(context) {

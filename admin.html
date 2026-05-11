@@ -39,8 +39,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css?v=14" />
     <link rel="stylesheet" href="./dsa-index-shell.css?v=19" />
-    <link rel="stylesheet" href="./auth/admin-graph-library.css?v=2" />
-    <link rel="stylesheet" href="./auth/admin-workspace.css?v=1" />
+    <link rel="stylesheet" href="./auth/admin-graph-library.css?v=3" />
+    <link rel="stylesheet" href="./auth/admin-workspace.css?v=2" />
     <link rel="stylesheet" href="./auth/admin-loader.css?v=1" />
 </head>
 <body class="dsa-admin-body">
@@ -532,12 +532,17 @@
 
                     <!-- Workspace: graph studio + inventory picker -->
                     <div class="adm-pane adm-hidden" data-admin-pane="workspace">
-                        <div class="adm-pane-head adm-ws-head">
+                        <div class="adm-pane-head adm-ws-head adm-ws-head--split">
                             <div>
                                 <h3>Graph workspace</h3>
                                 <p class="helper adm-ws-sub">Search the full inventory (catalog + members’ personal copies). User copies are <strong>view-only</strong>. Catalog &amp; site map can be saved from here.</p>
                             </div>
+                            <div class="adm-glib-segmented" role="tablist" aria-label="Workspace view">
+                                <button type="button" class="active" data-adm-dual="workspace" data-adm-mode="ui">UI</button>
+                                <button type="button" data-adm-dual="workspace" data-adm-mode="json">JSON</button>
+                            </div>
                         </div>
+                        <div data-adm-panel="workspace-ui">
                         <div class="adm-ws-layout">
                             <aside class="adm-ws-sidebar adm-subcard" aria-label="Graph inventory">
                                 <div class="adm-ws-filters">
@@ -664,102 +669,177 @@
                                         </main>
                                     </div>
                                 </div>
-                                <p id="adm-ws-msg" class="status" aria-live="polite"></p>
                             </div>
                         </div>
+                        </div>
+
+                        <div data-adm-panel="workspace-json" class="adm-hidden">
+                            <p class="helper adm-ws-json-lede" style="margin-top:0">
+                                Raw mind-map array (same shape as Content → <code>dsa</code>). <strong>Apply to graph</strong> updates the studio; use UI mode to edit visually.
+                            </p>
+                            <label for="adm-ws-json-editor" class="adm-inline-label" style="display:block;margin-top:10px">Graph JSON</label>
+                            <textarea id="adm-ws-json-editor" class="cms-editor adm-json-input" spellcheck="false" rows="26" aria-label="Graph JSON"></textarea>
+                            <div class="adm-toolbar-row" style="margin-top:10px">
+                                <button type="button" class="btn btn-sm" id="adm-ws-json-apply">Apply to graph</button>
+                                <button type="button" class="btn ghost btn-sm" id="adm-ws-json-format">Format JSON</button>
+                            </div>
+                        </div>
+
+                        <p id="adm-ws-msg" class="status" aria-live="polite" style="margin-top:12px"></p>
                     </div>
 
                     <!-- Graph library (member hub — community catalog) -->
                     <div class="adm-pane adm-hidden" data-admin-pane="library">
-                        <div class="adm-pane-head adm-glib-head">
-                            <div>
-                                <h3>Graph library</h3>
-                                <p class="adm-glib-sub">Curate public maps for the member hub. Same mind-map JSON shape as Content → <code>dsa</code>.</p>
-                            </div>
-                            <div class="adm-seg" data-adm-dual-wrap="library">
-                                <button type="button" class="active" data-adm-dual="library" data-adm-mode="ui">UI</button>
-                                <button type="button" data-adm-dual="library" data-adm-mode="json">JSON</button>
-                            </div>
-                        </div>
+                        <div class="adm-glib-page">
+                            <header class="adm-glib-header">
+                                <div>
+                                    <h1 class="adm-glib-h1">Graph library</h1>
+                                    <p class="adm-glib-lede">
+                                        Curate public maps for the member hub. Publishing <strong>Content → dsa</strong> also upserts a public catalog entry
+                                        <code>dsa-site-map</code> (site practice graph). Edit the mind map body in <strong>Workspace</strong>.
+                                    </p>
+                                </div>
+                                <div class="adm-glib-segmented" role="tablist" aria-label="Library view">
+                                    <button type="button" class="active" data-adm-dual="library" data-adm-mode="ui">UI</button>
+                                    <button type="button" data-adm-dual="library" data-adm-mode="json">JSON</button>
+                                </div>
+                            </header>
 
-                        <div data-adm-panel="library-ui">
-                            <div class="adm-glib-toolbar adm-glib-toolbar--wrap">
-                                <button type="button" class="btn btn-sm" id="adm-glib-reload">Reload list</button>
-                                <button type="button" class="btn ghost btn-sm" id="adm-glib-new">New graph</button>
-                                <button type="button" class="btn ghost btn-sm" id="adm-glib-import-cms">Fill payload from Content</button>
-                                <button type="button" class="btn ghost btn-sm" id="adm-glib-format-payload">Format payload JSON</button>
-                                <span class="adm-glib-toolbar-gap" aria-hidden="true"></span>
-                                <button type="button" class="btn ghost btn-sm" id="adm-glib-publish" disabled>Publish (public)</button>
-                                <button type="button" class="btn ghost btn-sm" id="adm-glib-unpublish" disabled>Unpublish</button>
-                                <button type="button" class="btn ghost btn-sm adm-btn-danger-outline" id="adm-glib-delete-hard" disabled>Delete permanently…</button>
+                        <div data-adm-panel="library-ui" class="adm-glib-app">
+                            <div class="adm-glib-toolbar">
+                                <div class="adm-glib-tool-group">
+                                    <button type="button" class="adm-glib-btn adm-glib-btn--primary" id="adm-glib-reload" title="Reload list">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <polyline points="23 4 23 10 17 10"></polyline>
+                                            <polyline points="1 20 1 14 7 14"></polyline>
+                                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                                        </svg>
+                                        Reload
+                                    </button>
+                                    <span class="adm-glib-toolbar-divider" aria-hidden="true"></span>
+                                    <button type="button" class="adm-glib-btn" id="adm-glib-new">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                                        </svg>
+                                        New graph
+                                    </button>
+                                    <button type="button" class="adm-glib-btn" id="adm-glib-format-payload">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <polyline points="16 18 22 12 16 6"></polyline>
+                                            <polyline points="8 6 2 12 8 18"></polyline>
+                                        </svg>
+                                        Format JSON
+                                    </button>
+                                </div>
+                                <div class="adm-glib-tool-group">
+                                    <button type="button" class="adm-glib-btn adm-glib-btn--outline" id="adm-glib-publish" disabled>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                                            <polyline points="16 6 12 2 8 6"></polyline>
+                                            <line x1="12" y1="2" x2="12" y2="15"></line>
+                                        </svg>
+                                        Publish
+                                    </button>
+                                    <button type="button" class="adm-glib-btn adm-glib-btn--outline" id="adm-glib-unpublish" disabled>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M20 12v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"></path>
+                                            <polyline points="8 18 12 22 16 18"></polyline>
+                                            <line x1="12" y1="22" x2="12" y2="9"></line>
+                                        </svg>
+                                        Unpublish
+                                    </button>
+                                    <span class="adm-glib-toolbar-divider" aria-hidden="true"></span>
+                                    <button type="button" class="adm-glib-btn adm-glib-btn--danger" id="adm-glib-delete-hard" disabled>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                                            <path d="M10 11v6M14 11v6"></path>
+                                        </svg>
+                                        Delete…
+                                    </button>
+                                </div>
                             </div>
-                            <div class="adm-glib-filters adm-subcard">
-                                <div class="adm-glib-filters-grid">
-                                    <div class="adm-field">
+
+                            <div class="adm-glib-filters-card">
+                                <div class="adm-glib-filters-row">
+                                    <div class="adm-glib-field adm-glib-field--search">
                                         <label for="adm-glib-filter-q">Search</label>
-                                        <input id="adm-glib-filter-q" type="search" placeholder="Title, slug, owner email…" autocomplete="off" />
+                                        <div class="adm-glib-search-wrap">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                                <circle cx="11" cy="11" r="8"></circle>
+                                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                            </svg>
+                                            <input id="adm-glib-filter-q" class="adm-glib-input" type="search" placeholder="Title, slug, owner…" autocomplete="off" />
+                                        </div>
                                     </div>
-                                    <div class="adm-field">
+                                    <div class="adm-glib-field">
                                         <label for="adm-glib-filter-scope">Scope</label>
-                                        <select id="adm-glib-filter-scope" class="adm-select-enhanced">
+                                        <select id="adm-glib-filter-scope" class="adm-glib-select adm-select-enhanced">
                                             <option value="all">All</option>
                                             <option value="catalog">Catalog</option>
-                                            <option value="user">User copies</option>
+                                            <option value="user">User</option>
                                         </select>
                                     </div>
-                                    <div class="adm-field">
+                                    <div class="adm-glib-field">
                                         <label for="adm-glib-filter-vis">Visibility</label>
-                                        <select id="adm-glib-filter-vis" class="adm-select-enhanced">
+                                        <select id="adm-glib-filter-vis" class="adm-glib-select adm-select-enhanced">
                                             <option value="all">Any</option>
                                             <option value="public">Public</option>
                                             <option value="unlisted">Unlisted</option>
                                             <option value="private">Private</option>
                                         </select>
                                     </div>
-                                    <div class="adm-field">
-                                        <label for="adm-glib-filter-sort">Sort</label>
-                                        <select id="adm-glib-filter-sort" class="adm-select-enhanced">
+                                    <div class="adm-glib-field">
+                                        <label for="adm-glib-filter-sort">Sort by</label>
+                                        <select id="adm-glib-filter-sort" class="adm-glib-select adm-select-enhanced">
                                             <option value="updated_desc">Updated · newest</option>
                                             <option value="updated_asc">Updated · oldest</option>
-                                            <option value="title_asc">Title A→Z</option>
-                                            <option value="title_desc">Title Z→A</option>
+                                            <option value="title_asc">Title · A → Z</option>
+                                            <option value="title_desc">Title · Z → A</option>
                                             <option value="downloads_desc">Downloads</option>
                                         </select>
                                     </div>
-                                    <div class="adm-field">
+                                    <div class="adm-glib-field">
                                         <label for="adm-glib-filter-dfrom">Updated from</label>
-                                        <input id="adm-glib-filter-dfrom" type="date" />
+                                        <input id="adm-glib-filter-dfrom" type="date" class="adm-glib-input" />
                                     </div>
-                                    <div class="adm-field">
+                                    <div class="adm-glib-field">
                                         <label for="adm-glib-filter-dto">Updated to</label>
-                                        <input id="adm-glib-filter-dto" type="date" />
+                                        <input id="adm-glib-filter-dto" type="date" class="adm-glib-input" />
+                                    </div>
+                                    <div class="adm-glib-filter-actions">
+                                        <button type="button" class="adm-glib-btn adm-glib-btn--primary adm-glib-btn--sm" id="adm-glib-filter-apply">Apply</button>
+                                        <button type="button" class="adm-glib-btn adm-glib-btn--sm" id="adm-glib-filter-reset">Reset</button>
                                     </div>
                                 </div>
-                                <div class="adm-toolbar-row" style="margin-top:10px">
-                                    <button type="button" class="btn btn-sm" id="adm-glib-filter-apply">Apply filters</button>
-                                    <button type="button" class="btn ghost btn-sm" id="adm-glib-filter-reset">Reset</button>
-                                </div>
+                                <div id="adm-glib-filter-chips" class="adm-glib-chips" hidden></div>
                             </div>
 
-                            <div class="adm-glib-split">
-                                <div class="adm-glib-column adm-glib-column--list">
-                                    <h4 class="adm-glib-h4">Inventory</h4>
-                                    <p class="helper adm-glib-hint">
-                                        Catalog rows are editable. <strong>User</strong> rows are personal copies — view-only here; open in
-                                        <button type="button" class="dsa-udash-text-btn" data-admin-tab-jump="workspace">Workspace</button>
-                                        to inspect the body.
-                                    </p>
+                            <div class="adm-glib-main">
+                                <aside class="adm-glib-panel adm-glib-panel--list">
+                                    <div class="adm-glib-panel-header">
+                                        <div class="adm-glib-panel-title">Inventory</div>
+                                        <p class="adm-glib-panel-sub">
+                                            Catalog rows: edit metadata here, body in <button type="button" class="dsa-udash-text-btn" data-admin-tab-jump="workspace">Workspace</button>.
+                                            <strong>User</strong> copies are view-only.
+                                        </p>
+                                    </div>
                                     <div id="adm-glib-card-host" class="adm-glib-card-host" role="list"></div>
-                                </div>
-                                <div class="adm-glib-column adm-glib-column--form">
-                                    <div class="adm-subcard adm-glib-form-card">
-                                        <h4 class="adm-glib-h4" id="adm-glib-form-heading">Editor</h4>
+                                </aside>
+                                <section class="adm-glib-panel adm-glib-panel--editor">
+                                    <div class="adm-glib-panel-header">
+                                        <div class="adm-glib-panel-title" id="adm-glib-form-heading">Editor</div>
+                                        <p class="adm-glib-panel-sub" id="adm-glib-form-sub">
+                                            Set title and details, then <strong>Save</strong> to create the graph body (root node = graph name). Open <strong>Workspace</strong> to edit the map.
+                                        </p>
+                                    </div>
+                                    <div class="adm-glib-editor-body">
                                         <input type="hidden" id="adm-glib-edit-id" value="" autocomplete="off" />
-
                                         <div class="adm-form-grid cols-2">
                                             <div class="adm-field adm-field--span-2">
                                                 <label for="adm-glib-title">Title</label>
-                                                <input id="adm-glib-title" type="text" placeholder="e.g. Interview patterns sprint" maxlength="200" autocomplete="off" />
+                                                <input id="adm-glib-title" type="text" placeholder="Graph name (becomes the root topic)" maxlength="200" autocomplete="off" />
                                             </div>
                                             <div class="adm-field">
                                                 <label for="adm-glib-slug-new">Slug hint <span class="adm-glib-label-muted">(new only)</span></label>
@@ -795,31 +875,36 @@
                                             </div>
                                         </div>
 
-                                        <div class="adm-field" style="margin-top: 14px">
-                                            <label for="adm-glib-payload">Mind map JSON <span class="adm-glib-label-muted">array of roots</span></label>
-                                            <textarea id="adm-glib-payload" class="adm-json-input adm-glib-payload-ta" spellcheck="false" rows="16" aria-describedby="adm-glib-payload-hint"></textarea>
-                                            <p id="adm-glib-payload-hint" class="adm-field-hint">Must match the published graph format (see Content → JSON). Use <b>Fill payload from Content</b> to copy the live or draft map.</p>
-                                        </div>
-
                                         <div class="adm-glib-actions">
                                             <button type="button" class="btn" id="adm-glib-save">Save</button>
-                                            <button type="button" class="btn ghost" id="adm-glib-open-workspace">Open in workspace</button>
+                                            <button type="button" class="btn ghost adm-glib-open-ws-btn" id="adm-glib-open-workspace" hidden title="Open in workspace">
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                                    <polyline points="15 3 21 3 21 9"></polyline>
+                                                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                                                </svg>
+                                                <span>Open in workspace</span>
+                                            </button>
                                             <button type="button" class="btn ghost" id="adm-glib-delete" disabled>Remove from catalog…</button>
                                         </div>
                                     </div>
-                                </div>
+                                </section>
                             </div>
                             <p id="adm-glib-msg" class="status adm-glib-status" aria-live="polite"></p>
                         </div>
 
-                        <div data-adm-panel="library-json" class="adm-hidden">
+                        <div data-adm-panel="library-json" class="adm-hidden adm-glib-json-panel">
                             <p class="helper adm-glib-json-lede">
-                                Read-only snapshot of <code>GET /api/admin/graph-catalog</code> (list without full payloads). Reload the Library tab or use <b>Reload list</b> to refresh.
+                                Inventory export from <code>GET /api/admin/graph-inventory</code>. Mind map body for editing lives in the JSON tab below (or use Workspace).
                             </p>
                             <textarea id="adm-glib-json" class="adm-json-input adm-glib-json-ta" spellcheck="false" readonly></textarea>
-                            <div class="adm-toolbar-row">
-                                <button type="button" class="btn ghost btn-sm" id="adm-glib-json-copy">Copy</button>
+                            <label for="adm-glib-payload" class="adm-inline-label" style="display:block;margin-top:14px">Mind map body (array of roots)</label>
+                            <textarea id="adm-glib-payload" class="adm-json-input adm-glib-payload-ta" spellcheck="false" rows="18" aria-describedby="adm-glib-payload-hint"></textarea>
+                            <p id="adm-glib-payload-hint" class="adm-field-hint">Synced with the selected catalog row. <strong>Format JSON</strong> is in the toolbar on the UI view.</p>
+                            <div class="adm-toolbar-row" style="margin-top:10px">
+                                <button type="button" class="btn ghost btn-sm" id="adm-glib-json-copy">Copy inventory JSON</button>
                             </div>
+                        </div>
                         </div>
                     </div>
 
@@ -912,7 +997,7 @@
     <script src="./auth/dsa-user-auth.js?v=3"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
     <script src="./script.js?v=31"></script>
-    <script src="./auth/account-admin-panel.js?v=21"></script>
+    <script src="./auth/account-admin-panel.js?v=22"></script>
     <script src="./auth/admin-site-page.js?v=10"></script>
 </body>
 </html>

@@ -304,3 +304,507 @@ html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-glib-actions {
     background: rgba(148, 163, 184, 0.3);
     color: #475569;
 }
+
+/* —— Graph library v2 (portal #portal-panel-cms) —— */
+.dsa-portal-page--admin .adm-glib-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 4px 16px;
+}
+
+.dsa-portal-page--admin .adm-glib-json-panel {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 8px 4px 24px;
+}
+
+.dsa-portal-page--admin .adm-glib-app {
+    --glib-bg: #fafafa;
+    --glib-panel: #ffffff;
+    --glib-panel-2: #f5f5f7;
+    --glib-border: #e5e5ea;
+    --glib-border-strong: #d2d2d7;
+    --glib-text: #1d1d1f;
+    --glib-text-2: #6e6e73;
+    --glib-text-3: #8e8e93;
+    --glib-accent: #111;
+    --glib-danger: #d70015;
+    --glib-success: #00875a;
+    --glib-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --glib-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06);
+    --glib-radius-lg: 14px;
+    padding: 0;
+    color: var(--glib-text);
+}
+
+html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-glib-app {
+    --glib-bg: transparent;
+    --glib-panel: rgba(30, 41, 59, 0.55);
+    --glib-panel-2: rgba(15, 23, 42, 0.65);
+    --glib-border: rgba(148, 163, 184, 0.2);
+    --glib-border-strong: rgba(148, 163, 184, 0.35);
+    --glib-text: #e2e8f0;
+    --glib-text-2: #94a3b8;
+    --glib-text-3: #64748b;
+    --glib-accent: #f1f5f9;
+    --glib-danger: #f87171;
+    --glib-success: #4ade80;
+}
+
+.dsa-portal-page--admin .adm-glib-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 4px 4px 20px;
+}
+
+.dsa-portal-page--admin .adm-glib-h1 {
+    margin: 0 0 6px;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.dsa-portal-page--admin .adm-glib-lede {
+    margin: 0;
+    color: var(--glib-text-2);
+    font-size: 13px;
+    max-width: 420px;
+    line-height: 1.45;
+}
+
+.dsa-portal-page--admin .adm-glib-segmented {
+    display: inline-flex;
+    background: var(--glib-panel-2);
+    border: 1px solid var(--glib-border);
+    border-radius: 9px;
+    padding: 2px;
+}
+
+.dsa-portal-page--admin .adm-glib-segmented button {
+    border: 0;
+    background: transparent;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 7px;
+    color: var(--glib-text-2);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+    font-family: inherit;
+}
+
+.dsa-portal-page--admin .adm-glib-segmented button.active {
+    background: var(--glib-panel);
+    color: var(--glib-text);
+    box-shadow: var(--glib-shadow-sm);
+}
+
+.dsa-portal-page--admin .adm-glib-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    background: var(--glib-panel);
+    border: 1px solid var(--glib-border);
+    border-radius: var(--glib-radius-lg);
+    padding: 10px;
+    box-shadow: var(--glib-shadow-sm);
+    margin-bottom: 14px;
+}
+
+.dsa-portal-page--admin .adm-glib-tool-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.dsa-portal-page--admin .adm-glib-toolbar-divider {
+    width: 1px;
+    height: 22px;
+    background: var(--glib-border);
+    margin: 0 4px;
+}
+
+.dsa-portal-page--admin .adm-glib-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--glib-text);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.05s ease;
+    white-space: nowrap;
+    font-family: inherit;
+}
+
+.dsa-portal-page--admin .adm-glib-btn:hover {
+    background: var(--glib-panel-2);
+}
+
+.dsa-portal-page--admin .adm-glib-btn:active {
+    transform: scale(0.98);
+}
+
+.dsa-portal-page--admin .adm-glib-btn svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.dsa-portal-page--admin .adm-glib-btn--sm {
+    height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
+}
+
+.dsa-portal-page--admin .adm-glib-btn--primary {
+    background: var(--glib-accent);
+    color: #fff;
+}
+
+.dsa-portal-page--admin .adm-glib-btn--primary:hover {
+    background: #000;
+}
+
+html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-glib-btn--primary:hover {
+    background: #334155;
+}
+
+.dsa-portal-page--admin .adm-glib-btn--outline {
+    border-color: var(--glib-border-strong);
+    background: var(--glib-panel);
+}
+
+.dsa-portal-page--admin .adm-glib-btn--danger {
+    color: var(--glib-danger);
+    border: 1px solid rgba(215, 0, 21, 0.25);
+    background: var(--glib-panel);
+}
+
+.dsa-portal-page--admin .adm-glib-btn--danger:hover {
+    background: #fff5f5;
+}
+
+html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-glib-btn--danger:hover {
+    background: rgba(248, 113, 113, 0.12);
+}
+
+.dsa-portal-page--admin .adm-glib-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.dsa-portal-page--admin .adm-glib-filters-card {
+    background: var(--glib-panel);
+    border: 1px solid var(--glib-border);
+    border-radius: var(--glib-radius-lg);
+    padding: 14px;
+    box-shadow: var(--glib-shadow-sm);
+    margin-bottom: 20px;
+}
+
+.dsa-portal-page--admin .adm-glib-filters-row {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr 1.2fr 1fr 1fr auto;
+    gap: 10px;
+    align-items: end;
+}
+
+@media (max-width: 1100px) {
+    .dsa-portal-page--admin .adm-glib-filters-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .dsa-portal-page--admin .adm-glib-field--search {
+        grid-column: 1 / -1;
+    }
+    .dsa-portal-page--admin .adm-glib-filter-actions {
+        grid-column: 1 / -1;
+        justify-content: flex-start;
+    }
+}
+
+.dsa-portal-page--admin .adm-glib-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.dsa-portal-page--admin .adm-glib-field label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--glib-text-3);
+    text-transform: uppercase;
+}
+
+.dsa-portal-page--admin .adm-glib-input,
+.dsa-portal-page--admin .adm-glib-select {
+    height: 34px;
+    width: 100%;
+    border: 1px solid var(--glib-border-strong);
+    border-radius: 8px;
+    background: var(--glib-panel);
+    padding: 0 10px;
+    font-size: 13px;
+    color: var(--glib-text);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.dsa-portal-page--admin .adm-glib-input:focus,
+.dsa-portal-page--admin .adm-glib-select:focus {
+    border-color: #a1a1a6;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+.dsa-portal-page--admin .adm-glib-search-wrap {
+    position: relative;
+}
+
+.dsa-portal-page--admin .adm-glib-search-wrap .adm-glib-input {
+    padding-left: 32px;
+}
+
+.dsa-portal-page--admin .adm-glib-search-wrap svg {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    color: var(--glib-text-3);
+    pointer-events: none;
+}
+
+.dsa-portal-page--admin .adm-glib-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236e6e73' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
+}
+
+.dsa-portal-page--admin .adm-glib-filter-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.dsa-portal-page--admin .adm-glib-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--glib-border);
+}
+
+.dsa-portal-page--admin .adm-glib-chips[hidden] {
+    display: none !important;
+}
+
+.dsa-portal-page--admin .adm-glib-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--glib-panel-2);
+    border: 1px solid var(--glib-border);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: var(--glib-text);
+}
+
+.dsa-portal-page--admin .adm-glib-chip strong {
+    font-weight: 600;
+    color: var(--glib-text-2);
+}
+
+.dsa-portal-page--admin .adm-glib-chip-remove {
+    border: 0;
+    background: transparent;
+    color: var(--glib-text-3);
+    cursor: pointer;
+    padding: 0;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.dsa-portal-page--admin .adm-glib-chip-remove:hover {
+    color: var(--glib-text);
+}
+
+.dsa-portal-page--admin .adm-glib-main {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 960px) {
+    .dsa-portal-page--admin .adm-glib-main {
+        grid-template-columns: 1fr;
+    }
+}
+
+.dsa-portal-page--admin .adm-glib-panel {
+    background: var(--glib-panel);
+    border: 1px solid var(--glib-border);
+    border-radius: var(--glib-radius-lg);
+    box-shadow: var(--glib-shadow-sm);
+    overflow: hidden;
+}
+
+.dsa-portal-page--admin .adm-glib-panel-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--glib-border);
+}
+
+.dsa-portal-page--admin .adm-glib-panel-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--glib-text-3);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.dsa-portal-page--admin .adm-glib-panel-sub {
+    margin: 6px 0 0;
+    color: var(--glib-text-2);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.dsa-portal-page--admin .adm-glib-card-host {
+    max-height: min(62vh, 640px);
+    overflow: auto;
+    padding: 0;
+    margin: 0;
+    display: block;
+}
+
+.dsa-portal-page--admin .adm-glib-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 12px 14px;
+    border: 0;
+    border-bottom: 1px solid var(--glib-border);
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.12s;
+    font: inherit;
+    color: inherit;
+    box-sizing: border-box;
+}
+
+.dsa-portal-page--admin .adm-glib-item:hover {
+    background: var(--glib-panel-2);
+}
+
+.dsa-portal-page--admin .adm-glib-item--active {
+    background: #f0f4ff;
+    border-left: 3px solid #0a84ff;
+    padding-left: 11px;
+}
+
+html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-glib-item--active {
+    background: rgba(59, 130, 246, 0.15);
+    border-left-color: #60a5fa;
+}
+
+.dsa-portal-page--admin .adm-glib-item--user {
+    opacity: 0.98;
+}
+
+.dsa-portal-page--admin .adm-glib-item-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 13px;
+}
+
+.dsa-portal-page--admin .adm-glib-badges {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 2px 0;
+}
+
+.dsa-portal-page--admin .adm-glib-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.dsa-portal-page--admin .adm-glib-badge--user {
+    background: #eef0f3;
+    color: #515154;
+}
+
+.dsa-portal-page--admin .adm-glib-badge--catalog {
+    background: #e8f5ee;
+    color: var(--glib-success);
+}
+
+.dsa-portal-page--admin .adm-glib-badge--public {
+    background: #e8f1fd;
+    color: #0a6bcb;
+}
+
+.dsa-portal-page--admin .adm-glib-badge--unlisted {
+    background: #fff8e6;
+    color: #b45309;
+}
+
+.dsa-portal-page--admin .adm-glib-badge--private {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-glib-badge--user {
+    background: rgba(148, 163, 184, 0.25);
+    color: #cbd5e1;
+}
+
+html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-glib-badge--catalog {
+    background: rgba(34, 197, 94, 0.2);
+    color: #86efac;
+}
+
+html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-glib-badge--public {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+}
+
+.dsa-portal-page--admin .adm-glib-item-meta {
+    font-size: 11px;
+    color: var(--glib-text-3);
+    margin-top: 2px;
+}
+
+.dsa-portal-page--admin .adm-glib-editor-body {
+    padding: 18px 16px 20px;
+}
+
+.dsa-portal-page--admin .adm-glib-open-ws-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}

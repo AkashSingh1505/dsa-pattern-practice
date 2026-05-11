@@ -161,9 +161,19 @@ export async function onRequestPatch(context) {
 
     const profileIn = body.profile && typeof body.profile === "object" ? body.profile : null;
     const profileKeys = profileIn
-        ? ["display_name", "locale", "timezone", "prefs_json", "bio", "avatar_url", "social_json"].filter(
-              (k) => Object.prototype.hasOwnProperty.call(profileIn, k),
-          )
+        ? [
+              "display_name",
+              "locale",
+              "timezone",
+              "prefs_json",
+              "bio",
+              "avatar_url",
+              "social_json",
+              "gender",
+              "location",
+              "birthday",
+              "experience_json",
+          ].filter((k) => Object.prototype.hasOwnProperty.call(profileIn, k))
         : [];
 
     if (updates.length === 0 && profileKeys.length === 0) {
@@ -206,6 +216,10 @@ export async function onRequestPatch(context) {
                 prefs_json: prev && prev.prefs_json != null ? prev.prefs_json : null,
                 bio: prev && prev.bio != null ? prev.bio : null,
                 social_json: prev && prev.social_json != null ? prev.social_json : null,
+                gender: prev && prev.gender != null ? prev.gender : null,
+                location: prev && prev.location != null ? prev.location : null,
+                birthday: prev && prev.birthday != null ? prev.birthday : null,
+                experience_json: prev && prev.experience_json != null ? prev.experience_json : null,
                 updated_at: now,
             };
             for (const k of profileKeys) {
@@ -214,8 +228,8 @@ export async function onRequestPatch(context) {
             }
             await db
                 .prepare(
-                    `INSERT INTO user_profiles (user_id, display_name, avatar_url, locale, timezone, prefs_json, bio, social_json, updated_at)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    `INSERT INTO user_profiles (user_id, display_name, avatar_url, locale, timezone, prefs_json, bio, social_json, gender, location, birthday, experience_json, updated_at)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                      ON CONFLICT(user_id) DO UPDATE SET
                        display_name = excluded.display_name,
                        avatar_url = excluded.avatar_url,
@@ -224,6 +238,10 @@ export async function onRequestPatch(context) {
                        prefs_json = excluded.prefs_json,
                        bio = excluded.bio,
                        social_json = excluded.social_json,
+                       gender = excluded.gender,
+                       location = excluded.location,
+                       birthday = excluded.birthday,
+                       experience_json = excluded.experience_json,
                        updated_at = excluded.updated_at`,
                 )
                 .bind(
@@ -235,6 +253,10 @@ export async function onRequestPatch(context) {
                     row.prefs_json,
                     row.bio,
                     row.social_json,
+                    row.gender,
+                    row.location,
+                    row.birthday,
+                    row.experience_json,
                     row.updated_at,
                 )
                 .run();

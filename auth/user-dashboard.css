@@ -522,6 +522,18 @@ html.dsa-udash-html,
     display: block;
 }
 
+/* HTML hidden must win over .is-active / flex layouts (otherwise flags from API look ignored). */
+.dsa-udash-panel[hidden] {
+    display: none !important;
+}
+
+.dsa-udash-settings-row[hidden],
+.dsa-udash-nav-btn[hidden],
+.dsa-udash-mnav button[hidden],
+.dsa-udash-icon-btn[hidden] {
+    display: none !important;
+}
+
 .dsa-udash-panel-head {
     margin-bottom: 18px;
 }

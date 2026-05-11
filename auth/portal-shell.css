@@ -285,6 +285,10 @@
             transition:.2s;
         }
         .alt svg{width:15px;height:15px}
+        .alt button[hidden],
+        .or[hidden] {
+            display: none !important;
+        }
         .alt button.dsa-site-feature-faded {
             opacity: 0.48;
         }

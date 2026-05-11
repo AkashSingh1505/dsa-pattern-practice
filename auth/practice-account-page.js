@@ -70,6 +70,7 @@
         }
 
         document.addEventListener("dsa-site-features-ready", applyAccountFeatureChrome);
+        window.addEventListener("load", applyAccountFeatureChrome);
 
         if (typeof dsaEnsureSiteFeaturesLoaded === "function") {
             await dsaEnsureSiteFeaturesLoaded();

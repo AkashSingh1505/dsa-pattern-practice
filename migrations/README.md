@@ -26,6 +26,12 @@ After `0001`, add the **`subscriber`** practice role and normalize paid rows (se
 npx wrangler d1 execute dsa-pattern-practice-subscribers --remote --file=migrations/subscribers/0002_practice_users_subscriber_role.sql
 ```
 
+**Member profile fields** (gender, location, birthday, experience JSON — optional):
+
+```bash
+npx wrangler d1 execute dsa-pattern-practice-subscribers --remote --file=migrations/subscribers/0004_user_profile_fields.sql
+```
+
 **Graph library** (community catalog + personal copies, member hub):
 
 ```bash

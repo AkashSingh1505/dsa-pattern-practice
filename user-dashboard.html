@@ -38,7 +38,7 @@
     <link rel="stylesheet" href="./auth/portal-shell.css?v=9" />
     <link rel="stylesheet" href="./styles.css?v=14" />
     <link rel="stylesheet" href="./dsa-index-shell.css?v=20" />
-    <link rel="stylesheet" href="./auth/user-dashboard.css?v=8" />
+    <link rel="stylesheet" href="./auth/user-dashboard.css?v=9" />
 </head>
 <body class="dsa-udash-body">
     <div class="dsa-udash-app" id="dsa-user-dashboard-main">
@@ -493,7 +493,7 @@
                     </div>
                     <div class="dsa-udash-card">
                         <p style="margin: 0 0 6px; font-size: 14px">Current plan</p>
-                        <p style="margin: 0 0 16px; font-size: 18px; font-weight: 700" id="dsa-udash-profile-plan">free · user</p>
+                        <p style="margin: 0 0 16px; font-size: 18px; font-weight: 700" id="dsa-udash-billing-plan">free · user</p>
                         <ul style="margin: 0; padding-left: 18px; font-size: 13px; color: var(--udash-ink2); line-height: 1.55">
                             <li><strong>Free</strong> — full public map, local tools, quizzes on this hub.</li>
                             <li><strong>Paid</strong> — customize graph (in app), personal graphs, shared inbox, collab links, quiz lab, digest toggle.</li>
@@ -560,23 +560,101 @@
                 <section class="dsa-udash-panel" id="panel-profile" data-panel-id="profile" aria-labelledby="ph-profile">
                     <div class="dsa-udash-panel-head">
                         <h1 id="ph-profile">Profile</h1>
-                        <p>How you appear in future social features — saved locally until <code>user_profiles</code> API exists.</p>
+                        <p class="dsa-udash-profile-head-lede">Manage how you show up on the hub. Saved to your account when signed in; also cached in this browser.</p>
                     </div>
-                    <div class="dsa-udash-card">
-                        <p style="margin: 0 0 14px; font-size: 13px">Account email (from JWT): <strong id="dsa-udash-profile-email">—</strong></p>
-                        <div class="dsa-udash-field">
-                            <label for="udash-display-name">Display name</label>
-                            <input class="dsa-udash-input" id="udash-display-name" type="text" maxlength="80" placeholder="Your name" />
+
+                    <div class="dsa-udash-profile-layout">
+                        <div class="dsa-udash-card dsa-udash-profile-hero">
+                            <div class="dsa-udash-profile-avatar-wrap">
+                                <img id="udash-profile-avatar-preview" class="dsa-udash-profile-avatar-img" src="" alt="" width="96" height="96" hidden />
+                                <div id="udash-profile-avatar-fallback" class="dsa-udash-profile-avatar-fallback" aria-hidden="true"></div>
+                            </div>
+                            <p class="dsa-udash-profile-account-email"><span class="dsa-udash-profile-email-label">Signed in as</span> <strong id="dsa-udash-profile-email">—</strong></p>
+                            <p class="dsa-udash-profile-plan-line" id="dsa-udash-profile-plan-summary">—</p>
+                            <div class="dsa-udash-field">
+                                <label for="udash-avatar-url">Profile photo URL</label>
+                                <input class="dsa-udash-input" id="udash-avatar-url" type="url" inputmode="url" placeholder="https://…" autocomplete="off" />
+                                <p class="dsa-udash-field-hint">Paste an image link (e.g. GitHub avatar). Optional.</p>
+                            </div>
                         </div>
-                        <div class="dsa-udash-field">
-                            <label for="udash-bio">Bio</label>
-                            <textarea class="dsa-udash-textarea" id="udash-bio" maxlength="500" placeholder="Short intro"></textarea>
+
+                        <div class="dsa-udash-card dsa-udash-profile-section">
+                            <h2 class="dsa-udash-profile-section-title">General</h2>
+                            <p class="dsa-udash-profile-section-lede">Basic profile information.</p>
+                            <div class="dsa-udash-profile-fields-grid">
+                                <div class="dsa-udash-field">
+                                    <label for="udash-display-name">Display name</label>
+                                    <input class="dsa-udash-input" id="udash-display-name" type="text" maxlength="120" placeholder="Your name" autocomplete="name" />
+                                </div>
+                                <div class="dsa-udash-field">
+                                    <label for="udash-gender">Gender</label>
+                                    <input class="dsa-udash-input" id="udash-gender" type="text" maxlength="40" placeholder="e.g. Male" />
+                                </div>
+                                <div class="dsa-udash-field dsa-udash-field--full">
+                                    <label for="udash-location">Location</label>
+                                    <input class="dsa-udash-input" id="udash-location" type="text" maxlength="200" placeholder="Country, state, city" />
+                                </div>
+                                <div class="dsa-udash-field">
+                                    <label for="udash-birthday">Birthday</label>
+                                    <input class="dsa-udash-input" id="udash-birthday" type="date" />
+                                </div>
+                                <div class="dsa-udash-field">
+                                    <label for="udash-tz">Timezone</label>
+                                    <select class="dsa-udash-select" id="udash-tz"></select>
+                                </div>
+                                <div class="dsa-udash-field">
+                                    <label for="udash-locale">Locale</label>
+                                    <input class="dsa-udash-input" id="udash-locale" type="text" maxlength="32" placeholder="e.g. en-IN" />
+                                </div>
+                                <div class="dsa-udash-field dsa-udash-field--full">
+                                    <label for="udash-bio">Bio / Read me</label>
+                                    <textarea class="dsa-udash-textarea" id="udash-bio" maxlength="2000" rows="4" placeholder="Short intro, interests, or readme-style blurb"></textarea>
+                                </div>
+                            </div>
                         </div>
-                        <div class="dsa-udash-field">
-                            <label for="udash-tz">Timezone</label>
-                            <select class="dsa-udash-select" id="udash-tz"></select>
+
+                        <div class="dsa-udash-card dsa-udash-profile-section">
+                            <h2 class="dsa-udash-profile-section-title">Websites</h2>
+                            <p class="dsa-udash-profile-section-lede">Links shown on your public-facing profile when we enable discovery.</p>
+                            <div class="dsa-udash-profile-fields-grid">
+                                <div class="dsa-udash-field dsa-udash-field--full">
+                                    <label for="udash-social-github">GitHub</label>
+                                    <input class="dsa-udash-input" id="udash-social-github" type="url" placeholder="https://github.com/…" />
+                                </div>
+                                <div class="dsa-udash-field dsa-udash-field--full">
+                                    <label for="udash-social-linkedin">LinkedIn</label>
+                                    <input class="dsa-udash-input" id="udash-social-linkedin" type="url" placeholder="https://linkedin.com/in/…" />
+                                </div>
+                                <div class="dsa-udash-field dsa-udash-field--full">
+                                    <label for="udash-social-x">X</label>
+                                    <input class="dsa-udash-input" id="udash-social-x" type="url" placeholder="https://x.com/…" />
+                                </div>
+                                <div class="dsa-udash-field dsa-udash-field--full">
+                                    <label for="udash-social-readme">Read me / portfolio</label>
+                                    <input class="dsa-udash-input" id="udash-social-readme" type="url" placeholder="https://…" />
+                                </div>
+                            </div>
                         </div>
-                        <div class="dsa-udash-btn-row">
+
+                        <div class="dsa-udash-card dsa-udash-profile-section">
+                            <h2 class="dsa-udash-profile-section-title">Experience</h2>
+                            <p class="dsa-udash-profile-section-lede">Share your path from learning to career (plain text or short bullets).</p>
+                            <div class="dsa-udash-field">
+                                <label for="udash-exp-work">Work</label>
+                                <textarea class="dsa-udash-textarea" id="udash-exp-work" rows="5" maxlength="8000" placeholder="Roles, companies, highlights…"></textarea>
+                            </div>
+                            <div class="dsa-udash-field">
+                                <label for="udash-exp-education">Education</label>
+                                <textarea class="dsa-udash-textarea" id="udash-exp-education" rows="5" maxlength="8000" placeholder="Degrees, courses, certifications…"></textarea>
+                            </div>
+                            <div class="dsa-udash-field">
+                                <label for="udash-exp-skills">Skills</label>
+                                <textarea class="dsa-udash-textarea" id="udash-exp-skills" rows="5" maxlength="8000" placeholder="Languages, frameworks, tools…"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="dsa-udash-profile-save-bar">
+                            <p class="dsa-udash-profile-sync-hint" id="udash-profile-sync-hint"></p>
                             <button type="button" class="dsa-udash-btn dsa-udash-btn--primary" id="udash-save-profile">Save profile</button>
                         </div>
                     </div>
@@ -624,13 +702,13 @@
     <div class="dsa-udash-toast" id="udash-toast" role="status"></div>
 
     <script src="./auth/dsa-admin-auth.js?v=5"></script>
-    <script src="./auth/site-features.js?v=5"></script>
+    <script src="./auth/site-features.js?v=6"></script>
     <script src="./auth/dsa-member-roles.js?v=1"></script>
     <script src="./auth/dsa-user-auth.js?v=3"></script>
     <script src="./cms-bootstrap.js?v=3"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
     <script src="./script.js?v=35"></script>
-    <script src="./auth/user-dashboard-page.js?v=10"></script>
+    <script src="./auth/user-dashboard-page.js?v=11"></script>
     <script src="./auth/graph-library-panel.js?v=1"></script>
 </body>
 </html>

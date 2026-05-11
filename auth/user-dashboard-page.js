@@ -90,7 +90,23 @@
 
     var state = {
         prefs: { emailTips: false, compact: false, digest: false },
-        profile: { displayName: "", bio: "", tz: "" },
+        profile: {
+            displayName: "",
+            bio: "",
+            tz: "",
+            locale: "",
+            avatarUrl: "",
+            gender: "",
+            location: "",
+            birthday: "",
+            socialGithub: "",
+            socialLinkedin: "",
+            socialX: "",
+            socialReadme: "",
+            expWork: "",
+            expEducation: "",
+            expSkills: "",
+        },
         graphs: [],
         shared: [],
         invite: null,
@@ -557,16 +573,189 @@
 
     document.addEventListener("dsa-site-features-ready", onSiteFeaturesReadyForUdash);
 
+    function planSummaryText(c) {
+        if (!c) {
+            return "—";
+        }
+        return (c.plan || "free") + " · " + (c.role || "user");
+    }
+
     function fillJwtProfile() {
         var c = typeof dsaParsePracticeUserClaims === "function" ? dsaParsePracticeUserClaims() : null;
         var emailEl = document.getElementById("dsa-udash-profile-email");
-        var planEl = document.getElementById("dsa-udash-profile-plan");
+        var planBilling = document.getElementById("dsa-udash-billing-plan");
+        var planProfile = document.getElementById("dsa-udash-profile-plan-summary");
+        var txt = planSummaryText(c);
         if (emailEl && c) {
             emailEl.textContent = c.email || "—";
         }
-        if (planEl && c) {
-            planEl.textContent = (c.plan || "free") + " · " + (c.role || "user");
+        if (planBilling && c) {
+            planBilling.textContent = txt;
         }
+        if (planProfile && c) {
+            planProfile.textContent = txt;
+        }
+    }
+
+    function apiMeUrl() {
+        return new URL("api/auth/me", document.baseURI).href;
+    }
+
+    function practiceAuthHeaders() {
+        var tok =
+            typeof dsaGetPracticeUserToken === "function" ? dsaGetPracticeUserToken() : "";
+        var h = { Accept: "application/json" };
+        if (tok) {
+            h.Authorization = "Bearer " + tok;
+        }
+        return h;
+    }
+
+    function applyServerProfileToState(p) {
+        if (!p || typeof p !== "object") {
+            return;
+        }
+        state.profile.displayName = p.display_name || "";
+        state.profile.bio = p.bio || "";
+        state.profile.tz = p.timezone || "";
+        state.profile.locale = p.locale || "";
+        state.profile.avatarUrl = p.avatar_url || "";
+        state.profile.gender = p.gender || "";
+        state.profile.location = p.location || "";
+        state.profile.birthday = p.birthday || "";
+        var soc = p.social || {};
+        state.profile.socialGithub = soc.github || "";
+        state.profile.socialLinkedin = soc.linkedin || "";
+        state.profile.socialX = soc.x || "";
+        state.profile.socialReadme = soc.readme || "";
+        var ex = p.experience || {};
+        state.profile.expWork = ex.work || "";
+        state.profile.expEducation = ex.education || "";
+        state.profile.expSkills = ex.skills || "";
+    }
+
+    function refreshProfileAvatarPreview() {
+        var img = document.getElementById("udash-profile-avatar-preview");
+        var fb = document.getElementById("udash-profile-avatar-fallback");
+        var url = (state.profile.avatarUrl || "").trim();
+        if (!img || !fb) {
+            return;
+        }
+        if (url) {
+            img.src = url;
+            img.alt = state.profile.displayName || "Profile";
+            img.hidden = false;
+            fb.hidden = true;
+            img.onerror = function () {
+                img.hidden = true;
+                fb.hidden = false;
+            };
+        } else {
+            img.hidden = true;
+            img.removeAttribute("src");
+            fb.hidden = false;
+            var initials = (state.profile.displayName || "You").trim().slice(0, 2).toUpperCase();
+            fb.textContent = initials || "?";
+        }
+    }
+
+    async function fetchProfileFromServer() {
+        var hint = document.getElementById("udash-profile-sync-hint");
+        if (typeof dsaGetPracticeUserToken !== "function" || !dsaGetPracticeUserToken()) {
+            if (hint) {
+                hint.textContent = "";
+            }
+            return;
+        }
+        if (hint) {
+            hint.textContent = "Loading profile…";
+        }
+        try {
+            var r = await fetch(apiMeUrl(), { headers: practiceAuthHeaders(), cache: "no-store" });
+            var j = await r.json().catch(function () {
+                return null;
+            });
+            if (!r.ok || !j || !j.ok) {
+                if (hint) {
+                    hint.textContent =
+                        "Could not load cloud profile (" + (j && j.error ? j.error : r.status) + "). Using local copy.";
+                }
+                return;
+            }
+            if (j.profile) {
+                applyServerProfileToState(j.profile);
+                save();
+                wireProfileFieldsIntoDom();
+            }
+            if (hint) {
+                hint.textContent = "Synced with your account.";
+            }
+        } catch (e) {
+            if (hint) {
+                hint.textContent = "Offline or API unavailable — edits stay local until save works.";
+            }
+        }
+    }
+
+    function wireProfileFieldsIntoDom() {
+        var dn = document.getElementById("udash-display-name");
+        var bio = document.getElementById("udash-bio");
+        var av = document.getElementById("udash-avatar-url");
+        var loc = document.getElementById("udash-locale");
+        var gen = document.getElementById("udash-gender");
+        var loca = document.getElementById("udash-location");
+        var bday = document.getElementById("udash-birthday");
+        var sg = document.getElementById("udash-social-github");
+        var sl = document.getElementById("udash-social-linkedin");
+        var sx = document.getElementById("udash-social-x");
+        var sr = document.getElementById("udash-social-readme");
+        var ew = document.getElementById("udash-exp-work");
+        var ee = document.getElementById("udash-exp-education");
+        var es = document.getElementById("udash-exp-skills");
+        if (dn) {
+            dn.value = state.profile.displayName || "";
+        }
+        if (bio) {
+            bio.value = state.profile.bio || "";
+        }
+        if (av) {
+            av.value = state.profile.avatarUrl || "";
+        }
+        if (loc) {
+            loc.value = state.profile.locale || "";
+        }
+        if (gen) {
+            gen.value = state.profile.gender || "";
+        }
+        if (loca) {
+            loca.value = state.profile.location || "";
+        }
+        if (bday) {
+            bday.value = state.profile.birthday || "";
+        }
+        if (sg) {
+            sg.value = state.profile.socialGithub || "";
+        }
+        if (sl) {
+            sl.value = state.profile.socialLinkedin || "";
+        }
+        if (sx) {
+            sx.value = state.profile.socialX || "";
+        }
+        if (sr) {
+            sr.value = state.profile.socialReadme || "";
+        }
+        if (ew) {
+            ew.value = state.profile.expWork || "";
+        }
+        if (ee) {
+            ee.value = state.profile.expEducation || "";
+        }
+        if (es) {
+            es.value = state.profile.expSkills || "";
+        }
+        fillTimezones();
+        refreshProfileAvatarPreview();
     }
 
     function refreshStats() {
@@ -1437,24 +1626,111 @@
         }
     }
 
-    function wireProfile() {
+    function readProfileFromDom() {
         var dn = document.getElementById("udash-display-name");
         var bio = document.getElementById("udash-bio");
-        if (dn) {
-            dn.value = state.profile.displayName || "";
-        }
-        if (bio) {
-            bio.value = state.profile.bio || "";
-        }
-        fillTimezones();
+        var tz = document.getElementById("udash-tz");
+        var av = document.getElementById("udash-avatar-url");
+        var loc = document.getElementById("udash-locale");
+        var gen = document.getElementById("udash-gender");
+        var loca = document.getElementById("udash-location");
+        var bday = document.getElementById("udash-birthday");
+        var sg = document.getElementById("udash-social-github");
+        var sl = document.getElementById("udash-social-linkedin");
+        var sx = document.getElementById("udash-social-x");
+        var sr = document.getElementById("udash-social-readme");
+        var ew = document.getElementById("udash-exp-work");
+        var ee = document.getElementById("udash-exp-education");
+        var es = document.getElementById("udash-exp-skills");
+        state.profile.displayName = dn ? String(dn.value || "").trim() : "";
+        state.profile.bio = bio ? String(bio.value || "").trim() : "";
+        state.profile.tz = tz ? tz.value : "";
+        state.profile.avatarUrl = av ? String(av.value || "").trim() : "";
+        state.profile.locale = loc ? String(loc.value || "").trim() : "";
+        state.profile.gender = gen ? String(gen.value || "").trim() : "";
+        state.profile.location = loca ? String(loca.value || "").trim() : "";
+        state.profile.birthday = bday ? String(bday.value || "").trim() : "";
+        state.profile.socialGithub = sg ? String(sg.value || "").trim() : "";
+        state.profile.socialLinkedin = sl ? String(sl.value || "").trim() : "";
+        state.profile.socialX = sx ? String(sx.value || "").trim() : "";
+        state.profile.socialReadme = sr ? String(sr.value || "").trim() : "";
+        state.profile.expWork = ew ? String(ew.value || "").trim() : "";
+        state.profile.expEducation = ee ? String(ee.value || "").trim() : "";
+        state.profile.expSkills = es ? String(es.value || "").trim() : "";
+    }
+
+    function wireProfile() {
+        wireProfileFieldsIntoDom();
+        document.getElementById("udash-avatar-url") &&
+            document.getElementById("udash-avatar-url").addEventListener("input", function () {
+                readProfileFromDom();
+                refreshProfileAvatarPreview();
+            });
+        document.getElementById("udash-display-name") &&
+            document.getElementById("udash-display-name").addEventListener("input", function () {
+                readProfileFromDom();
+                refreshProfileAvatarPreview();
+            });
         document.getElementById("udash-save-profile") &&
             document.getElementById("udash-save-profile").addEventListener("click", function () {
-                state.profile.displayName = dn ? String(dn.value || "").trim() : "";
-                state.profile.bio = bio ? String(bio.value || "").trim() : "";
-                var tz = document.getElementById("udash-tz");
-                state.profile.tz = tz ? tz.value : "";
+                readProfileFromDom();
                 save();
-                toast("Profile saved locally");
+                var tok = typeof dsaGetPracticeUserToken === "function" ? dsaGetPracticeUserToken() : "";
+                if (!tok) {
+                    toast("Profile saved locally — sign in to sync to your account.");
+                    return;
+                }
+                var body = {
+                    profile: {
+                        display_name: state.profile.displayName,
+                        bio: state.profile.bio,
+                        timezone: state.profile.tz,
+                        locale: state.profile.locale,
+                        avatar_url: state.profile.avatarUrl,
+                        gender: state.profile.gender,
+                        location: state.profile.location,
+                        birthday: state.profile.birthday,
+                        social: {
+                            github: state.profile.socialGithub,
+                            linkedin: state.profile.socialLinkedin,
+                            x: state.profile.socialX,
+                            readme: state.profile.socialReadme,
+                        },
+                        experience: {
+                            work: state.profile.expWork,
+                            education: state.profile.expEducation,
+                            skills: state.profile.expSkills,
+                        },
+                    },
+                };
+                fetch(apiMeUrl(), {
+                    method: "PATCH",
+                    headers: Object.assign({ "Content-Type": "application/json" }, practiceAuthHeaders()),
+                    body: JSON.stringify(body),
+                })
+                    .then(function (r) {
+                        return r.json().then(function (j) {
+                            return { r: r, j: j };
+                        });
+                    })
+                    .then(function (x) {
+                        if (!x.r.ok || !x.j || !x.j.ok) {
+                            toast(
+                                "Saved locally — server: " +
+                                    (x.j && x.j.error ? x.j.error : x.r.status || "error"),
+                            );
+                            return;
+                        }
+                        if (x.j.profile) {
+                            applyServerProfileToState(x.j.profile);
+                            save();
+                            wireProfileFieldsIntoDom();
+                        }
+                        toast("Profile saved");
+                    })
+                    .catch(function () {
+                        toast("Saved locally — could not reach server.");
+                    });
             });
     }
 
@@ -1489,6 +1765,7 @@
         load();
         updateVisitStreak();
         fillJwtProfile();
+        void fetchProfileFromServer();
         applyMemberHubFeatureUi();
         seedWelcome();
         wireNav();
@@ -1516,6 +1793,8 @@
         refreshStats();
         setInterval(checkDueReminders, 30000);
         checkDueReminders();
+        /* After all wiring (and any DOM touched), re-apply site flags so [hidden] / fades match API. */
+        applyMemberHubFeatureUi();
     }
 
     function init() {

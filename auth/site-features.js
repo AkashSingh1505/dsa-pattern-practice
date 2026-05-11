@@ -6,7 +6,7 @@
 (function () {
     var readyPromise = null;
     var cache = null;
-    var SNAP_KEY = "dsa_sf_snap_v1";
+    var SNAP_KEY = "dsa_sf_snap_v2";
     var BC_NAME = "dsa_site_features_v1";
 
     function defaultsAllOn() {
@@ -50,27 +50,15 @@
         if (!parsed || typeof parsed !== "object") {
             return applyLegacyOAuthMigration(out, {});
         }
-        Object.keys(defs).forEach(function (key) {
-            var row = parsed[key];
-            if (!row || typeof row !== "object") {
-                return;
-            }
-            if (typeof row.enabled === "boolean") {
-                out[key].enabled = row.enabled;
-            }
-            if (typeof row.visible === "boolean") {
-                out[key].visible = row.visible;
-            }
-        });
+        /* Every key from the API overwrites defaults (server is source of truth). */
         Object.keys(parsed).forEach(function (key) {
-            if (defs[key]) {
-                return;
-            }
             var row = parsed[key];
             if (!row || typeof row !== "object") {
                 return;
             }
-            out[key] = { enabled: true, visible: true };
+            if (!out[key]) {
+                out[key] = { enabled: true, visible: true };
+            }
             if (typeof row.enabled === "boolean") {
                 out[key].enabled = row.enabled;
             }
@@ -287,7 +275,12 @@
         });
     })();
 
-    try {
+    function bootSiteFeaturesFetch() {
         dsaEnsureSiteFeaturesLoaded().catch(function () {});
-    } catch (e) {}
+    }
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", bootSiteFeaturesFetch);
+    } else {
+        setTimeout(bootSiteFeaturesFetch, 0);
+    }
 })();

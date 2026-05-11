@@ -18,7 +18,16 @@
         },
         { id: "member_dashboard", title: "Member dashboard", desc: "Nav link and user-dashboard.html hub." },
         { id: "practice_auth", title: "Practice sign-in / register", desc: "Account page and Sign in link (signed-out users)." },
-        { id: "social_oauth_ui", title: "Google / Apple buttons", desc: "OAuth placeholders on the account page." },
+        {
+            id: "social_oauth_google",
+            title: "Google sign-in button",
+            desc: "Google OAuth on account page and Member hub → Settings.",
+        },
+        {
+            id: "social_oauth_apple",
+            title: "Apple sign-in button",
+            desc: "Apple OAuth on account page and Member hub → Settings.",
+        },
         { id: "site_admin_link", title: "Site admin link", desc: "Footer link from the account page to admin." },
         { id: "footer_visit_counter", title: "Visit counter", desc: "Footer visitor counter on the practice page (if API exists)." },
         {

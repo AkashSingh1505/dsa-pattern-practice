@@ -22,24 +22,47 @@
         const signedWrap = document.getElementById("portal-practice-signedin");
 
         function applyAccountFeatureChrome() {
-            if (typeof dsaSiteFeatureUse !== "function") {
-                return;
-            }
-            var alt = document.querySelector("#portal-practice-forms .alt");
-            var orEl = document.querySelector("#portal-practice-forms .or");
-            var oauthOn = dsaSiteFeatureUse("social_oauth_ui");
-            if (alt) {
-                alt.hidden = !oauthOn;
-            }
-            if (orEl) {
-                orEl.hidden = !oauthOn;
+            if (typeof dsaSiteFeatureVisible === "function") {
+                var alt = document.querySelector("#portal-practice-forms .alt");
+                var orEl = document.querySelector("#portal-practice-forms .or");
+                var gBtn = document.getElementById("oauth-google-btn");
+                var aBtn = document.getElementById("oauth-apple-btn");
+                var gVis = dsaSiteFeatureVisible("social_oauth_google");
+                var aVis = dsaSiteFeatureVisible("social_oauth_apple");
+                var gEn = typeof dsaSiteFeatureEnabled !== "function" || dsaSiteFeatureEnabled("social_oauth_google");
+                var aEn = typeof dsaSiteFeatureEnabled !== "function" || dsaSiteFeatureEnabled("social_oauth_apple");
+                var showOAuthBlock = gVis || aVis;
+                if (alt) {
+                    alt.hidden = !showOAuthBlock;
+                }
+                if (orEl) {
+                    orEl.hidden = !showOAuthBlock;
+                }
+                if (gBtn) {
+                    gBtn.hidden = !gVis;
+                    gBtn.classList.toggle("dsa-site-feature-faded", gVis && !gEn);
+                    if (gVis && !gEn) {
+                        gBtn.setAttribute("aria-disabled", "true");
+                    } else {
+                        gBtn.removeAttribute("aria-disabled");
+                    }
+                }
+                if (aBtn) {
+                    aBtn.hidden = !aVis;
+                    aBtn.classList.toggle("dsa-site-feature-faded", aVis && !aEn);
+                    if (aVis && !aEn) {
+                        aBtn.setAttribute("aria-disabled", "true");
+                    } else {
+                        aBtn.removeAttribute("aria-disabled");
+                    }
+                }
             }
             var adm = document.querySelector(".account-site-admin-foot");
-            if (adm) {
+            if (adm && typeof dsaSiteFeatureUse === "function") {
                 adm.hidden = !dsaSiteFeatureUse("site_admin_link");
             }
             var dash = document.querySelector('a[href*="user-dashboard.html"]');
-            if (dash) {
+            if (dash && typeof dsaSiteFeatureUse === "function") {
                 var dashOn = dsaSiteFeatureUse("member_dashboard");
                 dash.hidden = !dashOn;
                 dash.style.display = dashOn ? "" : "none";
@@ -217,9 +240,17 @@
         });
 
         document.getElementById("oauth-google-btn").addEventListener("click", function () {
+            if (typeof dsaSiteFeatureUse === "function" && !dsaSiteFeatureUse("social_oauth_google")) {
+                practiceMsg("Google sign-in is turned off for this site.", "err");
+                return;
+            }
             practiceMsg("Google OAuth is not configured yet.", "err");
         });
         document.getElementById("oauth-apple-btn").addEventListener("click", function () {
+            if (typeof dsaSiteFeatureUse === "function" && !dsaSiteFeatureUse("social_oauth_apple")) {
+                practiceMsg("Apple sign-in is turned off for this site.", "err");
+                return;
+            }
             practiceMsg("Apple OAuth is not configured yet.", "err");
         });
 

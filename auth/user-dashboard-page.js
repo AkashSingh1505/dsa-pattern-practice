@@ -494,6 +494,21 @@
             bell.classList.toggle("dsa-udash-site-feature-faded", alertsVis && !siteEnabled("sub_alerts_module"));
         }
 
+        var oauthGoogleBtn = document.getElementById("udash-oauth-google");
+        var oauthAppleBtn = document.getElementById("udash-oauth-apple");
+        var rowOAuthG = oauthGoogleBtn && oauthGoogleBtn.closest(".dsa-udash-settings-row");
+        var rowOAuthA = oauthAppleBtn && oauthAppleBtn.closest(".dsa-udash-settings-row");
+        if (rowOAuthG) {
+            var ogVis = siteVisible("social_oauth_google");
+            rowOAuthG.hidden = !ogVis;
+            rowOAuthG.classList.toggle("dsa-udash-site-feature-faded", ogVis && !siteEnabled("social_oauth_google"));
+        }
+        if (rowOAuthA) {
+            var oaVis = siteVisible("social_oauth_apple");
+            rowOAuthA.hidden = !oaVis;
+            rowOAuthA.classList.toggle("dsa-udash-site-feature-faded", oaVis && !siteEnabled("social_oauth_apple"));
+        }
+
         var pill = document.getElementById("dsa-udash-plan-pill");
         if (pill) {
             pill.textContent = paid ? "Pro / paid" : "Free";
@@ -1353,10 +1368,18 @@
         }
         document.getElementById("udash-oauth-google") &&
             document.getElementById("udash-oauth-google").addEventListener("click", function () {
+                if (typeof dsaSiteFeatureUse === "function" && !dsaSiteFeatureUse("social_oauth_google")) {
+                    toast("Google sign-in is off for this site.");
+                    return;
+                }
                 toast("Google OAuth — see BACKLOG");
             });
         document.getElementById("udash-oauth-apple") &&
             document.getElementById("udash-oauth-apple").addEventListener("click", function () {
+                if (typeof dsaSiteFeatureUse === "function" && !dsaSiteFeatureUse("social_oauth_apple")) {
+                    toast("Apple sign-in is off for this site.");
+                    return;
+                }
                 toast("Apple sign-in — see BACKLOG");
             });
         document.getElementById("udash-export-all") &&

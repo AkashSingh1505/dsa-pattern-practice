@@ -285,6 +285,9 @@
             transition:.2s;
         }
         .alt svg{width:15px;height:15px}
+        .alt button.dsa-site-feature-faded {
+            opacity: 0.48;
+        }
         .foot{
             text-align:center;
             color:var(--muted);

@@ -12,7 +12,8 @@ export function defaultSiteUserFeatures() {
         graph_customize_tab: { enabled: true, visible: true },
         member_dashboard: { enabled: true, visible: true },
         practice_auth: { enabled: true, visible: true },
-        social_oauth_ui: { enabled: true, visible: true },
+        social_oauth_google: { enabled: true, visible: true },
+        social_oauth_apple: { enabled: true, visible: true },
         site_admin_link: { enabled: true, visible: true },
         footer_visit_counter: { enabled: true, visible: true },
         /** Member hub — Pro / roadmap (admin can pre-disable before launch) */
@@ -63,6 +64,19 @@ export function mergeSiteUserFeaturesFromKv(v) {
         }
         if (typeof row.visible === "boolean") {
             out[key].visible = row.visible;
+        }
+    }
+    const legacy = parsed.social_oauth_ui;
+    if (legacy && typeof legacy === "object") {
+        const le = legacy.enabled !== false;
+        const lv = legacy.visible !== false;
+        const hasG = parsed.social_oauth_google && typeof parsed.social_oauth_google === "object";
+        const hasA = parsed.social_oauth_apple && typeof parsed.social_oauth_apple === "object";
+        if (!hasG) {
+            out.social_oauth_google = { enabled: le, visible: lv };
+        }
+        if (!hasA) {
+            out.social_oauth_apple = { enabled: le, visible: lv };
         }
     }
     return out;

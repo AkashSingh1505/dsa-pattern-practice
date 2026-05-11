@@ -13,7 +13,8 @@
             graph_customize_tab: { enabled: true, visible: true },
             member_dashboard: { enabled: true, visible: true },
             practice_auth: { enabled: true, visible: true },
-            social_oauth_ui: { enabled: true, visible: true },
+            social_oauth_google: { enabled: true, visible: true },
+            social_oauth_apple: { enabled: true, visible: true },
             site_admin_link: { enabled: true, visible: true },
             footer_visit_counter: { enabled: true, visible: true },
             sub_personal_graphs: { enabled: true, visible: true },
@@ -49,6 +50,18 @@
                 }
             }
         });
+        /* Legacy KV used a single social_oauth_ui row for both providers */
+        var leg = f && f.social_oauth_ui;
+        if (leg && typeof leg === "object") {
+            var le = leg.enabled !== false;
+            var lv = leg.visible !== false;
+            if (!f.social_oauth_google || typeof f.social_oauth_google !== "object") {
+                d.social_oauth_google = { enabled: le, visible: lv };
+            }
+            if (!f.social_oauth_apple || typeof f.social_oauth_apple !== "object") {
+                d.social_oauth_apple = { enabled: le, visible: lv };
+            }
+        }
         return d;
     }
 

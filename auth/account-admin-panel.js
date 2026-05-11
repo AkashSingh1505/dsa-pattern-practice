@@ -46,7 +46,11 @@
         { id: "sub_billing_module", title: "Billing panel", desc: "Plan + upgrade copy on the hub." },
         { id: "sub_alerts_module", title: "Alerts panel", desc: "In-app notifications list + bell shortcut." },
         { id: "sub_settings_module", title: "Settings panel", desc: "Preferences on the hub." },
-        { id: "sub_profile_module", title: "Profile panel", desc: "Display name, bio, timezone." },
+        {
+            id: "sub_profile_module",
+            title: "Profile panel",
+            desc: "Display name, photo, bio, links, experience — synced via GET/PATCH /api/auth/me.",
+        },
         { id: "sub_overview_stats", title: "Overview stat row", desc: "Quiz / reminders / graphs / streak chips on the Graph panel." },
         {
             id: "sub_graph_library",
@@ -2798,6 +2802,10 @@
             "adm-profile-locale",
             "adm-profile-tz",
             "adm-profile-bio",
+            "adm-profile-gender",
+            "adm-profile-birthday",
+            "adm-profile-location",
+            "adm-profile-experience",
             "adm-profile-prefs",
             "adm-profile-avatar",
             "adm-profile-social",
@@ -2892,6 +2900,14 @@
         document.getElementById("adm-profile-prefs").value = p.prefs_json != null ? String(p.prefs_json) : "";
         document.getElementById("adm-profile-avatar").value = p.avatar_url || "";
         document.getElementById("adm-profile-social").value = p.social_json != null ? String(p.social_json) : "";
+        const pg = document.getElementById("adm-profile-gender");
+        if (pg) pg.value = p.gender || "";
+        const pb = document.getElementById("adm-profile-birthday");
+        if (pb) pb.value = p.birthday || "";
+        const pl = document.getElementById("adm-profile-location");
+        if (pl) pl.value = p.location || "";
+        const pe = document.getElementById("adm-profile-experience");
+        if (pe) pe.value = p.experience_json != null ? String(p.experience_json) : "";
 
         renderUserReadonlyBlocks(d);
 
@@ -2935,6 +2951,10 @@
         const prefs = document.getElementById("adm-profile-prefs").value.trim();
         const avatar = document.getElementById("adm-profile-avatar").value.trim();
         const social = document.getElementById("adm-profile-social").value.trim();
+        const gender = document.getElementById("adm-profile-gender") && document.getElementById("adm-profile-gender").value.trim();
+        const birthday = document.getElementById("adm-profile-birthday") && document.getElementById("adm-profile-birthday").value.trim();
+        const location = document.getElementById("adm-profile-location") && document.getElementById("adm-profile-location").value.trim();
+        const experience = document.getElementById("adm-profile-experience") && document.getElementById("adm-profile-experience").value.trim();
         if (disp) profile.display_name = disp;
         if (loc) profile.locale = loc;
         if (tz) profile.timezone = tz;
@@ -2942,6 +2962,10 @@
         if (prefs) profile.prefs_json = prefs;
         if (avatar) profile.avatar_url = avatar;
         if (social) profile.social_json = social;
+        if (gender) profile.gender = gender;
+        if (birthday) profile.birthday = birthday;
+        if (location) profile.location = location;
+        if (experience) profile.experience_json = experience;
         if (Object.keys(profile).length) body.profile = profile;
 
         setStatus(out, "Saving…", "");

@@ -1757,7 +1757,10 @@
 
     function seedWelcome() {
         if (!state.notifications.length) {
-            pushNotification("Welcome to your member hub — data here is stored in this browser until cloud sync ships.", "info");
+            pushNotification(
+                "Welcome to your member hub — profile and preferences sync to your account when you’re signed in (see Profile). Other sections may stay on this device until full cloud sync ships.",
+                "info",
+            );
         }
     }
 

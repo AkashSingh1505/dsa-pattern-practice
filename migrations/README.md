@@ -47,7 +47,7 @@ Publish catalog entries from **Site admin → Library** (signed in with RSA), or
 | Database    | Tables (high level) |
 |------------|----------------------|
 | **Content** | Legacy **`cms_content`** / drafts (optional), **`app_kv`**, **`content_audit`** — public practice graph lives in subscribers **`graph_catalog`** |
-| **Subscribers** | `practice_users` (`role`: `user` \| `admin` \| `subscriber`), `user_profiles`, `user_entitlements`, `billing_*`, `subscriber_contacts`, `security_audit`, **`graph_catalog`** (incl. reserved **`dsa-site-map`** for **`GET /api/data?k=dsa`**), **`graph_catalog_downloads`**, **`user_graphs`** |
+| **Subscribers** | `practice_users` (`role`: `user` \| `admin` \| `subscriber`), `user_profiles` (display, avatar, bio, social_json, gender, location, birthday, experience_json, …), `user_entitlements`, `billing_*`, `subscriber_contacts`, `security_audit`, **`graph_catalog`** (incl. reserved **`dsa-site-map`** for **`GET /api/data?k=dsa`**), **`graph_catalog_downloads`**, **`user_graphs`** |
 
 Practice roles: **`user`** (default), **`subscriber`** (paid tier label in JWT), **`admin`** (elevated staff). Promote or upgrade (examples):
 

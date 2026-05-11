@@ -442,6 +442,24 @@
                                             <label for="adm-profile-bio">Bio</label>
                                             <textarea id="adm-profile-bio" class="adm-textarea-prose" rows="4"></textarea>
                                         </div>
+                                        <div class="adm-form-grid cols-2">
+                                            <div class="adm-field">
+                                                <label for="adm-profile-gender">Gender</label>
+                                                <input id="adm-profile-gender" type="text" autocomplete="off" />
+                                            </div>
+                                            <div class="adm-field">
+                                                <label for="adm-profile-birthday">Birthday</label>
+                                                <input id="adm-profile-birthday" type="text" placeholder="YYYY-MM-DD" autocomplete="off" />
+                                            </div>
+                                            <div class="adm-field adm-field--span-2">
+                                                <label for="adm-profile-location">Location</label>
+                                                <input id="adm-profile-location" type="text" autocomplete="off" />
+                                            </div>
+                                        </div>
+                                        <div class="adm-field">
+                                            <label for="adm-profile-experience">Experience JSON (<code>experience_json</code>)</label>
+                                            <textarea id="adm-profile-experience" class="adm-textarea-code" rows="5" placeholder='{"work":"","education":"","skills":""}'></textarea>
+                                        </div>
                                         <div class="adm-field">
                                             <label for="adm-profile-prefs">Prefs JSON (<code>prefs_json</code>)</label>
                                             <textarea id="adm-profile-prefs" class="adm-textarea-code adm-textarea-tall" rows="5" placeholder="{}"></textarea>

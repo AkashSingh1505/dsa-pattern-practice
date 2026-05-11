@@ -65,7 +65,7 @@ Set **`USER_JWT_SECRET`** (≥16 chars, prefer 32+) in Pages environment variabl
 | `auth/account-admin-panel.js` | Admin dashboard UI (calls `/api/admin/*`) |
 | `functions/api/data.js` | Public **`GET /api/data?k=dsa`** + RSA **`PUT`** (`graph_catalog` on **`DB_SUBSCRIBERS`**) |
 | `functions/api/admin/*.js` | Site admin API: dashboard, users, graph catalog/inventory, audits, `app_kv`, contacts |
-| `functions/api/auth/*.js` | Register, login, me (`DB_SUBSCRIBERS`) |
+| `functions/api/auth/*.js` | Register, login, **`GET`/`PATCH` `/api/auth/me`** (JWT + `user_profiles`) |
 | `functions/_lib/practice-jwt.js` | PBKDF2 + HS256 for practice tokens |
 | `functions/_lib/admin-rsa-jwt.js` | Shared RSA verification for `/api/data` PUT and `/api/admin/*` |
 | `migrations/` | Expandable schemas for both DBs |

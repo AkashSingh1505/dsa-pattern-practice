@@ -415,6 +415,41 @@
         } catch (e) {}
     }
 
+    function armMemberHubSiteFeaturesPendingGate() {
+        try {
+            document.documentElement.classList.add("dsa-udash-sf-pending");
+        } catch (e) {}
+        Object.keys(PANEL_NAV_SITE_KEY).forEach(function (pid) {
+            var panel = document.getElementById("panel-" + pid);
+            if (panel) {
+                panel.hidden = true;
+                panel.setAttribute("aria-hidden", "true");
+            }
+        });
+        document.querySelectorAll(".dsa-udash-nav-btn[data-panel], .dsa-udash-mnav button[data-panel]").forEach(function (btn) {
+            var pid = btn.getAttribute("data-panel");
+            if (!pid || pid === "graph" || pid === "map-tools") {
+                return;
+            }
+            btn.hidden = true;
+            btn.setAttribute("aria-hidden", "true");
+        });
+        var bell = document.getElementById("dsa-udash-notif-bell");
+        if (bell) {
+            bell.hidden = true;
+        }
+        var oauthGoogleBtn = document.getElementById("udash-oauth-google");
+        var oauthAppleBtn = document.getElementById("udash-oauth-apple");
+        var rowOAuthG = oauthGoogleBtn && oauthGoogleBtn.closest(".dsa-udash-settings-row");
+        var rowOAuthA = oauthAppleBtn && oauthAppleBtn.closest(".dsa-udash-settings-row");
+        if (rowOAuthG) {
+            rowOAuthG.hidden = true;
+        }
+        if (rowOAuthA) {
+            rowOAuthA.hidden = true;
+        }
+    }
+
     function applyMemberHubFeatureUi() {
         try {
             var paid = isPaidMember();
@@ -577,6 +612,8 @@
     }
 
     document.addEventListener("dsa-site-features-ready", onSiteFeaturesReadyForUdash);
+    window.addEventListener("beforeunload", armMemberHubSiteFeaturesPendingGate);
+    window.addEventListener("pagehide", armMemberHubSiteFeaturesPendingGate);
 
     function planSummaryText(c) {
         if (!c) {

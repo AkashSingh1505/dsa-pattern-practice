@@ -409,151 +409,161 @@
         window.__dsaUdashNavigatePanel = navigateDashboardPanel;
     } catch (e) {}
 
+    function releaseMemberHubSiteFeaturesPendingGate() {
+        try {
+            document.documentElement.classList.remove("dsa-udash-sf-pending");
+        } catch (e) {}
+    }
+
     function applyMemberHubFeatureUi() {
-        var paid = isPaidMember();
-        var siteOffInner =
-            "<strong>Unavailable on this site</strong><p style=\"margin: 8px 0 12px; font-size: 13px; color: var(--udash-muted)\">This feature is turned off in Admin → Site → User-facing features.</p>";
+        try {
+            var paid = isPaidMember();
+            var siteOffInner =
+                "<strong>Unavailable on this site</strong><p style=\"margin: 8px 0 12px; font-size: 13px; color: var(--udash-muted)\">This feature is turned off in Admin → Site → User-facing features.</p>";
 
-        MEMBER_HUB_GATE_ROWS.forEach(function (row) {
-            var gate = document.getElementById(row.gateId);
-            if (!gate) {
-                return;
-            }
-            var inner = gate.querySelector(".dsa-udash-gate-banner-inner");
-            if (!inner) {
-                return;
-            }
-            var siteOn = siteUse(row.siteKey);
-            if (!siteOn) {
-                gate.classList.add("is-locked", "is-site-off");
-                inner.innerHTML = siteOffInner;
-                return;
-            }
-            gate.classList.remove("is-site-off");
-            if (paid) {
-                gate.classList.remove("is-locked");
-            } else {
-                gate.classList.add("is-locked");
-                inner.innerHTML = row.proHtml;
-            }
-        });
+            MEMBER_HUB_GATE_ROWS.forEach(function (row) {
+                var gate = document.getElementById(row.gateId);
+                if (!gate) {
+                    return;
+                }
+                var inner = gate.querySelector(".dsa-udash-gate-banner-inner");
+                if (!inner) {
+                    return;
+                }
+                var siteOn = siteUse(row.siteKey);
+                if (!siteOn) {
+                    gate.classList.add("is-locked", "is-site-off");
+                    inner.innerHTML = siteOffInner;
+                    return;
+                }
+                gate.classList.remove("is-site-off");
+                if (paid) {
+                    gate.classList.remove("is-locked");
+                } else {
+                    gate.classList.add("is-locked");
+                    inner.innerHTML = row.proHtml;
+                }
+            });
 
-        SITE_SHADE_PANELS.forEach(function (x) {
-            var panel = document.getElementById(x.panelId);
-            if (!panel) {
-                return;
-            }
-            panel.classList.add("dsa-udash-panel--shade-host");
-            var sid = x.panelId + "-site-shade";
-            var el = document.getElementById(sid);
-            if (!el) {
-                el = document.createElement("div");
-                el.id = sid;
-                el.className = "dsa-udash-site-shade";
-                el.setAttribute("role", "presentation");
-                el.innerHTML = '<div class="dsa-udash-site-shade-inner">' + siteOffInner + "</div>";
-                panel.appendChild(el);
-            }
-            var showShade = !siteUse(x.siteKey);
-            el.classList.toggle("is-active", showShade);
-            panel.classList.toggle("is-site-disabled", showShade);
-        });
+            SITE_SHADE_PANELS.forEach(function (x) {
+                var panel = document.getElementById(x.panelId);
+                if (!panel) {
+                    return;
+                }
+                panel.classList.add("dsa-udash-panel--shade-host");
+                var sid = x.panelId + "-site-shade";
+                var el = document.getElementById(sid);
+                if (!el) {
+                    el = document.createElement("div");
+                    el.id = sid;
+                    el.className = "dsa-udash-site-shade";
+                    el.setAttribute("role", "presentation");
+                    el.innerHTML = '<div class="dsa-udash-site-shade-inner">' + siteOffInner + "</div>";
+                    panel.appendChild(el);
+                }
+                var showShade = !siteUse(x.siteKey);
+                el.classList.toggle("is-active", showShade);
+                panel.classList.toggle("is-site-disabled", showShade);
+            });
 
-        var overviewPanel = document.getElementById("panel-overview");
-        if (overviewPanel) {
-            var overviewShown = siteVisible("sub_overview_stats");
-            overviewPanel.hidden = !overviewShown;
-            overviewPanel.setAttribute("aria-hidden", overviewShown ? "false" : "true");
-            if (!overviewShown && overviewPanel.classList.contains("is-active")) {
-                showPanel("graph");
+            var overviewPanel = document.getElementById("panel-overview");
+            if (overviewPanel) {
+                var overviewShown = siteVisible("sub_overview_stats");
+                overviewPanel.hidden = !overviewShown;
+                overviewPanel.setAttribute("aria-hidden", overviewShown ? "false" : "true");
+                if (!overviewShown && overviewPanel.classList.contains("is-active")) {
+                    showPanel("graph");
+                }
             }
-        }
 
-        var libraryPanel = document.getElementById("panel-library");
-        if (libraryPanel) {
-            var libShown = siteVisible("sub_graph_library");
-            libraryPanel.hidden = !libShown;
-            libraryPanel.setAttribute("aria-hidden", libShown ? "false" : "true");
-            if (!libShown && libraryPanel.classList.contains("is-active")) {
-                showPanel("graph");
+            var libraryPanel = document.getElementById("panel-library");
+            if (libraryPanel) {
+                var libShown = siteVisible("sub_graph_library");
+                libraryPanel.hidden = !libShown;
+                libraryPanel.setAttribute("aria-hidden", libShown ? "false" : "true");
+                if (!libShown && libraryPanel.classList.contains("is-active")) {
+                    showPanel("graph");
+                }
             }
-        }
 
-        document.querySelectorAll(".dsa-udash-nav-btn[data-panel], .dsa-udash-mnav button[data-panel]").forEach(function (btn) {
-            var pid = btn.getAttribute("data-panel");
-            if (!pid || pid === "graph" || pid === "map-tools") {
-                return;
-            }
-            var key = PANEL_NAV_SITE_KEY[pid];
-            if (!key) {
-                return;
-            }
-            var vis = siteVisible(key);
-            var en = siteEnabled(key);
-            btn.hidden = !vis;
-            btn.setAttribute("aria-hidden", vis ? "false" : "true");
-            btn.classList.toggle("dsa-udash-site-feature-faded", vis && !en);
-            if (vis && !en) {
-                btn.setAttribute("aria-disabled", "true");
-            } else {
-                btn.removeAttribute("aria-disabled");
-            }
-            if (!vis) {
-                btn.classList.remove("is-active");
-                btn.removeAttribute("aria-current");
-            }
-        });
+            document.querySelectorAll(".dsa-udash-nav-btn[data-panel], .dsa-udash-mnav button[data-panel]").forEach(function (btn) {
+                var pid = btn.getAttribute("data-panel");
+                if (!pid || pid === "graph" || pid === "map-tools") {
+                    return;
+                }
+                var key = PANEL_NAV_SITE_KEY[pid];
+                if (!key) {
+                    return;
+                }
+                var vis = siteVisible(key);
+                var en = siteEnabled(key);
+                btn.hidden = !vis;
+                btn.setAttribute("aria-hidden", vis ? "false" : "true");
+                btn.classList.toggle("dsa-udash-site-feature-faded", vis && !en);
+                if (vis && !en) {
+                    btn.setAttribute("aria-disabled", "true");
+                } else {
+                    btn.removeAttribute("aria-disabled");
+                }
+                if (!vis) {
+                    btn.classList.remove("is-active");
+                    btn.removeAttribute("aria-current");
+                }
+            });
 
-        var bell = document.getElementById("dsa-udash-notif-bell");
-        if (bell) {
-            var alertsVis = siteVisible("sub_alerts_module");
-            bell.hidden = !alertsVis;
-            bell.classList.toggle("dsa-udash-site-feature-faded", alertsVis && !siteEnabled("sub_alerts_module"));
-        }
-
-        var oauthGoogleBtn = document.getElementById("udash-oauth-google");
-        var oauthAppleBtn = document.getElementById("udash-oauth-apple");
-        var rowOAuthG = oauthGoogleBtn && oauthGoogleBtn.closest(".dsa-udash-settings-row");
-        var rowOAuthA = oauthAppleBtn && oauthAppleBtn.closest(".dsa-udash-settings-row");
-        if (rowOAuthG) {
-            var ogVis = siteVisible("social_oauth_google");
-            rowOAuthG.hidden = !ogVis;
-            rowOAuthG.classList.toggle("dsa-udash-site-feature-faded", ogVis && !siteEnabled("social_oauth_google"));
-        }
-        if (rowOAuthA) {
-            var oaVis = siteVisible("social_oauth_apple");
-            rowOAuthA.hidden = !oaVis;
-            rowOAuthA.classList.toggle("dsa-udash-site-feature-faded", oaVis && !siteEnabled("social_oauth_apple"));
-        }
-
-        var pill = document.getElementById("dsa-udash-plan-pill");
-        if (pill) {
-            pill.textContent = paid ? "Pro / paid" : "Free";
-            pill.classList.toggle("dsa-udash-plan-pill--pro", paid);
-        }
-        var customizeBtn = document.getElementById("dsa-udash-open-customize");
-        var customizeMapToolsHint = document.getElementById("udash-customize-map-tools-hint");
-        if (customizeBtn || customizeMapToolsHint) {
-            var canCustomize =
-                typeof dsaHasCustomizeGraphAccess === "function" && dsaHasCustomizeGraphAccess();
-            if (customizeBtn) {
-                customizeBtn.hidden = !canCustomize;
-                customizeBtn.disabled = false;
+            var bell = document.getElementById("dsa-udash-notif-bell");
+            if (bell) {
+                var alertsVis = siteVisible("sub_alerts_module");
+                bell.hidden = !alertsVis;
+                bell.classList.toggle("dsa-udash-site-feature-faded", alertsVis && !siteEnabled("sub_alerts_module"));
             }
-            if (customizeMapToolsHint) {
-                customizeMapToolsHint.hidden = canCustomize;
+
+            var oauthGoogleBtn = document.getElementById("udash-oauth-google");
+            var oauthAppleBtn = document.getElementById("udash-oauth-apple");
+            var rowOAuthG = oauthGoogleBtn && oauthGoogleBtn.closest(".dsa-udash-settings-row");
+            var rowOAuthA = oauthAppleBtn && oauthAppleBtn.closest(".dsa-udash-settings-row");
+            if (rowOAuthG) {
+                var ogVis = siteVisible("social_oauth_google");
+                rowOAuthG.hidden = !ogVis;
+                rowOAuthG.classList.toggle("dsa-udash-site-feature-faded", ogVis && !siteEnabled("social_oauth_google"));
             }
-        }
-        var bh = document.getElementById("udash-billing-hint");
-        if (bh) {
-            bh.textContent = paid
-                ? "You’re on a paid-capable plan in this JWT. Stripe portal links will appear here when checkout is wired."
-                : "Upgrade runs through Stripe / app billing (roadmap). Pro unlocks graph library, sharing, collab, quiz lab, digest.";
-        }
-        var up = document.getElementById("udash-btn-upgrade");
-        if (up) {
-            up.disabled = paid;
-            up.textContent = paid ? "Current plan includes Pro features" : "Upgrade to Pro";
+            if (rowOAuthA) {
+                var oaVis = siteVisible("social_oauth_apple");
+                rowOAuthA.hidden = !oaVis;
+                rowOAuthA.classList.toggle("dsa-udash-site-feature-faded", oaVis && !siteEnabled("social_oauth_apple"));
+            }
+
+            var pill = document.getElementById("dsa-udash-plan-pill");
+            if (pill) {
+                pill.textContent = paid ? "Pro / paid" : "Free";
+                pill.classList.toggle("dsa-udash-plan-pill--pro", paid);
+            }
+            var customizeBtn = document.getElementById("dsa-udash-open-customize");
+            var customizeMapToolsHint = document.getElementById("udash-customize-map-tools-hint");
+            if (customizeBtn || customizeMapToolsHint) {
+                var canCustomize =
+                    typeof dsaHasCustomizeGraphAccess === "function" && dsaHasCustomizeGraphAccess();
+                if (customizeBtn) {
+                    customizeBtn.hidden = !canCustomize;
+                    customizeBtn.disabled = false;
+                }
+                if (customizeMapToolsHint) {
+                    customizeMapToolsHint.hidden = canCustomize;
+                }
+            }
+            var bh = document.getElementById("udash-billing-hint");
+            if (bh) {
+                bh.textContent = paid
+                    ? "You’re on a paid-capable plan in this JWT. Stripe portal links will appear here when checkout is wired."
+                    : "Upgrade runs through Stripe / app billing (roadmap). Pro unlocks graph library, sharing, collab, quiz lab, digest.";
+            }
+            var up = document.getElementById("udash-btn-upgrade");
+            if (up) {
+                up.disabled = paid;
+                up.textContent = paid ? "Current plan includes Pro features" : "Upgrade to Pro";
+            }
+        } finally {
+            releaseMemberHubSiteFeaturesPendingGate();
         }
     }
 
@@ -1939,6 +1949,7 @@
         }
         function afterFlags() {
             if (typeof dsaSiteFeatureUse === "function" && !dsaSiteFeatureUse("member_dashboard")) {
+                releaseMemberHubSiteFeaturesPendingGate();
                 window.location.href = "./index.html";
                 return;
             }

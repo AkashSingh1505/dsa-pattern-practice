@@ -6,6 +6,8 @@
 (function () {
     var readyPromise = null;
     var cache = null;
+    /** When snapshot primed `cache`, still refresh from network once without blocking the UI. */
+    var networkRefreshInFlight = false;
     var SNAP_KEY = "dsa_sf_snap_v2";
     var BC_NAME = "dsa_site_features_v1";
 
@@ -157,23 +159,20 @@
         });
     }
 
-    /**
-     * Fetch merged flags from GET /api/site-features (no HTTP cache / CDN stale reads).
-     * @param {boolean} [forceRefresh] When true, drop in-memory cache and fetch again (e.g. after admin changes).
-     * @returns {Promise<Record<string, {enabled:boolean,visible:boolean}>>}
-     */
-    function dsaEnsureSiteFeaturesLoaded(forceRefresh) {
-        if (forceRefresh) {
-            cache = null;
-            readyPromise = null;
-        }
+    function primeCacheFromSnapshot() {
         if (cache) {
-            return Promise.resolve(cache);
+            return;
         }
-        if (readyPromise) {
-            return readyPromise;
+        var snap = readSnapshotFeatures();
+        if (snap) {
+            var merged = mergeFeaturesPayload(snap);
+            cache = merged;
+            window.__dsaSiteFeatures = merged;
         }
-        readyPromise = fetchSiteFeaturesWithRetries(0)
+    }
+
+    function runNetworkFetchCommit() {
+        return fetchSiteFeaturesWithRetries(0)
             .then(function (j) {
                 var feat = j && (j.features || (j.data && j.data.features));
                 if (!feat || typeof feat !== "object") {
@@ -185,10 +184,48 @@
                 var snap = readSnapshotFeatures();
                 var merged = mergeFeaturesPayload(snap || {});
                 return commitCache(merged);
-            })
-            .finally(function () {
-                readyPromise = null;
             });
+    }
+
+    function startBackgroundNetworkRefresh() {
+        if (networkRefreshInFlight) {
+            return;
+        }
+        networkRefreshInFlight = true;
+        runNetworkFetchCommit().finally(function () {
+            networkRefreshInFlight = false;
+        });
+    }
+
+    /**
+     * Fetch merged flags from GET /api/site-features (no HTTP cache / CDN stale reads).
+     * Primes from localStorage snapshot when possible so UI can match last-known flags immediately
+     * while a network refresh runs in the background.
+     * @param {boolean} [forceRefresh] When true, drop in-memory cache and fetch again (e.g. after admin changes).
+     * @returns {Promise<Record<string, {enabled:boolean,visible:boolean}>>}
+     */
+    function dsaEnsureSiteFeaturesLoaded(forceRefresh) {
+        if (forceRefresh) {
+            cache = null;
+            readyPromise = null;
+            networkRefreshInFlight = false;
+        }
+
+        if (!cache && !forceRefresh) {
+            primeCacheFromSnapshot();
+        }
+
+        if (cache && !forceRefresh) {
+            startBackgroundNetworkRefresh();
+            return Promise.resolve(cache);
+        }
+
+        if (readyPromise) {
+            return readyPromise;
+        }
+        readyPromise = runNetworkFetchCommit().finally(function () {
+            readyPromise = null;
+        });
         return readyPromise;
     }
 

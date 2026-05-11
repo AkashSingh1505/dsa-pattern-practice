@@ -1,5 +1,16 @@
 /* Member dashboard — full-viewport app shell */
 
+/*
+ * Before site-feature flags are applied, hide gated chrome so the first paint does not show
+ * nav items that will be removed when /api/site-features resolves (avoids a visible “flash”).
+ * Graph + Map tools stay visible (always-on hub entries). Released in applyMemberHubFeatureUi.
+ */
+html.dsa-udash-sf-pending .dsa-udash-sidebar .dsa-udash-nav-btn[data-panel]:not([data-panel="graph"]):not([data-panel="map-tools"]),
+html.dsa-udash-sf-pending .dsa-udash-mnav button[data-panel]:not([data-panel="graph"]):not([data-panel="map-tools"]),
+html.dsa-udash-sf-pending #dsa-udash-notif-bell {
+    visibility: hidden !important;
+}
+
 /* Map tools panel — same chrome as index main.page (no graph card here) */
 .dsa-udash-graph-studio-wrap {
     width: 100%;

@@ -8,8 +8,8 @@ This document mixes **what the product does today** (from the repo), **what each
 
 | Concept | How it works today | Typical person |
 |--------|---------------------|----------------|
-| **Site admin** | RSA JWT (`admin.html`, `/api/admin/*`, `PUT /api/data`). Can publish the **live public graph** to D1 CMS. | You / ops / content editors |
-| **Practice `admin` role** | Row in `practice_users` with `role = admin`. Same **Customize graph** access as paid subscribers in the web UI. Does **not** replace site admin for CMS publish. | Staff practice accounts, support, internal testers |
+| **Site admin** | RSA JWT (`admin.html`, `/api/admin/*`, `PUT /api/data`). Can update the **live public graph** row in **`graph_catalog`** (`dsa-site-map`). | You / ops / content editors |
+| **Practice `admin` role** | Row in `practice_users` with `role = admin`. Same **Customize graph** access as paid subscribers in the web UI. Does **not** replace site admin for publishing the canonical site map. | Staff practice accounts, support, internal testers |
 
 Subscribers are **`role = subscriber`** or **`plan` in (`pro`, `team`, `lifetime`)** per migrations and `dsaHasCustomizeGraphAccess()` in `auth/dsa-user-auth.js`.
 
@@ -29,7 +29,7 @@ Subscribers are **`role = subscriber`** or **`plan` in (`pro`, `team`, `lifetime
 - Same **public graph** as everyone; README: *“The public graph is the same for everyone.”*
 - Can mark practice problems done/important and add personal data **client-side**; persistence is **`localStorage`** (`dsaUserPayload`).
 - **No** “Customize graph” tab unless they also have site-admin RSA session.
-- **No** server sync of personal overlay to D1 for practice JWT only — `dsaSyncMergedHierarchyToCmsInternal()` runs only when `dsaIsAdminSession()` (RSA) is true.
+- **No** server sync of personal overlay to D1 for practice JWT only — `dsaSyncMergedHierarchyToCmsInternal()` runs only when `dsaIsAdminSession()` (RSA) is true (writes **`PUT /api/data?k=dsa`**).
 
 ### Subscriber (`role: subscriber` or `plan`: pro / team / lifetime)
 
@@ -39,11 +39,11 @@ Subscribers are **`role = subscriber`** or **`plan` in (`pro`, `team`, `lifetime
 ### Practice `admin` role
 
 - Same Customize entitlement as subscriber for the practice app UI.
-- Still not the same as site admin CMS unless they also complete RSA admin login.
+- Still not the same as site admin unless they also complete RSA admin login.
 
 ### Site admin (RSA session on `admin.html`)
 
-- Dashboard stats, user list/detail patches, CMS drafts/publish, audits, KV, contacts (`/api/admin/*`).
+- Dashboard stats, user list/detail patches, graph library / workspace, audits, KV, contacts (`/api/admin/*`).
 - Can **publish** merged graph (including synced user-overlay workflow when saving from an admin browser session).
 
 ---
@@ -54,11 +54,11 @@ Use this as a north star; many rows are **not built yet**.
 
 | Area | Free | Subscriber | Site admin |
 |------|------|------------|------------|
-| **Core map** | Public catalog graph, one-topic, progress chips | Same + **personal / custom graph layers** (see backlog) | Edit **canonical** published graph + drafts |
+| **Core map** | Public catalog graph, one-topic, progress chips | Same + **personal / custom graph layers** (see backlog) | Edit **canonical** catalog graph (`dsa-site-map`) |
 | **Progress** | Done / starred / notes; ideally **cloud sync** | Sync + history, streaks, exports | N/A (or internal analytics) |
 | **Customize graph** | Read-only structure | Full customize + **named graphs**, themes, share rules | Publish to world + moderation |
 | **Collaboration** | — | Share graph with users, public link, view-only vs edit | Audit, takedown, abuse |
-| **Assessments** | Limited daily quizzes | Full quiz bank, spaced repetition, weak-topic drills | Authoring / CMS tie-in |
+| **Assessments** | Limited daily quizzes | Full quiz bank, spaced repetition, weak-topic drills | Authoring / admin tools |
 | **Reminders** | Basic or none | “Remind me” on problems, email/push | Campaign / compliance |
 | **Billing** | — | Web + **mobile** purchase, plan management | Reports, refunds, entitlements |
 | **Account** | Email/password, profile, verify email | OAuth, family/team, invoices | User admin, security audit |
@@ -82,7 +82,7 @@ Use this as a north star; many rows are **not built yet**.
 - Integrate real **Apple** sign-in for practice accounts (UI-only).
 - **Forgot password** (`/api/auth/forgot` + reset tokens + email).
 - Replace placeholder **Terms / Privacy** links.
-- Explicit **site admin sign-out** in Admin & CMS panel.
+- Explicit **site admin sign-out** in the site admin panel.
 - **Cloud sync** for practice-user progress (API + D1 tables), not only `localStorage`.
 - Wire **Stripe (or Paddle / Lemon Squeezy)** to `billing_customers` / `billing_subscriptions` and JWT refresh on webhook.
 - **Email verification** flow using `email_verified_at`.
@@ -142,7 +142,7 @@ Use this as a north star; many rows are **not built yet**.
 
 ## 11. Admin & operations
 
-- Feature flags in `app_kv` / CMS for gradual rollouts.
+- Feature flags in `app_kv` for gradual rollouts.
 - Abuse reporting on public graphs; DMCA / content policy workflow.
 - Analytics: funnel signup → first done problem → subscribe; cohort retention.
 - **Data export** (GDPR-style) and account deletion end-to-end.

@@ -43,17 +43,16 @@ export async function onRequestGet(context) {
     }
 
     try {
-        const cmsRows = await cdb.prepare("SELECT key, revision, updated_at, published_at FROM cms_content").all();
-        out.cms_keys = d1ResultRows(cmsRows);
+        const siteG = await sdb
+            .prepare(
+                "SELECT id, slug, title, updated_at FROM graph_catalog WHERE slug = 'dsa-site-map' AND deleted_at IS NULL",
+            )
+            .first();
+        out.site_public_graph = siteG
+            ? { id: siteG.id, slug: siteG.slug, title: siteG.title, updated_at: siteG.updated_at }
+            : null;
     } catch (e) {
-        out.cms_keys = [];
-    }
-
-    try {
-        const draftRows = await cdb.prepare("SELECT key, updated_at, base_revision FROM cms_content_drafts").all();
-        out.cms_drafts = d1ResultRows(draftRows);
-    } catch (e) {
-        out.cms_drafts = [];
+        out.site_public_graph = null;
     }
 
     try {

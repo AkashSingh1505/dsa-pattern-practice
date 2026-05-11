@@ -40,8 +40,8 @@ Publish catalog entries from **Site admin → Library** (signed in with RSA), or
 
 | Database    | Tables (high level) |
 |------------|----------------------|
-| **Content** | `cms_content` (published JSON + revision), `cms_content_drafts`, `app_kv`, `content_audit` |
-| **Subscribers** | `practice_users` (`role`: `user` \| `admin` \| `subscriber`), `user_profiles`, `user_entitlements`, `billing_*`, `subscriber_contacts`, `security_audit`, **`graph_catalog`**, **`graph_catalog_downloads`**, **`user_graphs`** (library) |
+| **Content** | Legacy **`cms_content`** / drafts (optional), **`app_kv`**, **`content_audit`** — public practice graph lives in subscribers **`graph_catalog`** |
+| **Subscribers** | `practice_users` (`role`: `user` \| `admin` \| `subscriber`), `user_profiles`, `user_entitlements`, `billing_*`, `subscriber_contacts`, `security_audit`, **`graph_catalog`** (incl. reserved **`dsa-site-map`** for **`GET /api/data?k=dsa`**), **`graph_catalog_downloads`**, **`user_graphs`** |
 
 Practice roles: **`user`** (default), **`subscriber`** (paid tier label in JWT), **`admin`** (elevated staff). Promote or upgrade (examples):
 
@@ -52,4 +52,4 @@ UPDATE practice_users SET plan = 'pro', role = 'subscriber' WHERE email = 'you@e
 
 Re-login to refresh JWT claims.
 
-Site **staff** CMS uses the RSA admin session on **Account → Admin & CMS** (`/api/admin/*` + graph draft/publish), not the practice `admin` role.
+Site **staff admin** uses the RSA session on **Account → Site admin** (`/api/admin/*`, Graph library + Workspace), not the practice `admin` role alone.

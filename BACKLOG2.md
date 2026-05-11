@@ -18,7 +18,7 @@ Keep **four audiences**. Do **not** treat “admin” as another daily-user tier
 ### Dropping the practice `admin` role (your idea)
 
 - **Today** the DB allows `practice_users.role IN ('user','admin','subscriber')` and the app treats `admin` like paid for Customize.
-- **Target**: practice accounts are only **`user`** (or rename mentally to “member”); **paid vs free** is **`plan`** (+ `billing_subscriptions` / webhooks). **Staff** never uses a “fake” practice admin row for CMS — they use **Staff admin** (RSA) only.
+- **Target**: practice accounts are only **`user`** (or rename mentally to “member”); **paid vs free** is **`plan`** (+ `billing_subscriptions` / webhooks). **Staff** never uses a “fake” practice admin row for publishing the site graph — they use **Staff admin** (RSA) only.
 - **Why**: one mental model for users (public → free → paid) and a **hard line** between product users and operators.
 - **Migration note**: remove or stop issuing `role = admin` for practice users; give internal testers **paid comp** or a **`user_entitlements`** flag if they need early access without paying.
 
@@ -95,8 +95,8 @@ These were not all spelled out in `BACKLOG.md` but matter for a serious daily-us
 |------|----------|------|
 | **Idempotent webhooks + signing secrets** | P0 | Prevents double-grant or missed cancel. |
 | **Refresh tokens or short access + silent refresh** | P1 | Better security than one long-lived JWT only. |
-| **Feature flags** (`app_kv` / CMS) | P1 | Ship paid features dark, turn on safely. |
-| **Staging environment + seed data** | P1 | Avoid editing prod CMS by mistake. |
+| **Feature flags** (`app_kv`) | P1 | Ship paid features dark, turn on safely. |
+| **Staging environment + seed data** | P1 | Avoid editing prod catalog / flags by mistake. |
 | **Backup / revision story for user graphs** | P2 | Before sharing goes wide. |
 | **Notification preferences** (email on/off) | P2 | Legal + UX once reminders exist. |
 | **Clear public vs member API** | P0–P1 | Separate rate limits and auth middleware clarity. |

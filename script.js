@@ -8,7 +8,7 @@ const DSA_HIERARCHY_MINIMAL = [
     {
         id: "placeholder",
         name: "DSA Patterns",
-        tree: [{ name: "No graph data yet — save key dsa in admin (CMS)", problems: [] }],
+        tree: [{ name: "No graph data yet — seed catalog graph `dsa-site-map` (site admin → Library)", problems: [] }],
     },
 ];
 
@@ -8028,7 +8028,7 @@ function renderSkillsFromCms() {
     mount.innerHTML = "";
     if (!list || !list.length) {
         mount.innerHTML =
-            '<p class="cms-empty-msg">No skills in CMS. Sign in at admin, choose <strong>skills</strong>, paste JSON, and save to D1.</p>';
+            '<p class="cms-empty-msg">No skills list configured for this build.</p>';
         return;
     }
     list.forEach((s) => {

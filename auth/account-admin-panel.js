@@ -1,9 +1,10 @@
 /**
- * Site admin dashboard: Dashboard, Site settings (app_kv), Users, Content, System.
+ * Site admin dashboard: Dashboard, Site settings (app_kv), Users, Workspace, Library, System.
  * Each area supports UI + JSON modes. Requires dsa-admin-auth.js + admin.html portal markup (#portal-panel-cms).
  */
 (function () {
-    const CMS_KEY = "dsa";
+    /** Reserved catalog slug mirrored to GET /api/data?k=dsa */
+    const SITE_PUBLIC_GRAPH_SLUG = "dsa-site-map";
 
     /** Stored in content D1 `app_kv`; public read via GET /api/site-features */
     const SITE_USER_FEATURES_KV_KEY = "site_user_features";
@@ -1375,16 +1376,10 @@
         if (!rec || !rec.recordType) {
             return "";
         }
-        if (rec.recordType === "cms") {
-            return "cms";
-        }
         return String(rec.recordType) + ":" + String(rec.id || "");
     }
 
     function isWsRecentSelected(rec) {
-        if (rec.recordType === "cms") {
-            return wsContext.mode === "cms";
-        }
         if (rec.recordType === "catalog") {
             return wsContext.mode === "catalog" && wsContext.catalogId === rec.id;
         }
@@ -1399,6 +1394,7 @@
             recordType: entry.recordType,
             id: entry.id != null ? entry.id : undefined,
             title: entry.title ? String(entry.title) : "Untitled",
+            slug: entry.slug != null ? String(entry.slug) : undefined,
             ts: Date.now(),
         };
         const key = wsRecentDedupeKey(rec);
@@ -1428,11 +1424,7 @@
             }
             wsRecentsList = arr
                 .filter(function (x) {
-                    return (
-                        x &&
-                        x.recordType &&
-                        (x.recordType === "cms" || (x.id != null && String(x.id).trim() !== ""))
-                    );
+                    return x && x.recordType && x.id != null && String(x.id).trim() !== "";
                 })
                 .slice(0, WS_RECENTS_MAX);
         } catch (e) {
@@ -1465,10 +1457,10 @@
             btn.className = "adm-ws-recent-item" + (isWsRecentSelected(rec) ? " is-active" : "");
             btn.setAttribute("role", "listitem");
             let badge = "";
-            if (rec.recordType === "cms") {
-                badge = '<span class="adm-ws-recent-badge adm-ws-recent-badge--public-site">Public site</span>';
-            } else if (rec.recordType === "user_graph") {
+            if (rec.recordType === "user_graph") {
                 badge = '<span class="adm-ws-recent-badge adm-ws-recent-badge--user">User</span>';
+            } else if (rec.recordType === "catalog" && rec.slug === SITE_PUBLIC_GRAPH_SLUG) {
+                badge = '<span class="adm-ws-recent-badge adm-ws-recent-badge--public-site">Public site</span>';
             } else {
                 badge = '<span class="adm-ws-recent-badge adm-ws-recent-badge--cat">Catalog</span>';
             }
@@ -1479,9 +1471,7 @@
                 badge +
                 "</div>";
             btn.addEventListener("click", function () {
-                if (rec.recordType === "cms") {
-                    void wsLoadCmsIntoViewport();
-                } else if (rec.recordType === "catalog") {
+                if (rec.recordType === "catalog") {
                     void wsSelectInventoryItem("catalog", rec.id);
                 } else {
                     void wsSelectInventoryItem("user_graph", rec.id);
@@ -1502,13 +1492,7 @@
 
     function wsRefreshChrome() {
         const ban = document.getElementById("adm-ws-context-banner");
-        const saveCms = document.getElementById("adm-ws-save-cms-draft");
         const mode = wsContext.mode;
-        if (saveCms) {
-            const show = mode === "cms";
-            saveCms.hidden = !show;
-            saveCms.disabled = !show;
-        }
         if (ban) {
             if (mode === "idle") {
                 ban.hidden = true;
@@ -1516,14 +1500,16 @@
             } else {
                 ban.hidden = false;
                 let line = "";
-                if (mode === "cms") {
-                    line =
-                        "<strong>Site public graph</strong> (<code>dsa</code>) — <strong>Save site public draft</strong> updates the Content draft (same JSON the practice site can read after publish).";
-                } else if (mode === "catalog") {
-                    line =
-                        "Catalog graph" +
-                        (wsContext.title ? ": <strong>" + escapeHtml(String(wsContext.title)) + "</strong>" : "") +
-                        " — save changes from <strong>Graph library</strong> (catalog editor).";
+                if (mode === "catalog") {
+                    const slug = wsContext.slug || "";
+                    const isSite = slug === SITE_PUBLIC_GRAPH_SLUG;
+                    line = isSite
+                        ? "<strong>Site public graph</strong> — visitors read <code>/api/data?k=dsa</code>. Edit payload in <strong>Graph library</strong> (catalog row <code>" +
+                          escapeHtml(SITE_PUBLIC_GRAPH_SLUG) +
+                          "</code>)."
+                        : "Catalog graph" +
+                          (wsContext.title ? ": <strong>" + escapeHtml(String(wsContext.title)) + "</strong>" : "") +
+                          " — save changes from <strong>Graph library</strong> (catalog editor).";
                 } else if (mode === "user_graph") {
                     line =
                         "View-only member copy" +
@@ -1558,7 +1544,12 @@
             throw r.error || new Error("Could not render graph");
         }
         if (recordType === "catalog") {
-            wsContext = { mode: "catalog", catalogId: id, title: j.graph.title || "" };
+            wsContext = {
+                mode: "catalog",
+                catalogId: id,
+                title: j.graph.title || "",
+                slug: j.graph.slug || "",
+            };
             wsSelectedRecordType = "catalog";
             wsSelectedCatalogId = id;
             wsSelectedUserGraphId = null;
@@ -1572,6 +1563,7 @@
             recordType: recordType === "catalog" ? "catalog" : "user_graph",
             id: id,
             title: j.graph.title || "",
+            slug: recordType === "catalog" ? j.graph.slug || "" : undefined,
         });
         wsRefreshChrome();
     }
@@ -1620,78 +1612,43 @@
         }
     }
 
-    async function wsLoadCmsIntoViewport() {
+    /** Load reserved catalog graph `dsa-site-map` into the workspace (same data as public GET /api/data?k=dsa). */
+    async function wsOpenSitePublicCatalogGraph() {
         activeMainTab("workspace");
         admShowLoader("Loading site map…");
-        wsSetMsg("Loading CMS…", "");
+        wsSetMsg("Loading…", "");
         try {
-            const d = await fetchJson(apiAdmin("cms") + "?k=" + encodeURIComponent(CMS_KEY));
-            const src =
-                d.draft && d.draft.payload
-                    ? d.draft.payload
-                    : d.published && d.published.payload
-                      ? d.published.payload
-                      : "[]";
-            const text = typeof src === "string" ? src : JSON.stringify(src);
-            const pretty = JSON.stringify(JSON.parse(text || "[]"), null, 2);
-            if (typeof dsaReloadGraphFromEditorJson !== "function") {
-                throw new Error("Graph studio unavailable.");
+            const list = await fetchJson(apiAdmin("graph-catalog"));
+            const graphs = list.graphs || [];
+            const row = graphs.find(function (g) {
+                return g && String(g.slug || "") === SITE_PUBLIC_GRAPH_SLUG;
+            });
+            if (!row || !row.id) {
+                wsSetMsg(
+                    "No catalog graph with slug `" +
+                        SITE_PUBLIC_GRAPH_SLUG +
+                        "`. Create or seed it in Graph library.",
+                    "err",
+                );
+                return;
             }
-            const r = dsaReloadGraphFromEditorJson(pretty, ADMIN_GRAPH_MOUNT);
-            if (!r.ok) {
-                throw r.error || new Error("Invalid JSON");
+            await wsLoadGraphFromInventory("catalog", row.id);
+            try {
+                window.dispatchEvent(new Event("resize"));
+            } catch (e) {
+                /* ignore */
             }
-            wsContext = { mode: "cms", title: "Site public graph" };
-            wsSelectedRecordType = null;
-            wsSelectedCatalogId = null;
-            wsSelectedUserGraphId = null;
-            pushWsRecent({ recordType: "cms", title: "Site public graph (dsa)" });
-            wsRefreshChrome();
-            wsSetMsg(
-                "Loaded site public graph from Content (" + (d.draft && d.draft.payload ? "draft" : "live") + ").",
-                "ok",
-            );
+            const graphWrap = document.querySelector(".adm-ws-graph-wrap");
+            if (graphWrap) {
+                try {
+                    graphWrap.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                } catch (e) {
+                    graphWrap.scrollIntoView();
+                }
+            }
+            wsSetMsg("Loaded site public graph from catalog.", "ok");
         } catch (e) {
             wsSetMsg(e.message || "Load failed", "err");
-        } finally {
-            admHideLoader();
-        }
-    }
-
-    async function wsSaveCmsDraftFromViewport() {
-        if (wsContext.mode !== "cms") {
-            wsSetMsg("Open the site public graph first (Recent or empty-state button).", "err");
-            return;
-        }
-        if (typeof dsaGetMindMapHierarchyJsonString !== "function") {
-            wsSetMsg("Graph helpers unavailable.", "err");
-            return;
-        }
-        const ok = await adminConfirm(
-            "Save site public draft?",
-            "This overwrites the <code>dsa</code> draft in Content with the graph currently in the studio.",
-        );
-        if (!ok) {
-            return;
-        }
-        let body;
-        try {
-            body = dsaGetMindMapHierarchyJsonString();
-            JSON.parse(body);
-        } catch (e) {
-            wsSetMsg(e.message || "Invalid graph JSON", "err");
-            return;
-        }
-        admShowLoader("Saving draft…");
-        try {
-            await fetchJson(apiAdmin("cms") + "?k=" + encodeURIComponent(CMS_KEY), {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: body,
-            });
-            wsSetMsg("Site public draft saved. Publish from the Content tab when ready.", "ok");
-        } catch (e) {
-            wsSetMsg(e.message || "Save failed", "err");
         } finally {
             admHideLoader();
         }
@@ -1710,11 +1667,7 @@
         renderWsRecents();
         document.getElementById("adm-ws-empty-open-public") &&
             document.getElementById("adm-ws-empty-open-public").addEventListener("click", function () {
-                void wsLoadCmsIntoViewport();
-            });
-        document.getElementById("adm-ws-save-cms-draft") &&
-            document.getElementById("adm-ws-save-cms-draft").addEventListener("click", function () {
-                void wsSaveCmsDraftFromViewport();
+                void wsOpenSitePublicCatalogGraph();
             });
 
         const fileIn = document.getElementById("admin-dsa-map-import-file");
@@ -1741,7 +1694,7 @@
                         if (!r.ok) {
                             throw r.error || new Error("Render failed");
                         }
-                        if (wsContext.mode !== "cms" && wsContext.mode !== "catalog") {
+                        if (wsContext.mode !== "catalog") {
                             wsContext = { mode: "idle", title: "" };
                             wsRefreshChrome();
                         }
@@ -2131,24 +2084,12 @@
                 );
                 statsHost.appendChild(statCard("Admins", String(u.role_admin != null ? u.role_admin : "—"), "practice role admin"));
                 statsHost.appendChild(statCard("Active", String(u.status_active != null ? u.status_active : "—"), "status"));
-                const cms = (d.cms_keys || []).find(function (x) {
-                    return x && x.key === CMS_KEY;
-                });
+                const spg = d.site_public_graph;
                 statsHost.appendChild(
                     statCard(
-                        "Live revision",
-                        cms && cms.revision != null ? String(cms.revision) : "—",
-                        "key " + CMS_KEY,
-                    ),
-                );
-                const dr = (d.cms_drafts || []).find(function (x) {
-                    return x && x.key === CMS_KEY;
-                });
-                statsHost.appendChild(
-                    statCard(
-                        "Draft",
-                        dr ? "Yes" : "None",
-                        dr && dr.updated_at != null ? fmtTime(dr.updated_at) : "",
+                        "Site public graph",
+                        spg && spg.slug ? String(spg.slug) : "—",
+                        spg && spg.updated_at != null ? fmtTime(spg.updated_at) : spg ? "" : "seed `dsa-site-map`",
                     ),
                 );
                 statsHost.appendChild(
@@ -2936,186 +2877,6 @@
         }
     }
 
-    function updateContentSummary(editor, cmsState) {
-        const host = document.getElementById("adm-content-summary");
-        if (!host) return;
-        host.innerHTML = "";
-        const pub = cmsState && cmsState.published;
-        const dr = cmsState && cmsState.draft;
-        let nodes = "—";
-        try {
-            const parsed = JSON.parse(editor.value || "[]");
-            if (Array.isArray(parsed)) nodes = String(parsed.length) + " roots/items";
-            else if (parsed && typeof parsed === "object") nodes = String(Object.keys(parsed).length) + " keys";
-        } catch (e) {
-            nodes = "Invalid JSON";
-        }
-        host.appendChild(statCard("Live revision", pub && pub.revision != null ? String(pub.revision) : "—", fmtTime(pub && pub.updated_at)));
-        host.appendChild(statCard("Published at", pub && pub.published_at ? fmtTime(pub.published_at) : "—", ""));
-        host.appendChild(statCard("Draft", dr ? "Active" : "None", dr ? fmtTime(dr.updated_at) : ""));
-        host.appendChild(statCard("Editor", nodes, "parsed summary"));
-    }
-
-    function initContentCms() {
-        const editor = document.getElementById("cms-editor");
-        const status = document.getElementById("cms-status");
-        if (!editor) return;
-
-        let lastCms = null;
-
-        window.__dsaAdminRefreshContentGraph = function () {
-            /* Visual graph studio lives on the Workspace tab only. */
-        };
-
-        function graphSetStatus(el, msg, cls) {
-            if (!el) return;
-            el.textContent = msg || "";
-            el.className = "status" + (cls ? " " + cls : "");
-        }
-
-        async function loadGraphState() {
-            graphSetStatus(status, "Loading…", "");
-            try {
-                const d = await fetchJson(apiAdmin("cms") + "?k=" + encodeURIComponent(CMS_KEY));
-                lastCms = d;
-                const src =
-                    d.draft && d.draft.payload
-                        ? d.draft.payload
-                        : d.published && d.published.payload
-                          ? d.published.payload
-                          : "[]";
-                try {
-                    editor.value = JSON.stringify(JSON.parse(src), null, 2);
-                } catch (e) {
-                    editor.value = src;
-                }
-                updateContentSummary(editor, d);
-                const hint = d.draft
-                    ? "Draft in progress — live revision " + (d.published && d.published.revision) + "."
-                    : "No draft — editor shows live published JSON.";
-                graphSetStatus(
-                    status,
-                    hint +
-                        " Use Workspace for the visual studio. Publishing live also mirrors this map to the public catalog slug <code>dsa-site-map</code> when Subscribers D1 is bound.",
-                    "ok",
-                );
-            } catch (e) {
-                graphSetStatus(status, "Load failed: " + e.message, "err");
-            }
-        }
-
-        async function saveDraft() {
-            let body = editor.value;
-            try {
-                JSON.parse(body);
-            } catch (e) {
-                graphSetStatus(status, "Invalid JSON: " + e.message, "err");
-                return;
-            }
-            graphSetStatus(status, "Saving draft…", "");
-            try {
-                await fetchJson(apiAdmin("cms") + "?k=" + encodeURIComponent(CMS_KEY), {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: body,
-                });
-                graphSetStatus(status, "Draft saved.", "ok");
-                await loadGraphState();
-            } catch (e) {
-                graphSetStatus(status, e.message, "err");
-            }
-        }
-
-        function openLiveMapFresh(revision) {
-            try {
-                const u = new URL("index.html", document.baseURI);
-                u.searchParams.set("published", String(revision != null ? revision : Date.now()));
-                const w = window.open(u.href, "_blank", "noopener,noreferrer");
-                return !!w;
-            } catch (e) {
-                console.warn("openLiveMapFresh", e);
-                return false;
-            }
-        }
-
-        async function publish() {
-            graphSetStatus(status, "Publishing…", "");
-            try {
-                const r = await fetchJson(
-                    apiAdmin("cms") + "?k=" + encodeURIComponent(CMS_KEY) + "&action=publish",
-                    {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: "",
-                    },
-                );
-                const rev = r.revision != null ? r.revision : "";
-                const opened = openLiveMapFresh(rev);
-                const sync = r.graph_catalog_sync;
-                let syncTail = "";
-                if (sync && sync.ok) {
-                    syncTail = " Public library entry <code>dsa-site-map</code> updated.";
-                } else if (sync && sync.reason === "no_subscribers_db") {
-                    syncTail = " (Subscribers D1 not bound — library mirror skipped.)";
-                } else if (sync && !sync.ok && sync.reason) {
-                    syncTail = " (Library mirror: " + sync.reason + ".)";
-                }
-                graphSetStatus(
-                    status,
-                    "Published — revision " +
-                        rev +
-                        "." +
-                        (opened
-                            ? " Live map opened in a new tab (fresh URL)."
-                            : " Pop-up blocked — open index.html?published=" + encodeURIComponent(rev) + " to verify.") +
-                        syncTail,
-                    "ok",
-                );
-                await loadGraphState();
-            } catch (e) {
-                graphSetStatus(status, e.message, "err");
-            }
-        }
-
-        async function discardDraft() {
-            graphSetStatus(status, "Discarding draft…", "");
-            try {
-                await fetchJson(apiAdmin("cms") + "?k=" + encodeURIComponent(CMS_KEY), { method: "DELETE" });
-                graphSetStatus(status, "Draft discarded.", "ok");
-                await loadGraphState();
-            } catch (e) {
-                graphSetStatus(status, e.message, "err");
-            }
-        }
-
-        const bind = function (id, fn) {
-            const b = document.getElementById(id);
-            if (b) b.addEventListener("click", fn);
-        };
-
-        bind("cms-load", loadGraphState);
-        bind("cms-save-draft", saveDraft);
-        bind("cms-publish", publish);
-        bind("cms-discard-draft", discardDraft);
-        bind("cms-json-format", function () {
-            try {
-                editor.value = JSON.stringify(JSON.parse(editor.value), null, 2);
-                graphSetStatus(status, "Formatted.", "ok");
-                updateContentSummary(editor, lastCms);
-            } catch (e) {
-                graphSetStatus(status, "Format failed: " + e.message, "err");
-            }
-        });
-        bind("cms-json-save-draft", saveDraft);
-        bind("cms-json-publish", publish);
-
-        editor.addEventListener("input", function () {
-            updateContentSummary(editor, lastCms);
-        });
-
-        loadGraphState();
-    }
-
     async function loadSystemUi() {
         setStatus("adm-system-msg", "Loading…", "");
         try {
@@ -3221,10 +2982,6 @@
                 if (name === "dashboard") loadDashboard();
                 if (name === "site") loadKvUi();
                 if (name === "users") loadUsers();
-                if (name === "content") {
-                    const cl = document.getElementById("cms-load");
-                    if (cl) cl.click();
-                }
                 if (name === "workspace") {
                     void renderWsRecents();
                 }
@@ -3248,12 +3005,6 @@
                 if (name === "library") {
                     void loadGraphInventoryList();
                 }
-                if (name === "content") {
-                    const cl = document.getElementById("cms-load");
-                    if (cl) {
-                        cl.click();
-                    }
-                }
             });
         });
 
@@ -3270,10 +3021,7 @@
             if (name === "dashboard") loadDashboard();
             else if (name === "site") loadKvUi();
             else if (name === "users") loadUsers();
-            else if (name === "content") {
-                const cl = document.getElementById("cms-load");
-                if (cl) cl.click();
-            } else if (name === "workspace") {
+            else if (name === "workspace") {
                 void renderWsRecents();
             } else if (name === "library") {
                 void loadGraphInventoryList();
@@ -3410,7 +3158,6 @@
         wireGraphLibraryPanel();
         activeMainTab("dashboard");
         loadDashboard();
-        initContentCms();
         formSetUserEmpty();
     };
 })();

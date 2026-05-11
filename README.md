@@ -16,7 +16,7 @@ npx --yes serve . -p 4173
 
 - **`index.html`** — practice map / graph (default). Navbar **Sign in** → `account.html`; **Admin** link → `admin.html`. When a site-admin RSA session exists, the primary auth link targets **`admin.html`** instead.
 - **`account.html`** — practice sign-in / sign-up only → `POST /api/auth/register`, `POST /api/auth/login` (D1 **subscribers** + `USER_JWT_SECRET`). After success, redirects to **`index.html`**.
-- **`admin.html`** — site admin: RSA password/TOTP via Worker in `meta dsa-admin-oauth-base`. Set **`return`** to your real admin URL (recommended: `https://<host>/admin.html`); allow that prefix in **`ALLOWED_RETURN_PREFIXES`**. Admin UI calls **`/api/admin/*`**. **`PUT /api/data?k=dsa`** still publishes live JSON (RSA JWT).
+- **`admin.html`** — site admin: RSA password/TOTP via Worker in `meta dsa-admin-oauth-base`. Set **`return`** to your real admin URL (recommended: `https://<host>/admin.html`); allow that prefix in **`ALLOWED_RETURN_PREFIXES`**. Admin UI calls **`/api/admin/*`**. Public graph data is **`GET /api/data?k=dsa`** from **`graph_catalog`** (`dsa-site-map`); **`PUT /api/data?k=dsa`** updates that row (RSA JWT, requires **`DB_SUBSCRIBERS`**).
 
 ### Cloudflare: admin / sign-in redirect loops (`/admin`, `/account`)
 
@@ -35,15 +35,15 @@ After the bad rules are removed, open **`https://<project>.pages.dev/admin.html`
 | Who | Customize tab |
 |-----|----------------|
 | Anonymous / practice **free** / **user** | Same public graph only |
-| Site admin (RSA session) | Yes + import → CMS sync |
+| Site admin (RSA session) | Yes + import → save via library / API |
 | Practice **role** `subscriber` or `admin`, or **plan** `pro` / `team` / `lifetime` | Yes (local edit + export; publishing the live site map still needs RSA site admin) |
 
 ## Databases (Cloudflare D1)
 
 | Binding | Database name (suggested) | Purpose |
 |---------|---------------------------|--------|
-| **`DB`** | `dsa-pattern-practice-content` | CMS JSON, revisions, drafts, feature flags, audit |
-| **`DB_SUBSCRIBERS`** | `dsa-pattern-practice-subscribers` | Users, profiles, entitlements, billing hooks, security audit |
+| **`DB`** | `dsa-pattern-practice-content` | Feature flags (`app_kv`), content audit — not used for the public practice graph |
+| **`DB_SUBSCRIBERS`** | `dsa-pattern-practice-subscribers` | Users, profiles, **`graph_catalog`** (incl. site public slug `dsa-site-map`), personal graphs, security audit |
 
 Run SQL in **`migrations/`** — see **`migrations/README.md`**. Example config: **`wrangler.toml.example`**.
 
@@ -58,13 +58,13 @@ Set **`USER_JWT_SECRET`** (≥16 chars, prefer 32+) in Pages environment variabl
 | `admin.html` | Site admin (RSA) dashboard |
 | `auth/portal-shell.css` | Styles for account + admin portal cards |
 | `auth/practice-account-page.js` | Practice form wiring on `account.html` |
-| `auth/admin-site-page.js` | CMS password/TOTP + dashboard init on `admin.html` |
+| `auth/admin-site-page.js` | Admin RSA password/TOTP + dashboard init on `admin.html` |
 | `script.js` | Graph UI, customize gating, nav auth |
 | `auth/dsa-user-auth.js` | Practice JWT in storage + `dsaHasCustomizeGraphAccess()` |
 | `auth/dsa-admin-auth.js` | Site-admin RSA JWT |
 | `auth/account-admin-panel.js` | Admin dashboard UI (calls `/api/admin/*`) |
-| `functions/api/data.js` | Public CMS GET + RSA PUT (`DB`) |
-| `functions/api/admin/*.js` | Site admin API: dashboard, users, user patch, CMS draft/publish, audits, `app_kv`, contacts |
+| `functions/api/data.js` | Public **`GET /api/data?k=dsa`** + RSA **`PUT`** (`graph_catalog` on **`DB_SUBSCRIBERS`**) |
+| `functions/api/admin/*.js` | Site admin API: dashboard, users, graph catalog/inventory, audits, `app_kv`, contacts |
 | `functions/api/auth/*.js` | Register, login, me (`DB_SUBSCRIBERS`) |
 | `functions/_lib/practice-jwt.js` | PBKDF2 + HS256 for practice tokens |
 | `functions/_lib/admin-rsa-jwt.js` | Shared RSA verification for `/api/data` PUT and `/api/admin/*` |
@@ -73,7 +73,7 @@ Set **`USER_JWT_SECRET`** (≥16 chars, prefer 32+) in Pages environment variabl
 ## Deploy notes
 
 - **GitHub Pages project URL**: keep **Project site** so `api/*` and `auth/*` paths resolve.
-- **`meta dsa-admin-oauth-base`**: your Worker that issues RSA JWTs for CMS.
+- **`meta dsa-admin-oauth-base`**: your Worker that issues RSA JWTs for site admin APIs.
 - Do not commit **`USER_JWT_SECRET`** or private PEM keys.
 
 ## Original portfolio

@@ -14,7 +14,8 @@
 
     function setCmsStatus(msg, cls) {
         const ok = typeof dsaIsAdminSession === "function" && dsaIsAdminSession();
-        const el = ok ? statusDash : statusAuth || statusDash;
+        const dashMsg = document.getElementById("adm-dash-msg");
+        const el = ok ? statusDash || dashMsg : statusAuth || statusDash;
         if (!el) {
             return;
         }

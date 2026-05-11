@@ -1,13 +1,17 @@
 /**
- * CMS API: GET /api/data?k=dsa  |  PUT /api/data?k=dsa  Authorization: Bearer <JWT>  body: raw JSON
+ * Public practice graph: GET /api/data?k=dsa  — raw JSON array (mind-map roots).
+ * Live payload is stored in Subscribers D1: graph_catalog.slug = 'dsa-site-map'.
  *
- * Requires content D1: binding `DB` or `dsa-pattern-practice-content` + JWT from your GitHub OAuth worker.
+ * PUT /api/data?k=dsa  — RSA JWT admin only; updates that catalog row's payload_json.
  */
 
-import { contentDb } from "../_lib/d1-bindings.js";
+import { subscribersDb } from "../_lib/d1-bindings.js";
 import { verifyAdminJwt } from "../_lib/admin-rsa-jwt.js";
 
 const ALLOWED = new Set(["dsa"]);
+
+/** Reserved catalog row for the live site mind map (same as graph library / member hub). */
+const SITE_PUBLIC_GRAPH_SLUG = "dsa-site-map";
 
 export async function onRequestGet(context) {
     const { request, env } = context;
@@ -20,10 +24,10 @@ export async function onRequestGet(context) {
         });
     }
 
-    const db = contentDb(env);
+    const db = subscribersDb(env);
     if (!db) {
         return new Response(
-            JSON.stringify({ error: "D1 not bound (bind DB or dsa-pattern-practice-content)" }),
+            JSON.stringify({ error: "Subscribers D1 not bound (bind DB_SUBSCRIBERS / dsa-pattern-practice-subscribers)" }),
             {
                 status: 503,
                 headers: { "Content-Type": "application/json" },
@@ -32,10 +36,12 @@ export async function onRequestGet(context) {
     }
 
     try {
-        const row = await db.prepare("SELECT payload FROM cms_content WHERE key = ?").bind(key).first();
-        if (row && row.payload) {
-            /* Avoid edge/browser serving stale graph after admin publish (was max-age=30). */
-            return new Response(row.payload, {
+        const row = await db
+            .prepare("SELECT payload_json FROM graph_catalog WHERE slug = ? AND deleted_at IS NULL")
+            .bind(SITE_PUBLIC_GRAPH_SLUG)
+            .first();
+        if (row && row.payload_json) {
+            return new Response(row.payload_json, {
                 headers: {
                     "Content-Type": "application/json",
                     "Cache-Control": "private, no-cache, must-revalidate",
@@ -43,10 +49,9 @@ export async function onRequestGet(context) {
             });
         }
     } catch (e) {
-        console.error("D1 read", e);
+        console.error("graph_catalog read for public site map", e);
     }
 
-    /* No row: empty payload (no static file fallback). */
     const emptyBody = "[]";
     return new Response(emptyBody, {
         status: 200,
@@ -59,10 +64,10 @@ export async function onRequestGet(context) {
 
 export async function onRequestPut(context) {
     const { request, env } = context;
-    const db = contentDb(env);
+    const db = subscribersDb(env);
     if (!db) {
         return new Response(
-            JSON.stringify({ error: "D1 not bound (bind DB or dsa-pattern-practice-content)" }),
+            JSON.stringify({ error: "Subscribers D1 not bound" }),
             {
                 status: 503,
                 headers: { "Content-Type": "application/json" },
@@ -97,7 +102,13 @@ export async function onRequestPut(context) {
 
     const text = await request.text();
     try {
-        JSON.parse(text);
+        const parsed = JSON.parse(text);
+        if (!Array.isArray(parsed)) {
+            return new Response(JSON.stringify({ error: "body must be a JSON array of root topics" }), {
+                status: 400,
+                headers: { "Content-Type": "application/json" },
+            });
+        }
     } catch {
         return new Response(JSON.stringify({ error: "body must be JSON" }), {
             status: 400,
@@ -106,43 +117,50 @@ export async function onRequestPut(context) {
     }
 
     const now = Math.floor(Date.now() / 1000);
-    let revision = 1;
+
+    let row;
     try {
-        const prev = await db.prepare("SELECT revision FROM cms_content WHERE key = ?").bind(key).first();
-        if (prev && typeof prev.revision === "number" && prev.revision >= 1) {
-            revision = prev.revision + 1;
-        }
-        await db.prepare(
-            `INSERT INTO cms_content (key, payload, updated_at, revision, content_format, published_at)
-             VALUES (?, ?, ?, ?, 'json', ?)
-             ON CONFLICT(key) DO UPDATE SET
-               payload = excluded.payload,
-               updated_at = excluded.updated_at,
-               revision = excluded.revision,
-               content_format = excluded.content_format,
-               published_at = excluded.published_at`,
-        )
-            .bind(key, text, now, revision, now)
-            .run();
+        row = await db
+            .prepare("SELECT id FROM graph_catalog WHERE slug = ? AND deleted_at IS NULL")
+            .bind(SITE_PUBLIC_GRAPH_SLUG)
+            .first();
     } catch (e) {
-        console.warn("D1 extended write, falling back", e);
-        await db.prepare("INSERT OR REPLACE INTO cms_content (key, payload, updated_at) VALUES (?, ?, ?)")
-            .bind(key, text, now)
-            .run();
+        console.error("site public graph lookup", e);
+        return new Response(JSON.stringify({ error: "lookup failed" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+        });
+    }
+
+    if (!row || !row.id) {
+        return new Response(
+            JSON.stringify({
+                error:
+                    'No graph_catalog row with slug "' +
+                    SITE_PUBLIC_GRAPH_SLUG +
+                    '". Create it in Graph library or seed SQL before PUT.',
+            }),
+            {
+                status: 404,
+                headers: { "Content-Type": "application/json" },
+            },
+        );
     }
 
     try {
-        await db.prepare(
-            `INSERT INTO content_audit (entity_type, entity_key, action, actor_ref, revision, created_at)
-             VALUES ('cms_content', ?, 'put', 'jwt_admin', ?, ?)`,
-        )
-            .bind(key, revision, now)
+        await db
+            .prepare("UPDATE graph_catalog SET payload_json = ?, updated_at = ? WHERE id = ? AND deleted_at IS NULL")
+            .bind(text, now, row.id)
             .run();
     } catch (e) {
-        /* optional table */
+        console.error("site public graph update", e);
+        return new Response(JSON.stringify({ error: "update failed" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+        });
     }
 
-    return new Response(JSON.stringify({ ok: true, key, updated_at: now, revision }), {
+    return new Response(JSON.stringify({ ok: true, key, slug: SITE_PUBLIC_GRAPH_SLUG, updated_at: now }), {
         headers: { "Content-Type": "application/json" },
     });
 }

@@ -318,15 +318,29 @@
         return dsaSiteFeatureUse(featureId);
     }
 
+    function siteVisible(featureId) {
+        if (typeof dsaSiteFeatureVisible !== "function") {
+            return true;
+        }
+        return dsaSiteFeatureVisible(featureId);
+    }
+
+    function siteEnabled(featureId) {
+        if (typeof dsaSiteFeatureEnabled !== "function") {
+            return true;
+        }
+        return dsaSiteFeatureEnabled(featureId);
+    }
+
     function memberHubPanelAllowed(panelId) {
         if (panelId === "graph" || panelId === "map-tools") {
             return true;
         }
         if (panelId === "library") {
-            return siteUse("sub_graph_library");
+            return siteVisible("sub_graph_library");
         }
         var k = PANEL_NAV_SITE_KEY[panelId];
-        return k ? siteUse(k) : true;
+        return k ? siteVisible(k) : true;
     }
 
     function showPanel(id) {
@@ -430,20 +444,20 @@
 
         var overviewPanel = document.getElementById("panel-overview");
         if (overviewPanel) {
-            var overviewOn = siteUse("sub_overview_stats");
-            overviewPanel.hidden = !overviewOn;
-            overviewPanel.setAttribute("aria-hidden", overviewOn ? "false" : "true");
-            if (!overviewOn && overviewPanel.classList.contains("is-active")) {
+            var overviewShown = siteVisible("sub_overview_stats");
+            overviewPanel.hidden = !overviewShown;
+            overviewPanel.setAttribute("aria-hidden", overviewShown ? "false" : "true");
+            if (!overviewShown && overviewPanel.classList.contains("is-active")) {
                 showPanel("graph");
             }
         }
 
         var libraryPanel = document.getElementById("panel-library");
         if (libraryPanel) {
-            var libOn = siteUse("sub_graph_library");
-            libraryPanel.hidden = !libOn;
-            libraryPanel.setAttribute("aria-hidden", libOn ? "false" : "true");
-            if (!libOn && libraryPanel.classList.contains("is-active")) {
+            var libShown = siteVisible("sub_graph_library");
+            libraryPanel.hidden = !libShown;
+            libraryPanel.setAttribute("aria-hidden", libShown ? "false" : "true");
+            if (!libShown && libraryPanel.classList.contains("is-active")) {
                 showPanel("graph");
             }
         }
@@ -457,10 +471,17 @@
             if (!key) {
                 return;
             }
-            var on = siteUse(key);
-            btn.hidden = !on;
-            btn.setAttribute("aria-hidden", on ? "false" : "true");
-            if (!on) {
+            var vis = siteVisible(key);
+            var en = siteEnabled(key);
+            btn.hidden = !vis;
+            btn.setAttribute("aria-hidden", vis ? "false" : "true");
+            btn.classList.toggle("dsa-udash-site-feature-faded", vis && !en);
+            if (vis && !en) {
+                btn.setAttribute("aria-disabled", "true");
+            } else {
+                btn.removeAttribute("aria-disabled");
+            }
+            if (!vis) {
                 btn.classList.remove("is-active");
                 btn.removeAttribute("aria-current");
             }
@@ -468,7 +489,9 @@
 
         var bell = document.getElementById("dsa-udash-notif-bell");
         if (bell) {
-            bell.hidden = !siteUse("sub_alerts_module");
+            var alertsVis = siteVisible("sub_alerts_module");
+            bell.hidden = !alertsVis;
+            bell.classList.toggle("dsa-udash-site-feature-faded", alertsVis && !siteEnabled("sub_alerts_module"));
         }
 
         var pill = document.getElementById("dsa-udash-plan-pill");

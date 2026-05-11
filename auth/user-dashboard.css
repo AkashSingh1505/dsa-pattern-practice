@@ -328,6 +328,31 @@ html.dsa-udash-html,
     flex-shrink: 0;
 }
 
+/* Admin: feature visible in matrix but Enabled off — stay in nav, dimmed */
+.dsa-udash-site-feature-faded {
+    opacity: 0.48;
+}
+
+.dsa-udash-nav-btn.dsa-udash-site-feature-faded.is-active {
+    opacity: 0.72;
+}
+
+.dsa-udash-nav-btn.dsa-udash-site-feature-faded:hover {
+    opacity: 0.62;
+}
+
+.dsa-udash-mnav button.dsa-udash-site-feature-faded {
+    opacity: 0.48;
+}
+
+.dsa-udash-mnav button.dsa-udash-site-feature-faded.is-active {
+    opacity: 0.72;
+}
+
+.dsa-udash-icon-btn.dsa-udash-site-feature-faded {
+    opacity: 0.48;
+}
+
 .dsa-udash-nav-badge {
     margin-left: auto;
     min-width: 20px;

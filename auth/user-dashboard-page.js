@@ -502,6 +502,23 @@
         }
     }
 
+    /** Re-apply admin flags when site features refresh (and hash fallback if a panel was disabled). */
+    function onSiteFeaturesReadyForUdash() {
+        if (!document.body.classList.contains("dsa-udash-body")) {
+            return;
+        }
+        applyMemberHubFeatureUi();
+        var hash = (location.hash || "").replace(/^#/, "");
+        if (hash && PANEL_TITLES[hash] && !memberHubPanelAllowed(hash)) {
+            navigateDashboardPanel("graph");
+            try {
+                history.replaceState(null, "", "#graph");
+            } catch (e) {}
+        }
+    }
+
+    document.addEventListener("dsa-site-features-ready", onSiteFeaturesReadyForUdash);
+
     function fillJwtProfile() {
         var c = typeof dsaParsePracticeUserClaims === "function" ? dsaParsePracticeUserClaims() : null;
         var emailEl = document.getElementById("dsa-udash-profile-email");

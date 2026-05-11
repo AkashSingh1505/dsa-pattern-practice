@@ -844,15 +844,19 @@ html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-glib-badge--public {
     max-width: none;
 }
 
-.dsa-portal-page--admin .adm-glib-segmented--masthead {
+.dsa-portal-page--admin .adm-glib-toolbar-mast-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     flex-shrink: 0;
-    align-self: flex-start;
 }
 
-.dsa-portal-page--admin .adm-glib-toolbar--with-title > .adm-section-reload-btn {
+.dsa-portal-page--admin .adm-glib-segmented--masthead {
     flex-shrink: 0;
-    align-self: flex-start;
-    margin-top: 2px;
+}
+
+.dsa-portal-page--admin .adm-glib-toolbar-mast-controls > .adm-section-reload-btn {
+    flex-shrink: 0;
 }
 
 /* Open in workspace — clear enabled vs disabled */

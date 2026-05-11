@@ -271,12 +271,6 @@ html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-ws-studio-lede {
     border-color: rgba(148, 163, 184, 0.35);
 }
 
-.dsa-portal-page--admin .adm-ws-actions-bar {
-    margin-bottom: 12px;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
 .dsa-portal-page--admin .adm-ws-graph-wrap {
     border-radius: 16px;
     overflow: hidden;

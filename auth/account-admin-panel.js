@@ -252,11 +252,11 @@
         if (!el) return;
         el.textContent = msg || "";
         el.className = "status" + (cls ? " " + cls : "");
-        if ((cls === "ok" || cls === "err") && msg) {
+        if ((cls === "ok" || cls === "err" || cls === "info") && msg) {
             if (id === "adm-glib-msg" && /^\d+\s+graph\(s\)\s+in\s+this\s+view\.?$/.test(String(msg).trim())) {
                 /* Inventory count refresh — keep inline only */
             } else {
-                showAdminToast(msg, cls);
+                showAdminToast(msg, cls === "info" ? "info" : cls);
             }
         }
     }
@@ -1508,16 +1508,30 @@
             wsSetMsg("Open a catalog graph from Library or Recent, then save.", "err");
             return;
         }
-        if (typeof dsaGetMindMapHierarchyJsonString !== "function") {
-            wsSetMsg("Graph helpers unavailable.", "err");
-            return;
-        }
         let payload;
-        try {
-            payload = JSON.parse(dsaGetMindMapHierarchyJsonString());
-        } catch (e) {
-            wsSetMsg(e.message || "Invalid graph JSON", "err");
-            return;
+        if (dualMode.workspace === "json") {
+            const ta = document.getElementById("adm-ws-json-editor");
+            if (!ta) {
+                wsSetMsg("JSON editor not found.", "err");
+                return;
+            }
+            try {
+                payload = JSON.parse(String(ta.value || "").trim() || "[]");
+            } catch (e) {
+                wsSetMsg("Invalid JSON in editor: " + e.message, "err");
+                return;
+            }
+        } else {
+            if (typeof dsaGetMindMapHierarchyJsonString !== "function") {
+                wsSetMsg("Graph helpers unavailable.", "err");
+                return;
+            }
+            try {
+                payload = JSON.parse(dsaGetMindMapHierarchyJsonString());
+            } catch (e) {
+                wsSetMsg(e.message || "Invalid graph JSON", "err");
+                return;
+            }
         }
         if (!Array.isArray(payload)) {
             wsSetMsg("Graph must be a JSON array of roots.", "err");
@@ -1533,7 +1547,7 @@
                     payload: payload,
                 }),
             });
-            wsSetMsg("Saved mind map to catalog.", "ok");
+            wsSetMsg("Graph saved.", "ok");
             try {
                 await loadGraphInventoryList();
             } catch (e) {
@@ -1574,10 +1588,10 @@
                     const slug = wsContext.slug || "";
                     const isSite = slug === SITE_PUBLIC_GRAPH_SLUG;
                     line = isSite
-                        ? "<strong>Site public graph</strong> — visitors read <code>/api/data?k=dsa</code>. Use <strong>Save to catalog</strong> here or edit listing in <strong>Graph library</strong>."
+                        ? "<strong>Site public graph</strong> — visitors read <code>/api/data?k=dsa</code>. Use <strong>Save graph</strong> in the header or edit listing in <strong>Graph library</strong>."
                         : "Catalog graph" +
                           (wsContext.title ? ": <strong>" + escapeHtml(String(wsContext.title)) + "</strong>" : "") +
-                          " — use <strong>Save to catalog</strong> to persist the studio, or edit metadata in <strong>Graph library</strong>.";
+                          " — <strong>Save graph</strong> persists the mind map; metadata in <strong>Graph library</strong>.";
                 } else if (mode === "user_graph") {
                     line =
                         "View-only member copy" +
@@ -1723,6 +1737,44 @@
         }
     }
 
+    /** Reload current graph from server (workspace toolbar Reload). */
+    async function reloadWorkspaceSection() {
+        admShowLoader("Refreshing…");
+        wsSetMsg("", "");
+        try {
+            if (wsContext.mode === "catalog" && wsContext.catalogId) {
+                await wsLoadGraphFromInventory("catalog", wsContext.catalogId);
+                try {
+                    window.dispatchEvent(new Event("resize"));
+                } catch (e) {
+                    /* ignore */
+                }
+                if (dualMode.workspace === "json") {
+                    refreshWorkspaceJsonFromGraph();
+                }
+                wsSetMsg("Workspace reloaded.", "ok");
+            } else if (wsContext.mode === "user_graph" && wsContext.userGraphId) {
+                await wsLoadGraphFromInventory("user_graph", wsContext.userGraphId);
+                try {
+                    window.dispatchEvent(new Event("resize"));
+                } catch (e) {
+                    /* ignore */
+                }
+                if (dualMode.workspace === "json") {
+                    refreshWorkspaceJsonFromGraph();
+                }
+                wsSetMsg("Workspace reloaded.", "ok");
+            } else {
+                void renderWsRecents();
+                wsSetMsg("Open a catalog or user graph first — nothing to reload.", "info");
+            }
+        } catch (e) {
+            wsSetMsg(e.message || "Reload failed", "err");
+        } finally {
+            admHideLoader();
+        }
+    }
+
     function wireAdminWorkspace() {
         const pane = document.querySelector('.adm-pane[data-admin-pane="workspace"]');
         if (!pane || pane.dataset.admWsBound === "1") {
@@ -1740,6 +1792,10 @@
             });
 
         document.querySelectorAll(".adm-ws-save-catalog").forEach(function (btn) {
+            if (btn.dataset.admWsSaveBound === "1") {
+                return;
+            }
+            btn.dataset.admWsSaveBound = "1";
             btn.addEventListener("click", function () {
                 void wsSaveCatalogGraphFromStudio();
             });
@@ -3105,7 +3161,7 @@
             else if (name === "site") loadKvUi();
             else if (name === "users") loadUsers();
             else if (name === "workspace") {
-                void renderWsRecents();
+                void reloadWorkspaceSection();
             } else if (name === "library") {
                 void loadGraphInventoryList();
             } else if (name === "system") loadSystemUi();

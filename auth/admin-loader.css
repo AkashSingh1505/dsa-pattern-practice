@@ -87,9 +87,11 @@ html[data-admin-theme="dark"] .adm-modal__body {
 .adm-global-loader__card {
     padding: 28px 36px 24px;
     border-radius: 20px;
-    background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(238, 242, 255, 0.96));
-    border: 1px solid rgba(99, 102, 241, 0.25);
-    box-shadow: 0 20px 50px rgba(79, 70, 229, 0.12);
+    background: rgba(28, 28, 30, 0.94);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+        0 16px 48px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
     text-align: center;
     min-width: 200px;
 }
@@ -99,9 +101,9 @@ html[data-admin-theme="dark"] .adm-modal__body {
     height: 48px;
     margin: 0 auto 14px;
     border-radius: 50%;
-    border: 3px solid rgba(99, 102, 241, 0.2);
-    border-top-color: #6366f1;
-    border-right-color: #a855f7;
+    border: 3px solid rgba(255, 255, 255, 0.15);
+    border-top-color: #a5b4fc;
+    border-right-color: #c4b5fd;
     animation: adm-loader-spin 0.85s linear infinite;
 }
 
@@ -115,21 +117,21 @@ html[data-admin-theme="dark"] .adm-modal__body {
     margin: 0;
     font-size: 14px;
     font-weight: 600;
-    color: #4338ca;
+    color: #ffffff;
     letter-spacing: 0.02em;
 }
 
 html[data-admin-theme="dark"] .adm-global-loader__card {
-    background: linear-gradient(145deg, #1e293b, #312e81);
-    border-color: rgba(129, 140, 248, 0.4);
+    background: rgba(22, 22, 24, 0.96);
+    border-color: rgba(255, 255, 255, 0.1);
 }
 
 html[data-admin-theme="dark"] .adm-global-loader__text {
-    color: #c7d2fe;
+    color: #ffffff;
 }
 
 html[data-admin-theme="dark"] .adm-global-loader__orbit {
-    border-color: rgba(129, 140, 248, 0.25);
-    border-top-color: #818cf8;
-    border-right-color: #c084fc;
+    border-color: rgba(255, 255, 255, 0.12);
+    border-top-color: #a5b4fc;
+    border-right-color: #c4b5fd;
 }

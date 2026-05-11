@@ -8278,6 +8278,12 @@ function wireNavbarAdmin() {
 
 window.syncNavbarAuthUi = syncNavbarAuthUi;
 
+document.addEventListener("dsa-site-features-ready", function () {
+    if (typeof syncNavbarAuthUi === "function") {
+        syncNavbarAuthUi();
+    }
+});
+
 const NAV_MOBILE_MQ = window.matchMedia("(max-width: 720px)");
 
 /**

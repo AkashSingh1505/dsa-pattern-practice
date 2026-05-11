@@ -519,8 +519,8 @@ html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-glib-btn--danger:hove
 .dsa-portal-page--admin .adm-glib-filters-row {
     display: grid;
     grid-template-columns: 1.6fr 1fr 1fr 1.2fr 1fr 1fr auto;
-    gap: 10px;
-    align-items: end;
+    gap: 10px 12px;
+    align-items: stretch;
 }
 
 @media (max-width: 1100px) {
@@ -539,8 +539,10 @@ html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-glib-btn--danger:hove
 .dsa-portal-page--admin .adm-glib-field {
     display: flex;
     flex-direction: column;
+    justify-content: flex-end;
     gap: 6px;
     min-width: 0;
+    min-height: 100%;
 }
 
 .dsa-portal-page--admin .adm-glib-field label {
@@ -553,7 +555,8 @@ html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-glib-btn--danger:hove
 
 .dsa-portal-page--admin .adm-glib-input,
 .dsa-portal-page--admin .adm-glib-select {
-    height: 34px;
+    height: 40px;
+    min-height: 40px;
     width: 100%;
     border: 1px solid var(--glib-border-strong);
     border-radius: 8px;
@@ -602,9 +605,18 @@ html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-glib-btn--danger:hove
 
 .dsa-portal-page--admin .adm-glib-filter-actions {
     display: flex;
-    gap: 6px;
-    align-items: center;
+    flex-direction: column;
     justify-content: flex-end;
+    align-items: stretch;
+    gap: 8px;
+    min-width: 112px;
+}
+
+.dsa-portal-page--admin .adm-glib-filter-actions .adm-glib-btn {
+    width: 100%;
+    min-height: 40px;
+    box-sizing: border-box;
+    justify-content: center;
 }
 
 .dsa-portal-page--admin .adm-glib-chips {

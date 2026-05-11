@@ -33,14 +33,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev" />
     <title>Site admin — DSA Pattern Practice</title>
-    <link rel="stylesheet" href="./auth/portal-shell.css?v=17" />
+    <link rel="stylesheet" href="./auth/portal-shell.css?v=18" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css?v=14" />
     <link rel="stylesheet" href="./dsa-index-shell.css?v=20" />
-    <link rel="stylesheet" href="./auth/admin-graph-library.css?v=6" />
-    <link rel="stylesheet" href="./auth/admin-workspace.css?v=5" />
+    <link rel="stylesheet" href="./auth/admin-graph-library.css?v=7" />
+    <link rel="stylesheet" href="./auth/admin-workspace.css?v=6" />
     <link rel="stylesheet" href="./auth/admin-loader.css?v=1" />
 </head>
 <body class="dsa-admin-body">
@@ -554,7 +554,21 @@
                             <aside class="adm-ws-recents" aria-label="Recently opened graphs">
                                 <div class="adm-ws-recents-head">
                                     <span class="adm-ws-recents-title">Recent</span>
-                                    <span class="adm-ws-recents-meta" id="adm-ws-recents-meta">Up to 8</span>
+                                    <div class="adm-ws-recents-head-end">
+                                        <span class="adm-ws-recents-meta" id="adm-ws-recents-meta">Up to 8</span>
+                                        <button
+                                            type="button"
+                                            class="adm-ws-recents-clear"
+                                            id="adm-ws-recents-clear"
+                                            aria-label="Clear recent graphs list"
+                                            title="Clear recent"
+                                        >
+                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                <circle cx="12" cy="12" r="9"></circle>
+                                                <path d="M9 9l6 6M15 9l-6 6"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div id="adm-ws-recents-list" class="adm-ws-recents-list" role="list"></div>
                             </aside>
@@ -569,6 +583,15 @@
                                             <path d="M6.8 7.3l4.4 9M17.2 7.3l-4.4 9"></path>
                                         </svg>
                                         <span>Graph library</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm adm-ws-save-catalog"
+                                        id="adm-ws-save-catalog-ui"
+                                        disabled
+                                        title="Save the mind map shown in the studio to the open catalog graph"
+                                    >
+                                        Save to catalog
                                     </button>
                                 </div>
                                 <div class="adm-content-graph-wrap adm-ws-graph-wrap">
@@ -654,13 +677,22 @@
 
                         <div data-adm-panel="workspace-json" class="adm-hidden">
                             <p class="helper adm-ws-json-lede" style="margin-top:0">
-                                Raw mind-map array (same shape as <code>/api/data?k=dsa</code>). <strong>Apply to graph</strong> updates the studio; use UI mode to edit visually.
+                                Raw mind-map array (same shape as <code>/api/data?k=dsa</code>). <strong>Apply to graph</strong> updates the studio, then <strong>Save to catalog</strong> persists (catalog graphs only). Use UI mode to edit visually.
                             </p>
                             <label for="adm-ws-json-editor" class="adm-inline-label" style="display:block;margin-top:10px">Graph JSON <span class="adm-req" aria-hidden="true">*</span></label>
                             <textarea id="adm-ws-json-editor" class="cms-editor adm-json-input" spellcheck="false" rows="26" aria-label="Graph JSON"></textarea>
                             <div class="adm-toolbar-row" style="margin-top:10px">
                                 <button type="button" class="btn btn-sm" id="adm-ws-json-apply">Apply to graph</button>
                                 <button type="button" class="btn ghost btn-sm" id="adm-ws-json-format">Format JSON</button>
+                                <button
+                                    type="button"
+                                    class="btn btn-sm adm-ws-save-catalog"
+                                    id="adm-ws-save-catalog-json"
+                                    disabled
+                                    title="Save the graph after applying JSON (catalog graphs only)"
+                                >
+                                    Save to catalog
+                                </button>
                             </div>
                         </div>
 
@@ -1020,7 +1052,7 @@
     <script src="./auth/dsa-user-auth.js?v=3"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
     <script src="./script.js?v=34"></script>
-    <script src="./auth/account-admin-panel.js?v=28"></script>
+    <script src="./auth/account-admin-panel.js?v=29"></script>
     <script src="./auth/admin-site-page.js?v=11"></script>
 </body>
 </html>

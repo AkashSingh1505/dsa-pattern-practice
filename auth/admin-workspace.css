@@ -65,9 +65,51 @@ html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-ws-recents {
     border-color: rgba(148, 163, 184, 0.2);
 }
 
+.dsa-portal-page--admin .adm-ws-recents-head-end {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.dsa-portal-page--admin .adm-ws-recents-clear {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--muted2, #64748b);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+}
+
+.dsa-portal-page--admin .adm-ws-recents-clear:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.09);
+    color: var(--ink, #0f172a);
+}
+
+.dsa-portal-page--admin .adm-ws-recents-clear:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-ws-recents-clear {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(226, 232, 240, 0.85);
+}
+
+html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-ws-recents-clear:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.14);
+    color: #f8fafc;
+}
+
 .dsa-portal-page--admin .adm-ws-recents-head {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     gap: 8px;
     margin-bottom: 10px;

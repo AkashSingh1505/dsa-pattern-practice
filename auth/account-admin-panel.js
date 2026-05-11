@@ -1445,6 +1445,11 @@
         if (!host) {
             return;
         }
+        const clrBtn = document.getElementById("adm-ws-recents-clear");
+        if (clrBtn) {
+            clrBtn.disabled = !wsRecentsList.length;
+            clrBtn.setAttribute("aria-disabled", wsRecentsList.length ? "false" : "true");
+        }
         host.innerHTML = "";
         if (!wsRecentsList.length) {
             host.innerHTML =
@@ -1490,6 +1495,71 @@
         card.classList.toggle("adm-ws-graph-card--idle", idle);
     }
 
+    function syncWorkspaceSaveButtons() {
+        const canSave = wsContext.mode === "catalog" && wsContext.catalogId;
+        document.querySelectorAll(".adm-ws-save-catalog").forEach(function (btn) {
+            btn.disabled = !canSave;
+            btn.setAttribute("aria-disabled", canSave ? "false" : "true");
+        });
+    }
+
+    async function wsSaveCatalogGraphFromStudio() {
+        if (wsContext.mode !== "catalog" || !wsContext.catalogId) {
+            wsSetMsg("Open a catalog graph from Library or Recent, then save.", "err");
+            return;
+        }
+        if (typeof dsaGetMindMapHierarchyJsonString !== "function") {
+            wsSetMsg("Graph helpers unavailable.", "err");
+            return;
+        }
+        let payload;
+        try {
+            payload = JSON.parse(dsaGetMindMapHierarchyJsonString());
+        } catch (e) {
+            wsSetMsg(e.message || "Invalid graph JSON", "err");
+            return;
+        }
+        if (!Array.isArray(payload)) {
+            wsSetMsg("Graph must be a JSON array of roots.", "err");
+            return;
+        }
+        admShowLoader("Saving…");
+        try {
+            await fetchJson(apiAdmin("graph-catalog"), {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id: wsContext.catalogId,
+                    payload: payload,
+                }),
+            });
+            wsSetMsg("Saved mind map to catalog.", "ok");
+            try {
+                await loadGraphInventoryList();
+            } catch (e) {
+                /* ignore */
+            }
+        } catch (e) {
+            wsSetMsg(e.message || "Save failed", "err");
+        } finally {
+            admHideLoader();
+        }
+    }
+
+    function wsClearRecents() {
+        if (!wsRecentsList.length) {
+            return;
+        }
+        wsRecentsList = [];
+        try {
+            localStorage.removeItem(WS_RECENTS_STORAGE_KEY);
+        } catch (e) {
+            /* ignore */
+        }
+        renderWsRecents();
+        wsSetMsg("Recent list cleared.", "ok");
+    }
+
     function wsRefreshChrome() {
         const ban = document.getElementById("adm-ws-context-banner");
         const mode = wsContext.mode;
@@ -1504,12 +1574,10 @@
                     const slug = wsContext.slug || "";
                     const isSite = slug === SITE_PUBLIC_GRAPH_SLUG;
                     line = isSite
-                        ? "<strong>Site public graph</strong> — visitors read <code>/api/data?k=dsa</code>. Edit payload in <strong>Graph library</strong> (catalog row <code>" +
-                          escapeHtml(SITE_PUBLIC_GRAPH_SLUG) +
-                          "</code>)."
+                        ? "<strong>Site public graph</strong> — visitors read <code>/api/data?k=dsa</code>. Use <strong>Save to catalog</strong> here or edit listing in <strong>Graph library</strong>."
                         : "Catalog graph" +
                           (wsContext.title ? ": <strong>" + escapeHtml(String(wsContext.title)) + "</strong>" : "") +
-                          " — save changes from <strong>Graph library</strong> (catalog editor).";
+                          " — use <strong>Save to catalog</strong> to persist the studio, or edit metadata in <strong>Graph library</strong>.";
                 } else if (mode === "user_graph") {
                     line =
                         "View-only member copy" +
@@ -1520,6 +1588,7 @@
             }
         }
         syncWorkspaceGraphCardEmptyState();
+        syncWorkspaceSaveButtons();
         renderWsRecents();
     }
 
@@ -1669,6 +1738,20 @@
             document.getElementById("adm-ws-empty-open-public").addEventListener("click", function () {
                 void wsOpenSitePublicCatalogGraph();
             });
+
+        document.querySelectorAll(".adm-ws-save-catalog").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                void wsSaveCatalogGraphFromStudio();
+            });
+        });
+
+        const clr = document.getElementById("adm-ws-recents-clear");
+        if (clr && clr.dataset.admWsClearBound !== "1") {
+            clr.dataset.admWsClearBound = "1";
+            clr.addEventListener("click", function () {
+                wsClearRecents();
+            });
+        }
 
         const fileIn = document.getElementById("admin-dsa-map-import-file");
         if (fileIn && fileIn.dataset.admWsFileWired !== "1") {

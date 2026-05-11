@@ -33,14 +33,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev" />
     <title>Site admin — DSA Pattern Practice</title>
-    <link rel="stylesheet" href="./auth/portal-shell.css?v=16" />
+    <link rel="stylesheet" href="./auth/portal-shell.css?v=17" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css?v=14" />
     <link rel="stylesheet" href="./dsa-index-shell.css?v=20" />
-    <link rel="stylesheet" href="./auth/admin-graph-library.css?v=5" />
-    <link rel="stylesheet" href="./auth/admin-workspace.css?v=4" />
+    <link rel="stylesheet" href="./auth/admin-graph-library.css?v=6" />
+    <link rel="stylesheet" href="./auth/admin-workspace.css?v=5" />
     <link rel="stylesheet" href="./auth/admin-loader.css?v=1" />
 </head>
 <body class="dsa-admin-body">
@@ -520,7 +520,7 @@
                     <div class="adm-pane adm-hidden" data-admin-pane="content">
                         <div class="adm-pane-head adm-pane-head--stack">
                             <div class="adm-pane-head-main">
-                                <h3>Content — site map (<code>dsa</code>)</h3>
+                                <h3>Content — site public graph (<code>dsa</code>)</h3>
                                 <p class="helper adm-pane-head-lede">
                                     Edit raw JSON here, then publish to the public practice page. Open the
                                     <button type="button" class="adm-tab-jump adm-tab-jump--ws" data-admin-tab-jump="workspace">
@@ -565,15 +565,23 @@
                         <p id="cms-status" class="status" style="margin-top:12px"></p>
                     </div>
 
-                    <!-- Workspace: mind map editor (UI + JSON); recents in compact strip -->
+                    <!-- Workspace: mind map editor (UI + JSON); recents left rail -->
                     <div class="adm-pane adm-hidden" data-admin-pane="workspace">
                         <div class="adm-pane-head adm-ws-head adm-ws-head--split">
                             <div class="adm-pane-head-main">
                                 <h3 class="adm-ws-pane-title">Workspace</h3>
                                 <p class="helper adm-ws-sub">
-                                    Edit the practice graph in <strong>UI</strong> or raw <strong>JSON</strong>. Use the toolbar below the chart for import/export. Browse or create graphs in
-                                    <button type="button" class="dsa-udash-text-btn adm-tab-jump adm-tab-jump--compact" data-admin-tab-jump="library">Graph library</button>
-                                    — recently opened graphs appear in the strip below (last <span id="adm-ws-recents-cap-num">8</span>). Member-owned copies stay <strong>view-only</strong>.
+                                    Edit graphs in <strong>UI</strong> or <strong>JSON</strong>. The <strong>site public graph</strong> (<code>dsa</code>) is the same mind map published on the practice site — manage listing copy in <strong>Content</strong>, body here or in
+                                    <button type="button" class="dsa-udash-text-btn adm-tab-jump adm-tab-jump--compact adm-tab-jump--glib-ico" data-admin-tab-jump="library">
+                                        <svg class="adm-glib-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <circle cx="5" cy="6" r="2.25"></circle>
+                                            <circle cx="19" cy="6" r="2.25"></circle>
+                                            <circle cx="12" cy="18" r="2.25"></circle>
+                                            <path d="M6.8 7.3l4.4 9M17.2 7.3l-4.4 9"></path>
+                                        </svg>
+                                        <span>Graph library</span>
+                                    </button>.
+                                    Recent opens on the left (last <span id="adm-ws-recents-cap-num">8</span>). Member copies are <strong>view-only</strong>.
                                 </p>
                             </div>
                             <div class="adm-pane-head-controls">
@@ -592,27 +600,27 @@
                             </div>
                         </div>
                         <div data-adm-panel="workspace-ui">
-                        <div class="adm-ws-single-col">
-                            <div class="adm-ws-recents-bar" aria-label="Recently opened graphs">
-                                <span class="adm-ws-recents-bar-label">Recent</span>
-                                <span class="adm-ws-recents-meta" id="adm-ws-recents-meta">Up to 8</span>
-                                <div id="adm-ws-recents-list" class="adm-ws-recents-inline" role="list"></div>
-                            </div>
+                        <div class="adm-ws-layout">
+                            <aside class="adm-ws-recents" aria-label="Recently opened graphs">
+                                <div class="adm-ws-recents-head">
+                                    <span class="adm-ws-recents-title">Recent</span>
+                                    <span class="adm-ws-recents-meta" id="adm-ws-recents-meta">Up to 8</span>
+                                </div>
+                                <div id="adm-ws-recents-list" class="adm-ws-recents-list" role="list"></div>
+                            </aside>
                             <div class="adm-ws-main">
                                 <div id="adm-ws-context-banner" class="adm-ws-banner" hidden></div>
                                 <div class="adm-ws-actions-bar adm-toolbar-row">
-                                    <button type="button" class="btn btn-sm" id="adm-ws-open-cms">Load site map (CMS)</button>
-                                    <button type="button" class="btn ghost btn-sm" id="adm-ws-save-catalog" hidden>Save to catalog</button>
-                                    <button type="button" class="btn ghost btn-sm" id="adm-ws-save-cms-draft" hidden>Save CMS draft</button>
-                                    <button type="button" class="btn ghost btn-sm adm-tab-jump adm-tab-jump--lib" data-admin-tab-jump="library" title="Open graph library (catalog)">
-                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                                            <line x1="8" y1="7" x2="16" y2="7"></line>
-                                            <line x1="8" y1="11" x2="14" y2="11"></line>
+                                    <button type="button" class="btn ghost btn-sm adm-tab-jump adm-tab-jump--lib adm-tab-jump--glib-primary" data-admin-tab-jump="library" title="Browse catalog graphs">
+                                        <svg class="adm-glib-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <circle cx="5" cy="6" r="2.25"></circle>
+                                            <circle cx="19" cy="6" r="2.25"></circle>
+                                            <circle cx="12" cy="18" r="2.25"></circle>
+                                            <path d="M6.8 7.3l4.4 9M17.2 7.3l-4.4 9"></path>
                                         </svg>
                                         <span>Graph library</span>
                                     </button>
+                                    <button type="button" class="btn ghost btn-sm" id="adm-ws-save-cms-draft" hidden>Save site public draft</button>
                                 </div>
                                 <div class="adm-content-graph-wrap adm-ws-graph-wrap">
                                     <div class="dsa-graph-shell dsa-index-ref">
@@ -620,7 +628,7 @@
                                             <section class="head adm-ws-studio-head">
                                                 <div class="head-text adm-ws-studio-head-text">
                                                     <p class="adm-ws-studio-lede">
-                                                        Layout tabs and zoom live here; load the site map or a saved graph from <strong>Recent</strong> or <strong>Graph library</strong>.
+                                                        Layout tabs and zoom below; open a graph from <strong>Recent</strong> or <strong>Graph library</strong>, or import JSON.
                                                     </p>
                                                 </div>
                                                 <nav
@@ -667,8 +675,24 @@
                                                     </div>
                                                 </div>
                                             </section>
-                                            <section class="graph-card adm-graph-preview">
-                                                <div class="graph-stage">
+                                            <section class="graph-card adm-graph-preview adm-ws-graph-card adm-ws-graph-card--idle" id="adm-ws-graph-card">
+                                                <div id="adm-ws-empty-placeholder" class="adm-ws-empty-placeholder empty-state">
+                                                    <div class="empty-icon">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <circle cx="6" cy="6" r="3"></circle>
+                                                            <circle cx="18" cy="6" r="3"></circle>
+                                                            <circle cx="12" cy="18" r="3"></circle>
+                                                            <line x1="8.5" y1="7.5" x2="11" y2="16"></line>
+                                                            <line x1="15.5" y1="7.5" x2="13" y2="16"></line>
+                                                        </svg>
+                                                    </div>
+                                                    <h3>Your canvas is ready</h3>
+                                                    <p>Pick a graph from Recent or Graph library to begin exploring nodes and edges.</p>
+                                                    <button type="button" class="btn btn-sm adm-ws-empty-open-public" id="adm-ws-empty-open-public">
+                                                        Open site public graph (<code>dsa</code>)
+                                                    </button>
+                                                </div>
+                                                <div class="graph-stage adm-ws-graph-stage">
                                                     <div id="admin-dsa-hierarchy-root" class="dsa-graph-viewport" aria-label="Mind map workspace"></div>
                                                 </div>
                                             </section>
@@ -911,12 +935,12 @@
 
                                         <div class="adm-glib-actions">
                                             <button type="button" class="btn" id="adm-glib-save">Save</button>
-                                            <button type="button" class="btn ghost adm-glib-open-ws-btn" id="adm-glib-open-workspace" hidden title="Open this graph in Graph workspace (visual editor)">
-                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                                    <rect x="3" y="3" width="7" height="7" rx="1"></rect>
-                                                    <rect x="14" y="3" width="7" height="7" rx="1"></rect>
-                                                    <rect x="3" y="14" width="7" height="7" rx="1"></rect>
-                                                    <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                                            <button type="button" class="adm-glib-open-ws-btn" id="adm-glib-open-workspace" hidden disabled title="Save the graph first, then open in Workspace">
+                                                <svg class="adm-glib-open-ws-ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                    <rect x="3" y="3" width="13" height="13" rx="2"></rect>
+                                                    <path d="M8 21h12a2 2 0 002-2V9"></path>
+                                                    <path d="M16 3h4v4"></path>
+                                                    <path d="M14 10l7-7"></path>
                                                 </svg>
                                                 <span>Open in workspace</span>
                                             </button>
@@ -1022,6 +1046,8 @@
         </div>
     </main>
 
+    <div id="adm-toast-host" class="adm-toast-host" role="status" aria-live="polite" aria-atomic="true"></div>
+
     <div id="adm-confirm-modal" class="adm-modal" hidden>
         <div class="adm-modal__backdrop" data-adm-confirm-dismiss="1"></div>
         <div class="adm-modal__box" role="alertdialog" aria-modal="true" aria-labelledby="adm-confirm-title">
@@ -1044,8 +1070,8 @@
     <script src="./auth/dsa-member-roles.js?v=1"></script>
     <script src="./auth/dsa-user-auth.js?v=3"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
-    <script src="./script.js?v=31"></script>
-    <script src="./auth/account-admin-panel.js?v=25"></script>
+    <script src="./script.js?v=32"></script>
+    <script src="./auth/account-admin-panel.js?v=26"></script>
     <script src="./auth/admin-site-page.js?v=10"></script>
 </body>
 </html>

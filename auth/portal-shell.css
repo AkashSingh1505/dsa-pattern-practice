@@ -1733,3 +1733,63 @@
         html[data-admin-theme="dark"] .adm-content-graph-toolbar {
             background: linear-gradient(180deg, rgba(32, 36, 44, 0.95) 0%, rgba(22, 26, 32, 0.92) 100%);
         }
+
+        /* Top-center toast / snackbar (admin + forms using setStatus ok/err) */
+        .adm-toast-host {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-12px);
+            z-index: 100002;
+            max-width: min(520px, calc(100vw - 32px));
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.4;
+            text-align: center;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transition:
+                opacity 0.22s ease,
+                transform 0.22s ease,
+                visibility 0.22s ease;
+            box-shadow: 0 12px 40px rgba(15, 23, 42, 0.18), 0 2px 8px rgba(15, 23, 42, 0.08);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            background: rgba(255, 255, 255, 0.96);
+            color: var(--ink);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .adm-toast-host--visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+        .adm-toast-host--ok {
+            border-color: rgba(5, 122, 85, 0.35);
+            background: linear-gradient(180deg, rgba(236, 253, 245, 0.98), rgba(255, 255, 255, 0.96));
+            color: #065f46;
+        }
+        .adm-toast-host--err {
+            border-color: rgba(180, 35, 24, 0.35);
+            background: linear-gradient(180deg, rgba(254, 242, 242, 0.98), rgba(255, 255, 255, 0.96));
+            color: #991b1b;
+        }
+        html[data-admin-theme="dark"] .adm-toast-host {
+            background: rgba(22, 26, 34, 0.94);
+            color: #e2e8f0;
+            border-color: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+        }
+        html[data-admin-theme="dark"] .adm-toast-host--ok {
+            border-color: rgba(52, 211, 153, 0.35);
+            background: rgba(6, 78, 59, 0.55);
+            color: #d1fae5;
+        }
+        html[data-admin-theme="dark"] .adm-toast-host--err {
+            border-color: rgba(248, 113, 113, 0.4);
+            background: rgba(127, 29, 29, 0.55);
+            color: #fecaca;
+        }

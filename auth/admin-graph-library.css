@@ -307,15 +307,17 @@ html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-glib-actions {
 
 /* —— Graph library v2 (portal #portal-panel-cms) —— */
 .dsa-portal-page--admin .adm-glib-page {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 4px 16px;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0 0 16px;
 }
 
 .dsa-portal-page--admin .adm-glib-json-panel {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 8px 4px 24px;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 8px 0 24px;
 }
 
 .dsa-portal-page--admin .adm-glib-app {
@@ -839,6 +841,64 @@ html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-glib-badge--public {
     flex-shrink: 0;
     align-self: flex-start;
     margin-top: 2px;
+}
+
+/* Open in workspace — clear enabled vs disabled */
+.dsa-portal-page--admin .adm-glib-actions .adm-glib-open-ws-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 18px;
+    min-height: 44px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    border: 1px solid rgba(99, 102, 241, 0.45);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.14), rgba(129, 140, 248, 0.08));
+    color: var(--glib-text, #1d1d1f);
+    transition:
+        opacity 0.15s ease,
+        border-color 0.15s ease,
+        box-shadow 0.15s ease,
+        transform 0.12s ease;
+}
+
+.dsa-portal-page--admin .adm-glib-actions .adm-glib-open-ws-btn:not(:disabled):hover {
+    border-color: rgba(99, 102, 241, 0.65);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.18);
+}
+
+.dsa-portal-page--admin .adm-glib-actions .adm-glib-open-ws-btn:disabled {
+    opacity: 0.42;
+    cursor: not-allowed;
+    border-color: rgba(148, 163, 184, 0.35);
+    background: rgba(148, 163, 184, 0.12);
+    box-shadow: none;
+}
+
+.dsa-portal-page--admin .adm-glib-actions .adm-glib-open-ws-btn:not(:disabled) {
+    opacity: 1;
+}
+
+.dsa-portal-page--admin .adm-glib-open-ws-ico {
+    flex-shrink: 0;
+    opacity: 0.92;
+}
+
+.dsa-portal-page--admin .adm-glib-actions .adm-glib-open-ws-btn:disabled .adm-glib-open-ws-ico {
+    opacity: 0.55;
+}
+
+html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-glib-actions .adm-glib-open-ws-btn:not(:disabled) {
+    color: #f1f5f9;
+    border-color: rgba(129, 140, 248, 0.45);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.22), rgba(79, 70, 229, 0.12));
+}
+
+html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-glib-actions .adm-glib-open-ws-btn:not(:disabled):hover {
+    border-color: rgba(165, 180, 252, 0.55);
 }
 
 /* Idle catalog editor */

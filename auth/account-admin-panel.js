@@ -226,11 +226,38 @@
         }
     }
 
+    let admToastHideTimer = null;
+    function showAdminToast(message, variant) {
+        const host = document.getElementById("adm-toast-host");
+        if (!host || message == null || String(message).trim() === "") {
+            return;
+        }
+        host.textContent = String(message);
+        host.classList.remove("adm-toast-host--ok", "adm-toast-host--err", "adm-toast-host--info");
+        host.classList.add(
+            "adm-toast-host--visible",
+            variant === "err" ? "adm-toast-host--err" : variant === "info" ? "adm-toast-host--info" : "adm-toast-host--ok",
+        );
+        if (admToastHideTimer) {
+            clearTimeout(admToastHideTimer);
+        }
+        admToastHideTimer = setTimeout(function () {
+            host.classList.remove("adm-toast-host--visible");
+        }, 4200);
+    }
+
     function setStatus(id, msg, cls) {
         const el = document.getElementById(id);
         if (!el) return;
         el.textContent = msg || "";
         el.className = "status" + (cls ? " " + cls : "");
+        if ((cls === "ok" || cls === "err") && msg) {
+            if (id === "adm-glib-msg" && /^\d+\s+graph\(s\)\s+in\s+this\s+view\.?$/.test(String(msg).trim())) {
+                /* Inventory count refresh — keep inline only */
+            } else {
+                showAdminToast(msg, cls);
+            }
+        }
     }
 
     function activeMainTab(name) {
@@ -561,14 +588,18 @@
             }
         }
         if (openBtn) {
+            const canOpen = !isIdle && !!idTrim && (isUser || glibSelectedRecordType === "catalog");
             if (isIdle) {
                 openBtn.hidden = true;
-            } else if (isUser && idTrim) {
-                openBtn.hidden = false;
-            } else if (!isUser && idTrim) {
-                openBtn.hidden = false;
+                openBtn.disabled = true;
+                openBtn.removeAttribute("aria-disabled");
             } else {
-                openBtn.hidden = true;
+                openBtn.hidden = false;
+                openBtn.disabled = !canOpen;
+                openBtn.setAttribute("aria-disabled", canOpen ? "false" : "true");
+                openBtn.title = canOpen
+                    ? "Open this graph in Workspace (visual editor)"
+                    : "Save the catalog graph first — then open it in Workspace.";
             }
         }
     }
@@ -912,7 +943,7 @@
             const slug = graph.slug ? String(graph.slug) : "";
             if (slug === "dsa-site-map") {
                 sub.innerHTML =
-                    "Mirrors the live <strong>Content → dsa</strong> publish (public). Edit the map in <strong>Workspace</strong>; adjust listing fields here. <strong>Save</strong> is disabled until you change something.";
+                    "This row is the <strong>site public graph</strong> (same JSON as <strong>Content → dsa</strong>). Edit the mind map in <strong>Workspace</strong>; adjust listing fields here. <strong>Save</strong> is disabled until you change something.";
             } else {
                 sub.innerHTML =
                     "Edit listing fields; <strong>Save</strong> enables only when something changes. Mind map body: use <strong>Open in workspace</strong>.";
@@ -1300,6 +1331,11 @@
     }
 
     async function admGlibOpenWorkspace() {
+        const ob = document.getElementById("adm-glib-open-workspace");
+        if (ob && (ob.disabled || ob.getAttribute("aria-disabled") === "true")) {
+            setGlibStatus("Save the graph first, or select a graph that is already stored.", "err");
+            return;
+        }
         const rt = glibSelectedRecordType;
         const id = rt === "catalog" ? glibSelectedCatalogId : rt === "user_graph" ? glibSelectedUserGraphId : null;
         if (!id) {
@@ -1420,7 +1456,7 @@
         host.innerHTML = "";
         if (!wsRecentsList.length) {
             host.innerHTML =
-                '<p class="adm-ws-recents-empty">Open a graph from Graph library or load the site map — it will appear here.</p>';
+                '<p class="adm-ws-recents-empty">Open a graph from the library or use the empty-canvas action — it will appear here.</p>';
             return;
         }
         wsRecentsList.forEach(function (rec) {
@@ -1430,7 +1466,7 @@
             btn.setAttribute("role", "listitem");
             let badge = "";
             if (rec.recordType === "cms") {
-                badge = '<span class="adm-ws-recent-badge adm-ws-recent-badge--cms">CMS</span>';
+                badge = '<span class="adm-ws-recent-badge adm-ws-recent-badge--public-site">Public site</span>';
             } else if (rec.recordType === "user_graph") {
                 badge = '<span class="adm-ws-recent-badge adm-ws-recent-badge--user">User</span>';
             } else {
@@ -1455,16 +1491,19 @@
         });
     }
 
+    function syncWorkspaceGraphCardEmptyState() {
+        const card = document.getElementById("adm-ws-graph-card");
+        if (!card) {
+            return;
+        }
+        const idle = wsContext.mode === "idle";
+        card.classList.toggle("adm-ws-graph-card--idle", idle);
+    }
+
     function wsRefreshChrome() {
         const ban = document.getElementById("adm-ws-context-banner");
-        const saveCat = document.getElementById("adm-ws-save-catalog");
         const saveCms = document.getElementById("adm-ws-save-cms-draft");
         const mode = wsContext.mode;
-        if (saveCat) {
-            const show = mode === "catalog";
-            saveCat.hidden = !show;
-            saveCat.disabled = !show;
-        }
         if (saveCms) {
             const show = mode === "cms";
             saveCms.hidden = !show;
@@ -1478,12 +1517,13 @@
                 ban.hidden = false;
                 let line = "";
                 if (mode === "cms") {
-                    line = "Site map (CMS) — <strong>Save CMS draft</strong> writes the Content draft for <code>dsa</code>.";
+                    line =
+                        "<strong>Site public graph</strong> (<code>dsa</code>) — <strong>Save site public draft</strong> updates the Content draft (same JSON the practice site can read after publish).";
                 } else if (mode === "catalog") {
                     line =
                         "Catalog graph" +
                         (wsContext.title ? ": <strong>" + escapeHtml(String(wsContext.title)) + "</strong>" : "") +
-                        " — <strong>Save to catalog</strong> overwrites this entry’s mind map body.";
+                        " — save changes from <strong>Graph library</strong> (catalog editor).";
                 } else if (mode === "user_graph") {
                     line =
                         "View-only member copy" +
@@ -1493,6 +1533,7 @@
                 ban.innerHTML = line;
             }
         }
+        syncWorkspaceGraphCardEmptyState();
         renderWsRecents();
     }
 
@@ -1600,13 +1641,16 @@
             if (!r.ok) {
                 throw r.error || new Error("Invalid JSON");
             }
-            wsContext = { mode: "cms", title: "Site map" };
+            wsContext = { mode: "cms", title: "Site public graph" };
             wsSelectedRecordType = null;
             wsSelectedCatalogId = null;
             wsSelectedUserGraphId = null;
-            pushWsRecent({ recordType: "cms", title: "Site map (CMS)" });
+            pushWsRecent({ recordType: "cms", title: "Site public graph (dsa)" });
             wsRefreshChrome();
-            wsSetMsg("Loaded site map from Content (" + (d.draft && d.draft.payload ? "draft" : "live") + ").", "ok");
+            wsSetMsg(
+                "Loaded site public graph from Content (" + (d.draft && d.draft.payload ? "draft" : "live") + ").",
+                "ok",
+            );
         } catch (e) {
             wsSetMsg(e.message || "Load failed", "err");
         } finally {
@@ -1614,51 +1658,9 @@
         }
     }
 
-    async function wsSaveCatalogFromViewport() {
-        if (wsContext.mode !== "catalog" || !wsContext.catalogId) {
-            wsSetMsg("Load a catalog graph first.", "err");
-            return;
-        }
-        if (typeof dsaGetMindMapHierarchyJsonString !== "function") {
-            wsSetMsg("Graph helpers unavailable.", "err");
-            return;
-        }
-        const ok = await adminConfirm(
-            "Overwrite catalog mind map?",
-            "This replaces the stored JSON body for this catalog entry with the graph currently shown in the studio.",
-        );
-        if (!ok) {
-            return;
-        }
-        let payload;
-        try {
-            payload = JSON.parse(dsaGetMindMapHierarchyJsonString());
-            if (!Array.isArray(payload)) {
-                throw new Error("Mind map must be a JSON array.");
-            }
-        } catch (e) {
-            wsSetMsg(e.message || "Invalid graph JSON", "err");
-            return;
-        }
-        admShowLoader("Saving catalog…");
-        try {
-            await fetchJson(apiAdmin("graph-catalog"), {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id: wsContext.catalogId, payload }),
-            });
-            wsSetMsg("Catalog mind map saved.", "ok");
-            renderWsRecents();
-        } catch (e) {
-            wsSetMsg(e.message || "Save failed", "err");
-        } finally {
-            admHideLoader();
-        }
-    }
-
     async function wsSaveCmsDraftFromViewport() {
         if (wsContext.mode !== "cms") {
-            wsSetMsg("Load the site map (CMS) first.", "err");
+            wsSetMsg("Open the site public graph first (Recent or empty-state button).", "err");
             return;
         }
         if (typeof dsaGetMindMapHierarchyJsonString !== "function") {
@@ -1666,8 +1668,8 @@
             return;
         }
         const ok = await adminConfirm(
-            "Save Content draft?",
-            "This overwrites the dsa draft in Content with the graph currently in the studio.",
+            "Save site public draft?",
+            "This overwrites the <code>dsa</code> draft in Content with the graph currently in the studio.",
         );
         if (!ok) {
             return;
@@ -1687,7 +1689,7 @@
                 headers: { "Content-Type": "application/json" },
                 body: body,
             });
-            wsSetMsg("CMS draft saved. Publish from the Content tab when ready.", "ok");
+            wsSetMsg("Site public draft saved. Publish from the Content tab when ready.", "ok");
         } catch (e) {
             wsSetMsg(e.message || "Save failed", "err");
         } finally {
@@ -1706,13 +1708,9 @@
         pane.dataset.admWsBound = "1";
         loadWsRecentsFromStorage();
         renderWsRecents();
-        document.getElementById("adm-ws-open-cms") &&
-            document.getElementById("adm-ws-open-cms").addEventListener("click", function () {
+        document.getElementById("adm-ws-empty-open-public") &&
+            document.getElementById("adm-ws-empty-open-public").addEventListener("click", function () {
                 void wsLoadCmsIntoViewport();
-            });
-        document.getElementById("adm-ws-save-catalog") &&
-            document.getElementById("adm-ws-save-catalog").addEventListener("click", function () {
-                void wsSaveCatalogFromViewport();
             });
         document.getElementById("adm-ws-save-cms-draft") &&
             document.getElementById("adm-ws-save-cms-draft").addEventListener("click", function () {

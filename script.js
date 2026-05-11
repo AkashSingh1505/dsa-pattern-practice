@@ -4759,9 +4759,29 @@ function dsaRefreshRootsRowUi(rootsRow) {
     });
 }
 
+/**
+ * In embedded graph preview with a single merged root, show that graph’s title as the meta-hub label
+ * instead of the fixed “DSA Patterns” label (community site maps keep the default).
+ */
+function dsaUnifiedMetaRootDisplayName(merged) {
+    const list = merged || [];
+    if (
+        typeof dsaGraphPreviewMode !== "undefined" &&
+        dsaGraphPreviewMode &&
+        list.length === 1 &&
+        list[0] &&
+        typeof list[0].name === "string" &&
+        String(list[0].name).trim()
+    ) {
+        return String(list[0].name).trim();
+    }
+    return "DSA Patterns";
+}
+
 /** All data structures under one “DSA Patterns” root (full map). */
 function buildUnifiedMindmapTree(panel, scheduleRedraw, customizeCtx, graphRefreshForView) {
     const merged = getDsaHierarchyMerged();
+    const metaRootLabel = dsaUnifiedMetaRootDisplayName(merged);
     const wrap = document.createElement("div");
     wrap.className = "dsa-h-tree";
     const rootBranch = document.createElement("div");
@@ -4776,7 +4796,7 @@ function buildUnifiedMindmapTree(panel, scheduleRedraw, customizeCtx, graphRefre
     rootRow.className = "dsa-h-label-row";
     const rootTitle = document.createElement("span");
     rootTitle.className = "dsa-h-label dsa-h-label--root";
-    rootTitle.textContent = "DSA Patterns";
+    rootTitle.textContent = metaRootLabel;
 
     const topicNodes = merged.map((ds) => ({
         name: ds.name,
@@ -4814,7 +4834,7 @@ function buildUnifiedMindmapTree(panel, scheduleRedraw, customizeCtx, graphRefre
             count: rootCount,
             kindClass: "dsa-h-badge--root",
             pathKey: "__DSA_META__",
-            nodeName: "DSA Patterns",
+            nodeName: metaRootLabel,
             refresh: customizeCtx.refresh,
             isMetaRoot: true,
             isDsRoot: false,
@@ -4829,7 +4849,7 @@ function buildUnifiedMindmapTree(panel, scheduleRedraw, customizeCtx, graphRefre
         });
     } else {
         rootBadgeEl = createExpandableCountBadge(rootCount, "dsa-h-badge--root");
-        wireRootHubTopicToggle(rootBadgeEl, kids, rootCount, "DSA Patterns", scheduleRedraw);
+        wireRootHubTopicToggle(rootBadgeEl, kids, rootCount, metaRootLabel, scheduleRedraw);
     }
 
     const stMeta = dsaCollectMetaAllProblemStats();

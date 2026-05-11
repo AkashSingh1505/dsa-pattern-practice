@@ -37,15 +37,76 @@
         return d.innerHTML;
     }
 
-    function formatTime(ts) {
+    function formatDateLabel(ts) {
+        if (typeof ts !== "number" || !ts) {
+            return "Updated recently";
+        }
+        try {
+            return "Updated " + new Date(ts * 1000).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+            });
+        } catch (e) {
+            return "Updated recently";
+        }
+    }
+
+    function formatClockLabel(ts) {
         if (typeof ts !== "number" || !ts) {
             return "—";
         }
         try {
-            return new Date(ts * 1000).toLocaleString();
+            return new Date(ts * 1000).toLocaleTimeString(undefined, {
+                hour: "numeric",
+                minute: "2-digit",
+            });
         } catch (e) {
             return "—";
         }
+    }
+
+    function visualIndex(seed, index) {
+        var n = typeof seed === "number" && Number.isFinite(seed) ? Math.round(seed) : index || 0;
+        return (((n % 3) + 3) % 3) + 1;
+    }
+
+    function visualVariant(seed, index) {
+        return "dsa-glib-card__visual--v" + visualIndex(seed, index);
+    }
+
+    function graphSvgMarkup(kind) {
+        if (kind === 2) {
+            return (
+                '<svg class="dsa-glib-card__graph" viewBox="0 0 300 180" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
+                '<line x1="150" y1="40" x2="80" y2="100"/><line x1="150" y1="40" x2="220" y2="100"/>' +
+                '<line x1="80" y1="100" x2="60" y2="150"/><line x1="80" y1="100" x2="130" y2="150"/>' +
+                '<line x1="220" y1="100" x2="180" y2="150"/><line x1="220" y1="100" x2="250" y2="150"/>' +
+                '<circle cx="150" cy="40" r="10"/><circle cx="80" cy="100" r="7"/><circle cx="220" cy="100" r="7"/>' +
+                '<circle cx="60" cy="150" r="5"/><circle cx="130" cy="150" r="5"/><circle cx="180" cy="150" r="5"/><circle cx="250" cy="150" r="5"/>' +
+                "</svg>"
+            );
+        }
+        if (kind === 3) {
+            return (
+                '<svg class="dsa-glib-card__graph" viewBox="0 0 300 180" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
+                '<line x1="150" y1="90" x2="80" y2="50"/><line x1="150" y1="90" x2="220" y2="50"/>' +
+                '<line x1="150" y1="90" x2="80" y2="140"/><line x1="150" y1="90" x2="220" y2="140"/>' +
+                '<line x1="80" y1="50" x2="220" y2="50"/><line x1="80" y1="140" x2="220" y2="140"/>' +
+                '<circle cx="150" cy="90" r="10"/><circle cx="80" cy="50" r="7"/><circle cx="220" cy="50" r="7"/>' +
+                '<circle cx="80" cy="140" r="7"/><circle cx="220" cy="140" r="7"/>' +
+                "</svg>"
+            );
+        }
+        return (
+            '<svg class="dsa-glib-card__graph" viewBox="0 0 300 180" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
+            '<line x1="60" y1="90" x2="140" y2="50"/><line x1="60" y1="90" x2="140" y2="130"/>' +
+            '<line x1="140" y1="50" x2="220" y2="70"/><line x1="140" y1="130" x2="220" y2="130"/>' +
+            '<line x1="220" y1="70" x2="240" y2="120"/><line x1="140" y1="50" x2="140" y2="130"/>' +
+            '<circle cx="60" cy="90" r="9"/><circle cx="140" cy="50" r="7"/><circle cx="140" cy="130" r="7"/>' +
+            '<circle cx="220" cy="70" r="6"/><circle cx="220" cy="130" r="6"/><circle cx="240" cy="120" r="4"/>' +
+            "</svg>"
+        );
     }
 
     function readSession() {
@@ -155,14 +216,6 @@
         loading: false,
     };
 
-    function hueStyle(h) {
-        if (typeof h !== "number" || !Number.isFinite(h)) {
-            return "linear-gradient(135deg, #6366f1 0%, #8b5cf6 55%, #a855f7 100%)";
-        }
-        var x = ((h % 360) + 360) % 360;
-        return "linear-gradient(135deg, hsl(" + x + ",72%,42%) 0%, hsl(" + (x + 40) + ",70%,52%) 100%)";
-    }
-
     function renderPublicGrid(host) {
         host.innerHTML = "";
         if (!state.public.length) {
@@ -170,18 +223,21 @@
                 '<p class="dsa-glib-empty">No public graphs yet. Site staff can add them in <strong>Site admin → Library</strong>, or seed D1 / use the catalog API.</p>';
             return;
         }
-        state.public.forEach(function (g) {
+        state.public.forEach(function (g, idx) {
             var card = document.createElement("article");
             card.className = "dsa-glib-card";
+            var visualIdx = visualIndex(g.accentHue, idx);
             card.innerHTML =
-                '<div class="dsa-glib-card__hero" style="background:' +
-                hueStyle(g.accentHue) +
+                '<div class="dsa-glib-card__visual ' +
+                visualVariant(g.accentHue, idx) +
                 '">' +
-                '<span class="dsa-glib-card__badge">Community</span>' +
-                '<div class="dsa-glib-card__hero-title">' +
-                escapeHtml(g.title) +
-                "</div></div>" +
+                graphSvgMarkup(visualIdx) +
+                '<span class="dsa-glib-card__tag">Community</span>' +
+                "</div>" +
                 '<div class="dsa-glib-card__body">' +
+                '<h3 class="dsa-glib-card__title">' +
+                escapeHtml(g.title) +
+                "</h3>" +
                 '<p class="dsa-glib-card__desc">' +
                 escapeHtml(g.description || "Pattern graph shared by the team or community.") +
                 "</p>" +
@@ -193,16 +249,19 @@
                 g.uniqueDownloaders +
                 "</span>" +
                 "</div>" +
-                '<div class="dsa-glib-card__meta">By ' +
-                escapeHtml(g.creatorLabel) +
-                " · Updated " +
-                formatTime(g.updatedAt) +
+                '<div class="dsa-glib-card__meta"><strong>By ' +
+                escapeHtml(g.creatorLabel || "Community") +
+                "</strong></div>" +
+                '<div class="dsa-glib-card__meta"><span>' +
+                escapeHtml(formatDateLabel(g.updatedAt)) +
+                '</span><span class="dsa-glib-card__meta-dot"></span><span>' +
+                escapeHtml(formatClockLabel(g.updatedAt)) +
                 "</div>" +
                 '<div class="dsa-glib-card__actions">' +
-                '<button type="button" class="dsa-udash-btn dsa-udash-btn--primary dsa-glib-btn-dl" data-id="' +
+                '<button type="button" class="dsa-glib-action dsa-glib-action--dark dsa-glib-btn-dl" data-id="' +
                 escapeHtml(g.id) +
                 '">Add to my library</button>' +
-                '<button type="button" class="dsa-udash-btn dsa-glib-btn-prev" data-id="' +
+                '<button type="button" class="dsa-glib-action dsa-glib-action--ghost dsa-glib-btn-prev" data-id="' +
                 escapeHtml(g.id) +
                 '">Preview</button>' +
                 "</div></div>";
@@ -212,12 +271,22 @@
 
     function kindClass(k) {
         if (k === "downloaded") {
-            return "dsa-glib-pill--dl";
+            return "dsa-glib-card__tag--downloaded";
         }
         if (k === "shared") {
-            return "dsa-glib-pill--sh";
+            return "dsa-glib-card__tag--shared";
         }
-        return "dsa-glib-pill--cr";
+        return "dsa-glib-card__tag--created";
+    }
+
+    function kindLabel(k) {
+        if (k === "downloaded") {
+            return "Downloaded";
+        }
+        if (k === "shared") {
+            return "Shared";
+        }
+        return "Created";
     }
 
     function renderMineGrid(host) {
@@ -233,43 +302,48 @@
                 '<p class="dsa-glib-empty">Nothing here yet. Download from the community tab or create a new graph.</p>';
             return;
         }
-        list.forEach(function (g) {
+        list.forEach(function (g, idx) {
             var card = document.createElement("article");
-            card.className = "dsa-glib-card dsa-glib-card--mine";
+            card.className = "dsa-glib-card";
+            var visualIdx = visualIndex(g.accentHue, idx + 1);
             var pill =
-                '<span class="dsa-glib-pill ' +
+                '<span class="dsa-glib-card__tag ' +
                 kindClass(g.kind) +
                 '">' +
-                escapeHtml(g.kind) +
+                escapeHtml(kindLabel(g.kind)) +
                 "</span>";
             var shareLine =
                 g.kind === "shared" && g.sharedFromLabel
-                    ? '<div class="dsa-glib-card__meta">From ' + escapeHtml(g.sharedFromLabel) + "</div>"
-                    : "";
+                    ? '<div class="dsa-glib-card__meta"><strong>From ' + escapeHtml(g.sharedFromLabel) + "</strong></div>"
+                    : '<div class="dsa-glib-card__meta"><strong>Your personal copy</strong></div>';
             card.innerHTML =
-                '<div class="dsa-glib-card__hero dsa-glib-card__hero--mine" style="background:' +
-                hueStyle(g.accentHue) +
+                '<div class="dsa-glib-card__visual ' +
+                visualVariant(g.accentHue, idx + 1) +
                 '">' +
+                graphSvgMarkup(visualIdx) +
                 pill +
-                '<div class="dsa-glib-card__hero-title">' +
-                escapeHtml(g.title) +
-                "</div></div>" +
+                "</div>" +
                 '<div class="dsa-glib-card__body">' +
+                '<h3 class="dsa-glib-card__title">' +
+                escapeHtml(g.title) +
+                "</h3>" +
                 '<p class="dsa-glib-card__desc">' +
                 escapeHtml(g.description || "Your copy — open in the graph workspace to study or edit.") +
                 "</p>" +
                 shareLine +
-                '<div class="dsa-glib-card__meta">Updated ' +
-                formatTime(g.updatedAt) +
+                '<div class="dsa-glib-card__meta"><span>' +
+                escapeHtml(formatDateLabel(g.updatedAt)) +
+                '</span><span class="dsa-glib-card__meta-dot"></span><span>' +
+                escapeHtml(formatClockLabel(g.updatedAt)) +
                 "</div>" +
                 '<div class="dsa-glib-card__actions">' +
-                '<button type="button" class="dsa-udash-btn dsa-udash-btn--primary dsa-glib-btn-open" data-id="' +
+                '<button type="button" class="dsa-glib-action dsa-glib-action--dark dsa-glib-btn-open" data-id="' +
                 escapeHtml(g.id) +
                 '">Open workspace</button>' +
-                '<button type="button" class="dsa-udash-btn dsa-glib-btn-share" data-id="' +
+                '<button type="button" class="dsa-glib-action dsa-glib-action--ghost dsa-glib-btn-share" data-id="' +
                 escapeHtml(g.id) +
-                '">Share…</button>' +
-                '<button type="button" class="dsa-udash-btn dsa-glib-btn-del" data-id="' +
+                '">Share</button>' +
+                '<button type="button" class="dsa-glib-action dsa-glib-action--danger dsa-glib-btn-del" data-id="' +
                 escapeHtml(g.id) +
                 '">Delete</button>' +
                 "</div></div>";
@@ -525,9 +599,12 @@
                 var tab = btn.getAttribute("data-glib-tab");
                 document.querySelectorAll("[data-glib-tab]").forEach(function (b) {
                     b.classList.toggle("is-active", b === btn);
+                    b.setAttribute("aria-selected", b === btn ? "true" : "false");
                 });
                 document.querySelectorAll(".dsa-glib-tab-panel").forEach(function (p) {
-                    p.classList.toggle("is-active", p.getAttribute("data-glib-panel") === tab);
+                    var on = p.getAttribute("data-glib-panel") === tab;
+                    p.classList.toggle("is-active", on);
+                    p.hidden = !on;
                 });
             });
         });

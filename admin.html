@@ -33,13 +33,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev" />
     <title>Site admin — DSA Pattern Practice</title>
-    <link rel="stylesheet" href="./auth/portal-shell.css?v=14" />
+    <link rel="stylesheet" href="./auth/portal-shell.css?v=15" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css?v=14" />
     <link rel="stylesheet" href="./dsa-index-shell.css?v=19" />
-    <link rel="stylesheet" href="./auth/admin-graph-library.css?v=3" />
+    <link rel="stylesheet" href="./auth/admin-graph-library.css?v=4" />
     <link rel="stylesheet" href="./auth/admin-workspace.css?v=2" />
     <link rel="stylesheet" href="./auth/admin-loader.css?v=1" />
 </head>
@@ -182,28 +182,21 @@
 
             <section id="cms-editor-section" hidden>
                 <div class="adm-dashboard">
-                    <div class="adm-topbar">
-                        <div class="adm-topbar-copy">
-                            <h2 id="adm-console-title">Admin dashboard</h2>
-                            <p id="adm-console-blurb" class="adm-topbar-blurb">
-                                Manage site config, practice accounts, published graph, member graph library, and audit data. Each section has a polished UI plus an optional JSON view.
-                            </p>
-                        </div>
-                        <div class="adm-topbar-actions">
-                            <button
-                                type="button"
-                                class="admin-session-icon-btn admin-session-icon-btn--reload adm-dash-inline-reload"
-                                id="adm-refresh-all"
-                                title="Reload dashboard data"
-                                aria-label="Reload dashboard data"
-                            >
-                                <svg class="admin-session-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <path d="M23 4v6h-6" />
-                                    <path d="M1 20v-6h6" />
-                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-                                </svg>
-                            </button>
-                        </div>
+                    <div class="adm-section-reload-bar" role="toolbar" aria-label="Current section">
+                        <button
+                            type="button"
+                            class="adm-section-reload-btn"
+                            id="adm-refresh-all"
+                            title="Reload this section (same as the section’s own Reload where available)"
+                            aria-label="Reload current section"
+                        >
+                            <svg class="adm-section-reload-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M23 4v6h-6" />
+                                <path d="M1 20v-6h6" />
+                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                            </svg>
+                            <span>Reload section</span>
+                        </button>
                     </div>
 
                     <!-- Dashboard -->
@@ -504,10 +497,17 @@
                             <div>
                                 <h3>Content — site map (<code>dsa</code>)</h3>
                                 <p class="helper" style="margin:6px 0 0;max-width:62ch">
-                                    Edit raw JSON here, then publish to the public practice page. For the <strong>graph studio</strong> (preview, tabs, zoom), open
-                                    <button type="button" class="dsa-udash-text-btn" data-admin-tab-jump="workspace" style="font:inherit;padding:0;border:0;background:none;cursor:pointer;color:inherit;text-decoration:underline">
-                                        Workspace
-                                    </button>.
+                                    Edit raw JSON here, then publish to the public practice page. Open the
+                                    <button type="button" class="adm-tab-jump adm-tab-jump--ws" data-admin-tab-jump="workspace">
+                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                                            <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                                            <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+                                            <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                                        </svg>
+                                        <span>Graph workspace</span>
+                                    </button>
+                                    for the visual studio (preview, tabs, zoom).
                                 </p>
                             </div>
                         </div>
@@ -600,7 +600,15 @@
                                     <button type="button" class="btn btn-sm" id="adm-ws-open-cms">Load site map (CMS)</button>
                                     <button type="button" class="btn ghost btn-sm" id="adm-ws-save-catalog" hidden>Save to catalog</button>
                                     <button type="button" class="btn ghost btn-sm" id="adm-ws-save-cms-draft" hidden>Save CMS draft</button>
-                                    <button type="button" class="btn ghost btn-sm" data-admin-tab-jump="library">Open Library tab</button>
+                                    <button type="button" class="btn ghost btn-sm adm-tab-jump adm-tab-jump--lib" data-admin-tab-jump="library" title="Open graph library (catalog)">
+                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                                            <line x1="8" y1="7" x2="16" y2="7"></line>
+                                            <line x1="8" y1="11" x2="14" y2="11"></line>
+                                        </svg>
+                                        <span>Graph library</span>
+                                    </button>
                                 </div>
                                 <div class="adm-content-graph-wrap adm-ws-graph-wrap">
                                     <div class="dsa-graph-shell dsa-index-ref">
@@ -691,22 +699,27 @@
                     <!-- Graph library (member hub — community catalog) -->
                     <div class="adm-pane adm-hidden" data-admin-pane="library">
                         <div class="adm-glib-page">
-                            <header class="adm-glib-header">
-                                <div>
+                        <div data-adm-panel="library-ui" class="adm-glib-app">
+                            <div class="adm-glib-toolbar adm-glib-toolbar--with-title">
+                                <div class="adm-glib-masthead">
                                     <h1 class="adm-glib-h1">Graph library</h1>
                                     <p class="adm-glib-lede">
-                                        Curate public maps for the member hub. Publishing <strong>Content → dsa</strong> also upserts a public catalog entry
-                                        <code>dsa-site-map</code> (site practice graph). Edit the mind map body in <strong>Workspace</strong>.
+                                        Curate public maps for the member hub. <strong>Content → dsa</strong> publishes <code>dsa-site-map</code>. Edit the mind map in
+                                        <button type="button" class="adm-tab-jump adm-tab-jump--ws adm-tab-jump--compact" data-admin-tab-jump="workspace">
+                                            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                                                <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                                                <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+                                                <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                                            </svg>
+                                            <span>Workspace</span>
+                                        </button>.
                                     </p>
                                 </div>
-                                <div class="adm-glib-segmented" role="tablist" aria-label="Library view">
+                                <div class="adm-glib-segmented adm-glib-segmented--masthead" role="tablist" aria-label="Library view">
                                     <button type="button" class="active" data-adm-dual="library" data-adm-mode="ui">UI</button>
                                     <button type="button" data-adm-dual="library" data-adm-mode="json">JSON</button>
                                 </div>
-                            </header>
-
-                        <div data-adm-panel="library-ui" class="adm-glib-app">
-                            <div class="adm-glib-toolbar">
                                 <div class="adm-glib-tool-group">
                                     <button type="button" class="adm-glib-btn adm-glib-btn--primary" id="adm-glib-reload" title="Reload list">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -820,8 +833,17 @@
                                 <aside class="adm-glib-panel adm-glib-panel--list">
                                     <div class="adm-glib-panel-header">
                                         <div class="adm-glib-panel-title">Inventory</div>
-                                        <p class="adm-glib-panel-sub">
-                                            Catalog rows: edit metadata here, body in <button type="button" class="dsa-udash-text-btn" data-admin-tab-jump="workspace">Workspace</button>.
+                                        <p class="adm-glib-panel-sub adm-glib-panel-sub--inv">
+                                            Catalog: edit listing here; mind map in
+                                            <button type="button" class="adm-tab-jump adm-tab-jump--ws adm-tab-jump--compact" data-admin-tab-jump="workspace">
+                                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                                    <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                                                    <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                                                    <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+                                                    <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                                                </svg>
+                                                <span>Workspace</span>
+                                            </button>.
                                             <strong>User</strong> copies are view-only.
                                         </p>
                                     </div>
@@ -829,11 +851,26 @@
                                 </aside>
                                 <section class="adm-glib-panel adm-glib-panel--editor">
                                     <div class="adm-glib-panel-header">
-                                        <div class="adm-glib-panel-title" id="adm-glib-form-heading">Editor</div>
+                                        <div class="adm-glib-panel-title" id="adm-glib-form-heading">Catalog editor</div>
                                         <p class="adm-glib-panel-sub" id="adm-glib-form-sub">
-                                            Set title and details, then <strong>Save</strong> to create the graph body (root node = graph name). Open <strong>Workspace</strong> to edit the map.
+                                            Select an inventory row or create a new catalog graph.
                                         </p>
                                     </div>
+                                    <div id="adm-glib-editor-idle" class="adm-glib-editor-idle" aria-live="polite">
+                                        <div class="adm-glib-editor-idle-inner">
+                                            <p class="adm-glib-editor-idle-title">Nothing selected</p>
+                                            <p class="adm-glib-editor-idle-text">
+                                                Pick a graph from the list to edit metadata, or create a new catalog entry. Mind-map JSON lives in the <strong>JSON</strong> tab or in <strong>Workspace</strong>.
+                                            </p>
+                                            <div class="adm-glib-editor-idle-actions">
+                                                <button type="button" class="adm-glib-btn adm-glib-btn--primary" id="adm-glib-idle-new">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                                    New catalog graph
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="adm-glib-editor-form-wrap" class="adm-glib-editor-form-wrap" hidden>
                                     <div class="adm-glib-editor-body">
                                         <input type="hidden" id="adm-glib-edit-id" value="" autocomplete="off" />
                                         <div class="adm-form-grid cols-2">
@@ -877,16 +914,18 @@
 
                                         <div class="adm-glib-actions">
                                             <button type="button" class="btn" id="adm-glib-save">Save</button>
-                                            <button type="button" class="btn ghost adm-glib-open-ws-btn" id="adm-glib-open-workspace" hidden title="Open in workspace">
+                                            <button type="button" class="btn ghost adm-glib-open-ws-btn" id="adm-glib-open-workspace" hidden title="Open this graph in Graph workspace (visual editor)">
                                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                                                    <polyline points="15 3 21 3 21 9"></polyline>
-                                                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                                                    <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                                                    <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                                                    <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+                                                    <rect x="14" y="14" width="7" height="7" rx="1"></rect>
                                                 </svg>
                                                 <span>Open in workspace</span>
                                             </button>
                                             <button type="button" class="btn ghost" id="adm-glib-delete" disabled>Remove from catalog…</button>
                                         </div>
+                                    </div>
                                     </div>
                                 </section>
                             </div>
@@ -997,7 +1036,7 @@
     <script src="./auth/dsa-user-auth.js?v=3"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
     <script src="./script.js?v=31"></script>
-    <script src="./auth/account-admin-panel.js?v=22"></script>
+    <script src="./auth/account-admin-panel.js?v=23"></script>
     <script src="./auth/admin-site-page.js?v=10"></script>
 </body>
 </html>

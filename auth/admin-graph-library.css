@@ -808,3 +808,74 @@ html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-glib-badge--public {
     align-items: center;
     gap: 8px;
 }
+
+/* Masthead merged into toolbar */
+.dsa-portal-page--admin .adm-glib-toolbar--with-title {
+    align-items: flex-start;
+}
+
+.dsa-portal-page--admin .adm-glib-masthead {
+    flex: 1 1 220px;
+    min-width: min(100%, 280px);
+}
+
+.dsa-portal-page--admin .adm-glib-toolbar--with-title .adm-glib-h1 {
+    margin: 0 0 4px;
+    font-size: 20px;
+}
+
+.dsa-portal-page--admin .adm-glib-toolbar--with-title .adm-glib-lede {
+    max-width: none;
+}
+
+.dsa-portal-page--admin .adm-glib-segmented--masthead {
+    flex-shrink: 0;
+    align-self: flex-start;
+}
+
+/* Idle catalog editor */
+.dsa-portal-page--admin .adm-glib-editor-idle {
+    margin-top: 4px;
+    border: 1px dashed var(--glib-border-strong);
+    border-radius: var(--glib-radius-lg);
+    padding: 28px 22px 32px;
+    background: var(--glib-panel-2);
+}
+
+.dsa-portal-page--admin .adm-glib-editor-idle-inner {
+    max-width: 400px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.dsa-portal-page--admin .adm-glib-editor-idle-title {
+    margin: 0 0 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--glib-text);
+}
+
+.dsa-portal-page--admin .adm-glib-editor-idle-text {
+    margin: 0 0 18px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--glib-text-2);
+}
+
+.dsa-portal-page--admin .adm-glib-editor-idle-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.dsa-portal-page--admin .adm-glib-editor-form-wrap .adm-glib-editor-body {
+    margin-top: 4px;
+}
+
+.dsa-portal-page--admin .adm-glib-panel-sub--inv {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}

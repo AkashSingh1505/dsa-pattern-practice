@@ -84,6 +84,9 @@
     /** Serialized snapshot for catalog form dirty detection */
     let glibFormBaselineStr = "";
 
+    /** True while composing a new catalog row before first save */
+    let glibCatalogNewDraft = false;
+
     function glibClientRootId() {
         return "glib-root-" + Math.random().toString(36).slice(2, 11);
     }
@@ -102,46 +105,9 @@
     const DEFAULT_GLIB_PAYLOAD_TEXT = JSON.stringify(buildDefaultGraphPayloadFromTitle("Untitled graph"), null, 2);
 
     const ADMIN_THEME_KEY = "dsaAdminThemeV1";
-    const ADMIN_CONSOLE_HEAD = {
-        dashboard: {
-            title: "Admin dashboard",
-            blurb:
-                "Manage site config, practice accounts, published graph, member graph library, and audit data. Each section has a polished UI plus an optional JSON view.",
-        },
-        site: {
-            title: "Site",
-            blurb: "KV-backed settings as strings (often JSON). Use Reload after changes made elsewhere.",
-        },
-        users: {
-            title: "Users",
-            blurb: "Practice accounts: role, plan, status, profile, and destructive actions in Danger zone.",
-        },
-        content: {
-            title: "Content",
-            blurb: "Site-wide practice map (`dsa`) — edit JSON here and publish. Use Workspace for the visual graph studio.",
-        },
-        workspace: {
-            title: "Graph workspace",
-            blurb: "Full mind-map studio plus inventory search. User-owned graphs are view-only; catalog & site map can be saved.",
-        },
-        library: {
-            title: "Graph library",
-            blurb:
-                "Community maps for the member hub (Library → Community). Same JSON shape as Content → dsa. Public = downloadable by signed-in members.",
-        },
-        system: {
-            title: "System",
-            blurb: "Security and content audits, contacts, and combined JSON export.",
-        },
-    };
 
-    function syncAdminConsoleHeader(name) {
-        const c = ADMIN_CONSOLE_HEAD[name] || ADMIN_CONSOLE_HEAD.dashboard;
-        const t = document.getElementById("adm-console-title");
-        const b = document.getElementById("adm-console-blurb");
-        if (t) t.textContent = c.title;
-        if (b) b.textContent = c.blurb || "";
-    }
+    /** Section titles moved into each pane; keep hook for future instrumentation */
+    function syncAdminConsoleHeader() {}
 
     function applyAdminTheme(mode) {
         const m = mode === "dark" ? "dark" : "light";
@@ -282,7 +248,7 @@
             /* HTML uses .adm-hidden on panes (display:none !important); hidden="" alone does not remove it. */
             pane.classList.toggle("adm-hidden", !on);
         });
-        syncAdminConsoleHeader(name);
+        syncAdminConsoleHeader();
     }
 
     function setDualSection(section, mode) {
@@ -552,7 +518,51 @@
         return captureGlibFormSnapshot() !== glibFormBaselineStr;
     }
 
+    function updateGlibCatalogEditorVisibility() {
+        const idEl = document.getElementById("adm-glib-edit-id");
+        const idTrim = idEl ? String(idEl.value || "").trim() : "";
+        const showForm =
+            glibCatalogNewDraft ||
+            !!idTrim ||
+            glibSelectedRecordType === "catalog" ||
+            glibSelectedRecordType === "user_graph";
+        const idleEl = document.getElementById("adm-glib-editor-idle");
+        const formWrap = document.getElementById("adm-glib-editor-form-wrap");
+        if (idleEl) {
+            idleEl.hidden = !!showForm;
+        }
+        if (formWrap) {
+            formWrap.hidden = !showForm;
+        }
+        const head = document.getElementById("adm-glib-form-heading");
+        const sub = document.getElementById("adm-glib-form-sub");
+        if (!showForm && head) {
+            head.textContent = "Catalog editor";
+        }
+        if (!showForm && sub) {
+            sub.textContent = "Select an inventory row or create a new catalog graph.";
+        }
+    }
+
+    function glibNewGraphPayloadReady() {
+        const pay = document.getElementById("adm-glib-payload");
+        if (!pay) {
+            return false;
+        }
+        try {
+            const raw = String(pay.value || "").trim();
+            if (!raw) {
+                return false;
+            }
+            const p = JSON.parse(raw);
+            return Array.isArray(p) && p.length > 0;
+        } catch (e) {
+            return false;
+        }
+    }
+
     function refreshGlibSaveAndWorkspaceUi() {
+        updateGlibCatalogEditorVisibility();
         const id = (document.getElementById("adm-glib-edit-id") && document.getElementById("adm-glib-edit-id").value) || "";
         const idTrim = id.trim();
         const title = (document.getElementById("adm-glib-title") && document.getElementById("adm-glib-title").value) || "";
@@ -560,23 +570,30 @@
         const saveBtn = document.getElementById("adm-glib-save");
         const openBtn = document.getElementById("adm-glib-open-workspace");
         const isUser = glibSelectedRecordType === "user_graph";
+        const idleEl = document.getElementById("adm-glib-editor-idle");
+        const isIdle = idleEl && !idleEl.hidden;
         if (saveBtn) {
-            if (isUser) {
+            if (isIdle) {
+                saveBtn.hidden = true;
+                saveBtn.disabled = true;
+            } else if (isUser) {
                 saveBtn.hidden = true;
             } else {
                 saveBtn.hidden = false;
                 if (!idTrim) {
-                    saveBtn.disabled = !titleTrim;
+                    saveBtn.disabled = !(titleTrim && glibNewGraphPayloadReady());
                 } else {
                     saveBtn.disabled = !isGlibFormDirty();
                 }
             }
         }
         if (openBtn) {
-            if (isUser && idTrim) {
+            if (isIdle) {
+                openBtn.hidden = true;
+            } else if (isUser && idTrim) {
                 openBtn.hidden = false;
-            } else if (!isUser) {
-                openBtn.hidden = !idTrim;
+            } else if (!isUser && idTrim) {
+                openBtn.hidden = false;
             } else {
                 openBtn.hidden = true;
             }
@@ -775,10 +792,7 @@
         setGlibFormEditable(true);
     }
 
-    function clearGraphCatalogForm() {
-        glibSelectedRecordType = null;
-        glibSelectedCatalogId = null;
-        glibSelectedUserGraphId = null;
+    function glibClearCatalogFormFieldsOnly() {
         const idEl = document.getElementById("adm-glib-edit-id");
         if (idEl) {
             idEl.value = "";
@@ -790,6 +804,7 @@
         const slug = document.getElementById("adm-glib-slug-new");
         if (slug) {
             slug.value = "";
+            slug.placeholder = "auto from title if empty";
         }
         const vis = document.getElementById("adm-glib-visibility");
         if (vis) {
@@ -819,15 +834,46 @@
         if (pay) {
             pay.value = JSON.stringify(buildDefaultGraphPayloadFromTitle(""), null, 2);
         }
+    }
+
+    function clearGraphCatalogForm() {
+        glibCatalogNewDraft = false;
+        glibSelectedRecordType = null;
+        glibSelectedCatalogId = null;
+        glibSelectedUserGraphId = null;
+        glibClearCatalogFormFieldsOnly();
         const sub = document.getElementById("adm-glib-form-sub");
         if (sub) {
-            sub.innerHTML =
-                "Set title and details, then <strong>Save</strong> to create the graph body (root node = graph name). Then open <strong>Workspace</strong> to edit the map.";
+            sub.textContent = "Select an inventory row or create a new catalog graph.";
         }
         setGlibFormEditable(true);
         renderGraphInventoryCards();
         updateGlibDeleteEnabled();
         snapshotGlibFormBaseline();
+        updateGlibCatalogEditorVisibility();
+        refreshGlibSaveAndWorkspaceUi();
+    }
+
+    function glibBeginNewCatalogGraph() {
+        glibCatalogNewDraft = true;
+        glibSelectedRecordType = null;
+        glibSelectedCatalogId = null;
+        glibSelectedUserGraphId = null;
+        glibClearCatalogFormFieldsOnly();
+        const sub = document.getElementById("adm-glib-form-sub");
+        if (sub) {
+            sub.innerHTML =
+                "Add a <strong>title</strong> (required), then <strong>Save</strong>. Edit mind-map JSON on the <strong>JSON</strong> tab or in <strong>Workspace</strong>.";
+        }
+        const h = document.getElementById("adm-glib-form-heading");
+        if (h) {
+            h.textContent = "New catalog graph";
+        }
+        setGlibFormEditable(true);
+        renderGraphInventoryCards();
+        updateGlibDeleteEnabled();
+        snapshotGlibFormBaseline();
+        updateGlibCatalogEditorVisibility();
         refreshGlibSaveAndWorkspaceUi();
     }
 
@@ -835,6 +881,7 @@
         if (!graph) {
             return;
         }
+        glibCatalogNewDraft = false;
         glibSelectedRecordType = "catalog";
         glibSelectedCatalogId = graph.id;
         glibSelectedUserGraphId = null;
@@ -899,6 +946,7 @@
             }
         }
         snapshotGlibFormBaseline();
+        updateGlibCatalogEditorVisibility();
         refreshGlibSaveAndWorkspaceUi();
     }
 
@@ -906,6 +954,7 @@
         if (!graph) {
             return;
         }
+        glibCatalogNewDraft = false;
         glibSelectedRecordType = "user_graph";
         glibSelectedUserGraphId = graph.id;
         glibSelectedCatalogId = null;
@@ -963,6 +1012,7 @@
                 "Member-owned copy — read-only here. Open workspace to inspect the map; changes are not written back to the member.";
         }
         snapshotGlibFormBaseline();
+        updateGlibCatalogEditorVisibility();
         refreshGlibSaveAndWorkspaceUi();
     }
 
@@ -978,6 +1028,7 @@
                 ta.value = JSON.stringify({ ok: true, items: graphInventoryCache, limit: j.limit, scope: j.scope }, null, 2);
             }
             renderGraphInventoryCards();
+            updateGlibCatalogEditorVisibility();
             setGlibStatus(graphInventoryCache.length + " graph(s) in this view.", "ok");
         } catch (e) {
             setGlibStatus(e.message || "Load failed", "err");
@@ -990,6 +1041,7 @@
         if (!id) {
             return;
         }
+        glibCatalogNewDraft = false;
         if (recordType === "catalog") {
             glibSelectedRecordType = "catalog";
             glibSelectedCatalogId = id;
@@ -1485,10 +1537,29 @@
             return;
         }
         activeMainTab("workspace");
+        void loadWsInventoryList();
+        await new Promise(function (resolve) {
+            requestAnimationFrame(function () {
+                requestAnimationFrame(resolve);
+            });
+        });
+        const graphWrap = document.querySelector(".adm-ws-graph-wrap");
+        if (graphWrap) {
+            try {
+                graphWrap.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            } catch (e) {
+                graphWrap.scrollIntoView();
+            }
+        }
         admShowLoader("Opening graph…");
         wsSetMsg("Loading…", "");
         try {
             await wsLoadGraphFromInventory(recordType, id);
+            try {
+                window.dispatchEvent(new Event("resize"));
+            } catch (e) {
+                /* ignore */
+            }
             wsSetMsg("Graph loaded in the studio.", "ok");
         } catch (e) {
             wsSetMsg(e.message || "Open failed", "err");
@@ -1835,8 +1906,13 @@
             });
         document.getElementById("adm-glib-new") &&
             document.getElementById("adm-glib-new").addEventListener("click", function () {
-                clearGraphCatalogForm();
-                setGlibStatus("New graph — fill fields and Save.", "ok");
+                glibBeginNewCatalogGraph();
+                setGlibStatus("New catalog graph — add a title, then Save.", "ok");
+            });
+        document.getElementById("adm-glib-idle-new") &&
+            document.getElementById("adm-glib-idle-new").addEventListener("click", function () {
+                glibBeginNewCatalogGraph();
+                setGlibStatus("New catalog graph — add a title, then Save.", "ok");
             });
 
         const chipHost = document.getElementById("adm-glib-filter-chips");
@@ -3228,7 +3304,7 @@
             setDualSection(k, dualMode[k]);
         });
         initAdminThemeControls();
-        syncAdminConsoleHeader(adminMainTabName);
+        syncAdminConsoleHeader();
 
         function refreshCurrentAdminSection() {
             const open = document.querySelector(".admin-session-pill.active[data-admin-tab]");

@@ -506,6 +506,68 @@
             gap: 8px;
             align-items: center;
         }
+        .adm-section-reload-bar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 14px;
+        }
+        .adm-section-reload-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(15, 23, 32, 0.12);
+            background: rgba(255, 255, 255, 0.65);
+            font-size: 13px;
+            font-weight: 600;
+            font-family: inherit;
+            color: var(--ink);
+            cursor: pointer;
+            transition:
+                background 0.15s ease,
+                border-color 0.15s ease,
+                box-shadow 0.15s ease;
+        }
+        .adm-section-reload-btn:hover {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: rgba(15, 23, 32, 0.18);
+        }
+        .adm-section-reload-ico {
+            flex-shrink: 0;
+            opacity: 0.85;
+        }
+        .dsa-admin-body .adm-tab-jump {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin: 0 2px;
+            padding: 4px 10px;
+            vertical-align: baseline;
+            border-radius: 8px;
+            border: 1px solid rgba(99, 102, 241, 0.35);
+            background: rgba(99, 102, 241, 0.08);
+            color: inherit;
+            font: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            transition:
+                background 0.15s ease,
+                border-color 0.15s ease;
+        }
+        .dsa-admin-body .adm-tab-jump:hover {
+            background: rgba(99, 102, 241, 0.14);
+            border-color: rgba(99, 102, 241, 0.55);
+        }
+        .dsa-admin-body .adm-tab-jump--compact {
+            padding: 3px 8px;
+            font-size: 12px;
+            gap: 5px;
+        }
+        .dsa-admin-body .adm-tab-jump svg {
+            flex-shrink: 0;
+            opacity: 0.9;
+        }
         .adm-badge {
             font-size: 11px;
             font-weight: 700;
@@ -1535,6 +1597,11 @@
         html[data-admin-theme="dark"] .adm-content-graph-toolbar {
             background: rgba(255, 255, 255, 0.04);
             border-color: var(--line);
+        }
+        html[data-admin-theme="dark"] .adm-section-reload-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--line, rgba(255, 255, 255, 0.12));
+            color: var(--ink, #e2e8f0);
         }
         html[data-admin-theme="dark"] .adm-site-features-matrix {
             background: rgba(255, 255, 255, 0.04);

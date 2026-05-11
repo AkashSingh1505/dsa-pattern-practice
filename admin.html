@@ -39,7 +39,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css?v=14" />
     <link rel="stylesheet" href="./dsa-index-shell.css?v=19" />
-    <link rel="stylesheet" href="./auth/admin-graph-library.css?v=1" />
+    <link rel="stylesheet" href="./auth/admin-graph-library.css?v=2" />
+    <link rel="stylesheet" href="./auth/admin-workspace.css?v=1" />
+    <link rel="stylesheet" href="./auth/admin-loader.css?v=1" />
 </head>
 <body class="dsa-admin-body">
     <script>
@@ -106,6 +108,7 @@
                             <button type="button" class="admin-session-pill" data-admin-tab="site">Site</button>
                             <button type="button" class="admin-session-pill" data-admin-tab="users">Users</button>
                             <button type="button" class="admin-session-pill" data-admin-tab="content">Content</button>
+                            <button type="button" class="admin-session-pill" data-admin-tab="workspace">Workspace</button>
                             <button type="button" class="admin-session-pill" data-admin-tab="library">Library</button>
                             <button type="button" class="admin-session-pill" data-admin-tab="system">System</button>
                             <span class="admin-session-pill-gap" aria-hidden="true"></span>
@@ -495,179 +498,175 @@
                         </div>
                     </div>
 
-                    <!-- Content: UI = live mind map preview; JSON = editor only -->
+                    <!-- Content: live site mind map (JSON + publish). Visual editing → Workspace. -->
                     <div class="adm-pane adm-hidden" data-admin-pane="content">
                         <div class="adm-pane-head">
-                            <h3>Content — mind map</h3>
-                            <div class="adm-seg" data-adm-dual-wrap="content">
-                                <button type="button" class="active" data-adm-dual="content" data-adm-mode="ui">UI</button>
-                                <button type="button" data-adm-dual="content" data-adm-mode="json">JSON</button>
+                            <div>
+                                <h3>Content — site map (<code>dsa</code>)</h3>
+                                <p class="helper" style="margin:6px 0 0;max-width:62ch">
+                                    Edit raw JSON here, then publish to the public practice page. For the <strong>graph studio</strong> (preview, tabs, zoom), open
+                                    <button type="button" class="dsa-udash-text-btn" data-admin-tab-jump="workspace" style="font:inherit;padding:0;border:0;background:none;cursor:pointer;color:inherit;text-decoration:underline">
+                                        Workspace
+                                    </button>.
+                                </p>
                             </div>
                         </div>
-                        <div data-adm-panel="content-ui">
-                            <div class="cms-toolbar">
-                                <label for="cms-key">Dataset</label>
-                                <select id="cms-key">
-                                    <option value="dsa">dsa (mind map JSON)</option>
-                                </select>
-                            </div>
-                            <div class="adm-content-summary" id="adm-content-summary"></div>
-                            <div class="adm-content-graph-wrap">
-                                <div class="dsa-graph-shell dsa-index-ref">
-                                    <main class="page adm-content-graph-studio">
-                                        <section class="head">
-                                            <div class="head-text">
-                                                <div class="eyebrow">Knowledge Map</div>
-                                                <h1>DSA problem patterns</h1>
-                                                <p>
-                                                    Full map opens by default — all topics under DSA Patterns. Use
-                                                    <b>One topic</b> to focus on a single structure. The map flows left →
-                                                    right; scroll the shaded area when it’s wide.
-                                                </p>
-                                            </div>
-                                            <nav
-                                                class="seg dsa-view-tabs dsa-seg-track"
-                                                role="tablist"
-                                                id="admin-modeSeg"
-                                                aria-label="Graph layout"
-                                            >
-                                                <span class="dsa-seg-thumb" aria-hidden="true"></span>
-                                                <button
-                                                    type="button"
-                                                    class="dsa-view-btn"
-                                                    role="tab"
-                                                    data-mode="full"
-                                                    aria-selected="false"
-                                                >
-                                                    Full map
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    class="dsa-view-btn"
-                                                    role="tab"
-                                                    data-mode="one"
-                                                    aria-selected="false"
-                                                >
-                                                    One topic
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    class="dsa-view-btn"
-                                                    role="tab"
-                                                    data-mode="custom"
-                                                    aria-selected="false"
-                                                >
-                                                    Customize
-                                                </button>
-                                            </nav>
-                                        </section>
-                                        <section class="toolbar" aria-label="Graph toolbar">
-                                            <div
-                                                id="admin-dsa-map-toolbar-host"
-                                                class="dsa-index-toolbar-shell"
-                                                data-dsa-index-toolbar-slots="1"
-                                            >
-                                                <div class="tools-left">
-                                                    <button
-                                                        type="button"
-                                                        class="btn dark"
-                                                        id="admin-dsa-map-export-json"
-                                                        title="Export mind map JSON"
-                                                    >
-                                                        <svg
-                                                            viewBox="0 0 24 24"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            stroke-width="2.2"
-                                                            stroke-linecap="round"
-                                                            stroke-linejoin="round"
-                                                            aria-hidden="true"
-                                                        >
-                                                            <path d="M12 3v12"></path>
-                                                            <path d="M7 10l5 5 5-5"></path>
-                                                            <path d="M5 21h14"></path>
-                                                        </svg>
-                                                        Export JSON
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        class="btn"
-                                                        id="admin-dsa-map-import-json-trigger"
-                                                        title="Import mind map JSON"
-                                                    >
-                                                        <svg
-                                                            viewBox="0 0 24 24"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            stroke-width="2.2"
-                                                            stroke-linecap="round"
-                                                            stroke-linejoin="round"
-                                                            aria-hidden="true"
-                                                        >
-                                                            <path d="M12 21V9"></path>
-                                                            <path d="M7 14l5-5 5 5"></path>
-                                                            <path d="M5 3h14"></path>
-                                                        </svg>
-                                                        Import JSON…
-                                                    </button>
-                                                    <input
-                                                        type="file"
-                                                        id="admin-dsa-map-import-file"
-                                                        accept="application/json,.json"
-                                                        hidden
-                                                        aria-hidden="true"
-                                                    />
-                                                    <span class="divider" aria-hidden="true"></span>
-                                                    <div
-                                                        id="admin-dsa-toolbar-expand-slot"
-                                                        class="dsa-toolbar-expand-slot"
-                                                    ></div>
-                                                </div>
-                                                <div class="tools-right">
-                                                    <span class="hint dsa-graph-map-toolbar-hint">
-                                                        <span class="dot" aria-hidden="true"></span>
-                                                        <span
-                                                            id="admin-dsa-map-toolbar-inline-hint"
-                                                            class="dsa-graph-map-toolbar-hint-text"
-                                                        ></span>
-                                                    </span>
-                                                    <div
-                                                        id="admin-dsa-toolbar-zoom-host"
-                                                        class="dsa-toolbar-zoom-host"
-                                                    ></div>
-                                                </div>
-                                            </div>
-                                        </section>
-                                        <section class="graph-card adm-graph-preview">
-                                            <div class="graph-stage">
-                                                <div
-                                                    id="admin-dsa-hierarchy-root"
-                                                    class="dsa-graph-viewport"
-                                                    aria-label="Mind map preview"
-                                                ></div>
-                                            </div>
-                                        </section>
-                                        <p class="foot">
-                                            Tip: switch to <b>One topic</b> to drill into a single structure, or use
-                                            <b>Customize</b> to tune the graph. Save draft or publish from the JSON tab.
-                                        </p>
-                                    </main>
-                                </div>
-                            </div>
+                        <div class="cms-toolbar" style="margin-top:8px">
+                            <label for="cms-key">Dataset</label>
+                            <select id="cms-key">
+                                <option value="dsa">dsa (mind map JSON)</option>
+                            </select>
                         </div>
-                        <div data-adm-panel="content-json" class="adm-hidden">
-                            <p class="helper" style="margin-top:0">Raw mind map JSON (array). Use <b>Format JSON</b> before save. Switch to <b>UI</b> to preview the graph.</p>
-                            <label for="cms-editor" class="adm-inline-label" style="display:block;margin-top:10px">Mind map JSON</label>
-                            <textarea id="cms-editor" class="cms-editor adm-json-input" spellcheck="false" rows="22" aria-label="Mind map JSON"></textarea>
-                            <div class="cms-actions" style="margin-top:10px">
-                                <button id="cms-json-format" type="button" class="btn ghost">Format JSON</button>
-                                <button id="cms-load" class="btn ghost" type="button">Reload from server</button>
-                                <button id="cms-json-save-draft" type="button" class="btn ghost">Save draft</button>
-                                <button id="cms-json-publish" type="button" class="btn">Publish live</button>
-                                <button id="cms-discard-draft" class="btn ghost" type="button">Discard draft</button>
-                            </div>
+                        <div class="adm-content-summary" id="adm-content-summary"></div>
+                        <label for="cms-editor" class="adm-inline-label" style="display:block;margin-top:10px">Mind map JSON</label>
+                        <textarea id="cms-editor" class="cms-editor adm-json-input" spellcheck="false" rows="22" aria-label="Mind map JSON"></textarea>
+                        <div class="cms-actions" style="margin-top:10px">
+                            <button id="cms-json-format" type="button" class="btn ghost">Format JSON</button>
+                            <button id="cms-load" class="btn ghost" type="button">Reload from server</button>
+                            <button id="cms-json-save-draft" type="button" class="btn ghost">Save draft</button>
+                            <button id="cms-json-publish" type="button" class="btn">Publish live</button>
+                            <button id="cms-discard-draft" class="btn ghost" type="button">Discard draft</button>
                         </div>
                         <p id="cms-status" class="status" style="margin-top:12px"></p>
+                    </div>
+
+                    <!-- Workspace: graph studio + inventory picker -->
+                    <div class="adm-pane adm-hidden" data-admin-pane="workspace">
+                        <div class="adm-pane-head adm-ws-head">
+                            <div>
+                                <h3>Graph workspace</h3>
+                                <p class="helper adm-ws-sub">Search the full inventory (catalog + members’ personal copies). User copies are <strong>view-only</strong>. Catalog &amp; site map can be saved from here.</p>
+                            </div>
+                        </div>
+                        <div class="adm-ws-layout">
+                            <aside class="adm-ws-sidebar adm-subcard" aria-label="Graph inventory">
+                                <div class="adm-ws-filters">
+                                    <label class="adm-ws-flabel" for="adm-ws-q">Search</label>
+                                    <input type="search" id="adm-ws-q" class="adm-ws-input" placeholder="Title, slug, email…" autocomplete="off" />
+                                    <label class="adm-ws-flabel" for="adm-ws-scope">Scope</label>
+                                    <select id="adm-ws-scope" class="adm-select-enhanced">
+                                        <option value="all">All (catalog + users)</option>
+                                        <option value="catalog">Catalog only</option>
+                                        <option value="user">User copies only</option>
+                                    </select>
+                                    <label class="adm-ws-flabel" for="adm-ws-vis">Catalog visibility</label>
+                                    <select id="adm-ws-vis" class="adm-select-enhanced">
+                                        <option value="all">Any</option>
+                                        <option value="public">Public</option>
+                                        <option value="unlisted">Unlisted</option>
+                                        <option value="private">Private</option>
+                                    </select>
+                                    <label class="adm-ws-flabel" for="adm-ws-user-kind">User graph kind</label>
+                                    <select id="adm-ws-user-kind" class="adm-select-enhanced">
+                                        <option value="all">Any</option>
+                                        <option value="created">Created</option>
+                                        <option value="downloaded">Downloaded</option>
+                                        <option value="shared">Shared</option>
+                                    </select>
+                                    <label class="adm-ws-flabel" for="adm-ws-sort">Sort</label>
+                                    <select id="adm-ws-sort" class="adm-select-enhanced">
+                                        <option value="updated_desc">Updated · newest</option>
+                                        <option value="updated_asc">Updated · oldest</option>
+                                        <option value="title_asc">Title A→Z</option>
+                                        <option value="title_desc">Title Z→A</option>
+                                        <option value="downloads_desc">Downloads</option>
+                                        <option value="created_desc">Created · newest</option>
+                                    </select>
+                                    <label class="adm-ws-flabel" for="adm-ws-date-field">Date filter on</label>
+                                    <select id="adm-ws-date-field" class="adm-select-enhanced">
+                                        <option value="updated">Updated</option>
+                                        <option value="created">Created</option>
+                                    </select>
+                                    <label class="adm-ws-flabel" for="adm-ws-date-from">From</label>
+                                    <input type="date" id="adm-ws-date-from" class="adm-ws-input" />
+                                    <label class="adm-ws-flabel" for="adm-ws-date-to">To</label>
+                                    <input type="date" id="adm-ws-date-to" class="adm-ws-input" />
+                                    <div class="adm-ws-filter-actions">
+                                        <button type="button" class="btn btn-sm" id="adm-ws-apply">Apply</button>
+                                        <button type="button" class="btn ghost btn-sm" id="adm-ws-reset-filters">Reset</button>
+                                    </div>
+                                </div>
+                                <div id="adm-ws-list" class="adm-ws-list" role="list"></div>
+                                <p id="adm-ws-list-meta" class="meta-line adm-ws-list-meta"></p>
+                            </aside>
+                            <div class="adm-ws-main">
+                                <div id="adm-ws-context-banner" class="adm-ws-banner" hidden></div>
+                                <div class="adm-ws-actions-bar adm-toolbar-row">
+                                    <button type="button" class="btn btn-sm" id="adm-ws-open-cms">Load site map (CMS)</button>
+                                    <button type="button" class="btn ghost btn-sm" id="adm-ws-save-catalog" hidden>Save to catalog</button>
+                                    <button type="button" class="btn ghost btn-sm" id="adm-ws-save-cms-draft" hidden>Save CMS draft</button>
+                                    <button type="button" class="btn ghost btn-sm" data-admin-tab-jump="library">Open Library tab</button>
+                                </div>
+                                <div class="adm-content-graph-wrap adm-ws-graph-wrap">
+                                    <div class="dsa-graph-shell dsa-index-ref">
+                                        <main class="page adm-content-graph-studio">
+                                            <section class="head">
+                                                <div class="head-text">
+                                                    <div class="eyebrow">Workspace</div>
+                                                    <h1>Graph studio</h1>
+                                                    <p>
+                                                        Pick a graph from the list or load the site map. Export / import JSON with the toolbar below.
+                                                    </p>
+                                                </div>
+                                                <nav
+                                                    class="seg dsa-view-tabs dsa-seg-track"
+                                                    role="tablist"
+                                                    id="admin-modeSeg"
+                                                    aria-label="Graph layout"
+                                                >
+                                                    <span class="dsa-seg-thumb" aria-hidden="true"></span>
+                                                    <button type="button" class="dsa-view-btn" role="tab" data-mode="full" aria-selected="false">Full map</button>
+                                                    <button type="button" class="dsa-view-btn" role="tab" data-mode="one" aria-selected="false">One topic</button>
+                                                    <button type="button" class="dsa-view-btn" role="tab" data-mode="custom" aria-selected="false">Customize</button>
+                                                </nav>
+                                            </section>
+                                            <section class="toolbar" aria-label="Graph toolbar">
+                                                <div
+                                                    id="admin-dsa-map-toolbar-host"
+                                                    class="dsa-index-toolbar-shell"
+                                                    data-dsa-index-toolbar-slots="1"
+                                                >
+                                                    <div class="tools-left">
+                                                        <button type="button" class="btn dark" id="admin-dsa-map-export-json" title="Export mind map JSON">
+                                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                                <path d="M12 3v12"></path>
+                                                                <path d="M7 10l5 5 5-5"></path>
+                                                                <path d="M5 21h14"></path>
+                                                            </svg>
+                                                            Export JSON
+                                                        </button>
+                                                        <button type="button" class="btn" id="admin-dsa-map-import-json-trigger" title="Import mind map JSON">
+                                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                                <path d="M12 21V9"></path>
+                                                                <path d="M7 14l5-5 5 5"></path>
+                                                                <path d="M5 3h14"></path>
+                                                            </svg>
+                                                            Import JSON…
+                                                        </button>
+                                                        <input type="file" id="admin-dsa-map-import-file" accept="application/json,.json" hidden aria-hidden="true" />
+                                                        <span class="divider" aria-hidden="true"></span>
+                                                        <div id="admin-dsa-toolbar-expand-slot" class="dsa-toolbar-expand-slot"></div>
+                                                    </div>
+                                                    <div class="tools-right">
+                                                        <span class="hint dsa-graph-map-toolbar-hint">
+                                                            <span class="dot" aria-hidden="true"></span>
+                                                            <span id="admin-dsa-map-toolbar-inline-hint" class="dsa-graph-map-toolbar-hint-text"></span>
+                                                        </span>
+                                                        <div id="admin-dsa-toolbar-zoom-host" class="dsa-toolbar-zoom-host"></div>
+                                                    </div>
+                                                </div>
+                                            </section>
+                                            <section class="graph-card adm-graph-preview">
+                                                <div class="graph-stage">
+                                                    <div id="admin-dsa-hierarchy-root" class="dsa-graph-viewport" aria-label="Mind map workspace"></div>
+                                                </div>
+                                            </section>
+                                        </main>
+                                    </div>
+                                </div>
+                                <p id="adm-ws-msg" class="status" aria-live="polite"></p>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Graph library (member hub — community catalog) -->
@@ -684,17 +683,72 @@
                         </div>
 
                         <div data-adm-panel="library-ui">
-                            <div class="adm-glib-toolbar">
+                            <div class="adm-glib-toolbar adm-glib-toolbar--wrap">
                                 <button type="button" class="btn btn-sm" id="adm-glib-reload">Reload list</button>
                                 <button type="button" class="btn ghost btn-sm" id="adm-glib-new">New graph</button>
                                 <button type="button" class="btn ghost btn-sm" id="adm-glib-import-cms">Fill payload from Content</button>
                                 <button type="button" class="btn ghost btn-sm" id="adm-glib-format-payload">Format payload JSON</button>
+                                <span class="adm-glib-toolbar-gap" aria-hidden="true"></span>
+                                <button type="button" class="btn ghost btn-sm" id="adm-glib-publish" disabled>Publish (public)</button>
+                                <button type="button" class="btn ghost btn-sm" id="adm-glib-unpublish" disabled>Unpublish</button>
+                                <button type="button" class="btn ghost btn-sm adm-btn-danger-outline" id="adm-glib-delete-hard" disabled>Delete permanently…</button>
+                            </div>
+                            <div class="adm-glib-filters adm-subcard">
+                                <div class="adm-glib-filters-grid">
+                                    <div class="adm-field">
+                                        <label for="adm-glib-filter-q">Search</label>
+                                        <input id="adm-glib-filter-q" type="search" placeholder="Title, slug, owner email…" autocomplete="off" />
+                                    </div>
+                                    <div class="adm-field">
+                                        <label for="adm-glib-filter-scope">Scope</label>
+                                        <select id="adm-glib-filter-scope" class="adm-select-enhanced">
+                                            <option value="all">All</option>
+                                            <option value="catalog">Catalog</option>
+                                            <option value="user">User copies</option>
+                                        </select>
+                                    </div>
+                                    <div class="adm-field">
+                                        <label for="adm-glib-filter-vis">Visibility</label>
+                                        <select id="adm-glib-filter-vis" class="adm-select-enhanced">
+                                            <option value="all">Any</option>
+                                            <option value="public">Public</option>
+                                            <option value="unlisted">Unlisted</option>
+                                            <option value="private">Private</option>
+                                        </select>
+                                    </div>
+                                    <div class="adm-field">
+                                        <label for="adm-glib-filter-sort">Sort</label>
+                                        <select id="adm-glib-filter-sort" class="adm-select-enhanced">
+                                            <option value="updated_desc">Updated · newest</option>
+                                            <option value="updated_asc">Updated · oldest</option>
+                                            <option value="title_asc">Title A→Z</option>
+                                            <option value="title_desc">Title Z→A</option>
+                                            <option value="downloads_desc">Downloads</option>
+                                        </select>
+                                    </div>
+                                    <div class="adm-field">
+                                        <label for="adm-glib-filter-dfrom">Updated from</label>
+                                        <input id="adm-glib-filter-dfrom" type="date" />
+                                    </div>
+                                    <div class="adm-field">
+                                        <label for="adm-glib-filter-dto">Updated to</label>
+                                        <input id="adm-glib-filter-dto" type="date" />
+                                    </div>
+                                </div>
+                                <div class="adm-toolbar-row" style="margin-top:10px">
+                                    <button type="button" class="btn btn-sm" id="adm-glib-filter-apply">Apply filters</button>
+                                    <button type="button" class="btn ghost btn-sm" id="adm-glib-filter-reset">Reset</button>
+                                </div>
                             </div>
 
                             <div class="adm-glib-split">
                                 <div class="adm-glib-column adm-glib-column--list">
-                                    <h4 class="adm-glib-h4">Catalog</h4>
-                                    <p class="helper adm-glib-hint">Select a row to edit. <strong>Public</strong> appears in the community tab for all signed-in members.</p>
+                                    <h4 class="adm-glib-h4">Inventory</h4>
+                                    <p class="helper adm-glib-hint">
+                                        Catalog rows are editable. <strong>User</strong> rows are personal copies — view-only here; open in
+                                        <button type="button" class="dsa-udash-text-btn" data-admin-tab-jump="workspace">Workspace</button>
+                                        to inspect the body.
+                                    </p>
                                     <div id="adm-glib-card-host" class="adm-glib-card-host" role="list"></div>
                                 </div>
                                 <div class="adm-glib-column adm-glib-column--form">
@@ -749,6 +803,7 @@
 
                                         <div class="adm-glib-actions">
                                             <button type="button" class="btn" id="adm-glib-save">Save</button>
+                                            <button type="button" class="btn ghost" id="adm-glib-open-workspace">Open in workspace</button>
                                             <button type="button" class="btn ghost" id="adm-glib-delete" disabled>Remove from catalog…</button>
                                         </div>
                                     </div>
@@ -833,12 +888,31 @@
         </section>
         </div>
     </main>
+
+    <div id="adm-confirm-modal" class="adm-modal" hidden>
+        <div class="adm-modal__backdrop" data-adm-confirm-dismiss="1"></div>
+        <div class="adm-modal__box" role="alertdialog" aria-modal="true" aria-labelledby="adm-confirm-title">
+            <h3 class="adm-modal__title" id="adm-confirm-title">Confirm</h3>
+            <p class="adm-modal__body" id="adm-confirm-body"></p>
+            <div class="adm-modal__actions">
+                <button type="button" class="btn ghost" id="adm-confirm-cancel">Cancel</button>
+                <button type="button" class="btn" id="adm-confirm-ok">Continue</button>
+            </div>
+        </div>
+    </div>
+    <div id="adm-global-loader" class="adm-global-loader" hidden aria-live="polite" aria-busy="true">
+        <div class="adm-global-loader__card">
+            <div class="adm-global-loader__orbit" aria-hidden="true"></div>
+            <p class="adm-global-loader__text" id="adm-global-loader-text">Loading…</p>
+        </div>
+    </div>
+
     <script src="./auth/dsa-admin-auth.js?v=6"></script>
     <script src="./auth/dsa-member-roles.js?v=1"></script>
     <script src="./auth/dsa-user-auth.js?v=3"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
     <script src="./script.js?v=31"></script>
-    <script src="./auth/account-admin-panel.js?v=19"></script>
+    <script src="./auth/account-admin-panel.js?v=21"></script>
     <script src="./auth/admin-site-page.js?v=10"></script>
 </body>
 </html>

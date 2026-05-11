@@ -257,3 +257,50 @@ html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-glib-empty {
 html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-glib-actions {
     border-top-color: rgba(148, 163, 184, 0.15);
 }
+
+.dsa-portal-page--admin .adm-glib-toolbar--wrap {
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.dsa-portal-page--admin .adm-glib-toolbar-gap {
+    flex: 1 1 12px;
+    min-width: 8px;
+}
+
+.dsa-portal-page--admin .adm-btn-danger-outline {
+    border-color: rgba(220, 38, 38, 0.45) !important;
+    color: #b91c1c !important;
+}
+
+.dsa-portal-page--admin .adm-glib-filters {
+    margin: 0 0 18px;
+    padding: 16px 18px;
+}
+
+.dsa-portal-page--admin .adm-glib-filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px 14px;
+}
+
+.dsa-portal-page--admin .adm-glib-pick--user {
+    border-style: dashed;
+}
+
+.dsa-portal-page--admin .adm-glib-pick-badge {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: rgba(99, 102, 241, 0.15);
+    color: #4f46e5;
+}
+
+.dsa-portal-page--admin .adm-glib-pick-badge--user {
+    background: rgba(148, 163, 184, 0.3);
+    color: #475569;
+}

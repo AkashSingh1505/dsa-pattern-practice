@@ -56,7 +56,6 @@
         dashboard: "ui",
         site: "ui",
         users: "ui",
-        content: "ui",
         library: "ui",
         system: "ui",
     };
@@ -69,8 +68,17 @@
     let lastUserPayload = null;
     let lastDashboardPayload = null;
     let adminMainTabName = "dashboard";
-    let graphCatalogListCache = [];
-    let graphCatalogSelectedId = null;
+    let graphInventoryCache = [];
+    let glibSelectedRecordType = null;
+    let glibSelectedCatalogId = null;
+    let glibSelectedUserGraphId = null;
+
+    /** Workspace: which graph is loaded in the studio */
+    let wsContext = { mode: "idle" };
+    let wsInventoryCache = [];
+    let wsSelectedRecordType = null;
+    let wsSelectedCatalogId = null;
+    let wsSelectedUserGraphId = null;
 
     const DEFAULT_GLIB_PAYLOAD_TEXT = JSON.stringify(
         [
@@ -101,7 +109,11 @@
         },
         content: {
             title: "Content",
-            blurb: "Published mind map — UI preview or JSON editor, then publish.",
+            blurb: "Site-wide practice map (`dsa`) — edit JSON here and publish. Use Workspace for the visual graph studio.",
+        },
+        workspace: {
+            title: "Graph workspace",
+            blurb: "Full mind-map studio plus inventory search. User-owned graphs are view-only; catalog & site map can be saved.",
         },
         library: {
             title: "Graph library",
@@ -246,7 +258,7 @@
     function activeMainTab(name) {
         const prev = adminMainTabName;
         adminMainTabName = name;
-        if (prev === "content" && name !== "content") {
+        if (prev === "workspace" && name !== "workspace") {
             if (typeof dsaTeardownAdminGraphPreview === "function") {
                 dsaTeardownAdminGraphPreview();
             }
@@ -275,19 +287,10 @@
         const showUi = mode === "ui";
         if (ui) ui.classList.toggle("adm-hidden", !showUi);
         if (json) json.classList.toggle("adm-hidden", showUi);
-        if (section === "content") {
-            if (mode === "json") {
-                if (typeof dsaTeardownAdminGraphPreview === "function") {
-                    dsaTeardownAdminGraphPreview();
-                }
-            } else if (typeof window.__dsaAdminRefreshContentGraph === "function") {
-                window.__dsaAdminRefreshContentGraph(true);
-            }
-        }
         if (section === "library" && mode === "json") {
             const ta = document.getElementById("adm-glib-json");
             if (ta) {
-                ta.value = JSON.stringify({ ok: true, graphs: graphCatalogListCache }, null, 2);
+                ta.value = JSON.stringify({ ok: true, items: graphInventoryCache }, null, 2);
             }
         }
     }
@@ -338,6 +341,71 @@
         }
     }
 
+    let admLoaderDepth = 0;
+    function admShowLoader(msg) {
+        admLoaderDepth += 1;
+        const el = document.getElementById("adm-global-loader");
+        const tx = document.getElementById("adm-global-loader-text");
+        if (tx) {
+            tx.textContent = msg || "Loading…";
+        }
+        if (el) {
+            el.hidden = false;
+        }
+    }
+    function admHideLoader() {
+        admLoaderDepth = Math.max(0, admLoaderDepth - 1);
+        if (admLoaderDepth > 0) {
+            return;
+        }
+        const el = document.getElementById("adm-global-loader");
+        if (el) {
+            el.hidden = true;
+        }
+    }
+
+    function adminConfirm(title, body) {
+        return new Promise(function (resolve) {
+            const wrap = document.getElementById("adm-confirm-modal");
+            if (!wrap) {
+                resolve(window.confirm(String(body || title || "")));
+                return;
+            }
+            const t = document.getElementById("adm-confirm-title");
+            const b = document.getElementById("adm-confirm-body");
+            const cancel = document.getElementById("adm-confirm-cancel");
+            const ok = document.getElementById("adm-confirm-ok");
+            if (t) {
+                t.textContent = title || "Confirm";
+            }
+            if (b) {
+                b.textContent = body || "";
+            }
+            wrap.hidden = false;
+            function done(v) {
+                wrap.hidden = true;
+                cancel.removeEventListener("click", onCancel);
+                ok.removeEventListener("click", onOk);
+                wrap.removeEventListener("click", onBackdrop);
+                resolve(v);
+            }
+            function onCancel() {
+                done(false);
+            }
+            function onOk() {
+                done(true);
+            }
+            function onBackdrop(ev) {
+                if (ev.target === wrap || (ev.target && ev.target.getAttribute("data-adm-confirm-dismiss"))) {
+                    done(false);
+                }
+            }
+            cancel.addEventListener("click", onCancel);
+            ok.addEventListener("click", onOk);
+            wrap.addEventListener("click", onBackdrop);
+        });
+    }
+
     function admGlibVisClass(v) {
         const s = String(v || "").toLowerCase();
         if (s === "public") {
@@ -353,60 +421,199 @@
         setStatus("adm-glib-msg", msg, cls);
     }
 
-    function renderGraphCatalogCards() {
+    function buildGlibInventoryQuery() {
+        const p = new URLSearchParams();
+        const qEl = document.getElementById("adm-glib-filter-q");
+        const sc = document.getElementById("adm-glib-filter-scope");
+        const vi = document.getElementById("adm-glib-filter-vis");
+        const so = document.getElementById("adm-glib-filter-sort");
+        const df = document.getElementById("adm-glib-filter-dfrom");
+        const dt = document.getElementById("adm-glib-filter-dto");
+        if (qEl && qEl.value.trim()) {
+            p.set("q", qEl.value.trim());
+        }
+        p.set("scope", (sc && sc.value) || "all");
+        p.set("visibility", (vi && vi.value) || "all");
+        p.set("sort", (so && so.value) || "updated_desc");
+        p.set("dateField", "updated");
+        if (df && df.value) {
+            p.set("dateFrom", df.value);
+        }
+        if (dt && dt.value) {
+            p.set("dateTo", dt.value);
+        }
+        p.set("limit", "300");
+        return p.toString();
+    }
+
+    function buildWsInventoryQuery() {
+        const p = new URLSearchParams();
+        const qEl = document.getElementById("adm-ws-q");
+        const sc = document.getElementById("adm-ws-scope");
+        const vi = document.getElementById("adm-ws-vis");
+        const uk = document.getElementById("adm-ws-user-kind");
+        const so = document.getElementById("adm-ws-sort");
+        const df = document.getElementById("adm-ws-date-field");
+        const dfrom = document.getElementById("adm-ws-date-from");
+        const dto = document.getElementById("adm-ws-date-to");
+        if (qEl && qEl.value.trim()) {
+            p.set("q", qEl.value.trim());
+        }
+        p.set("scope", (sc && sc.value) || "all");
+        p.set("visibility", (vi && vi.value) || "all");
+        if (uk && uk.value) {
+            p.set("userKind", uk.value);
+        }
+        p.set("sort", (so && so.value) || "updated_desc");
+        p.set("dateField", (df && df.value) || "updated");
+        if (dfrom && dfrom.value) {
+            p.set("dateFrom", dfrom.value);
+        }
+        if (dto && dto.value) {
+            p.set("dateTo", dto.value);
+        }
+        p.set("limit", "300");
+        return p.toString();
+    }
+
+    function isGlibRowSelected(it) {
+        if (!it || !it.id) {
+            return false;
+        }
+        if (it.recordType === "catalog") {
+            return glibSelectedRecordType === "catalog" && glibSelectedCatalogId === it.id;
+        }
+        if (it.recordType === "user_graph") {
+            return glibSelectedRecordType === "user_graph" && glibSelectedUserGraphId === it.id;
+        }
+        return false;
+    }
+
+    function renderGraphInventoryCards() {
         const host = document.getElementById("adm-glib-card-host");
         if (!host) {
             return;
         }
         host.innerHTML = "";
-        if (!graphCatalogListCache.length) {
-            host.innerHTML = '<p class="adm-glib-empty">No catalog graphs yet. Click <b>New graph</b> or paste SQL seeds in D1.</p>';
+        if (!graphInventoryCache.length) {
+            host.innerHTML = '<p class="adm-glib-empty">No graphs match these filters.</p>';
             return;
         }
-        graphCatalogListCache.forEach(function (g) {
-            const id = g.id;
+        graphInventoryCache.forEach(function (g) {
             const btn = document.createElement("button");
             btn.type = "button";
-            btn.className = "adm-glib-pick" + (graphCatalogSelectedId === id ? " is-active" : "");
+            const isUser = g.recordType === "user_graph";
+            btn.className =
+                "adm-glib-pick" +
+                (isGlibRowSelected(g) ? " is-active" : "") +
+                (isUser ? " adm-glib-pick--user" : "");
             btn.setAttribute("role", "listitem");
-            const vis = escapeHtml(String(g.visibility || "public"));
-            const slug = escapeHtml(String(g.slug || ""));
-            const dl = g.download_count != null ? String(g.download_count) : "0";
+            let meta = "";
+            if (isUser) {
+                meta =
+                    '<span class="adm-glib-pick-badge adm-glib-pick-badge--user">User</span>' +
+                    '<span>' +
+                    escapeHtml(String(g.kind || "")) +
+                    "</span>" +
+                    '<span>' +
+                    escapeHtml(String(g.ownerEmail || "")) +
+                    "</span>" +
+                    "<span>Updated " +
+                    escapeHtml(fmtTime(g.updatedAt)) +
+                    "</span>";
+            } else {
+                const vis = escapeHtml(String(g.visibility || "public"));
+                const slug = escapeHtml(String(g.slug || ""));
+                const dl = g.downloadCount != null ? String(g.downloadCount) : "0";
+                meta =
+                    '<span class="adm-glib-pick-badge">Catalog</span><span class="' +
+                    admGlibVisClass(g.visibility) +
+                    '">' +
+                    vis +
+                    "</span><span>" +
+                    slug +
+                    '</span><span>↓ ' +
+                    escapeHtml(dl) +
+                    "</span><span>Updated " +
+                    escapeHtml(fmtTime(g.updatedAt)) +
+                    "</span>";
+            }
             btn.innerHTML =
                 '<div class="adm-glib-pick-title">' +
                 escapeHtml(String(g.title || "Untitled")) +
-                '</div><div class="adm-glib-pick-meta"><span class="' +
-                admGlibVisClass(g.visibility) +
-                '">' +
-                vis +
-                "</span><span>" +
-                slug +
-                '</span><span>↓ ' +
-                escapeHtml(dl) +
-                "</span><span>Updated " +
-                escapeHtml(fmtTime(g.updated_at)) +
-                "</span></div>";
+                '</div><div class="adm-glib-pick-meta">' +
+                meta +
+                "</div>";
             btn.addEventListener("click", function () {
-                void selectGraphCatalogItem(id);
+                void selectGraphInventoryItem(g.recordType, g.id);
             });
             host.appendChild(btn);
         });
     }
 
-    function updateGlibDeleteEnabled() {
-        const del = document.getElementById("adm-glib-delete");
-        const idEl = document.getElementById("adm-glib-edit-id");
-        if (del) {
-            del.disabled = !(idEl && idEl.value.trim());
+    function setGlibFormEditable(editable) {
+        const ids = [
+            "adm-glib-title",
+            "adm-glib-slug-new",
+            "adm-glib-visibility",
+            "adm-glib-description",
+            "adm-glib-accent",
+            "adm-glib-estimated",
+            "adm-glib-difficulty",
+            "adm-glib-tags",
+            "adm-glib-payload",
+        ];
+        ids.forEach(function (id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.disabled = !editable;
+            }
+        });
+        const save = document.getElementById("adm-glib-save");
+        if (save) {
+            save.disabled = !editable;
         }
-        const h = document.getElementById("adm-glib-form-heading");
-        if (h && idEl) {
-            h.textContent = idEl.value.trim() ? "Edit catalog graph" : "New catalog graph";
+        const del = document.getElementById("adm-glib-delete");
+        if (del) {
+            del.disabled = !editable || !(document.getElementById("adm-glib-edit-id") && document.getElementById("adm-glib-edit-id").value.trim());
+        }
+        const pub = document.getElementById("adm-glib-publish");
+        const unpub = document.getElementById("adm-glib-unpublish");
+        const hard = document.getElementById("adm-glib-delete-hard");
+        const visEl = document.getElementById("adm-glib-visibility");
+        const curVis = visEl ? String(visEl.value || "") : "";
+        if (pub) {
+            pub.disabled = !editable || !(document.getElementById("adm-glib-edit-id") && document.getElementById("adm-glib-edit-id").value.trim()) || curVis === "public";
+        }
+        if (unpub) {
+            unpub.disabled = !editable || !(document.getElementById("adm-glib-edit-id") && document.getElementById("adm-glib-edit-id").value.trim()) || curVis !== "public";
+        }
+        if (hard) {
+            hard.disabled = !editable || !(document.getElementById("adm-glib-edit-id") && document.getElementById("adm-glib-edit-id").value.trim());
         }
     }
 
+    function updateGlibDeleteEnabled() {
+        const idEl = document.getElementById("adm-glib-edit-id");
+        const hasCat = !!(idEl && idEl.value.trim());
+        const h = document.getElementById("adm-glib-form-heading");
+        if (glibSelectedRecordType === "user_graph") {
+            if (h) {
+                h.textContent = "User graph (read-only)";
+            }
+            setGlibFormEditable(false);
+            return;
+        }
+        if (h) {
+            h.textContent = hasCat ? "Edit catalog graph" : "New catalog graph";
+        }
+        setGlibFormEditable(true);
+    }
+
     function clearGraphCatalogForm() {
-        graphCatalogSelectedId = null;
+        glibSelectedRecordType = null;
+        glibSelectedCatalogId = null;
+        glibSelectedUserGraphId = null;
         const idEl = document.getElementById("adm-glib-edit-id");
         if (idEl) {
             idEl.value = "";
@@ -447,15 +654,18 @@
         if (pay) {
             pay.value = DEFAULT_GLIB_PAYLOAD_TEXT;
         }
-        renderGraphCatalogCards();
+        setGlibFormEditable(true);
+        renderGraphInventoryCards();
         updateGlibDeleteEnabled();
     }
 
-    function fillGraphCatalogForm(graph) {
+    function fillCatalogGraphForm(graph) {
         if (!graph) {
             return;
         }
-        graphCatalogSelectedId = graph.id;
+        glibSelectedRecordType = "catalog";
+        glibSelectedCatalogId = graph.id;
+        glibSelectedUserGraphId = null;
         const idEl = document.getElementById("adm-glib-edit-id");
         if (idEl) {
             idEl.value = graph.id || "";
@@ -502,43 +712,127 @@
                 pay.value = DEFAULT_GLIB_PAYLOAD_TEXT;
             }
         }
-        renderGraphCatalogCards();
+        setGlibFormEditable(true);
+        renderGraphInventoryCards();
         updateGlibDeleteEnabled();
     }
 
-    async function loadGraphCatalogList() {
-        setGlibStatus("Loading catalog…", "");
+    function fillUserGraphForm(graph) {
+        if (!graph) {
+            return;
+        }
+        glibSelectedRecordType = "user_graph";
+        glibSelectedUserGraphId = graph.id;
+        glibSelectedCatalogId = null;
+        const idEl = document.getElementById("adm-glib-edit-id");
+        if (idEl) {
+            idEl.value = graph.id || "";
+        }
+        const t = document.getElementById("adm-glib-title");
+        if (t) {
+            t.value = graph.title || "";
+        }
+        const vis = document.getElementById("adm-glib-visibility");
+        if (vis) {
+            vis.value = "private";
+        }
+        const desc = document.getElementById("adm-glib-description");
+        if (desc) {
+            desc.value = graph.description || "";
+        }
+        const acc = document.getElementById("adm-glib-accent");
+        if (acc) {
+            acc.value = graph.accentHue != null && graph.accentHue !== "" ? String(graph.accentHue) : "";
+        }
+        const est = document.getElementById("adm-glib-estimated");
+        if (est) {
+            est.value = "";
+        }
+        const diff = document.getElementById("adm-glib-difficulty");
+        if (diff) {
+            diff.value = "";
+        }
+        const tags = document.getElementById("adm-glib-tags");
+        if (tags) {
+            tags.value = graph.kind ? "kind: " + String(graph.kind) : "";
+        }
+        const slugNew = document.getElementById("adm-glib-slug-new");
+        if (slugNew) {
+            slugNew.value = "";
+            slugNew.placeholder = "— (user copy)";
+        }
+        const pay = document.getElementById("adm-glib-payload");
+        if (pay && graph.payload) {
+            try {
+                pay.value = JSON.stringify(graph.payload, null, 2);
+            } catch (e) {
+                pay.value = DEFAULT_GLIB_PAYLOAD_TEXT;
+            }
+        }
+        setGlibFormEditable(false);
+        renderGraphInventoryCards();
+        updateGlibDeleteEnabled();
+    }
+
+    async function loadGraphInventoryList() {
+        setGlibStatus("Loading inventory…", "");
+        admShowLoader("Loading inventory…");
         try {
-            const j = await fetchJson(apiAdmin("graph-catalog"));
-            graphCatalogListCache = j.graphs || [];
+            const qs = buildGlibInventoryQuery();
+            const j = await fetchJson(apiAdmin("graph-inventory") + "?" + qs);
+            graphInventoryCache = j.items || [];
             const ta = document.getElementById("adm-glib-json");
             if (ta && dualMode.library === "json") {
-                ta.value = JSON.stringify({ ok: true, graphs: graphCatalogListCache }, null, 2);
+                ta.value = JSON.stringify({ ok: true, items: graphInventoryCache, limit: j.limit, scope: j.scope }, null, 2);
             }
-            renderGraphCatalogCards();
-            setGlibStatus(graphCatalogListCache.length + " catalog graph(s) loaded.", "ok");
+            renderGraphInventoryCards();
+            setGlibStatus(graphInventoryCache.length + " graph(s) in this view.", "ok");
         } catch (e) {
             setGlibStatus(e.message || "Load failed", "err");
+        } finally {
+            admHideLoader();
         }
     }
 
-    async function selectGraphCatalogItem(id) {
+    async function selectGraphInventoryItem(recordType, id) {
         if (!id) {
             return;
         }
-        graphCatalogSelectedId = id;
-        renderGraphCatalogCards();
+        if (recordType === "catalog") {
+            glibSelectedRecordType = "catalog";
+            glibSelectedCatalogId = id;
+            glibSelectedUserGraphId = null;
+        } else {
+            glibSelectedRecordType = "user_graph";
+            glibSelectedUserGraphId = id;
+            glibSelectedCatalogId = null;
+        }
+        renderGraphInventoryCards();
         setGlibStatus("Loading graph…", "");
+        admShowLoader("Loading graph…");
         try {
-            const j = await fetchJson(apiAdmin("graph-catalog") + "?id=" + encodeURIComponent(id));
-            fillGraphCatalogForm(j.graph);
+            const rtParam = recordType === "catalog" ? "catalog" : "user_graph";
+            const j = await fetchJson(
+                apiAdmin("graph-inventory") +
+                    "?id=" +
+                    encodeURIComponent(id) +
+                    "&recordType=" +
+                    encodeURIComponent(rtParam),
+            );
+            if (j.recordType === "user_graph" || (j.graph && j.graph.locked)) {
+                fillUserGraphForm(j.graph);
+            } else {
+                fillCatalogGraphForm(j.graph);
+            }
             const ta = document.getElementById("adm-glib-json");
             if (ta && dualMode.library === "json") {
                 ta.value = JSON.stringify(j, null, 2);
             }
-            setGlibStatus("Editing: " + (j.graph && j.graph.title ? j.graph.title : id), "ok");
+            setGlibStatus("Loaded: " + (j.graph && j.graph.title ? j.graph.title : id), "ok");
         } catch (e) {
             setGlibStatus(e.message || "Load failed", "err");
+        } finally {
+            admHideLoader();
         }
     }
 
@@ -569,6 +863,10 @@
     }
 
     async function saveGraphCatalogFromForm() {
+        if (glibSelectedRecordType === "user_graph") {
+            setGlibStatus("User-owned graphs are read-only here.", "err");
+            return;
+        }
         const id = (document.getElementById("adm-glib-edit-id") && document.getElementById("adm-glib-edit-id").value) || "";
         const titleEl = document.getElementById("adm-glib-title");
         const title = titleEl ? String(titleEl.value || "").trim() : "";
@@ -641,12 +939,12 @@
                 });
                 setGlibStatus("Created — slug: " + (r.slug || "") + ".", "ok");
                 if (r.id) {
-                    await selectGraphCatalogItem(r.id);
+                    await selectGraphInventoryItem("catalog", r.id);
                 }
             }
-            await loadGraphCatalogList();
-            if (graphCatalogSelectedId) {
-                await selectGraphCatalogItem(graphCatalogSelectedId);
+            await loadGraphInventoryList();
+            if (glibSelectedCatalogId) {
+                await selectGraphInventoryItem("catalog", glibSelectedCatalogId);
             }
         } catch (e) {
             setGlibStatus(e.message || "Save failed", "err");
@@ -654,23 +952,135 @@
     }
 
     async function deleteGraphCatalogFromForm() {
+        if (glibSelectedRecordType === "user_graph") {
+            return;
+        }
         const idEl = document.getElementById("adm-glib-edit-id");
         const id = idEl ? idEl.value.trim() : "";
         if (!id) {
             return;
         }
-        if (!window.confirm("Remove this graph from the catalog? Members keep their downloaded copies; this only hides the source entry.")) {
+        const ok = await adminConfirm(
+            "Remove from catalog?",
+            "This hides the catalog entry. Members keep downloaded copies.",
+        );
+        if (!ok) {
             return;
         }
         setGlibStatus("Removing…", "");
+        admShowLoader("Updating catalog…");
         try {
             await fetchJson(apiAdmin("graph-catalog") + "?id=" + encodeURIComponent(id), { method: "DELETE" });
             clearGraphCatalogForm();
-            await loadGraphCatalogList();
+            await loadGraphInventoryList();
             setGlibStatus("Removed from catalog.", "ok");
         } catch (e) {
             setGlibStatus(e.message || "Delete failed", "err");
+        } finally {
+            admHideLoader();
         }
+    }
+
+    async function admGlibPublish() {
+        if (glibSelectedRecordType !== "catalog") {
+            setGlibStatus("Select a catalog graph first.", "err");
+            return;
+        }
+        const id = (document.getElementById("adm-glib-edit-id") && document.getElementById("adm-glib-edit-id").value) || "";
+        if (!id.trim()) {
+            return;
+        }
+        const ok = await adminConfirm("Publish graph", "Set visibility to public? Members can discover and download this map.");
+        if (!ok) {
+            return;
+        }
+        admShowLoader("Publishing…");
+        try {
+            await fetchJson(apiAdmin("graph-catalog"), {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: id.trim(), visibility: "public" }),
+            });
+            await loadGraphInventoryList();
+            await selectGraphInventoryItem("catalog", id.trim());
+            setGlibStatus("Published (public).", "ok");
+        } catch (e) {
+            setGlibStatus(e.message || "Publish failed", "err");
+        } finally {
+            admHideLoader();
+        }
+    }
+
+    async function admGlibUnpublish() {
+        if (glibSelectedRecordType !== "catalog") {
+            setGlibStatus("Select a catalog graph first.", "err");
+            return;
+        }
+        const id = (document.getElementById("adm-glib-edit-id") && document.getElementById("adm-glib-edit-id").value) || "";
+        if (!id.trim()) {
+            return;
+        }
+        const ok = await adminConfirm("Unpublish graph", "Set visibility to private? It will no longer appear as public in the hub.");
+        if (!ok) {
+            return;
+        }
+        admShowLoader("Updating…");
+        try {
+            await fetchJson(apiAdmin("graph-catalog"), {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: id.trim(), visibility: "private" }),
+            });
+            await loadGraphInventoryList();
+            await selectGraphInventoryItem("catalog", id.trim());
+            setGlibStatus("Set to private.", "ok");
+        } catch (e) {
+            setGlibStatus(e.message || "Unpublish failed", "err");
+        } finally {
+            admHideLoader();
+        }
+    }
+
+    async function admGlibDeleteHard() {
+        if (glibSelectedRecordType !== "catalog") {
+            setGlibStatus("Only catalog graphs can be permanently deleted.", "err");
+            return;
+        }
+        const id = (document.getElementById("adm-glib-edit-id") && document.getElementById("adm-glib-edit-id").value) || "";
+        if (!id.trim()) {
+            return;
+        }
+        const ok = await adminConfirm(
+            "Delete permanently?",
+            "This removes the catalog row from the database. This cannot be undone.",
+        );
+        if (!ok) {
+            return;
+        }
+        admShowLoader("Deleting…");
+        try {
+            await fetchJson(apiAdmin("graph-catalog") + "?id=" + encodeURIComponent(id.trim()) + "&hard=1", {
+                method: "DELETE",
+            });
+            clearGraphCatalogForm();
+            await loadGraphInventoryList();
+            setGlibStatus("Permanently deleted.", "ok");
+        } catch (e) {
+            setGlibStatus(e.message || "Delete failed", "err");
+        } finally {
+            admHideLoader();
+        }
+    }
+
+    async function admGlibOpenWorkspace() {
+        const rt = glibSelectedRecordType;
+        const id = rt === "catalog" ? glibSelectedCatalogId : rt === "user_graph" ? glibSelectedUserGraphId : null;
+        if (!id) {
+            setGlibStatus("Select a graph in the list first.", "err");
+            return;
+        }
+        await openInventoryGraphInWorkspace(rt, id);
+        setGlibStatus("Opened in Workspace tab.", "ok");
     }
 
     async function admGlibImportPayloadFromCms() {
@@ -710,6 +1120,448 @@
         }
     }
 
+    function wsSetMsg(msg, cls) {
+        setStatus("adm-ws-msg", msg, cls);
+    }
+
+    function isWsRowSelected(it) {
+        if (!it || !it.id) {
+            return false;
+        }
+        if (it.recordType === "catalog") {
+            return wsSelectedRecordType === "catalog" && wsSelectedCatalogId === it.id;
+        }
+        if (it.recordType === "user_graph") {
+            return wsSelectedRecordType === "user_graph" && wsSelectedUserGraphId === it.id;
+        }
+        return false;
+    }
+
+    function renderWsInventoryCards() {
+        const host = document.getElementById("adm-ws-list");
+        if (!host) {
+            return;
+        }
+        host.innerHTML = "";
+        if (!wsInventoryCache.length) {
+            host.innerHTML = '<p class="adm-glib-empty">No graphs match these filters.</p>';
+            return;
+        }
+        wsInventoryCache.forEach(function (g) {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            const isUser = g.recordType === "user_graph";
+            btn.className =
+                "adm-glib-pick" +
+                (isWsRowSelected(g) ? " is-active" : "") +
+                (isUser ? " adm-glib-pick--user" : "");
+            btn.setAttribute("role", "listitem");
+            let meta = "";
+            if (isUser) {
+                meta =
+                    '<span class="adm-glib-pick-badge adm-glib-pick-badge--user">User</span>' +
+                    '<span>' +
+                    escapeHtml(String(g.kind || "")) +
+                    "</span>" +
+                    '<span>' +
+                    escapeHtml(String(g.ownerEmail || "")) +
+                    "</span>" +
+                    "<span>Updated " +
+                    escapeHtml(fmtTime(g.updatedAt)) +
+                    "</span>";
+            } else {
+                const vis = escapeHtml(String(g.visibility || "public"));
+                const slug = escapeHtml(String(g.slug || ""));
+                const dl = g.downloadCount != null ? String(g.downloadCount) : "0";
+                meta =
+                    '<span class="adm-glib-pick-badge">Catalog</span><span class="' +
+                    admGlibVisClass(g.visibility) +
+                    '">' +
+                    vis +
+                    "</span><span>" +
+                    slug +
+                    '</span><span>↓ ' +
+                    escapeHtml(dl) +
+                    "</span><span>Updated " +
+                    escapeHtml(fmtTime(g.updatedAt)) +
+                    "</span>";
+            }
+            btn.innerHTML =
+                '<div class="adm-glib-pick-title">' +
+                escapeHtml(String(g.title || "Untitled")) +
+                '</div><div class="adm-glib-pick-meta">' +
+                meta +
+                "</div>";
+            btn.addEventListener("click", function () {
+                void wsSelectInventoryItem(g.recordType, g.id);
+            });
+            host.appendChild(btn);
+        });
+        const metaEl = document.getElementById("adm-ws-list-meta");
+        if (metaEl) {
+            metaEl.textContent = wsInventoryCache.length + " row(s)";
+        }
+    }
+
+    async function loadWsInventoryList() {
+        wsSetMsg("Loading inventory…", "");
+        admShowLoader("Loading workspace list…");
+        try {
+            const qs = buildWsInventoryQuery();
+            const j = await fetchJson(apiAdmin("graph-inventory") + "?" + qs);
+            wsInventoryCache = j.items || [];
+            renderWsInventoryCards();
+            wsSetMsg(wsInventoryCache.length + " graph(s) in this view.", "ok");
+        } catch (e) {
+            wsSetMsg(e.message || "Load failed", "err");
+        } finally {
+            admHideLoader();
+        }
+    }
+
+    function wsRefreshChrome() {
+        const ban = document.getElementById("adm-ws-context-banner");
+        const saveCat = document.getElementById("adm-ws-save-catalog");
+        const saveCms = document.getElementById("adm-ws-save-cms-draft");
+        const mode = wsContext.mode;
+        if (saveCat) {
+            const show = mode === "catalog";
+            saveCat.hidden = !show;
+            saveCat.disabled = !show;
+        }
+        if (saveCms) {
+            const show = mode === "cms";
+            saveCms.hidden = !show;
+            saveCms.disabled = !show;
+        }
+        if (ban) {
+            if (mode === "idle") {
+                ban.hidden = true;
+                ban.textContent = "";
+            } else {
+                ban.hidden = false;
+                let line = "";
+                if (mode === "cms") {
+                    line = "Site map (CMS) — <strong>Save CMS draft</strong> writes the Content draft for <code>dsa</code>.";
+                } else if (mode === "catalog") {
+                    line =
+                        "Catalog graph" +
+                        (wsContext.title ? ": <strong>" + escapeHtml(String(wsContext.title)) + "</strong>" : "") +
+                        " — <strong>Save to catalog</strong> overwrites this entry’s mind map body.";
+                } else if (mode === "user_graph") {
+                    line =
+                        "View-only member copy" +
+                        (wsContext.title ? ": <strong>" + escapeHtml(String(wsContext.title)) + "</strong>" : "") +
+                        " — studio is for inspection only; changes are not saved to the member’s account.";
+                }
+                ban.innerHTML = line;
+            }
+        }
+    }
+
+    async function wsLoadGraphFromInventory(recordType, id) {
+        const rtParam = recordType === "catalog" ? "catalog" : "user_graph";
+        const j = await fetchJson(
+            apiAdmin("graph-inventory") +
+                "?id=" +
+                encodeURIComponent(id) +
+                "&recordType=" +
+                encodeURIComponent(rtParam),
+        );
+        if (!j.graph || !Array.isArray(j.graph.payload)) {
+            throw new Error("Invalid graph payload");
+        }
+        const jsonStr = JSON.stringify(j.graph.payload);
+        if (typeof dsaReloadGraphFromEditorJson !== "function") {
+            throw new Error("Graph studio is not available (script load order).");
+        }
+        const r = dsaReloadGraphFromEditorJson(jsonStr, ADMIN_GRAPH_MOUNT);
+        if (!r.ok) {
+            throw r.error || new Error("Could not render graph");
+        }
+        if (recordType === "catalog") {
+            wsContext = { mode: "catalog", catalogId: id, title: j.graph.title || "" };
+            wsSelectedRecordType = "catalog";
+            wsSelectedCatalogId = id;
+            wsSelectedUserGraphId = null;
+        } else {
+            wsContext = { mode: "user_graph", userGraphId: id, title: j.graph.title || "" };
+            wsSelectedRecordType = "user_graph";
+            wsSelectedUserGraphId = id;
+            wsSelectedCatalogId = null;
+        }
+        renderWsInventoryCards();
+        wsRefreshChrome();
+    }
+
+    async function openInventoryGraphInWorkspace(recordType, id) {
+        if (!id) {
+            return;
+        }
+        activeMainTab("workspace");
+        admShowLoader("Opening graph…");
+        wsSetMsg("Loading…", "");
+        try {
+            await wsLoadGraphFromInventory(recordType, id);
+            wsSetMsg("Graph loaded in the studio.", "ok");
+        } catch (e) {
+            wsSetMsg(e.message || "Open failed", "err");
+        } finally {
+            admHideLoader();
+        }
+    }
+
+    async function wsSelectInventoryItem(recordType, id) {
+        activeMainTab("workspace");
+        admShowLoader("Loading graph…");
+        wsSetMsg("Loading…", "");
+        try {
+            await wsLoadGraphFromInventory(recordType, id);
+            wsSetMsg("Loaded.", "ok");
+        } catch (e) {
+            wsSetMsg(e.message || "Load failed", "err");
+        } finally {
+            admHideLoader();
+        }
+    }
+
+    async function wsLoadCmsIntoViewport() {
+        activeMainTab("workspace");
+        admShowLoader("Loading site map…");
+        wsSetMsg("Loading CMS…", "");
+        try {
+            const d = await fetchJson(apiAdmin("cms") + "?k=" + encodeURIComponent(CMS_KEY));
+            const src =
+                d.draft && d.draft.payload
+                    ? d.draft.payload
+                    : d.published && d.published.payload
+                      ? d.published.payload
+                      : "[]";
+            const text = typeof src === "string" ? src : JSON.stringify(src);
+            const pretty = JSON.stringify(JSON.parse(text || "[]"), null, 2);
+            if (typeof dsaReloadGraphFromEditorJson !== "function") {
+                throw new Error("Graph studio unavailable.");
+            }
+            const r = dsaReloadGraphFromEditorJson(pretty, ADMIN_GRAPH_MOUNT);
+            if (!r.ok) {
+                throw r.error || new Error("Invalid JSON");
+            }
+            wsContext = { mode: "cms", title: "Site map" };
+            wsSelectedRecordType = null;
+            wsSelectedCatalogId = null;
+            wsSelectedUserGraphId = null;
+            renderWsInventoryCards();
+            wsRefreshChrome();
+            wsSetMsg("Loaded site map from Content (" + (d.draft && d.draft.payload ? "draft" : "live") + ").", "ok");
+        } catch (e) {
+            wsSetMsg(e.message || "Load failed", "err");
+        } finally {
+            admHideLoader();
+        }
+    }
+
+    async function wsSaveCatalogFromViewport() {
+        if (wsContext.mode !== "catalog" || !wsContext.catalogId) {
+            wsSetMsg("Load a catalog graph first.", "err");
+            return;
+        }
+        if (typeof dsaGetMindMapHierarchyJsonString !== "function") {
+            wsSetMsg("Graph helpers unavailable.", "err");
+            return;
+        }
+        const ok = await adminConfirm(
+            "Overwrite catalog mind map?",
+            "This replaces the stored JSON body for this catalog entry with the graph currently shown in the studio.",
+        );
+        if (!ok) {
+            return;
+        }
+        let payload;
+        try {
+            payload = JSON.parse(dsaGetMindMapHierarchyJsonString());
+            if (!Array.isArray(payload)) {
+                throw new Error("Mind map must be a JSON array.");
+            }
+        } catch (e) {
+            wsSetMsg(e.message || "Invalid graph JSON", "err");
+            return;
+        }
+        admShowLoader("Saving catalog…");
+        try {
+            await fetchJson(apiAdmin("graph-catalog"), {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: wsContext.catalogId, payload }),
+            });
+            wsSetMsg("Catalog mind map saved.", "ok");
+            await loadWsInventoryList();
+        } catch (e) {
+            wsSetMsg(e.message || "Save failed", "err");
+        } finally {
+            admHideLoader();
+        }
+    }
+
+    async function wsSaveCmsDraftFromViewport() {
+        if (wsContext.mode !== "cms") {
+            wsSetMsg("Load the site map (CMS) first.", "err");
+            return;
+        }
+        if (typeof dsaGetMindMapHierarchyJsonString !== "function") {
+            wsSetMsg("Graph helpers unavailable.", "err");
+            return;
+        }
+        const ok = await adminConfirm(
+            "Save Content draft?",
+            "This overwrites the dsa draft in Content with the graph currently in the studio.",
+        );
+        if (!ok) {
+            return;
+        }
+        let body;
+        try {
+            body = dsaGetMindMapHierarchyJsonString();
+            JSON.parse(body);
+        } catch (e) {
+            wsSetMsg(e.message || "Invalid graph JSON", "err");
+            return;
+        }
+        admShowLoader("Saving draft…");
+        try {
+            await fetchJson(apiAdmin("cms") + "?k=" + encodeURIComponent(CMS_KEY), {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: body,
+            });
+            wsSetMsg("CMS draft saved. Publish from the Content tab when ready.", "ok");
+        } catch (e) {
+            wsSetMsg(e.message || "Save failed", "err");
+        } finally {
+            admHideLoader();
+        }
+    }
+
+    function wireAdminWorkspace() {
+        const pane = document.querySelector('.adm-pane[data-admin-pane="workspace"]');
+        if (!pane || pane.dataset.admWsBound === "1") {
+            return;
+        }
+        if (!document.getElementById("adm-ws-list")) {
+            return;
+        }
+        pane.dataset.admWsBound = "1";
+        document.getElementById("adm-ws-apply") &&
+            document.getElementById("adm-ws-apply").addEventListener("click", function () {
+                void loadWsInventoryList();
+            });
+        document.getElementById("adm-ws-reset-filters") &&
+            document.getElementById("adm-ws-reset-filters").addEventListener("click", function () {
+                const ids = ["adm-ws-q", "adm-ws-date-from", "adm-ws-date-to"];
+                ids.forEach(function (id) {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.value = "";
+                    }
+                });
+                const sc = document.getElementById("adm-ws-scope");
+                if (sc) {
+                    sc.value = "all";
+                }
+                const vi = document.getElementById("adm-ws-vis");
+                if (vi) {
+                    vi.value = "all";
+                }
+                const uk = document.getElementById("adm-ws-user-kind");
+                if (uk) {
+                    uk.value = "all";
+                }
+                const so = document.getElementById("adm-ws-sort");
+                if (so) {
+                    so.value = "updated_desc";
+                }
+                const df = document.getElementById("adm-ws-date-field");
+                if (df) {
+                    df.value = "updated";
+                }
+                void loadWsInventoryList();
+            });
+        document.getElementById("adm-ws-open-cms") &&
+            document.getElementById("adm-ws-open-cms").addEventListener("click", function () {
+                void wsLoadCmsIntoViewport();
+            });
+        document.getElementById("adm-ws-save-catalog") &&
+            document.getElementById("adm-ws-save-catalog").addEventListener("click", function () {
+                void wsSaveCatalogFromViewport();
+            });
+        document.getElementById("adm-ws-save-cms-draft") &&
+            document.getElementById("adm-ws-save-cms-draft").addEventListener("click", function () {
+                void wsSaveCmsDraftFromViewport();
+            });
+
+        const fileIn = document.getElementById("admin-dsa-map-import-file");
+        if (fileIn && fileIn.dataset.admWsFileWired !== "1") {
+            fileIn.dataset.admWsFileWired = "1";
+            fileIn.addEventListener("change", function () {
+                const f = fileIn.files && fileIn.files[0];
+                if (!f) {
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function () {
+                    try {
+                        const text = String(reader.result || "");
+                        const data = JSON.parse(text);
+                        if (!Array.isArray(data)) {
+                            throw new Error("File must be a JSON array of roots.");
+                        }
+                        const pretty = JSON.stringify(data, null, 2);
+                        if (typeof dsaReloadGraphFromEditorJson !== "function") {
+                            throw new Error("Studio unavailable.");
+                        }
+                        const r = dsaReloadGraphFromEditorJson(pretty, ADMIN_GRAPH_MOUNT);
+                        if (!r.ok) {
+                            throw r.error || new Error("Render failed");
+                        }
+                        if (wsContext.mode !== "cms" && wsContext.mode !== "catalog") {
+                            wsContext = { mode: "idle", title: "" };
+                            wsRefreshChrome();
+                        }
+                        wsSetMsg("Imported JSON into the studio (save if needed).", "ok");
+                    } catch (err) {
+                        wsSetMsg(
+                            "Import failed: " + (err && err.message ? err.message : "invalid file"),
+                            "err",
+                        );
+                    }
+                    fileIn.value = "";
+                };
+                reader.readAsText(f);
+            });
+        }
+        const expBtn = document.getElementById("admin-dsa-map-export-json");
+        if (expBtn && expBtn.dataset.admWsExpBound !== "1") {
+            expBtn.dataset.admWsExpBound = "1";
+            expBtn.addEventListener("click", function () {
+                if (typeof dsaExportMindMapHierarchyJson === "function") {
+                    dsaExportMindMapHierarchyJson();
+                    wsSetMsg("Exported JSON.", "ok");
+                }
+            });
+        }
+        const impTrig = document.getElementById("admin-dsa-map-import-json-trigger");
+        if (impTrig && impTrig.dataset.admWsImpTrig !== "1") {
+            impTrig.dataset.admWsImpTrig = "1";
+            impTrig.addEventListener("click", function () {
+                if (fileIn) {
+                    fileIn.click();
+                }
+            });
+        }
+
+        wsContext = { mode: "idle" };
+        wsRefreshChrome();
+    }
+
     function wireGraphLibraryPanel() {
         const root = document.getElementById("cms-editor-section");
         if (!root || root.dataset.admGlibBound === "1") {
@@ -722,7 +1574,39 @@
 
         document.getElementById("adm-glib-reload") &&
             document.getElementById("adm-glib-reload").addEventListener("click", function () {
-                void loadGraphCatalogList();
+                void loadGraphInventoryList();
+            });
+        document.getElementById("adm-glib-filter-apply") &&
+            document.getElementById("adm-glib-filter-apply").addEventListener("click", function () {
+                void loadGraphInventoryList();
+            });
+        document.getElementById("adm-glib-filter-reset") &&
+            document.getElementById("adm-glib-filter-reset").addEventListener("click", function () {
+                const q = document.getElementById("adm-glib-filter-q");
+                if (q) {
+                    q.value = "";
+                }
+                const sc = document.getElementById("adm-glib-filter-scope");
+                if (sc) {
+                    sc.value = "all";
+                }
+                const vi = document.getElementById("adm-glib-filter-vis");
+                if (vi) {
+                    vi.value = "all";
+                }
+                const so = document.getElementById("adm-glib-filter-sort");
+                if (so) {
+                    so.value = "updated_desc";
+                }
+                const df = document.getElementById("adm-glib-filter-dfrom");
+                const dt = document.getElementById("adm-glib-filter-dto");
+                if (df) {
+                    df.value = "";
+                }
+                if (dt) {
+                    dt.value = "";
+                }
+                void loadGraphInventoryList();
             });
         document.getElementById("adm-glib-new") &&
             document.getElementById("adm-glib-new").addEventListener("click", function () {
@@ -744,6 +1628,22 @@
         document.getElementById("adm-glib-delete") &&
             document.getElementById("adm-glib-delete").addEventListener("click", function () {
                 void deleteGraphCatalogFromForm();
+            });
+        document.getElementById("adm-glib-publish") &&
+            document.getElementById("adm-glib-publish").addEventListener("click", function () {
+                void admGlibPublish();
+            });
+        document.getElementById("adm-glib-unpublish") &&
+            document.getElementById("adm-glib-unpublish").addEventListener("click", function () {
+                void admGlibUnpublish();
+            });
+        document.getElementById("adm-glib-delete-hard") &&
+            document.getElementById("adm-glib-delete-hard").addEventListener("click", function () {
+                void admGlibDeleteHard();
+            });
+        document.getElementById("adm-glib-open-workspace") &&
+            document.getElementById("adm-glib-open-workspace").addEventListener("click", function () {
+                void admGlibOpenWorkspace();
             });
         const jc = document.getElementById("adm-glib-json-copy");
         if (jc) {
@@ -1729,120 +2629,16 @@
         if (!editor) return;
 
         let lastCms = null;
-        let graphPreviewTimer = null;
 
-        function contentPaneIsActive() {
-            const pane = document.querySelector('.adm-pane[data-admin-pane="content"]');
-            return !!(pane && !pane.classList.contains("adm-hidden"));
-        }
-
-        function scheduleRefreshContentGraphPreview(force) {
-            if (dualMode.content !== "ui") {
-                return;
-            }
-            if (typeof dsaReloadGraphFromEditorJson !== "function") {
-                return;
-            }
-            const run = function () {
-                graphPreviewTimer = null;
-                if (!contentPaneIsActive()) {
-                    return;
-                }
-                const r = dsaReloadGraphFromEditorJson(editor.value, ADMIN_GRAPH_MOUNT);
-                if (!r.ok && force) {
-                    const em = r.error && r.error.message;
-                    graphSetStatus(status, "Preview: " + (em || "Invalid JSON"), "err");
-                }
-            };
-            if (force) {
-                if (graphPreviewTimer) {
-                    clearTimeout(graphPreviewTimer);
-                    graphPreviewTimer = null;
-                }
-                run();
-                return;
-            }
-            if (graphPreviewTimer) {
-                clearTimeout(graphPreviewTimer);
-            }
-            graphPreviewTimer = setTimeout(run, 350);
-        }
-
-        window.__dsaAdminRefreshContentGraph = scheduleRefreshContentGraphPreview;
+        window.__dsaAdminRefreshContentGraph = function () {
+            /* Visual graph studio lives on the Workspace tab only. */
+        };
 
         function graphSetStatus(el, msg, cls) {
             if (!el) return;
             el.textContent = msg || "";
             el.className = "status" + (cls ? " " + cls : "");
         }
-
-        function wireAdminContentGraphToolbar() {
-            const fileIn =
-                document.getElementById("admin-dsa-map-import-file") ||
-                document.getElementById("adm-mindmap-file-import");
-            const expBtn = document.getElementById("admin-dsa-map-export-json");
-            const impTrig = document.getElementById("admin-dsa-map-import-json-trigger");
-            if (!fileIn || !editor || fileIn.dataset.dsaCmsFileWired === "1") {
-                return;
-            }
-            fileIn.dataset.dsaCmsFileWired = "1";
-
-            fileIn.addEventListener("change", function () {
-                const f = fileIn.files && fileIn.files[0];
-                if (!f) {
-                    return;
-                }
-                const reader = new FileReader();
-                reader.onload = function () {
-                    try {
-                        const text = String(reader.result || "");
-                        const data = JSON.parse(text);
-                        if (!Array.isArray(data)) {
-                            throw new Error("File must contain a JSON array of root topics.");
-                        }
-                        const pretty = JSON.stringify(data, null, 2);
-                        editor.value = pretty;
-                        updateContentSummary(editor, lastCms);
-                        const r =
-                            typeof dsaReloadGraphFromEditorJson === "function"
-                                ? dsaReloadGraphFromEditorJson(pretty, ADMIN_GRAPH_MOUNT)
-                                : { ok: false };
-                        if (r.ok) {
-                            graphSetStatus(status, "Imported mind map — save draft when ready.", "ok");
-                        } else {
-                            const em = r.error && r.error.message;
-                            graphSetStatus(status, "Import failed: " + (em || "Invalid JSON"), "err");
-                        }
-                    } catch (err) {
-                        graphSetStatus(
-                            status,
-                            "Import failed: " + (err && err.message ? err.message : "invalid file"),
-                            "err",
-                        );
-                    }
-                    fileIn.value = "";
-                };
-                reader.readAsText(f);
-            });
-
-            if (expBtn && expBtn.dataset.dsaCmsBound !== "1") {
-                expBtn.dataset.dsaCmsBound = "1";
-                expBtn.addEventListener("click", function () {
-                    if (typeof dsaExportMindMapHierarchyJson === "function") {
-                        dsaExportMindMapHierarchyJson();
-                        graphSetStatus(status, "Exported mind map JSON.", "ok");
-                    }
-                });
-            }
-            if (impTrig && impTrig.dataset.dsaCmsBound !== "1") {
-                impTrig.dataset.dsaCmsBound = "1";
-                impTrig.addEventListener("click", function () {
-                    fileIn.click();
-                });
-            }
-        }
-
-        wireAdminContentGraphToolbar();
 
         async function loadGraphState() {
             graphSetStatus(status, "Loading…", "");
@@ -1864,10 +2660,7 @@
                 const hint = d.draft
                     ? "Draft in progress — live revision " + (d.published && d.published.revision) + "."
                     : "No draft — editor shows live published JSON.";
-                graphSetStatus(status, hint, "ok");
-                if (contentPaneIsActive() && dualMode.content === "ui") {
-                    scheduleRefreshContentGraphPreview(true);
-                }
+                graphSetStatus(status, hint + " Use Workspace for the visual studio.", "ok");
             } catch (e) {
                 graphSetStatus(status, "Load failed: " + e.message, "err");
             }
@@ -1961,9 +2754,6 @@
                 editor.value = JSON.stringify(JSON.parse(editor.value), null, 2);
                 graphSetStatus(status, "Formatted.", "ok");
                 updateContentSummary(editor, lastCms);
-                if (dualMode.content === "ui") {
-                    scheduleRefreshContentGraphPreview(true);
-                }
             } catch (e) {
                 graphSetStatus(status, "Format failed: " + e.message, "err");
             }
@@ -2087,10 +2877,35 @@
                     const cl = document.getElementById("cms-load");
                     if (cl) cl.click();
                 }
+                if (name === "workspace") {
+                    void loadWsInventoryList();
+                }
                 if (name === "library") {
-                    void loadGraphCatalogList();
+                    void loadGraphInventoryList();
                 }
                 if (name === "system") loadSystemUi();
+            });
+        });
+
+        document.querySelectorAll("[data-admin-tab-jump]").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                const name = btn.getAttribute("data-admin-tab-jump");
+                if (!name) {
+                    return;
+                }
+                activeMainTab(name);
+                if (name === "workspace") {
+                    void loadWsInventoryList();
+                }
+                if (name === "library") {
+                    void loadGraphInventoryList();
+                }
+                if (name === "content") {
+                    const cl = document.getElementById("cms-load");
+                    if (cl) {
+                        cl.click();
+                    }
+                }
             });
         });
 
@@ -2110,8 +2925,10 @@
             else if (name === "content") {
                 const cl = document.getElementById("cms-load");
                 if (cl) cl.click();
+            } else if (name === "workspace") {
+                void loadWsInventoryList();
             } else if (name === "library") {
-                void loadGraphCatalogList();
+                void loadGraphInventoryList();
             } else if (name === "system") loadSystemUi();
         }
 
@@ -2240,6 +3057,7 @@
             );
         });
 
+        wireAdminWorkspace();
         wireGraphLibraryPanel();
         activeMainTab("dashboard");
         loadDashboard();

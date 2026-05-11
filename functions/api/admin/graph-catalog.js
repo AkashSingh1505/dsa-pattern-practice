@@ -303,19 +303,27 @@ export async function onRequestDelete(context) {
     if (!id) {
         return json({ error: "id required" }, 400);
     }
+    const hard = String(url.searchParams.get("hard") || "") === "1" || String(url.searchParams.get("permanent") || "") === "1";
     const { db } = gate;
     const now = Math.floor(Date.now() / 1000);
     try {
-        const res = await db
-            .prepare(`UPDATE graph_catalog SET deleted_at = ?, updated_at = ? WHERE id = ? AND deleted_at IS NULL`)
-            .bind(now, now, id)
-            .run();
-        if (!res.meta || res.meta.changes === 0) {
-            return json({ error: "not found" }, 404);
+        if (hard) {
+            const res = await db.prepare(`DELETE FROM graph_catalog WHERE id = ?`).bind(id).run();
+            if (!res.meta || res.meta.changes === 0) {
+                return json({ error: "not found" }, 404);
+            }
+        } else {
+            const res = await db
+                .prepare(`UPDATE graph_catalog SET deleted_at = ?, updated_at = ? WHERE id = ? AND deleted_at IS NULL`)
+                .bind(now, now, id)
+                .run();
+            if (!res.meta || res.meta.changes === 0) {
+                return json({ error: "not found" }, 404);
+            }
         }
     } catch (e) {
         console.error("admin graph-catalog delete", e);
         return json({ error: "server error" }, 500);
     }
-    return json({ ok: true });
+    return json({ ok: true, hard });
 }

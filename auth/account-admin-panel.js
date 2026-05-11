@@ -2610,7 +2610,10 @@
                     meta: "site_user_features_v1",
                 }),
             });
-            setStatus("adm-site-features-msg", "Saved. KV list and matrix refreshed from server. Visitors pick up changes within ~30–60s (CDN cache).", "ok");
+            if (typeof window.dsaNotifySiteFeaturesChanged === "function") {
+                window.dsaNotifySiteFeaturesChanged();
+            }
+            setStatus("adm-site-features-msg", "Saved. KV list and matrix refreshed from server. Other open tabs pick up flags immediately.", "ok");
             await loadKvUi();
         } catch (e) {
             setStatus("adm-site-features-msg", e.message, "err");
@@ -2636,6 +2639,9 @@
                     meta: "site_user_features_v1",
                 }),
             });
+            if (typeof window.dsaNotifySiteFeaturesChanged === "function") {
+                window.dsaNotifySiteFeaturesChanged();
+            }
             setStatus("adm-site-features-msg", "Defaults saved. Matrix will refresh from server.", "ok");
             await loadKvUi();
         } catch (e) {

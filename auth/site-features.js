@@ -1,10 +1,13 @@
 /**
  * Fetches public GET /api/site-features and exposes helpers for gating UI site-wide.
+ * Merge rules mirror functions/_lib/site-user-features.js so DB-backed flags apply consistently.
  * Load before script.js (index) and before portal scripts that need gating.
  */
 (function () {
     var readyPromise = null;
     var cache = null;
+    var SNAP_KEY = "dsa_sf_snap_v1";
+    var BC_NAME = "dsa_site_features_v1";
 
     function defaultsAllOn() {
         return {
@@ -34,41 +37,136 @@
         };
     }
 
-    function mergeFromResponse(f) {
-        var d = defaultsAllOn();
-        if (!f || typeof f !== "object") {
-            return d;
+    /**
+     * Same semantics as mergeSiteUserFeaturesFromKv (object form of merged KV).
+     * @param {Record<string, {enabled?:boolean,visible?:boolean}>|null|undefined} parsed
+     */
+    function mergeFeaturesPayload(parsed) {
+        var defs = defaultsAllOn();
+        var out = {};
+        Object.keys(defs).forEach(function (k) {
+            out[k] = { enabled: !!defs[k].enabled, visible: !!defs[k].visible };
+        });
+        if (!parsed || typeof parsed !== "object") {
+            return applyLegacyOAuthMigration(out, {});
         }
-        Object.keys(d).forEach(function (k) {
-            var row = f[k];
-            if (row && typeof row === "object") {
-                if (typeof row.enabled === "boolean") {
-                    d[k].enabled = row.enabled;
-                }
-                if (typeof row.visible === "boolean") {
-                    d[k].visible = row.visible;
-                }
+        Object.keys(defs).forEach(function (key) {
+            var row = parsed[key];
+            if (!row || typeof row !== "object") {
+                return;
+            }
+            if (typeof row.enabled === "boolean") {
+                out[key].enabled = row.enabled;
+            }
+            if (typeof row.visible === "boolean") {
+                out[key].visible = row.visible;
             }
         });
-        /* Legacy KV used a single social_oauth_ui row for both providers */
-        var leg = f && f.social_oauth_ui;
-        if (leg && typeof leg === "object") {
-            var le = leg.enabled !== false;
-            var lv = leg.visible !== false;
-            if (!f.social_oauth_google || typeof f.social_oauth_google !== "object") {
-                d.social_oauth_google = { enabled: le, visible: lv };
+        Object.keys(parsed).forEach(function (key) {
+            if (defs[key]) {
+                return;
             }
-            if (!f.social_oauth_apple || typeof f.social_oauth_apple !== "object") {
-                d.social_oauth_apple = { enabled: le, visible: lv };
+            var row = parsed[key];
+            if (!row || typeof row !== "object") {
+                return;
+            }
+            out[key] = { enabled: true, visible: true };
+            if (typeof row.enabled === "boolean") {
+                out[key].enabled = row.enabled;
+            }
+            if (typeof row.visible === "boolean") {
+                out[key].visible = row.visible;
+            }
+        });
+        return applyLegacyOAuthMigration(out, parsed);
+    }
+
+    function applyLegacyOAuthMigration(out, parsed) {
+        var legacy = parsed.social_oauth_ui;
+        if (legacy && typeof legacy === "object") {
+            var le = legacy.enabled !== false;
+            var lv = legacy.visible !== false;
+            var hasG = parsed.social_oauth_google && typeof parsed.social_oauth_google === "object";
+            var hasA = parsed.social_oauth_apple && typeof parsed.social_oauth_apple === "object";
+            if (!hasG && out.social_oauth_google) {
+                out.social_oauth_google = { enabled: le, visible: lv };
+            }
+            if (!hasA && out.social_oauth_apple) {
+                out.social_oauth_apple = { enabled: le, visible: lv };
             }
         }
-        return d;
+        return out;
+    }
+
+    function persistSnapshot(features) {
+        try {
+            localStorage.setItem(
+                SNAP_KEY,
+                JSON.stringify({ savedAt: Date.now(), features: features }),
+            );
+        } catch (e) {}
+    }
+
+    function readSnapshotFeatures() {
+        try {
+            var raw = localStorage.getItem(SNAP_KEY);
+            if (!raw) {
+                return null;
+            }
+            var o = JSON.parse(raw);
+            return o && o.features && typeof o.features === "object" ? o.features : null;
+        } catch (e) {
+            return null;
+        }
     }
 
     function dispatchReady(detail) {
         try {
             document.dispatchEvent(new CustomEvent("dsa-site-features-ready", { detail: detail }));
         } catch (e) {}
+    }
+
+    function commitCache(merged) {
+        cache = merged;
+        window.__dsaSiteFeatures = cache;
+        persistSnapshot(cache);
+        dispatchReady(cache);
+        return cache;
+    }
+
+    function fetchSiteFeaturesOnce() {
+        var sfUrl = new URL("api/site-features", document.baseURI);
+        sfUrl.searchParams.set("_", String(Date.now()));
+        return fetch(sfUrl.href, {
+            credentials: "same-origin",
+            cache: "no-store",
+            headers: {
+                Accept: "application/json",
+                "Cache-Control": "no-cache",
+                Pragma: "no-cache",
+            },
+        }).then(function (r) {
+            if (!r.ok) {
+                throw new Error("site-features HTTP " + r.status);
+            }
+            return r.json();
+        });
+    }
+
+    function fetchSiteFeaturesWithRetries(attempt) {
+        attempt = attempt || 0;
+        return fetchSiteFeaturesOnce().catch(function (err) {
+            if (attempt >= 2) {
+                throw err;
+            }
+            return new Promise(function (resolve, reject) {
+                setTimeout(function () {
+                    fetchSiteFeaturesWithRetries(attempt + 1)
+                        .then(resolve)
+                        .catch(reject);
+                }, 320 * (attempt + 1));
+            });
+        });
     }
 
     /**
@@ -87,33 +185,18 @@
         if (readyPromise) {
             return readyPromise;
         }
-        var sfUrl = new URL("api/site-features", document.baseURI);
-        sfUrl.searchParams.set("_", String(Date.now()));
-        readyPromise = fetch(sfUrl.href, {
-            credentials: "same-origin",
-            cache: "no-store",
-            headers: {
-                Accept: "application/json",
-                "Cache-Control": "no-cache",
-                Pragma: "no-cache",
-            },
-        })
-            .then(function (r) {
-                return r.json().catch(function () {
-                    return {};
-                });
-            })
+        readyPromise = fetchSiteFeaturesWithRetries(0)
             .then(function (j) {
-                cache = mergeFromResponse(j && j.features);
-                window.__dsaSiteFeatures = cache;
-                dispatchReady(cache);
-                return cache;
+                var feat = j && (j.features || (j.data && j.data.features));
+                if (!feat || typeof feat !== "object") {
+                    throw new Error("site-features: missing features object");
+                }
+                return commitCache(mergeFeaturesPayload(feat));
             })
             .catch(function () {
-                cache = defaultsAllOn();
-                window.__dsaSiteFeatures = cache;
-                dispatchReady(cache);
-                return cache;
+                var snap = readSnapshotFeatures();
+                var merged = mergeFeaturesPayload(snap || {});
+                return commitCache(merged);
             })
             .finally(function () {
                 readyPromise = null;
@@ -152,11 +235,38 @@
         return state(id).enabled !== false;
     }
 
+    /** Called after admin saves site_user_features so all tabs reload flags from D1. */
+    function dsaNotifySiteFeaturesChanged() {
+        try {
+            localStorage.setItem("dsa_sf_rev", String(Date.now()));
+        } catch (e) {}
+        try {
+            var bc = new BroadcastChannel(BC_NAME);
+            bc.postMessage({ bump: true });
+            bc.close();
+        } catch (e) {}
+        dsaRefreshSiteFeatures().catch(function () {});
+    }
+
     window.dsaEnsureSiteFeaturesLoaded = dsaEnsureSiteFeaturesLoaded;
     window.dsaRefreshSiteFeatures = dsaRefreshSiteFeatures;
     window.dsaSiteFeatureUse = dsaSiteFeatureUse;
     window.dsaSiteFeatureVisible = dsaSiteFeatureVisible;
     window.dsaSiteFeatureEnabled = dsaSiteFeatureEnabled;
+    window.dsaNotifySiteFeaturesChanged = dsaNotifySiteFeaturesChanged;
+
+    try {
+        var bcListen = new BroadcastChannel(BC_NAME);
+        bcListen.onmessage = function () {
+            dsaRefreshSiteFeatures().catch(function () {});
+        };
+    } catch (e) {}
+
+    window.addEventListener("storage", function (ev) {
+        if (ev.key === "dsa_sf_rev") {
+            dsaRefreshSiteFeatures().catch(function () {});
+        }
+    });
 
     /** Refetch when the tab is foregrounded so admin Site settings show up without a hard reload. */
     (function attachVisibilityRefetch() {
@@ -176,4 +286,8 @@
             }
         });
     })();
+
+    try {
+        dsaEnsureSiteFeaturesLoaded().catch(function () {});
+    } catch (e) {}
 })();

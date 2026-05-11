@@ -66,6 +66,22 @@ export function mergeSiteUserFeaturesFromKv(v) {
             out[key].visible = row.visible;
         }
     }
+    for (const key of Object.keys(parsed)) {
+        if (Object.prototype.hasOwnProperty.call(defs, key)) {
+            continue;
+        }
+        const row = parsed[key];
+        if (!row || typeof row !== "object") {
+            continue;
+        }
+        out[key] = { enabled: true, visible: true };
+        if (typeof row.enabled === "boolean") {
+            out[key].enabled = row.enabled;
+        }
+        if (typeof row.visible === "boolean") {
+            out[key].visible = row.visible;
+        }
+    }
     const legacy = parsed.social_oauth_ui;
     if (legacy && typeof legacy === "object") {
         const le = legacy.enabled !== false;

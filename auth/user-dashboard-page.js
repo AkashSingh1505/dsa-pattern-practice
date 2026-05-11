@@ -466,25 +466,19 @@
                 panel.classList.toggle("is-site-disabled", showShade);
             });
 
-            var overviewPanel = document.getElementById("panel-overview");
-            if (overviewPanel) {
-                var overviewShown = siteVisible("sub_overview_stats");
-                overviewPanel.hidden = !overviewShown;
-                overviewPanel.setAttribute("aria-hidden", overviewShown ? "false" : "true");
-                if (!overviewShown && overviewPanel.classList.contains("is-active")) {
+            Object.keys(PANEL_NAV_SITE_KEY).forEach(function (pid) {
+                var key = PANEL_NAV_SITE_KEY[pid];
+                var panel = document.getElementById("panel-" + pid);
+                if (!key || !panel) {
+                    return;
+                }
+                var shown = siteVisible(key);
+                panel.hidden = !shown;
+                panel.setAttribute("aria-hidden", shown ? "false" : "true");
+                if (!shown && panel.classList.contains("is-active")) {
                     showPanel("graph");
                 }
-            }
-
-            var libraryPanel = document.getElementById("panel-library");
-            if (libraryPanel) {
-                var libShown = siteVisible("sub_graph_library");
-                libraryPanel.hidden = !libShown;
-                libraryPanel.setAttribute("aria-hidden", libShown ? "false" : "true");
-                if (!libShown && libraryPanel.classList.contains("is-active")) {
-                    showPanel("graph");
-                }
-            }
+            });
 
             document.querySelectorAll(".dsa-udash-nav-btn[data-panel], .dsa-udash-mnav button[data-panel]").forEach(function (btn) {
                 var pid = btn.getAttribute("data-panel");

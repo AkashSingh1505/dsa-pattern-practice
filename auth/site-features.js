@@ -52,19 +52,38 @@
         return d;
     }
 
+    function dispatchReady(detail) {
+        try {
+            document.dispatchEvent(new CustomEvent("dsa-site-features-ready", { detail: detail }));
+        } catch (e) {}
+    }
+
     /**
+     * Fetch merged flags from GET /api/site-features (no HTTP cache / CDN stale reads).
+     * @param {boolean} [forceRefresh] When true, drop in-memory cache and fetch again (e.g. after admin changes).
      * @returns {Promise<Record<string, {enabled:boolean,visible:boolean}>>}
      */
-    function dsaEnsureSiteFeaturesLoaded() {
+    function dsaEnsureSiteFeaturesLoaded(forceRefresh) {
+        if (forceRefresh) {
+            cache = null;
+            readyPromise = null;
+        }
         if (cache) {
             return Promise.resolve(cache);
         }
         if (readyPromise) {
             return readyPromise;
         }
-        readyPromise = fetch(new URL("api/site-features", document.baseURI).href, {
+        var sfUrl = new URL("api/site-features", document.baseURI);
+        sfUrl.searchParams.set("_", String(Date.now()));
+        readyPromise = fetch(sfUrl.href, {
             credentials: "same-origin",
-            headers: { Accept: "application/json" },
+            cache: "no-store",
+            headers: {
+                Accept: "application/json",
+                "Cache-Control": "no-cache",
+                Pragma: "no-cache",
+            },
         })
             .then(function (r) {
                 return r.json().catch(function () {
@@ -74,20 +93,24 @@
             .then(function (j) {
                 cache = mergeFromResponse(j && j.features);
                 window.__dsaSiteFeatures = cache;
-                try {
-                    document.dispatchEvent(new CustomEvent("dsa-site-features-ready", { detail: cache }));
-                } catch (e) {}
+                dispatchReady(cache);
                 return cache;
             })
             .catch(function () {
                 cache = defaultsAllOn();
                 window.__dsaSiteFeatures = cache;
-                try {
-                    document.dispatchEvent(new CustomEvent("dsa-site-features-ready", { detail: cache }));
-                } catch (e) {}
+                dispatchReady(cache);
                 return cache;
+            })
+            .finally(function () {
+                readyPromise = null;
             });
         return readyPromise;
+    }
+
+    /** Invalidate cache and refetch (after visibility change or admin KV updates). */
+    function dsaRefreshSiteFeatures() {
+        return dsaEnsureSiteFeaturesLoaded(true);
     }
 
     function state(id) {
@@ -117,7 +140,27 @@
     }
 
     window.dsaEnsureSiteFeaturesLoaded = dsaEnsureSiteFeaturesLoaded;
+    window.dsaRefreshSiteFeatures = dsaRefreshSiteFeatures;
     window.dsaSiteFeatureUse = dsaSiteFeatureUse;
     window.dsaSiteFeatureVisible = dsaSiteFeatureVisible;
     window.dsaSiteFeatureEnabled = dsaSiteFeatureEnabled;
+
+    /** Refetch when the tab is foregrounded so admin Site settings show up without a hard reload. */
+    (function attachVisibilityRefetch() {
+        var tm = null;
+        document.addEventListener("visibilitychange", function () {
+            if (document.visibilityState !== "visible") {
+                return;
+            }
+            clearTimeout(tm);
+            tm = setTimeout(function () {
+                dsaRefreshSiteFeatures().catch(function () {});
+            }, 350);
+        });
+        window.addEventListener("pageshow", function (ev) {
+            if (ev.persisted) {
+                dsaRefreshSiteFeatures().catch(function () {});
+            }
+        });
+    })();
 })();

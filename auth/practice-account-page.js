@@ -7,10 +7,6 @@
     }
 
     async function boot() {
-        if (typeof dsaEnsureSiteFeaturesLoaded === "function") {
-            await dsaEnsureSiteFeaturesLoaded();
-        }
-
         const titleEl = document.getElementById("title");
         const helperEl = document.getElementById("helper");
         const switcherEl = document.getElementById("switcher");
@@ -31,25 +27,30 @@
             }
             var alt = document.querySelector("#portal-practice-forms .alt");
             var orEl = document.querySelector("#portal-practice-forms .or");
-            if (!dsaSiteFeatureUse("social_oauth_ui")) {
-                if (alt) {
-                    alt.hidden = true;
-                }
-                if (orEl) {
-                    orEl.hidden = true;
-                }
+            var oauthOn = dsaSiteFeatureUse("social_oauth_ui");
+            if (alt) {
+                alt.hidden = !oauthOn;
+            }
+            if (orEl) {
+                orEl.hidden = !oauthOn;
             }
             var adm = document.querySelector(".account-site-admin-foot");
-            if (adm && !dsaSiteFeatureUse("site_admin_link")) {
-                adm.hidden = true;
+            if (adm) {
+                adm.hidden = !dsaSiteFeatureUse("site_admin_link");
             }
             var dash = document.querySelector('a[href*="user-dashboard.html"]');
-            if (dash && !dsaSiteFeatureUse("member_dashboard")) {
-                dash.hidden = true;
-                dash.style.display = "none";
+            if (dash) {
+                var dashOn = dsaSiteFeatureUse("member_dashboard");
+                dash.hidden = !dashOn;
+                dash.style.display = dashOn ? "" : "none";
             }
         }
 
+        document.addEventListener("dsa-site-features-ready", applyAccountFeatureChrome);
+
+        if (typeof dsaEnsureSiteFeaturesLoaded === "function") {
+            await dsaEnsureSiteFeaturesLoaded();
+        }
         applyAccountFeatureChrome();
 
         const signedIn = typeof dsaIsPracticeUser === "function" && dsaIsPracticeUser();

@@ -11,7 +11,8 @@ function json(body, status = 200, extraHeaders = {}) {
         status,
         headers: {
             "Content-Type": "application/json",
-            "Cache-Control": "public, max-age=30, s-maxage=60",
+            /* Avoid CDN/browser serving stale flags after admin KV updates */
+            "Cache-Control": "private, max-age=0, must-revalidate",
             ...extraHeaders,
         },
     });

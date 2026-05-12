@@ -1387,7 +1387,8 @@ html.dsa-udash-html,
 .dsa-glib-grid {
     display: grid;
     grid-template-columns: repeat(1, minmax(0, 1fr));
-    gap: 28px;
+    column-gap: 24px;
+    row-gap: 36px;
 }
 @media (min-width: 768px) {
     .dsa-glib-grid {
@@ -1470,6 +1471,13 @@ html.dsa-udash-html,
     align-items: center;
     gap: 8px;
 }
+.dsa-glib-preview-visibility {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+}
 .dsa-glib-badge {
     padding: 4px 8px;
     border-radius: 6px;
@@ -1480,6 +1488,9 @@ html.dsa-udash-html,
     color: #fff;
     background: rgba(255, 255, 255, 0.18);
     backdrop-filter: blur(10px);
+}
+.dsa-glib-badge--visibility {
+    background: rgba(255, 255, 255, 0.15);
 }
 .dsa-glib-preview-meta {
     position: absolute;

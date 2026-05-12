@@ -280,7 +280,8 @@
                 visualVariant(g.accentHue, idx) +
                 '">' +
                 graphSvgMarkup(visualIdx) +
-                '<div class="dsa-glib-preview-badges"><span class="dsa-glib-badge">Community</span><span class="dsa-glib-badge">Graph</span></div>' +
+                '<div class="dsa-glib-preview-badges"><span class="dsa-glib-badge">Community</span></div>' +
+                '<div class="dsa-glib-preview-visibility"><span class="dsa-glib-badge dsa-glib-badge--visibility">Public</span></div>' +
                 '<div class="dsa-glib-preview-meta">' +
                 escapeHtml(stats.previewMeta) +
                 "</div>" +
@@ -339,6 +340,10 @@
         return "Created";
     }
 
+    function visibilityLabel(v) {
+        return String(v || "private").toLowerCase() === "public" ? "Public" : "Private";
+    }
+
     function renderMineGrid(host) {
         host.innerHTML = "";
         var list = state.mine.filter(function (g) {
@@ -362,15 +367,13 @@
                 '">' +
                 escapeHtml(kindLabel(g.kind)) +
                 "</span>";
-            var tag2 =
-                '<span class="dsa-glib-badge">' +
-                escapeHtml(g.kind === "shared" ? "Member" : g.kind === "downloaded" ? "Graph" : "Private") +
-                "</span>";
             var desc =
                 g.description ||
                 (g.kind === "shared"
                     ? "Shared with you — open it in the graph workspace or pass it to another member."
                     : "Your copy — open in the graph workspace to study or edit.");
+            var visibility = visibilityLabel(g.visibility);
+            var nextVisibility = visibility === "Public" ? "private" : "public";
             card.innerHTML =
                 '<div class="dsa-glib-preview ' +
                 visualVariant(g.accentHue, idx + 1) +
@@ -378,8 +381,10 @@
                 graphSvgMarkup(visualIdx) +
                 '<div class="dsa-glib-preview-badges">' +
                 pill +
-                tag2 +
                 "</div>" +
+                '<div class="dsa-glib-preview-visibility"><span class="dsa-glib-badge dsa-glib-badge--visibility">' +
+                escapeHtml(visibility) +
+                "</span></div>" +
                 '<div class="dsa-glib-preview-meta">' +
                 escapeHtml(stats.previewMeta) +
                 "</div>" +
@@ -396,6 +401,13 @@
                 '<button type="button" class="dsa-glib-card-menu-item dsa-glib-menu-open" data-id="' +
                 escapeHtml(g.id) +
                 '">Open in workspace</button>' +
+                '<button type="button" class="dsa-glib-card-menu-item dsa-glib-menu-publish" data-id="' +
+                escapeHtml(g.id) +
+                '" data-visibility="' +
+                escapeHtml(nextVisibility) +
+                '">' +
+                escapeHtml(visibility === "Public" ? "Make private" : "Publish") +
+                "</button>" +
                 '<button type="button" class="dsa-glib-card-menu-item dsa-glib-menu-share" data-id="' +
                 escapeHtml(g.id) +
                 '">Share with member</button>' +
@@ -441,7 +453,9 @@
 
     async function refreshMine() {
         var j = await fetchJson("api/graph-library/mine", { method: "GET" });
-        state.mine = j.graphs || [];
+        state.mine = (j.graphs || []).filter(function (g) {
+            return g && (g.kind === "created" || g.kind === "downloaded" || g.kind === "shared");
+        });
         var host = document.getElementById("udash-glib-mine-grid");
         if (host) {
             renderMineGrid(host);
@@ -645,6 +659,30 @@
         }
     }
 
+    async function setMineVisibility(id, visibility) {
+        var vis = String(visibility || "").toLowerCase() === "public" ? "public" : "private";
+        var ok = await confirmDialog(
+            vis === "public" ? "Publish this graph?" : "Make this graph private?",
+            vis === "public"
+                ? "This will mark your graph as public."
+                : "This will mark your graph as private.",
+        );
+        if (!ok) {
+            return;
+        }
+        try {
+            await fetchJson("api/graph-library/mine-detail?id=" + encodeURIComponent(id), {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ visibility: vis }),
+            });
+            toast(vis === "public" ? "Graph published" : "Graph is now private");
+            await refreshMine();
+        } catch (e) {
+            toast((e && e.message) || "Visibility update failed");
+        }
+    }
+
     function createModalElements() {
         return {
             wrap: document.getElementById("udash-glib-create-modal"),
@@ -820,6 +858,7 @@
                 var sh = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-share");
                 var crt = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-create-card");
                 var menuOpen = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-open");
+                var menuPublish = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-publish");
                 var menuShare = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-share");
                 var menuDelete = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-delete");
                 if (op) {
@@ -831,6 +870,9 @@
                 } else if (menuOpen) {
                     closeMenuFromNode(menuOpen);
                     openMineCopy(menuOpen.getAttribute("data-id"));
+                } else if (menuPublish) {
+                    closeMenuFromNode(menuPublish);
+                    setMineVisibility(menuPublish.getAttribute("data-id"), menuPublish.getAttribute("data-visibility"));
                 } else if (menuShare) {
                     closeMenuFromNode(menuShare);
                     shareMine(menuShare.getAttribute("data-id"));

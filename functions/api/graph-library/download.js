@@ -64,8 +64,8 @@ export async function onRequestPost(context) {
         await db.batch([
             db
                 .prepare(
-                    `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, shared_from_user_id, created_at, updated_at, deleted_at)
-                     VALUES (?, ?, ?, 'downloaded', ?, ?, ?, ?, NULL, ?, ?, NULL)`,
+                    `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, visibility, shared_from_user_id, created_at, updated_at, deleted_at)
+                     VALUES (?, ?, ?, 'downloaded', ?, ?, ?, ?, 'private', NULL, ?, ?, NULL)`,
                 )
                 .bind(copyId, userId, catalogId, title, desc, payloadStr, accent, now, now),
             db
@@ -103,6 +103,7 @@ export async function onRequestPost(context) {
             createdAt: now,
             updatedAt: now,
             accentHue: accent,
+            visibility: "private",
         },
         stats: {
             firstDownloadByThisUser,

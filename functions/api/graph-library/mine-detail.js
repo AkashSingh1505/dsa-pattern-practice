@@ -17,7 +17,7 @@ export async function onRequestGet(context) {
     try {
         row = await db
             .prepare(
-                `SELECT id, source_catalog_id, kind, title, description, payload_json, accent_hue, shared_from_user_id, created_at, updated_at
+                `SELECT id, source_catalog_id, kind, title, description, payload_json, accent_hue, visibility, shared_from_user_id, created_at, updated_at
                  FROM user_graphs WHERE id = ? AND owner_user_id = ? AND deleted_at IS NULL`,
             )
             .bind(id, userId)
@@ -47,6 +47,7 @@ export async function onRequestGet(context) {
             title: row.title,
             description: row.description || "",
             accentHue: row.accent_hue,
+            visibility: String(row.visibility || "private"),
             sharedFromUserId: row.shared_from_user_id,
             createdAt: row.created_at,
             updatedAt: row.updated_at,
@@ -99,6 +100,14 @@ export async function onRequestPut(context) {
     if (typeof body.description === "string") {
         updates.push("description = ?");
         binds.push(body.description.trim());
+    }
+    if (typeof body.visibility === "string") {
+        const vis = body.visibility.trim().toLowerCase();
+        if (vis !== "private" && vis !== "public") {
+            return json({ error: "visibility must be private or public" }, 400);
+        }
+        updates.push("visibility = ?");
+        binds.push(vis);
     }
     if (body.payload != null) {
         let text;

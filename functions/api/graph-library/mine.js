@@ -23,7 +23,7 @@ export async function onRequestGet(context) {
     try {
         rows = await db
             .prepare(
-                `SELECT g.id, g.source_catalog_id, g.kind, g.title, g.description, g.accent_hue, g.shared_from_user_id,
+                `SELECT g.id, g.source_catalog_id, g.kind, g.title, g.description, g.accent_hue, g.visibility, g.shared_from_user_id,
                         g.created_at, g.updated_at,
                         pu.email AS shared_from_email, up.display_name AS shared_from_display,
                         c.download_count AS source_download_count,
@@ -37,6 +37,15 @@ export async function onRequestGet(context) {
                  LEFT JOIN user_profiles up ON up.user_id = pu.id
                  LEFT JOIN graph_catalog c ON c.id = g.source_catalog_id
                  WHERE g.owner_user_id = ? AND g.deleted_at IS NULL
+                   AND (
+                        g.kind <> 'downloaded'
+                        OR EXISTS (
+                            SELECT 1
+                            FROM graph_catalog_downloads gcd_self
+                            WHERE gcd_self.catalog_id = g.source_catalog_id
+                              AND gcd_self.user_id = g.owner_user_id
+                        )
+                   )
                  ORDER BY g.updated_at DESC`,
             )
             .bind(userId)
@@ -56,6 +65,7 @@ export async function onRequestGet(context) {
             title: r.title,
             description: r.description || "",
             accentHue: r.accent_hue,
+            visibility: String(r.visibility || "private"),
             downloadCount: Number(r.source_download_count || 0) || 0,
             uniqueDownloaders: Number(r.source_unique_downloaders || 0) || 0,
             createdAt: r.created_at,
@@ -99,8 +109,8 @@ export async function onRequestPost(context) {
     try {
         await db
             .prepare(
-                `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, shared_from_user_id, created_at, updated_at, deleted_at)
-                 VALUES (?, ?, NULL, 'created', ?, ?, ?, ?, NULL, ?, ?, NULL)`,
+                `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, visibility, shared_from_user_id, created_at, updated_at, deleted_at)
+                 VALUES (?, ?, NULL, 'created', ?, ?, ?, ?, 'private', NULL, ?, ?, NULL)`,
             )
             .bind(id, userId, title, description || null, payload, accentHue, now, now)
             .run();
@@ -116,6 +126,7 @@ export async function onRequestPost(context) {
             title,
             description,
             accentHue,
+            visibility: "private",
             createdAt: now,
             updatedAt: now,
         },

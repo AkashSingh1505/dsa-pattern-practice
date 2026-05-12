@@ -69,8 +69,8 @@ export async function onRequestPost(context) {
     try {
         await db
             .prepare(
-                `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, shared_from_user_id, created_at, updated_at, deleted_at)
-                 VALUES (?, ?, NULL, 'shared', ?, ?, ?, ?, ?, ?, ?, NULL)`,
+                `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, visibility, shared_from_user_id, created_at, updated_at, deleted_at)
+                 VALUES (?, ?, NULL, 'shared', ?, ?, ?, ?, 'private', ?, ?, ?, NULL)`,
             )
             .bind(
                 newId,

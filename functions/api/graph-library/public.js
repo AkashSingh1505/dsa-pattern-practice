@@ -1,5 +1,6 @@
 import { json } from "../../_lib/admin-api.js";
 import { requirePracticeUser } from "../../_lib/practice-auth-request.js";
+import { graphPayloadStatsFromJson } from "../../_lib/graph-payload-stats.js";
 
 function creatorLabel(row) {
     const dn = row.creator_display_name && String(row.creator_display_name).trim();
@@ -26,6 +27,7 @@ export async function onRequestGet(context) {
         rows = await db
             .prepare(
                 `SELECT c.id, c.slug, c.title, c.description, c.accent_hue, c.tags_json, c.difficulty,
+                        c.payload_json,
                         c.estimated_minutes, c.download_count, c.created_at, c.updated_at,
                         pu.email AS creator_email, up.display_name AS creator_display_name
                  FROM graph_catalog c
@@ -46,21 +48,26 @@ export async function onRequestGet(context) {
     for (const r of uniq.results || []) {
         uniqMap.set(r.catalog_id, r.n);
     }
-    const graphs = (rows.results || []).map((r) => ({
-        id: r.id,
-        slug: r.slug,
-        title: r.title,
-        description: r.description || "",
-        accentHue: r.accent_hue,
-        tags: safeJsonArray(r.tags_json),
-        difficulty: r.difficulty || null,
-        estimatedMinutes: r.estimated_minutes,
-        downloadCount: Number(r.download_count || 0) || 0,
-        uniqueDownloaders: Number(uniqMap.get(r.id) || 0) || 0,
-        createdAt: r.created_at,
-        updatedAt: r.updated_at,
-        creatorLabel: creatorLabel(r),
-    }));
+    const graphs = (rows.results || []).map((r) => {
+        const stats = graphPayloadStatsFromJson(r.payload_json);
+        return {
+            id: r.id,
+            slug: r.slug,
+            title: r.title,
+            description: r.description || "",
+            accentHue: r.accent_hue,
+            tags: safeJsonArray(r.tags_json),
+            difficulty: r.difficulty || null,
+            estimatedMinutes: r.estimated_minutes,
+            downloadCount: Number(r.download_count || 0) || 0,
+            uniqueDownloaders: Number(uniqMap.get(r.id) || 0) || 0,
+            nodeCount: stats.nodeCount,
+            branchCount: stats.branchCount,
+            createdAt: r.created_at,
+            updatedAt: r.updated_at,
+            creatorLabel: creatorLabel(r),
+        };
+    });
     return json({ ok: true, graphs });
 }
 

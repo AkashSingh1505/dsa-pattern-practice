@@ -1,5 +1,6 @@
 import { json } from "../../_lib/admin-api.js";
 import { newGraphId, requirePracticeUser } from "../../_lib/practice-auth-request.js";
+import { graphPayloadStatsFromJson } from "../../_lib/graph-payload-stats.js";
 import { ensureUserGraphVisibilityColumn } from "../../_lib/user-graph-visibility.js";
 
 function defaultPayload(title) {
@@ -25,7 +26,7 @@ export async function onRequestGet(context) {
     try {
         rows = await db
             .prepare(
-                `SELECT g.id, g.source_catalog_id, g.kind, g.title, g.description, g.accent_hue, ${
+                `SELECT g.id, g.source_catalog_id, g.kind, g.title, g.description, g.payload_json, g.accent_hue, ${
                     hasVisibility ? "g.visibility" : "'private'"
                 } AS visibility, g.shared_from_user_id,
                         g.created_at, g.updated_at,
@@ -62,6 +63,7 @@ export async function onRequestGet(context) {
         const dn = r.shared_from_display && String(r.shared_from_display).trim();
         const em = r.shared_from_email && String(r.shared_from_email).trim();
         const sharedFromLabel = r.kind === "shared" ? dn || em || "Member" : null;
+        const stats = graphPayloadStatsFromJson(r.payload_json);
         return {
             id: r.id,
             sourceCatalogId: r.source_catalog_id,
@@ -72,6 +74,8 @@ export async function onRequestGet(context) {
             visibility: String(r.visibility || "private"),
             downloadCount: Number(r.source_download_count || 0) || 0,
             uniqueDownloaders: Number(r.source_unique_downloaders || 0) || 0,
+            nodeCount: stats.nodeCount,
+            branchCount: stats.branchCount,
             createdAt: r.created_at,
             updatedAt: r.updated_at,
             sharedFromLabel,

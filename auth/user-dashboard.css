@@ -1469,14 +1469,8 @@ html.dsa-udash-html,
     left: 12px;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
-}
-.dsa-glib-preview-visibility {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    display: flex;
-    align-items: center;
 }
 .dsa-glib-badge {
     padding: 4px 8px;
@@ -1537,55 +1531,83 @@ html.dsa-udash-html,
     display: none;
 }
 .dsa-glib-card-menu {
-    border: none;
-    background: transparent;
-    color: #a1a1aa;
-    width: 32px;
-    height: 32px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: #fafafa;
+    color: #71717a;
+    width: 36px;
+    height: 36px;
     border-radius: 999px;
     padding: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    transition:
+        background 0.18s ease,
+        color 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease,
+        transform 0.18s ease;
 }
 .dsa-glib-card-menu:hover,
 .dsa-glib-card-menu-wrap[open] .dsa-glib-card-menu {
-    background: #f4f4f5;
+    background: #fff;
     color: #18181b;
+    border-color: rgba(0, 0, 0, 0.12);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
 }
 .dsa-glib-card-menu-list {
     position: absolute;
     top: calc(100% + 8px);
     right: 0;
     z-index: 3;
-    min-width: 190px;
-    padding: 8px;
+    min-width: 220px;
+    padding: 10px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    border-radius: 14px;
+    gap: 6px;
+    border-radius: 16px;
     border: 1px solid rgba(0, 0, 0, 0.08);
-    background: rgba(255, 255, 255, 0.98);
-    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.14);
+    background: rgba(255, 255, 255, 0.99);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.14);
+    backdrop-filter: blur(14px);
 }
 .dsa-glib-card-menu-item {
     width: 100%;
     border: none;
     background: transparent;
-    padding: 9px 10px;
-    border-radius: 10px;
+    padding: 10px 12px;
+    border-radius: 12px;
     text-align: left;
     font: inherit;
     font-size: 13px;
+    font-weight: 500;
     color: #18181b;
     cursor: pointer;
+    transition:
+        background 0.18s ease,
+        color 0.18s ease,
+        box-shadow 0.18s ease;
 }
 .dsa-glib-card-menu-item:hover {
     background: #f4f4f5;
 }
+.dsa-glib-card-menu-item--important {
+    color: #0b63ce;
+    background: rgba(0, 113, 227, 0.08);
+    box-shadow: inset 0 0 0 1px rgba(0, 113, 227, 0.12);
+}
+.dsa-glib-card-menu-item--important:hover {
+    background: rgba(0, 113, 227, 0.13);
+}
 .dsa-glib-card-menu-item--danger {
     color: #dc2626;
+    background: rgba(220, 38, 38, 0.07);
+    box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.1);
+}
+.dsa-glib-card-menu-item--danger:hover {
+    background: rgba(220, 38, 38, 0.12);
 }
 .dsa-glib-stats-row {
     margin-top: 16px;

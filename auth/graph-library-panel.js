@@ -85,8 +85,16 @@
 
     function graphStats(graph, index, isMine) {
         var seed = hashString((graph && graph.id) || "") + hashString((graph && graph.title) || "") + index * 17;
-        var nodes = isMine ? 9 + (seed % 104) : 24 + (seed % 120);
-        var branches = 3 + (seed % 12);
+        var nodes =
+            graph && Number.isFinite(Number(graph.nodeCount)) && Number(graph.nodeCount) > 0
+                ? Number(graph.nodeCount)
+                : isMine
+                  ? 9 + (seed % 104)
+                  : 24 + (seed % 120);
+        var branches =
+            graph && Number.isFinite(Number(graph.branchCount)) && Number(graph.branchCount) >= 0
+                ? Number(graph.branchCount)
+                : 3 + (seed % 12);
         return {
             nodes: nodes,
             branches: branches,
@@ -384,8 +392,7 @@
                 graphSvgMarkup(visualIdx) +
                 '<div class="dsa-glib-preview-badges">' +
                 pill +
-                "</div>" +
-                '<div class="dsa-glib-preview-visibility"><span class="dsa-glib-badge dsa-glib-badge--visibility">' +
+                '<span class="dsa-glib-badge dsa-glib-badge--visibility">' +
                 escapeHtml(visibility) +
                 "</span></div>" +
                 '<div class="dsa-glib-preview-meta">' +
@@ -404,7 +411,7 @@
                 '<button type="button" class="dsa-glib-card-menu-item dsa-glib-menu-open" data-id="' +
                 escapeHtml(g.id) +
                 '">Open in workspace</button>' +
-                '<button type="button" class="dsa-glib-card-menu-item dsa-glib-menu-publish" data-id="' +
+                '<button type="button" class="dsa-glib-card-menu-item dsa-glib-card-menu-item--important dsa-glib-menu-publish" data-id="' +
                 escapeHtml(g.id) +
                 '" data-visibility="' +
                 escapeHtml(nextVisibility) +

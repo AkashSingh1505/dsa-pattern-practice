@@ -14,12 +14,14 @@ export async function onRequestGet(context) {
         return json({ error: "id required" }, 400);
     }
     const { db, userId } = gate;
-    await ensureUserGraphVisibilityColumn(db);
+    const hasVisibility = await ensureUserGraphVisibilityColumn(db);
     let row;
     try {
         row = await db
             .prepare(
-                `SELECT id, source_catalog_id, kind, title, description, payload_json, accent_hue, visibility, shared_from_user_id, created_at, updated_at
+                `SELECT id, source_catalog_id, kind, title, description, payload_json, accent_hue, ${
+                    hasVisibility ? "visibility" : "'private'"
+                } AS visibility, shared_from_user_id, created_at, updated_at
                  FROM user_graphs WHERE id = ? AND owner_user_id = ? AND deleted_at IS NULL`,
             )
             .bind(id, userId)
@@ -76,7 +78,7 @@ export async function onRequestPut(context) {
         return json({ error: "invalid JSON" }, 400);
     }
     const { db, userId } = gate;
-    await ensureUserGraphVisibilityColumn(db);
+    const hasVisibility = await ensureUserGraphVisibilityColumn(db);
     let row;
     try {
         row = await db
@@ -105,6 +107,9 @@ export async function onRequestPut(context) {
         binds.push(body.description.trim());
     }
     if (typeof body.visibility === "string") {
+        if (!hasVisibility) {
+            return json({ error: "visibility not ready yet" }, 400);
+        }
         const vis = body.visibility.trim().toLowerCase();
         if (vis !== "private" && vis !== "public") {
             return json({ error: "visibility must be private or public" }, 400);

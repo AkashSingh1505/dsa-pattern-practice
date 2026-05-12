@@ -19,7 +19,7 @@ export async function onRequestPost(context) {
         return json({ error: "catalogId required" }, 400);
     }
     const { db, userId } = gate;
-    await ensureUserGraphVisibilityColumn(db);
+    const hasVisibility = await ensureUserGraphVisibilityColumn(db);
     let cat;
     try {
         cat = await db
@@ -64,12 +64,19 @@ export async function onRequestPost(context) {
 
     try {
         await db.batch([
-            db
-                .prepare(
-                    `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, visibility, shared_from_user_id, created_at, updated_at, deleted_at)
-                     VALUES (?, ?, ?, 'downloaded', ?, ?, ?, ?, 'private', NULL, ?, ?, NULL)`,
-                )
-                .bind(copyId, userId, catalogId, title, desc, payloadStr, accent, now, now),
+            hasVisibility
+                ? db
+                      .prepare(
+                          `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, visibility, shared_from_user_id, created_at, updated_at, deleted_at)
+                           VALUES (?, ?, ?, 'downloaded', ?, ?, ?, ?, 'private', NULL, ?, ?, NULL)`,
+                      )
+                      .bind(copyId, userId, catalogId, title, desc, payloadStr, accent, now, now)
+                : db
+                      .prepare(
+                          `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, shared_from_user_id, created_at, updated_at, deleted_at)
+                           VALUES (?, ?, ?, 'downloaded', ?, ?, ?, ?, NULL, ?, ?, NULL)`,
+                      )
+                      .bind(copyId, userId, catalogId, title, desc, payloadStr, accent, now, now),
             db
                 .prepare(
                     `INSERT INTO graph_catalog_downloads (catalog_id, user_id, downloaded_at) VALUES (?, ?, ?)

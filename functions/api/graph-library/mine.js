@@ -20,12 +20,14 @@ export async function onRequestGet(context) {
         return gate.response;
     }
     const { db, userId } = gate;
-    await ensureUserGraphVisibilityColumn(db);
+    const hasVisibility = await ensureUserGraphVisibilityColumn(db);
     let rows;
     try {
         rows = await db
             .prepare(
-                `SELECT g.id, g.source_catalog_id, g.kind, g.title, g.description, g.accent_hue, g.visibility, g.shared_from_user_id,
+                `SELECT g.id, g.source_catalog_id, g.kind, g.title, g.description, g.accent_hue, ${
+                    hasVisibility ? "g.visibility" : "'private'"
+                } AS visibility, g.shared_from_user_id,
                         g.created_at, g.updated_at,
                         pu.email AS shared_from_email, up.display_name AS shared_from_display,
                         c.download_count AS source_download_count,
@@ -105,18 +107,28 @@ export async function onRequestPost(context) {
         accentHue = Math.round(n);
     }
     const { db, userId } = gate;
-    await ensureUserGraphVisibilityColumn(db);
+    const hasVisibility = await ensureUserGraphVisibilityColumn(db);
     const now = Math.floor(Date.now() / 1000);
     const id = newGraphId();
     const payload = defaultPayload(title);
     try {
-        await db
-            .prepare(
-                `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, visibility, shared_from_user_id, created_at, updated_at, deleted_at)
-                 VALUES (?, ?, NULL, 'created', ?, ?, ?, ?, 'private', NULL, ?, ?, NULL)`,
-            )
-            .bind(id, userId, title, description || null, payload, accentHue, now, now)
-            .run();
+        if (hasVisibility) {
+            await db
+                .prepare(
+                    `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, visibility, shared_from_user_id, created_at, updated_at, deleted_at)
+                     VALUES (?, ?, NULL, 'created', ?, ?, ?, ?, 'private', NULL, ?, ?, NULL)`,
+                )
+                .bind(id, userId, title, description || null, payload, accentHue, now, now)
+                .run();
+        } else {
+            await db
+                .prepare(
+                    `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, shared_from_user_id, created_at, updated_at, deleted_at)
+                     VALUES (?, ?, NULL, 'created', ?, ?, ?, ?, NULL, ?, ?, NULL)`,
+                )
+                .bind(id, userId, title, description || null, payload, accentHue, now, now)
+                .run();
+        }
     } catch (e) {
         console.error("graph create", e);
         return json({ error: "server error" }, 500);

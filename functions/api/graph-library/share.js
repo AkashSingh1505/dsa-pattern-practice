@@ -22,7 +22,7 @@ export async function onRequestPost(context) {
         return json({ error: "copyId and recipientEmail required" }, 400);
     }
     const { db, userId, email: senderEmail } = gate;
-    await ensureUserGraphVisibilityColumn(db);
+    const hasVisibility = await ensureUserGraphVisibilityColumn(db);
     if (recipientEmail === String(senderEmail || "").toLowerCase()) {
         return json({ error: "cannot share with yourself" }, 400);
     }
@@ -71,8 +71,11 @@ export async function onRequestPost(context) {
     try {
         await db
             .prepare(
-                `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, visibility, shared_from_user_id, created_at, updated_at, deleted_at)
-                 VALUES (?, ?, NULL, 'shared', ?, ?, ?, ?, 'private', ?, ?, ?, NULL)`,
+                hasVisibility
+                    ? `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, visibility, shared_from_user_id, created_at, updated_at, deleted_at)
+                       VALUES (?, ?, NULL, 'shared', ?, ?, ?, ?, 'private', ?, ?, ?, NULL)`
+                    : `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, shared_from_user_id, created_at, updated_at, deleted_at)
+                       VALUES (?, ?, NULL, 'shared', ?, ?, ?, ?, ?, ?, ?, NULL)`,
             )
             .bind(
                 newId,

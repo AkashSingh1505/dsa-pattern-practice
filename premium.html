@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev">
+    <title>Premium Plans — DSA Pattern Practice</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css?v=14">
+    <link rel="stylesheet" href="./dsa-index-shell.css?v=21">
+</head>
+<body class="dsa-page dsa-index-ref pricing-page">
+    <header class="nav">
+        <div class="nav-inner">
+            <a href="./index.html" class="brand dsa-app-title" aria-label="DSA Pattern Practice home">
+                <span class="brand-mark">DS</span>
+                <span class="brand-copy">
+                    <strong>DSA Pattern Practice</strong>
+                    <small>Visual study studio for patterns</small>
+                </span>
+            </a>
+            <nav class="nav-links" aria-label="Site sections">
+                <a href="./index.html">Studio</a>
+                <a href="./index.html#why">Why it works</a>
+                <a href="./user-dashboard.html" id="nav-link-dashboard">Dashboard</a>
+            </nav>
+            <div class="nav-auth">
+                <a href="./premium.html" class="nav-premium-entry nav-premium-entry--active" aria-current="page">Premium</a>
+                <a id="nav-admin-entry" class="nav-admin-entry" href="./account.html">Sign in</a>
+                <button type="button" id="nav-admin-signout" class="signout nav-signout-btn" hidden>Sign out</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="page pricing-page-shell">
+        <section class="pricing-hero">
+            <div class="pricing-hero-copy">
+                <div class="eyebrow">Plans and features</div>
+                <h1>Choose the plan that matches how deeply you want to use the studio.</h1>
+                <p>
+                    Start free to explore the graph and core member experience. Upgrade when you want personal graph workflows,
+                    deeper study tools, collaboration-oriented features, and a stronger long-term practice setup.
+                </p>
+                <div class="landing-hero-actions">
+                    <a href="./account.html" class="landing-btn landing-btn--primary" data-marketing-primary-cta>Start free</a>
+                    <a href="./index.html#studio" class="landing-btn landing-btn--secondary">Preview the live graph</a>
+                </div>
+            </div>
+            <div class="pricing-hero-proof">
+                <div class="landing-proof-strip">
+                    <article class="landing-proof-card">
+                        <strong data-public-stat="subscribers">--</strong>
+                        <span>subscribers already using the studio</span>
+                    </article>
+                    <article class="landing-proof-card">
+                        <strong data-plan-count="pro">--</strong>
+                        <span>pro plans in the current member base</span>
+                    </article>
+                    <article class="landing-proof-card">
+                        <strong data-plan-count="team">--</strong>
+                        <span>team plans tracked for collaborative setups</span>
+                    </article>
+                    <article class="landing-proof-card">
+                        <strong data-plan-count="lifetime">--</strong>
+                        <span>lifetime members in the current plan mix</span>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="pricing-grid" aria-label="Plans">
+            <article class="pricing-card">
+                <span class="pricing-tier">Free</span>
+                <h2>Start with the studio basics</h2>
+                <p class="pricing-card-copy">For students who want to explore the graph and begin practice without a paid upgrade.</p>
+                <ul class="pricing-feature-list">
+                    <li>Full DSA map and one-topic browsing</li>
+                    <li>Practice account access</li>
+                    <li>Core dashboard areas enabled by site settings</li>
+                    <li>Public graph browsing and basic study flow</li>
+                </ul>
+            </article>
+
+            <article class="pricing-card pricing-card--featured">
+                <span class="pricing-tier">Pro</span>
+                <h2>Best for serious individual prep</h2>
+                <p class="pricing-card-copy">Unlock the premium study workflow when you want more than browsing and basic review.</p>
+                <ul class="pricing-feature-list">
+                    <li>Personal graph library and saved graph workflows</li>
+                    <li>Shared inbox, collaboration, and quiz-lab style tools</li>
+                    <li>Digest preferences and premium dashboard utilities</li>
+                    <li>More power for interview-focused revision</li>
+                </ul>
+            </article>
+
+            <article class="pricing-card">
+                <span class="pricing-tier">Team</span>
+                <h2>For cohorts, mentors, and study groups</h2>
+                <p class="pricing-card-copy">Use the premium feature base with room for broader collaboration-oriented rollout.</p>
+                <ul class="pricing-feature-list">
+                    <li>Everything in Pro</li>
+                    <li>Shared workflows for guided study groups</li>
+                    <li>Better fit for team coordination and mentoring</li>
+                    <li>Plan structure ready for expanded team packaging</li>
+                </ul>
+            </article>
+
+            <article class="pricing-card">
+                <span class="pricing-tier">Lifetime</span>
+                <h2>For long-term learners</h2>
+                <p class="pricing-card-copy">A one-time style access path for people who want the studio as a long-lived resource.</p>
+                <ul class="pricing-feature-list">
+                    <li>Everything in Pro</li>
+                    <li>Long-horizon access for extended learning</li>
+                    <li>Strong fit for self-paced deep study</li>
+                    <li>Useful if you want studio access beyond short prep cycles</li>
+                </ul>
+            </article>
+        </section>
+
+        <section class="pricing-matrix-wrap">
+            <div class="landing-section-head">
+                <div class="eyebrow">Feature comparison</div>
+                <h2>What changes from one plan to the next</h2>
+                <p>The table below explains the current story of the product tiers and the study workflows they are built to support.</p>
+            </div>
+            <div class="pricing-table-shell">
+                <table class="pricing-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Feature</th>
+                            <th scope="col">Free</th>
+                            <th scope="col">Pro</th>
+                            <th scope="col">Team</th>
+                            <th scope="col">Lifetime</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">Full DSA graph and one-topic mode</th>
+                            <td>Included</td>
+                            <td>Included</td>
+                            <td>Included</td>
+                            <td>Included</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Practice account and member dashboard</th>
+                            <td>Included</td>
+                            <td>Included</td>
+                            <td>Included</td>
+                            <td>Included</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Community graph library</th>
+                            <td>Included</td>
+                            <td>Included</td>
+                            <td>Included</td>
+                            <td>Included</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Personal graphs and advanced graph workflow</th>
+                            <td>Upgrade</td>
+                            <td>Included</td>
+                            <td>Included</td>
+                            <td>Included</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Shared inbox, collaboration, and premium study tools</th>
+                            <td>Upgrade</td>
+                            <td>Included</td>
+                            <td>Included</td>
+                            <td>Included</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Group-oriented plan fit</th>
+                            <td>No</td>
+                            <td>Limited</td>
+                            <td>Best fit</td>
+                            <td>No</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Long-term one-time access positioning</th>
+                            <td>No</td>
+                            <td>No</td>
+                            <td>No</td>
+                            <td>Best fit</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="landing-plan-cta">
+            <div>
+                <div class="eyebrow">Next step</div>
+                <h2>Try the studio now, then upgrade when your workflow needs more power.</h2>
+                <p>Explore the public graph today, create your account, and move into the plan that matches your study depth.</p>
+            </div>
+            <div class="landing-plan-actions">
+                <a href="./index.html" class="landing-btn landing-btn--secondary">Back to studio</a>
+                <a href="./account.html" class="landing-btn landing-btn--primary" data-marketing-primary-cta>Start free</a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer dsa-index-site-footer">
+        <div class="footer-bottom">
+            <div class="footer-copyright">
+                <p>DSA Pattern Practice — from graph discovery to premium study workflows.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="./auth/dsa-admin-auth.js?v=5"></script>
+    <script src="./auth/dsa-member-roles.js?v=1"></script>
+    <script src="./auth/dsa-user-auth.js?v=3"></script>
+    <script src="./auth/site-features.js?v=6"></script>
+    <script src="./cms-bootstrap.js?v=3"></script>
+    <script src="./dsa-sketch-native.js?v=3"></script>
+    <script src="./script.js?v=36"></script>
+    <script src="./marketing-pages.js?v=1"></script>
+</body>
+</html>

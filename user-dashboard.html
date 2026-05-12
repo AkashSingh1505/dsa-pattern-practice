@@ -41,7 +41,7 @@
     <link rel="stylesheet" href="./auth/portal-shell.css?v=9" />
     <link rel="stylesheet" href="./styles.css?v=14" />
     <link rel="stylesheet" href="./dsa-index-shell.css?v=20" />
-    <link rel="stylesheet" href="./auth/user-dashboard.css?v=15" />
+    <link rel="stylesheet" href="./auth/user-dashboard.css?v=16" />
 </head>
 <body class="dsa-udash-body">
     <div class="dsa-udash-app" id="dsa-user-dashboard-main">
@@ -259,45 +259,49 @@
                 <section class="dsa-udash-panel" id="panel-library" data-panel-id="library" aria-labelledby="ph-library" hidden>
                     <div class="dsa-glib-shell">
                         <div class="dsa-glib-hero">
-                            <div class="dsa-glib-eyebrow">Your library</div>
-                            <h1 id="ph-library" class="dsa-glib-title">Graph library.<br />Beautifully organized.</h1>
+                            <h1 id="ph-library" class="dsa-glib-title">Graph library</h1>
                             <p class="dsa-glib-lede">
-                                <strong>Graph</strong> is the right DSA term here: nodes and edges, where a tree is a special kind of graph. Browse public pattern maps, save copies to your account, and open them in the
+                                <strong>Graph</strong> is the right DSA term here: nodes and edges; a tree is a special kind of graph. Browse public pattern maps, save copies, and open them in
                                 <button type="button" class="dsa-udash-text-btn" data-jump-panel="graph">Graph workspace</button>.
                             </p>
                         </div>
 
-                        <div class="dsa-glib-controls">
+                        <div class="dsa-glib-toolbar">
                             <div class="dsa-glib-tabs" role="tablist" aria-label="Library sections">
-                                <button type="button" class="dsa-glib-tab is-active" data-glib-tab="community" role="tab" aria-selected="true">Community</button>
-                                <button type="button" class="dsa-glib-tab" data-glib-tab="personal" role="tab" aria-selected="false">Personal</button>
+                                <button type="button" class="dsa-glib-tab" data-glib-tab="community" role="tab" aria-selected="false">Community</button>
+                                <button type="button" class="dsa-glib-tab is-active" data-glib-tab="personal" role="tab" aria-selected="true">Personal</button>
+                            </div>
+                            <div class="dsa-glib-toolbar-divider" aria-hidden="true"></div>
+                            <button type="button" class="dsa-glib-primary-btn" id="udash-glib-create">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                                New graph
+                            </button>
+                            <div class="dsa-glib-filters" role="group" aria-label="Filter by origin">
+                                <button type="button" class="dsa-glib-chip is-active" data-glib-filter="all">All</button>
+                                <button type="button" class="dsa-glib-chip" data-glib-filter="downloaded">Downloaded</button>
+                                <button type="button" class="dsa-glib-chip" data-glib-filter="created">Created</button>
+                                <button type="button" class="dsa-glib-chip" data-glib-filter="shared">Shared</button>
+                            </div>
+                            <div class="dsa-glib-sort">
+                                <span>Sort:</span>
+                                <button type="button" class="dsa-glib-sort-btn">Recent
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"></path></svg>
+                                </button>
                             </div>
                         </div>
 
-                        <div class="dsa-glib-tab-panel is-active" data-glib-panel="community">
-                            <p class="dsa-glib-note">Public graphs curated by the team or community. Add a personal copy to edit it in your own workspace.</p>
+                        <p class="dsa-glib-note">Everything here is stored on your account. Delete only affects your copy.</p>
+
+                        <div class="dsa-glib-tab-panel" data-glib-panel="community" hidden>
                             <div class="dsa-glib-grid" id="udash-glib-public-grid"></div>
                         </div>
 
-                        <div class="dsa-glib-tab-panel" data-glib-panel="personal" hidden>
-                            <div class="dsa-glib-filterbar">
-                                <div class="dsa-glib-filters" role="group" aria-label="Filter by origin">
-                                    <button type="button" class="dsa-glib-chip is-active" data-glib-filter="all">All</button>
-                                    <button type="button" class="dsa-glib-chip" data-glib-filter="downloaded">Downloaded</button>
-                                    <button type="button" class="dsa-glib-chip" data-glib-filter="created">Created</button>
-                                    <button type="button" class="dsa-glib-chip" data-glib-filter="shared">Shared</button>
-                                </div>
-                                <button type="button" class="dsa-glib-primary-btn" id="udash-glib-create">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-                                    New graph
-                                </button>
-                            </div>
-                            <p class="dsa-glib-note">Everything here is stored on your account. Delete only affects your personal copy.</p>
+                        <div class="dsa-glib-tab-panel is-active" data-glib-panel="personal">
                             <div class="dsa-glib-grid" id="udash-glib-mine-grid"></div>
                         </div>
 
                         <div class="dsa-glib-footer-links">
-                            <button type="button" class="dsa-glib-footer-link" data-jump-panel="graph">Graph workspace</button>
+                            <button type="button" class="dsa-glib-footer-link" data-jump-panel="graph">Practice map</button>
                             <a class="dsa-glib-footer-link" href="./account.html">Account</a>
                             <a class="dsa-glib-footer-link" href="./admin.html">Site admin</a>
                         </div>
@@ -752,6 +756,6 @@
     <script src="./dsa-sketch-native.js?v=3"></script>
     <script src="./script.js?v=35"></script>
     <script src="./auth/user-dashboard-page.js?v=17"></script>
-    <script src="./auth/graph-library-panel.js?v=2"></script>
+    <script src="./auth/graph-library-panel.js?v=3"></script>
 </body>
 </html>

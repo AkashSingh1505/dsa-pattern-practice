@@ -5,44 +5,132 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Set to your Cloudflare Worker origin (no trailing slash) when using admin OAuth -->
     <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev">
-    <title>DSA Patterns — Practice</title>
+    <title>DSA Pattern Practice Studio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./styles.css?v=14">
-    <link rel="stylesheet" href="./dsa-index-shell.css?v=20">
+    <link rel="stylesheet" href="./dsa-index-shell.css?v=21">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 </head>
 <body class="dsa-page dsa-index-ref">
-
-    <!-- Top Nav: brand | section | right: Login + Sign out -->
     <header class="nav">
         <div class="nav-inner">
-            <a href="./index.html" class="brand dsa-app-title">
-                <span class="brand-mark">D</span>
-                DSA Pattern Practice
+            <a href="./index.html" class="brand dsa-app-title" aria-label="DSA Pattern Practice home">
+                <span class="brand-mark">DS</span>
+                <span class="brand-copy">
+                    <strong>DSA Pattern Practice</strong>
+                    <small>Visual study studio for patterns</small>
+                </span>
             </a>
             <nav class="nav-links" aria-label="Site sections">
-                <a href="./index.html" class="active" aria-current="page">DSA Patterns</a>
+                <a href="./index.html" class="active" aria-current="page">Studio</a>
+                <a href="#why">Why it works</a>
+                <a href="#studio">Live graph</a>
                 <a href="./user-dashboard.html" id="nav-link-dashboard">Dashboard</a>
             </nav>
             <div class="nav-auth">
-                <a id="nav-admin-entry" class="nav-admin-entry" href="#">Login</a>
+                <a href="./premium.html" class="nav-premium-entry">Premium</a>
+                <a id="nav-admin-entry" class="nav-admin-entry" href="./account.html">Sign in</a>
                 <button type="button" id="nav-admin-signout" class="signout nav-signout-btn" hidden>Sign out</button>
             </div>
         </div>
     </header>
 
-    <main class="page">
+    <main class="page landing-page">
+        <section class="landing-hero">
+            <div class="landing-hero-copy">
+                <div class="eyebrow">Pattern-first learning studio</div>
+                <h1>Learn DSA as a connected system, not a random problem list.</h1>
+                <p class="landing-hero-lede">
+                    DSA Pattern Practice gives students a visual map of core topics, a focused way to drill one area at a time,
+                    and a member hub for reminders, quizzes, graph tools, and personal progress. It is built to help you see
+                    <b>why</b> a solution pattern works and where to use it again.
+                </p>
+                <div class="landing-hero-actions">
+                    <a href="./account.html" class="landing-btn landing-btn--primary" data-marketing-primary-cta>Start free</a>
+                    <a href="./premium.html" class="landing-btn landing-btn--secondary">See premium plans</a>
+                </div>
+                <div class="landing-proof-strip" aria-label="Community proof">
+                    <article class="landing-proof-card">
+                        <strong data-public-stat="subscribers">--</strong>
+                        <span>subscribers building stronger pattern memory</span>
+                    </article>
+                    <article class="landing-proof-card">
+                        <strong data-public-stat="active_users">--</strong>
+                        <span>active learners using the studio workflow</span>
+                    </article>
+                    <article class="landing-proof-card">
+                        <strong data-public-stat="public_graphs">--</strong>
+                        <span>public graph resources available to explore</span>
+                    </article>
+                    <article class="landing-proof-card">
+                        <strong data-public-stat="graph_downloads">--</strong>
+                        <span>community graph downloads from the library</span>
+                    </article>
+                </div>
+            </div>
 
-        <!-- Header + view mode (Full map / One topic / Customize) -->
-        <section class="head">
-            <div class="head-text">
-                <div class="eyebrow">Knowledge Map</div>
-                <h1>DSA problem patterns</h1>
+            <aside class="landing-hero-panel" aria-label="Studio overview">
+                <div class="landing-surface">
+                    <span class="landing-kicker">What makes the studio useful</span>
+                    <h2>Everything important stays in one visual flow.</h2>
+                    <ul class="landing-checklist">
+                        <li>Browse the full DSA map and understand topic relationships faster.</li>
+                        <li>Switch into one-topic mode when you want focused revision for interviews.</li>
+                        <li>Use the member hub to continue practice with reminders, quizzes, and graph tools.</li>
+                        <li>Unlock premium workflows for personal graphs, collaboration, and deeper study support.</li>
+                    </ul>
+                </div>
+                <div class="landing-mini-grid">
+                    <div class="landing-mini-card">
+                        <span class="landing-mini-label">For students</span>
+                        <p>Less jumping between tabs, more understanding of reusable patterns.</p>
+                    </div>
+                    <div class="landing-mini-card">
+                        <span class="landing-mini-label">For serious prep</span>
+                        <p>A studio layout that moves from discovery to review to premium practice workflows.</p>
+                    </div>
+                </div>
+            </aside>
+        </section>
+
+        <section class="landing-section" id="why">
+            <div class="landing-section-head">
+                <div class="eyebrow">Why it works</div>
+                <h2>A unique way to study DSA with context, focus, and follow-through.</h2>
                 <p>
-                    Full map opens by default — all topics under DSA Patterns. Use <b>One topic</b> to focus on a single
-                    structure. The map flows left → right; scroll the shaded area when it’s wide.
+                    Most practice products stop at topic lists or problem feeds. This studio is designed around how students
+                    actually learn: understand the landscape first, focus on one branch second, then return with saved tools and
+                    premium workflows.
+                </p>
+            </div>
+            <div class="landing-card-grid">
+                <article class="landing-feature-card">
+                    <span class="landing-feature-tag">See the whole map</span>
+                    <h3>Pattern-first, not chapter-first</h3>
+                    <p>Understand how arrays, trees, graphs, recursion, dynamic programming, and other topics connect.</p>
+                </article>
+                <article class="landing-feature-card">
+                    <span class="landing-feature-tag">Stay focused</span>
+                    <h3>Switch from overview to one-topic mode</h3>
+                    <p>Reduce noise when you want to revise a single structure or family of interview patterns.</p>
+                </article>
+                <article class="landing-feature-card">
+                    <span class="landing-feature-tag">Keep momentum</span>
+                    <h3>Move into member tools when you are ready</h3>
+                    <p>Use the hub for reminders, quizzes, profile settings, graph actions, and premium study utilities.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="head" id="studio">
+            <div class="head-text">
+                <div class="eyebrow">Live studio preview</div>
+                <h2>Explore the graph before you even sign in.</h2>
+                <p>
+                    The public graph is the front door of the studio. Start with the <b>full map</b>, switch to
+                    <b>one topic</b> for focused learning, or open <b>customize</b> when your plan allows it.
                 </p>
             </div>
             <nav class="seg dsa-view-tabs dsa-seg-track" role="tablist" id="modeSeg" aria-label="Graph layout">
@@ -59,7 +147,6 @@
             </nav>
         </section>
 
-        <!-- Graph toolbar: static chrome + script fills expand/collapse + zoom slots -->
         <section class="toolbar" aria-label="Graph toolbar">
             <div
                 id="dsa-map-toolbar-host"
@@ -99,22 +186,62 @@
             </div>
         </section>
 
-        <!-- Graph (live mind map — node UI unchanged) -->
         <section class="graph-card">
             <div class="graph-stage">
                 <div id="dsa-hierarchy-root" class="dsa-graph-viewport" aria-label="DSA pattern graph"></div>
             </div>
         </section>
 
+        <section class="landing-section landing-uniqueness">
+            <div class="landing-uniqueness-main">
+                <div class="eyebrow">What is unique here</div>
+                <h2>A study product that feels like a studio, not only a catalog.</h2>
+                <ul class="landing-story-list">
+                    <li><strong>Visual-first learning:</strong> ideas are shown as a connected graph, so students remember relationships instead of isolated notes.</li>
+                    <li><strong>Action after discovery:</strong> the experience continues into the member hub, where students can organize practice and revisit work.</li>
+                    <li><strong>Premium depth when needed:</strong> advanced workflows such as personal graphs, collaboration, and richer study tooling can grow with the learner.</li>
+                </ul>
+            </div>
+            <div class="landing-uniqueness-side">
+                <div class="landing-side-stat">
+                    <span class="landing-side-stat-label">Total learners</span>
+                    <strong data-public-stat="total_users">--</strong>
+                </div>
+                <div class="landing-side-stat">
+                    <span class="landing-side-stat-label">Subscriber contacts</span>
+                    <strong data-public-stat="subscriber_contacts">--</strong>
+                </div>
+                <div class="landing-side-stat">
+                    <span class="landing-side-stat-label">Next step</span>
+                    <p>Explore the live graph now, then compare plans when you want more studio power.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="landing-plan-cta" id="plans">
+            <div>
+                <div class="eyebrow">Premium plans</div>
+                <h2>Compare plans and unlock the workflow that matches your study style.</h2>
+                <p>
+                    The premium page explains the difference between free, pro, team, and lifetime access so students can choose
+                    the right level of features.
+                </p>
+            </div>
+            <div class="landing-plan-actions">
+                <a href="./premium.html" class="landing-btn landing-btn--primary">Open premium page</a>
+                <a href="./account.html" class="landing-btn landing-btn--secondary" data-marketing-primary-cta>Start free</a>
+            </div>
+        </section>
+
         <p class="foot">
-            Tip: switch to <a href="#">One topic</a> to drill into a single structure, or use <a href="#">Customize</a> to tune your repo. Your progress syncs across devices.
+            Explore the public graph now, then sign in when you want to save your progress and unlock more of the studio workflow.
         </p>
     </main>
 
     <footer class="footer dsa-index-site-footer">
         <div class="footer-bottom">
             <div class="footer-copyright">
-                <p>DSA Pattern Practice — pattern-led practice</p>
+                <p>DSA Pattern Practice — visual, pattern-led practice for students and serious interview prep.</p>
             </div>
             <div
                 id="footer-visitors"
@@ -146,6 +273,7 @@
                 "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/";
         }
     </script>
-    <script src="./script.js?v=35"></script>
+    <script src="./script.js?v=36"></script>
+    <script src="./marketing-pages.js?v=1"></script>
 </body>
 </html>

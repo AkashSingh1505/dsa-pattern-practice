@@ -8522,6 +8522,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderSkillsFromCms();
     } else if (document.body.classList.contains("details-page")) {
         loadProjectDetails();
+    } else if (document.body.classList.contains("pricing-page")) {
+        /* Marketing plans page — shared nav/auth only. */
     } else if (
         window.location.pathname.includes("account.html") ||
         window.location.pathname.includes("admin.html") ||

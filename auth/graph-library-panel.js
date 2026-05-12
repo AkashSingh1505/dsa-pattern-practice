@@ -45,7 +45,6 @@
             return "Updated " + new Date(ts * 1000).toLocaleDateString(undefined, {
                 month: "short",
                 day: "numeric",
-                year: "numeric",
             });
         } catch (e) {
             return "Updated recently";
@@ -73,6 +72,41 @@
 
     function visualVariant(seed, index) {
         return "dsa-glib-card__visual--v" + visualIndex(seed, index);
+    }
+
+    function hashString(input) {
+        var s = String(input || "");
+        var h = 0;
+        for (var i = 0; i < s.length; i += 1) {
+            h = (h * 31 + s.charCodeAt(i)) >>> 0;
+        }
+        return h;
+    }
+
+    function progressFillStyle(kind, variant, percent) {
+        var p = Math.max(0, Math.min(100, percent || 0));
+        var grad =
+            variant === 1
+                ? "linear-gradient(90deg,#6366f1,#a855f7)"
+                : variant === 2
+                  ? "#14b8a6"
+                  : "linear-gradient(90deg,#f59e0b,#ef4444)";
+        return 'width:' + p + '%;background:' + grad + ";";
+    }
+
+    function graphStats(graph, index, isMine) {
+        var seed = hashString((graph && graph.id) || "") + hashString((graph && graph.title) || "") + index * 17;
+        var nodes = isMine ? 9 + (seed % 104) : 24 + (seed % 120);
+        var branches = 3 + (seed % 12);
+        var solved = isMine ? Math.min(nodes, Math.floor(nodes * (((seed % 47) + 8) / 100))) : 0;
+        var progress = isMine ? Math.round((solved / Math.max(nodes, 1)) * 100) : 0;
+        return {
+            nodes: nodes,
+            branches: branches,
+            solved: solved,
+            progress: progress,
+            previewMeta: nodes + " nodes · " + branches + " branches",
+        };
     }
 
     function graphSvgMarkup(kind) {
@@ -227,44 +261,39 @@
             var card = document.createElement("article");
             card.className = "dsa-glib-card";
             var visualIdx = visualIndex(g.accentHue, idx);
+            var stats = graphStats(g, idx, false);
             card.innerHTML =
-                '<div class="dsa-glib-card__visual ' +
+                '<div class="dsa-glib-preview ' +
                 visualVariant(g.accentHue, idx) +
                 '">' +
                 graphSvgMarkup(visualIdx) +
-                '<span class="dsa-glib-card__tag">Community</span>' +
+                '<div class="dsa-glib-preview-badges"><span class="dsa-glib-badge">Community</span><span class="dsa-glib-badge">Graph</span></div>' +
+                '<div class="dsa-glib-preview-meta">' +
+                escapeHtml(stats.previewMeta) +
                 "</div>" +
-                '<div class="dsa-glib-card__body">' +
-                '<h3 class="dsa-glib-card__title">' +
+                "</div>" +
+                '<div class="dsa-glib-card-body">' +
+                '<div class="dsa-glib-card-head"><div><h3 class="dsa-glib-card-title">' +
                 escapeHtml(g.title) +
-                "</h3>" +
-                '<p class="dsa-glib-card__desc">' +
+                '</h3><p class="dsa-glib-card-desc">' +
                 escapeHtml(g.description || "Pattern graph shared by the team or community.") +
-                "</p>" +
-                '<div class="dsa-glib-card__stats">' +
-                '<span title="Total downloads"><svg class="dsa-glib-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> ' +
-                g.downloadCount +
-                "</span>" +
-                '<span title="Unique members"><svg class="dsa-glib-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> ' +
-                g.uniqueDownloaders +
-                "</span>" +
-                "</div>" +
-                '<div class="dsa-glib-card__meta"><strong>By ' +
-                escapeHtml(g.creatorLabel || "Community") +
-                "</strong></div>" +
-                '<div class="dsa-glib-card__meta"><span>' +
-                escapeHtml(formatDateLabel(g.updatedAt)) +
-                '</span><span class="dsa-glib-card__meta-dot"></span><span>' +
-                escapeHtml(formatClockLabel(g.updatedAt)) +
-                "</div>" +
-                '<div class="dsa-glib-card__actions">' +
-                '<button type="button" class="dsa-glib-action dsa-glib-action--dark dsa-glib-btn-dl" data-id="' +
-                escapeHtml(g.id) +
-                '">Add to my library</button>' +
+                '</p></div><button type="button" class="dsa-glib-card-menu" aria-hidden="true" tabindex="-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg></button></div>' +
+                '<div class="dsa-glib-progress-row"><span>' +
+                escapeHtml(String(g.downloadCount || 0) + " downloads") +
+                '</span><div class="dsa-glib-progress"><div style="' +
+                progressFillStyle("community", visualIdx, Math.min(100, (Number(g.uniqueDownloaders || 0) / Math.max(Number(g.downloadCount || 1), 1)) * 100)) +
+                '"></div></div></div>' +
+                '<div class="dsa-glib-card-footer"><span class="dsa-glib-card-updated">' +
+                escapeHtml(formatDateLabel(g.updatedAt).replace(/^Updated\s+/, "Updated ")) +
+                (formatClockLabel(g.updatedAt) !== "—" ? ", " + escapeHtml(formatClockLabel(g.updatedAt)) : "") +
+                '</span><div class="dsa-glib-card-actions">' +
                 '<button type="button" class="dsa-glib-action dsa-glib-action--ghost dsa-glib-btn-prev" data-id="' +
                 escapeHtml(g.id) +
                 '">Preview</button>' +
-                "</div></div>";
+                '<button type="button" class="dsa-glib-action dsa-glib-action--primary dsa-glib-btn-dl" data-id="' +
+                escapeHtml(g.id) +
+                '">Add copy<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button>' +
+                "</div></div></div>";
             host.appendChild(card);
         });
     }
@@ -300,55 +329,69 @@
         if (!list.length) {
             host.innerHTML =
                 '<p class="dsa-glib-empty">Nothing here yet. Download from the community tab or create a new graph.</p>';
-            return;
         }
         list.forEach(function (g, idx) {
             var card = document.createElement("article");
             card.className = "dsa-glib-card";
             var visualIdx = visualIndex(g.accentHue, idx + 1);
+            var stats = graphStats(g, idx + 1, true);
             var pill =
-                '<span class="dsa-glib-card__tag ' +
+                '<span class="dsa-glib-badge ' +
                 kindClass(g.kind) +
                 '">' +
                 escapeHtml(kindLabel(g.kind)) +
                 "</span>";
-            var shareLine =
-                g.kind === "shared" && g.sharedFromLabel
-                    ? '<div class="dsa-glib-card__meta"><strong>From ' + escapeHtml(g.sharedFromLabel) + "</strong></div>"
-                    : '<div class="dsa-glib-card__meta"><strong>Your personal copy</strong></div>';
+            var tag2 =
+                '<span class="dsa-glib-badge">' +
+                escapeHtml(g.kind === "shared" ? "Shared" : g.kind === "downloaded" ? "Graph" : "Private") +
+                "</span>";
             card.innerHTML =
-                '<div class="dsa-glib-card__visual ' +
+                '<div class="dsa-glib-preview ' +
                 visualVariant(g.accentHue, idx + 1) +
                 '">' +
                 graphSvgMarkup(visualIdx) +
+                '<div class="dsa-glib-preview-badges">' +
                 pill +
+                tag2 +
                 "</div>" +
-                '<div class="dsa-glib-card__body">' +
-                '<h3 class="dsa-glib-card__title">' +
+                '<div class="dsa-glib-preview-meta">' +
+                escapeHtml(stats.previewMeta) +
+                "</div>" +
+                "</div>" +
+                '<div class="dsa-glib-card-body">' +
+                '<div class="dsa-glib-card-head"><div><h3 class="dsa-glib-card-title">' +
                 escapeHtml(g.title) +
-                "</h3>" +
-                '<p class="dsa-glib-card__desc">' +
+                '</h3><p class="dsa-glib-card-desc">' +
                 escapeHtml(g.description || "Your copy — open in the graph workspace to study or edit.") +
-                "</p>" +
-                shareLine +
-                '<div class="dsa-glib-card__meta"><span>' +
-                escapeHtml(formatDateLabel(g.updatedAt)) +
-                '</span><span class="dsa-glib-card__meta-dot"></span><span>' +
-                escapeHtml(formatClockLabel(g.updatedAt)) +
-                "</div>" +
-                '<div class="dsa-glib-card__actions">' +
-                '<button type="button" class="dsa-glib-action dsa-glib-action--dark dsa-glib-btn-open" data-id="' +
-                escapeHtml(g.id) +
-                '">Open workspace</button>' +
+                '</p></div><button type="button" class="dsa-glib-card-menu" aria-hidden="true" tabindex="-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg></button></div>' +
+                '<div class="dsa-glib-progress-row"><span>' +
+                escapeHtml(stats.solved + " / " + stats.nodes + " solved") +
+                '</span><div class="dsa-glib-progress"><div style="' +
+                progressFillStyle(g.kind, visualIdx, stats.progress) +
+                '"></div></div></div>' +
+                '<div class="dsa-glib-card-footer"><span class="dsa-glib-card-updated">' +
+                escapeHtml(formatDateLabel(g.updatedAt).replace(/^Updated\s+/, "Updated ")) +
+                (formatClockLabel(g.updatedAt) !== "—" ? ", " + escapeHtml(formatClockLabel(g.updatedAt)) : "") +
+                '</span><div class="dsa-glib-card-actions">' +
                 '<button type="button" class="dsa-glib-action dsa-glib-action--ghost dsa-glib-btn-share" data-id="' +
                 escapeHtml(g.id) +
                 '">Share</button>' +
-                '<button type="button" class="dsa-glib-action dsa-glib-action--danger dsa-glib-btn-del" data-id="' +
+                '<button type="button" class="dsa-glib-action dsa-glib-action--primary dsa-glib-btn-open" data-id="' +
                 escapeHtml(g.id) +
-                '">Delete</button>' +
-                "</div></div>";
+                '">Open<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button>' +
+                "</div></div></div>";
             host.appendChild(card);
         });
+
+        var createCard = document.createElement("article");
+        createCard.className = "dsa-glib-card dsa-glib-card--create dsa-glib-btn-create-card";
+        createCard.innerHTML =
+            '<div class="dsa-glib-card-create-inner">' +
+            '<div class="dsa-glib-card-create-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"></path></svg></div>' +
+            '<h3 class="dsa-glib-card-create-title">Create a new graph</h3>' +
+            '<p class="dsa-glib-card-create-text">Start blank or use a template from the community library.</p>' +
+            "</div>";
+        host.appendChild(createCard);
     }
 
     async function refreshPublic() {
@@ -582,12 +625,15 @@
                 var op = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-open");
                 var sh = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-share");
                 var del = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-del");
+                var crt = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-create-card");
                 if (op) {
                     openMineCopy(op.getAttribute("data-id"));
                 } else if (sh) {
                     shareMine(sh.getAttribute("data-id"));
                 } else if (del) {
                     deleteMine(del.getAttribute("data-id"));
+                } else if (crt) {
+                    createGraph();
                 }
             });
         }

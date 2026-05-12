@@ -41,7 +41,7 @@
     <link rel="stylesheet" href="./auth/portal-shell.css?v=9" />
     <link rel="stylesheet" href="./styles.css?v=14" />
     <link rel="stylesheet" href="./dsa-index-shell.css?v=20" />
-    <link rel="stylesheet" href="./auth/user-dashboard.css?v=16" />
+    <link rel="stylesheet" href="./auth/user-dashboard.css?v=17" />
 </head>
 <body class="dsa-udash-body">
     <div class="dsa-udash-app" id="dsa-user-dashboard-main">
@@ -62,10 +62,6 @@
                 <button type="button" class="dsa-udash-nav-btn" data-panel="overview" hidden>
                     <svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/></svg>
                     Overview
-                </button>
-                <button type="button" class="dsa-udash-nav-btn" data-panel="map-tools">
-                    <svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/></svg>
-                    Map tools
                 </button>
                 <button type="button" class="dsa-udash-nav-btn" data-panel="study" hidden>
                     <svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h12v16H4z"/><path d="M8 8h4M8 12h4M8 16h4"/></svg>
@@ -144,8 +140,7 @@
                                     <button type="button" class="dsa-udash-text-btn" data-jump-panel="overview">Overview</button>.
                                     Cloud library:
                                     <button type="button" class="dsa-udash-text-btn" data-jump-panel="library">Graph library</button>
-                                    · Local list:
-                                    <button type="button" class="dsa-udash-text-btn" data-jump-panel="map-tools">Map tools</button>.
+                                    for creating, downloading, and opening saved graphs.
                                 </p>
                             </div>
                             <div class="dsa-udash-cloud-graph-bar" id="udash-cloud-graph-bar" hidden>
@@ -272,22 +267,25 @@
                                 <button type="button" class="dsa-glib-tab is-active" data-glib-tab="personal" role="tab" aria-selected="true">Personal</button>
                             </div>
                             <div class="dsa-glib-toolbar-divider" aria-hidden="true"></div>
+                            <div class="dsa-glib-personal-controls" id="udash-glib-personal-controls">
+                                <div class="dsa-glib-filters" role="group" aria-label="Filter by origin">
+                                    <button type="button" class="dsa-glib-chip is-active" data-glib-filter="all">All</button>
+                                    <button type="button" class="dsa-glib-chip" data-glib-filter="downloaded">Downloaded</button>
+                                    <button type="button" class="dsa-glib-chip" data-glib-filter="created">Created</button>
+                                    <button type="button" class="dsa-glib-chip" data-glib-filter="shared">Shared</button>
+                                </div>
+                                <div class="dsa-glib-sort">
+                                    <span>Sort:</span>
+                                    <button type="button" class="dsa-glib-sort-btn" disabled>Recent
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="dsa-glib-toolbar-spacer"></div>
                             <button type="button" class="dsa-glib-primary-btn" id="udash-glib-create">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
                                 New graph
                             </button>
-                            <div class="dsa-glib-filters" role="group" aria-label="Filter by origin">
-                                <button type="button" class="dsa-glib-chip is-active" data-glib-filter="all">All</button>
-                                <button type="button" class="dsa-glib-chip" data-glib-filter="downloaded">Downloaded</button>
-                                <button type="button" class="dsa-glib-chip" data-glib-filter="created">Created</button>
-                                <button type="button" class="dsa-glib-chip" data-glib-filter="shared">Shared</button>
-                            </div>
-                            <div class="dsa-glib-sort">
-                                <span>Sort:</span>
-                                <button type="button" class="dsa-glib-sort-btn">Recent
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"></path></svg>
-                                </button>
-                            </div>
                         </div>
 
                         <p class="dsa-glib-note">Everything here is stored on your account. Delete only affects your copy.</p>
@@ -720,7 +718,6 @@
                 <button type="button" data-panel="graph" class="is-active"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>Graph</button>
                 <button type="button" data-panel="library" hidden><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Library</button>
                 <button type="button" data-panel="overview" hidden><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 5-6"/></svg>Hub</button>
-                <button type="button" data-panel="map-tools"><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4"/></svg>Tools</button>
                 <button type="button" data-panel="study" hidden><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Study</button>
                 <button type="button" data-panel="shared" hidden><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Shared</button>
                 <button type="button" data-panel="collab" hidden><svg class="udash-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/></svg>Collab</button>
@@ -746,6 +743,31 @@
             </div>
         </div>
     </div>
+    <div class="dsa-udash-modal" id="udash-glib-create-modal" hidden>
+        <div class="dsa-udash-modal__backdrop" aria-hidden="true"></div>
+        <div class="dsa-udash-modal__box dsa-glib-create-modal__box" role="dialog" aria-modal="true" aria-labelledby="udash-glib-create-title">
+            <h3 class="dsa-udash-modal__title" id="udash-glib-create-title">New graph</h3>
+            <p class="dsa-udash-modal__body">Create a personal graph with the same metadata-first flow as the admin library editor. The new graph opens in your workspace after save.</p>
+            <div class="dsa-glib-create-form">
+                <div class="dsa-udash-field">
+                    <label for="udash-glib-create-name">Title</label>
+                    <input id="udash-glib-create-name" class="dsa-udash-input" type="text" maxlength="200" placeholder="Graph name" autocomplete="off" />
+                </div>
+                <div class="dsa-udash-field">
+                    <label for="udash-glib-create-accent">Accent hue</label>
+                    <input id="udash-glib-create-accent" class="dsa-udash-input" type="number" min="0" max="359" step="1" placeholder="e.g. 248" />
+                </div>
+                <div class="dsa-udash-field">
+                    <label for="udash-glib-create-description">Description</label>
+                    <textarea id="udash-glib-create-description" class="dsa-udash-textarea" rows="4" maxlength="1000" placeholder="Short description for your graph"></textarea>
+                </div>
+            </div>
+            <div class="dsa-udash-modal__actions">
+                <button type="button" class="dsa-udash-btn" id="udash-glib-create-cancel">Cancel</button>
+                <button type="button" class="dsa-udash-btn dsa-udash-btn--primary" id="udash-glib-create-save">Create graph</button>
+            </div>
+        </div>
+    </div>
     <div class="dsa-udash-toast" id="udash-toast" role="status"></div>
 
     <script src="./auth/dsa-admin-auth.js?v=5"></script>
@@ -755,7 +777,7 @@
     <script src="./cms-bootstrap.js?v=3"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
     <script src="./script.js?v=35"></script>
-    <script src="./auth/user-dashboard-page.js?v=17"></script>
-    <script src="./auth/graph-library-panel.js?v=3"></script>
+    <script src="./auth/user-dashboard-page.js?v=18"></script>
+    <script src="./auth/graph-library-panel.js?v=4"></script>
 </body>
 </html>

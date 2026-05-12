@@ -71,7 +71,7 @@
     }
 
     function visualVariant(seed, index) {
-        return "dsa-glib-card__visual--v" + visualIndex(seed, index);
+        return "dsa-glib-preview--v" + visualIndex(seed, index);
     }
 
     function hashString(input) {
@@ -83,28 +83,13 @@
         return h;
     }
 
-    function progressFillStyle(kind, variant, percent) {
-        var p = Math.max(0, Math.min(100, percent || 0));
-        var grad =
-            variant === 1
-                ? "linear-gradient(90deg,#6366f1,#a855f7)"
-                : variant === 2
-                  ? "#14b8a6"
-                  : "linear-gradient(90deg,#f59e0b,#ef4444)";
-        return 'width:' + p + '%;background:' + grad + ";";
-    }
-
     function graphStats(graph, index, isMine) {
         var seed = hashString((graph && graph.id) || "") + hashString((graph && graph.title) || "") + index * 17;
         var nodes = isMine ? 9 + (seed % 104) : 24 + (seed % 120);
         var branches = 3 + (seed % 12);
-        var solved = isMine ? Math.min(nodes, Math.floor(nodes * (((seed % 47) + 8) / 100))) : 0;
-        var progress = isMine ? Math.round((solved / Math.max(nodes, 1)) * 100) : 0;
         return {
             nodes: nodes,
             branches: branches,
-            solved: solved,
-            progress: progress,
             previewMeta: nodes + " nodes · " + branches + " branches",
         };
     }
@@ -112,35 +97,62 @@
     function graphSvgMarkup(kind) {
         if (kind === 2) {
             return (
-                '<svg class="dsa-glib-card__graph" viewBox="0 0 300 180" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
-                '<line x1="150" y1="40" x2="80" y2="100"/><line x1="150" y1="40" x2="220" y2="100"/>' +
-                '<line x1="80" y1="100" x2="60" y2="150"/><line x1="80" y1="100" x2="130" y2="150"/>' +
-                '<line x1="220" y1="100" x2="180" y2="150"/><line x1="220" y1="100" x2="250" y2="150"/>' +
-                '<circle cx="150" cy="40" r="10"/><circle cx="80" cy="100" r="7"/><circle cx="220" cy="100" r="7"/>' +
-                '<circle cx="60" cy="150" r="5"/><circle cx="130" cy="150" r="5"/><circle cx="180" cy="150" r="5"/><circle cx="250" cy="150" r="5"/>' +
+                '<svg class="dsa-glib-card__graph" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
+                '<g stroke="rgba(255,255,255,0.5)" stroke-width="1.3" fill="none" stroke-linecap="round">' +
+                '<path d="M60 100 C 110 60, 150 60, 200 60"/><path d="M60 100 C 110 100, 150 100, 200 100"/><path d="M60 100 C 110 140, 150 140, 200 140"/>' +
+                '<path d="M200 60 C 240 55, 270 55, 310 50"/><path d="M200 60 C 240 65, 270 70, 310 75"/><path d="M200 100 C 240 100, 270 100, 310 100"/><path d="M200 140 C 240 140, 270 145, 310 150"/>' +
+                "</g>" +
+                '<circle class="glib-root-ring" cx="60" cy="100" r="12"/><circle class="glib-root-core--teal" cx="60" cy="100" r="5"/>' +
+                '<g class="glib-pill"><rect x="186" y="53" width="28" height="14" rx="3"/><rect x="186" y="93" width="28" height="14" rx="3"/><rect x="186" y="133" width="28" height="14" rx="3"/></g>' +
+                '<g fill="#fff"><circle cx="310" cy="50" r="4.5"/><circle cx="310" cy="75" r="4.5"/><circle cx="310" cy="100" r="4.5"/><circle cx="310" cy="150" r="4.5"/></g>' +
                 "</svg>"
             );
         }
         if (kind === 3) {
             return (
-                '<svg class="dsa-glib-card__graph" viewBox="0 0 300 180" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
-                '<line x1="150" y1="90" x2="80" y2="50"/><line x1="150" y1="90" x2="220" y2="50"/>' +
-                '<line x1="150" y1="90" x2="80" y2="140"/><line x1="150" y1="90" x2="220" y2="140"/>' +
-                '<line x1="80" y1="50" x2="220" y2="50"/><line x1="80" y1="140" x2="220" y2="140"/>' +
-                '<circle cx="150" cy="90" r="10"/><circle cx="80" cy="50" r="7"/><circle cx="220" cy="50" r="7"/>' +
-                '<circle cx="80" cy="140" r="7"/><circle cx="220" cy="140" r="7"/>' +
+                '<svg class="dsa-glib-card__graph" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
+                '<g stroke="rgba(255,255,255,0.55)" stroke-width="1.4" fill="none" stroke-linecap="round">' +
+                '<path d="M80 110 L 170 60"/><path d="M80 110 L 170 110"/><path d="M80 110 L 170 160"/><path d="M170 60 L 290 50"/><path d="M170 110 L 290 100"/><path d="M170 110 L 290 130"/>' +
+                "</g>" +
+                '<circle class="glib-root-ring" cx="80" cy="110" r="14"/><circle class="glib-root-core--warm" cx="80" cy="110" r="6"/>' +
+                '<g class="glib-pill"><rect x="156" y="53" width="28" height="14" rx="3"/><rect x="156" y="103" width="28" height="14" rx="3"/><rect x="156" y="153" width="28" height="14" rx="3"/></g>' +
+                '<g fill="#fff"><circle cx="290" cy="50" r="5"/><circle cx="290" cy="100" r="5"/><circle cx="290" cy="130" r="5"/></g>' +
                 "</svg>"
             );
         }
         return (
-            '<svg class="dsa-glib-card__graph" viewBox="0 0 300 180" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
-            '<line x1="60" y1="90" x2="140" y2="50"/><line x1="60" y1="90" x2="140" y2="130"/>' +
-            '<line x1="140" y1="50" x2="220" y2="70"/><line x1="140" y1="130" x2="220" y2="130"/>' +
-            '<line x1="220" y1="70" x2="240" y2="120"/><line x1="140" y1="50" x2="140" y2="130"/>' +
-            '<circle cx="60" cy="90" r="9"/><circle cx="140" cy="50" r="7"/><circle cx="140" cy="130" r="7"/>' +
-            '<circle cx="220" cy="70" r="6"/><circle cx="220" cy="130" r="6"/><circle cx="240" cy="120" r="4"/>' +
+            '<svg class="dsa-glib-card__graph" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
+            '<g stroke="rgba(255,255,255,0.45)" stroke-width="1.2" fill="none" stroke-linecap="round">' +
+            '<path d="M70 100 C 120 50, 160 50, 210 45"/><path d="M70 100 C 120 70, 160 70, 210 75"/><path d="M70 100 C 120 95, 160 100, 210 105"/><path d="M70 100 C 120 120, 160 130, 210 135"/><path d="M70 100 C 120 145, 160 160, 210 165"/>' +
+            '<path d="M210 45 C 250 40, 280 35, 320 30"/><path d="M210 75 C 250 70, 280 70, 320 70"/><path d="M210 105 C 250 105, 280 110, 320 110"/><path d="M210 135 C 250 138, 280 142, 320 145"/>' +
+            "</g>" +
+            '<circle class="glib-root-ring" cx="70" cy="100" r="14"/><circle class="glib-root-core--violet" cx="70" cy="100" r="6"/>' +
+            '<g class="glib-pill"><rect x="195" y="38" width="30" height="14" rx="3"/><rect x="195" y="68" width="30" height="14" rx="3"/><rect x="195" y="98" width="30" height="14" rx="3"/><rect x="195" y="128" width="30" height="14" rx="3"/><rect x="195" y="158" width="30" height="14" rx="3"/></g>' +
+            '<g><circle cx="320" cy="30" r="5" fill="#f472b6"/><circle cx="320" cy="70" r="5" fill="#fbbf24"/><circle cx="320" cy="110" r="5" fill="#34d399"/><circle cx="320" cy="145" r="5" fill="#60a5fa"/></g>' +
             "</svg>"
         );
+    }
+
+    function updatedLabel(ts) {
+        var label = formatDateLabel(ts);
+        var clock = formatClockLabel(ts);
+        return label + (clock !== "—" ? ", " + clock : "");
+    }
+
+    function statsMarkup(downloadCount, uniqueDownloaders) {
+        return (
+            '<div class="dsa-glib-stats-row">' +
+            '<span class="dsa-glib-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v11"></path><path d="M7 10l5 5 5-5"></path><path d="M5 21h14"></path></svg>' +
+            escapeHtml(String(downloadCount || 0)) +
+            ' downloads</span><span class="dsa-glib-stat-sep" aria-hidden="true"></span>' +
+            '<span class="dsa-glib-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>' +
+            escapeHtml(String(uniqueDownloaders || 0)) +
+            " members</span></div>"
+        );
+    }
+
+    function menuButtonMarkup() {
+        return '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg>';
     }
 
     function readSession() {
@@ -247,6 +259,7 @@
         public: [],
         mine: [],
         filter: "all",
+        activeTab: "personal",
         loading: false,
     };
 
@@ -276,23 +289,31 @@
                 '<div class="dsa-glib-card-head"><div><h3 class="dsa-glib-card-title">' +
                 escapeHtml(g.title) +
                 '</h3><p class="dsa-glib-card-desc">' +
-                escapeHtml(g.description || "Pattern graph shared by the team or community.") +
-                '</p></div><button type="button" class="dsa-glib-card-menu" aria-hidden="true" tabindex="-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg></button></div>' +
-                '<div class="dsa-glib-progress-row"><span>' +
-                escapeHtml(String(g.downloadCount || 0) + " downloads") +
-                '</span><div class="dsa-glib-progress"><div style="' +
-                progressFillStyle("community", visualIdx, Math.min(100, (Number(g.uniqueDownloaders || 0) / Math.max(Number(g.downloadCount || 1), 1)) * 100)) +
-                '"></div></div></div>' +
-                '<div class="dsa-glib-card-footer"><span class="dsa-glib-card-updated">' +
-                escapeHtml(formatDateLabel(g.updatedAt).replace(/^Updated\s+/, "Updated ")) +
-                (formatClockLabel(g.updatedAt) !== "—" ? ", " + escapeHtml(formatClockLabel(g.updatedAt)) : "") +
-                '</span><div class="dsa-glib-card-actions">' +
-                '<button type="button" class="dsa-glib-action dsa-glib-action--ghost dsa-glib-btn-prev" data-id="' +
+                escapeHtml(g.description || "Community graph — download a copy to your library or preview it in the workspace.") +
+                '</p></div><details class="dsa-glib-card-menu-wrap">' +
+                '<summary class="dsa-glib-card-menu" aria-label="Graph actions">' +
+                menuButtonMarkup() +
+                '</summary><div class="dsa-glib-card-menu-list">' +
+                '<button type="button" class="dsa-glib-card-menu-item dsa-glib-menu-preview" data-id="' +
                 escapeHtml(g.id) +
-                '">Preview</button>' +
+                '">Preview in workspace</button>' +
+                '<button type="button" class="dsa-glib-card-menu-item dsa-glib-menu-download" data-id="' +
+                escapeHtml(g.id) +
+                '">Download to my library</button>' +
+                '<button type="button" class="dsa-glib-card-menu-item dsa-glib-menu-sharelink" data-id="' +
+                escapeHtml(g.id) +
+                '">Share library page</button>' +
+                "</div></details></div>" +
+                statsMarkup(g.downloadCount, g.uniqueDownloaders) +
+                '<div class="dsa-glib-card-footer"><span class="dsa-glib-card-updated">' +
+                escapeHtml(updatedLabel(g.updatedAt)) +
+                '</span><div class="dsa-glib-card-actions">' +
+                '<button type="button" class="dsa-glib-action dsa-glib-action--ghost dsa-glib-action--icon dsa-glib-btn-sharelink" data-id="' +
+                escapeHtml(g.id) +
+                '" aria-label="Share graph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"></path></svg></button>' +
                 '<button type="button" class="dsa-glib-action dsa-glib-action--primary dsa-glib-btn-dl" data-id="' +
                 escapeHtml(g.id) +
-                '">Add copy<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button>' +
+                '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v11"></path><path d="M7 10l5 5 5-5"></path><path d="M5 21h14"></path></svg>Download</button>' +
                 "</div></div></div>";
             host.appendChild(card);
         });
@@ -343,8 +364,13 @@
                 "</span>";
             var tag2 =
                 '<span class="dsa-glib-badge">' +
-                escapeHtml(g.kind === "shared" ? "Shared" : g.kind === "downloaded" ? "Graph" : "Private") +
+                escapeHtml(g.kind === "shared" ? "Member" : g.kind === "downloaded" ? "Graph" : "Private") +
                 "</span>";
+            var desc =
+                g.description ||
+                (g.kind === "shared"
+                    ? "Shared with you — open it in the graph workspace or pass it to another member."
+                    : "Your copy — open in the graph workspace to study or edit.");
             card.innerHTML =
                 '<div class="dsa-glib-preview ' +
                 visualVariant(g.accentHue, idx + 1) +
@@ -362,16 +388,26 @@
                 '<div class="dsa-glib-card-head"><div><h3 class="dsa-glib-card-title">' +
                 escapeHtml(g.title) +
                 '</h3><p class="dsa-glib-card-desc">' +
-                escapeHtml(g.description || "Your copy — open in the graph workspace to study or edit.") +
-                '</p></div><button type="button" class="dsa-glib-card-menu" aria-hidden="true" tabindex="-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg></button></div>' +
-                '<div class="dsa-glib-progress-row"><span>' +
-                escapeHtml(stats.solved + " / " + stats.nodes + " solved") +
-                '</span><div class="dsa-glib-progress"><div style="' +
-                progressFillStyle(g.kind, visualIdx, stats.progress) +
-                '"></div></div></div>' +
+                escapeHtml(desc) +
+                '</p></div><details class="dsa-glib-card-menu-wrap">' +
+                '<summary class="dsa-glib-card-menu" aria-label="Graph actions">' +
+                menuButtonMarkup() +
+                '</summary><div class="dsa-glib-card-menu-list">' +
+                '<button type="button" class="dsa-glib-card-menu-item dsa-glib-menu-open" data-id="' +
+                escapeHtml(g.id) +
+                '">Open in workspace</button>' +
+                '<button type="button" class="dsa-glib-card-menu-item dsa-glib-menu-share" data-id="' +
+                escapeHtml(g.id) +
+                '">Share with member</button>' +
+                '<button type="button" class="dsa-glib-card-menu-item dsa-glib-card-menu-item--danger dsa-glib-menu-delete" data-id="' +
+                escapeHtml(g.id) +
+                '">' +
+                escapeHtml(g.kind === "shared" ? "Remove from library" : "Delete my copy") +
+                "</button>" +
+                "</div></details></div>" +
+                statsMarkup(g.downloadCount, g.uniqueDownloaders) +
                 '<div class="dsa-glib-card-footer"><span class="dsa-glib-card-updated">' +
-                escapeHtml(formatDateLabel(g.updatedAt).replace(/^Updated\s+/, "Updated ")) +
-                (formatClockLabel(g.updatedAt) !== "—" ? ", " + escapeHtml(formatClockLabel(g.updatedAt)) : "") +
+                escapeHtml(updatedLabel(g.updatedAt)) +
                 '</span><div class="dsa-glib-card-actions">' +
                 '<button type="button" class="dsa-glib-action dsa-glib-action--ghost dsa-glib-btn-share" data-id="' +
                 escapeHtml(g.id) +
@@ -426,9 +462,86 @@
         }
     }
 
+    function closeMenuFromNode(node) {
+        var menu = node && node.closest && node.closest(".dsa-glib-card-menu-wrap");
+        if (menu) {
+            menu.removeAttribute("open");
+        }
+    }
+
+    function closeLibraryMenusExcept(node) {
+        document.querySelectorAll(".dsa-glib-card-menu-wrap[open]").forEach(function (menu) {
+            if (menu !== node) {
+                menu.removeAttribute("open");
+            }
+        });
+    }
+
+    function graphShareUrl() {
+        var url = new URL(window.location.href);
+        url.search = "";
+        url.hash = "#library";
+        return url.toString();
+    }
+
+    async function shareCatalogLink(id) {
+        var graph = state.public.find(function (item) {
+            return item.id === id;
+        });
+        var title = graph && graph.title ? graph.title : "Graph library";
+        var url = graphShareUrl();
+        try {
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: title,
+                        text: "Browse this graph in the DSA Patterns library.",
+                        url: url,
+                    });
+                    toast("Share sheet opened");
+                    return;
+                } catch (e) {
+                    if (e && e.name === "AbortError") {
+                        return;
+                    }
+                }
+            }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(url);
+                toast("Library link copied");
+                return;
+            }
+        } catch (e) {
+            /* fallback below */
+        }
+        window.prompt("Copy this library link", url);
+    }
+
+    function setLibraryTab(tab) {
+        state.activeTab = tab === "community" ? "community" : "personal";
+        document.querySelectorAll("[data-glib-tab]").forEach(function (btn) {
+            var on = btn.getAttribute("data-glib-tab") === state.activeTab;
+            btn.classList.toggle("is-active", on);
+            btn.setAttribute("aria-selected", on ? "true" : "false");
+        });
+        document.querySelectorAll(".dsa-glib-tab-panel").forEach(function (panel) {
+            var on = panel.getAttribute("data-glib-panel") === state.activeTab;
+            panel.classList.toggle("is-active", on);
+            panel.hidden = !on;
+        });
+        var personalControls = document.getElementById("udash-glib-personal-controls");
+        if (personalControls) {
+            personalControls.hidden = state.activeTab !== "personal";
+        }
+        var createBtn = document.getElementById("udash-glib-create");
+        if (createBtn) {
+            createBtn.hidden = state.activeTab !== "personal";
+        }
+    }
+
     async function downloadCatalog(id) {
         var ok = await confirmDialog(
-            "Add to my library?",
+            "Download this graph?",
             "A personal copy will be saved to your account. You can open it from the Personal tab.",
         );
         if (!ok) {
@@ -453,7 +566,7 @@
     async function previewCatalog(id) {
         var ok = await confirmDialog(
             "Preview in workspace?",
-            "This loads the community graph for viewing only. Use “Add to my library” to keep a copy.",
+            "This loads the community graph for viewing only. Use Download to keep a personal copy.",
         );
         if (!ok) {
             return;
@@ -532,21 +645,82 @@
         }
     }
 
-    async function createGraph() {
-        var name = window.prompt("Name for your new graph", "My pattern map");
-        if (!name || !String(name).trim()) {
+    function createModalElements() {
+        return {
+            wrap: document.getElementById("udash-glib-create-modal"),
+            name: document.getElementById("udash-glib-create-name"),
+            accent: document.getElementById("udash-glib-create-accent"),
+            description: document.getElementById("udash-glib-create-description"),
+            cancel: document.getElementById("udash-glib-create-cancel"),
+            save: document.getElementById("udash-glib-create-save"),
+        };
+    }
+
+    function openCreateGraphModal() {
+        var els = createModalElements();
+        if (!els.wrap) {
             return;
         }
-        var ok = await confirmDialog("Create cloud graph?", "We will save an empty starter map to your personal library.");
-        if (!ok) {
+        els.wrap.hidden = false;
+        if (els.name) {
+            els.name.focus();
+            els.name.select();
+        }
+    }
+
+    function closeCreateGraphModal() {
+        var els = createModalElements();
+        if (!els.wrap) {
             return;
+        }
+        els.wrap.hidden = true;
+    }
+
+    async function createGraph() {
+        var els = createModalElements();
+        if (!els.wrap) {
+            return;
+        }
+        var name = els.name && els.name.value ? String(els.name.value).trim() : "";
+        var description = els.description && els.description.value ? String(els.description.value).trim() : "";
+        var accentHue = els.accent && els.accent.value !== "" ? Number(els.accent.value) : null;
+        if (!name) {
+            toast("Title required");
+            if (els.name) {
+                els.name.focus();
+            }
+            return;
+        }
+        if (accentHue != null && (!Number.isFinite(accentHue) || accentHue < 0 || accentHue > 359)) {
+            toast("Accent hue must be between 0 and 359");
+            if (els.accent) {
+                els.accent.focus();
+            }
+            return;
+        }
+        if (els.save) {
+            els.save.disabled = true;
         }
         try {
             var j = await fetchJson("api/graph-library/mine", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ title: String(name).trim(), description: "" }),
+                body: JSON.stringify({
+                    title: name,
+                    description: description,
+                    accentHue: accentHue,
+                }),
             });
+            closeCreateGraphModal();
+            if (els.name) {
+                els.name.value = "";
+            }
+            if (els.description) {
+                els.description.value = "";
+            }
+            if (els.accent) {
+                els.accent.value = "";
+            }
             await refreshMine();
             if (j.graph && j.graph.id) {
                 await openMineCopy(j.graph.id, j.graph.title, "created");
@@ -554,6 +728,10 @@
             toast("Graph created");
         } catch (e) {
             toast((e && e.message) || "Create failed");
+        } finally {
+            if (els.save) {
+                els.save.disabled = false;
+            }
         }
     }
 
@@ -609,14 +787,30 @@
     function wireGrids() {
         var pub = document.getElementById("udash-glib-public-grid");
         var mine = document.getElementById("udash-glib-mine-grid");
+        document.addEventListener("click", function (ev) {
+            var menu = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-card-menu-wrap");
+            closeLibraryMenusExcept(menu || null);
+        });
         if (pub) {
             pub.addEventListener("click", function (ev) {
                 var dl = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-dl");
-                var pr = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-prev");
+                var sh = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-sharelink");
+                var menuPreview = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-preview");
+                var menuDownload = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-download");
+                var menuShare = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-sharelink");
                 if (dl) {
                     downloadCatalog(dl.getAttribute("data-id"));
-                } else if (pr) {
-                    previewCatalog(pr.getAttribute("data-id"));
+                } else if (sh) {
+                    shareCatalogLink(sh.getAttribute("data-id"));
+                } else if (menuPreview) {
+                    closeMenuFromNode(menuPreview);
+                    previewCatalog(menuPreview.getAttribute("data-id"));
+                } else if (menuDownload) {
+                    closeMenuFromNode(menuDownload);
+                    downloadCatalog(menuDownload.getAttribute("data-id"));
+                } else if (menuShare) {
+                    closeMenuFromNode(menuShare);
+                    shareCatalogLink(menuShare.getAttribute("data-id"));
                 }
             });
         }
@@ -624,16 +818,25 @@
             mine.addEventListener("click", function (ev) {
                 var op = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-open");
                 var sh = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-share");
-                var del = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-del");
                 var crt = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-create-card");
+                var menuOpen = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-open");
+                var menuShare = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-share");
+                var menuDelete = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-delete");
                 if (op) {
                     openMineCopy(op.getAttribute("data-id"));
                 } else if (sh) {
                     shareMine(sh.getAttribute("data-id"));
-                } else if (del) {
-                    deleteMine(del.getAttribute("data-id"));
                 } else if (crt) {
-                    createGraph();
+                    openCreateGraphModal();
+                } else if (menuOpen) {
+                    closeMenuFromNode(menuOpen);
+                    openMineCopy(menuOpen.getAttribute("data-id"));
+                } else if (menuShare) {
+                    closeMenuFromNode(menuShare);
+                    shareMine(menuShare.getAttribute("data-id"));
+                } else if (menuDelete) {
+                    closeMenuFromNode(menuDelete);
+                    deleteMine(menuDelete.getAttribute("data-id"));
                 }
             });
         }
@@ -643,15 +846,7 @@
         document.querySelectorAll("[data-glib-tab]").forEach(function (btn) {
             btn.addEventListener("click", function () {
                 var tab = btn.getAttribute("data-glib-tab");
-                document.querySelectorAll("[data-glib-tab]").forEach(function (b) {
-                    b.classList.toggle("is-active", b === btn);
-                    b.setAttribute("aria-selected", b === btn ? "true" : "false");
-                });
-                document.querySelectorAll(".dsa-glib-tab-panel").forEach(function (p) {
-                    var on = p.getAttribute("data-glib-panel") === tab;
-                    p.classList.toggle("is-active", on);
-                    p.hidden = !on;
-                });
+                setLibraryTab(tab);
             });
         });
         document.querySelectorAll("[data-glib-filter]").forEach(function (btn) {
@@ -663,6 +858,36 @@
                 renderMineGrid(document.getElementById("udash-glib-mine-grid"));
             });
         });
+        setLibraryTab(state.activeTab);
+    }
+
+    function wireCreateModal() {
+        var els = createModalElements();
+        if (!els.wrap) {
+            return;
+        }
+        if (els.cancel) {
+            els.cancel.addEventListener("click", closeCreateGraphModal);
+        }
+        if (els.save) {
+            els.save.addEventListener("click", function () {
+                createGraph();
+            });
+        }
+        if (els.wrap) {
+            els.wrap.addEventListener("click", function (ev) {
+                if (ev.target === els.wrap || (ev.target && ev.target.classList && ev.target.classList.contains("dsa-udash-modal__backdrop"))) {
+                    closeCreateGraphModal();
+                }
+            });
+        }
+        if (els.description) {
+            els.description.addEventListener("keydown", function (ev) {
+                if ((ev.metaKey || ev.ctrlKey) && ev.key === "Enter") {
+                    createGraph();
+                }
+            });
+        }
     }
 
     function observePanel() {
@@ -691,12 +916,13 @@
         }
         wireGrids();
         wireTabs();
+        wireCreateModal();
         observePanel();
         syncWorkspaceBar();
         var createBtn = document.getElementById("udash-glib-create");
         if (createBtn) {
             createBtn.addEventListener("click", function () {
-                createGraph();
+                openCreateGraphModal();
             });
         }
         var saveBtn = document.getElementById("udash-cloud-graph-save");

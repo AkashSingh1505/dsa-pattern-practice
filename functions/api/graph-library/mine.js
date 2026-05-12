@@ -25,10 +25,17 @@ export async function onRequestGet(context) {
             .prepare(
                 `SELECT g.id, g.source_catalog_id, g.kind, g.title, g.description, g.accent_hue, g.shared_from_user_id,
                         g.created_at, g.updated_at,
-                        pu.email AS shared_from_email, up.display_name AS shared_from_display
+                        pu.email AS shared_from_email, up.display_name AS shared_from_display,
+                        c.download_count AS source_download_count,
+                        (
+                            SELECT COUNT(*)
+                            FROM graph_catalog_downloads gcd
+                            WHERE gcd.catalog_id = g.source_catalog_id
+                        ) AS source_unique_downloaders
                  FROM user_graphs g
                  LEFT JOIN practice_users pu ON pu.id = g.shared_from_user_id
                  LEFT JOIN user_profiles up ON up.user_id = pu.id
+                 LEFT JOIN graph_catalog c ON c.id = g.source_catalog_id
                  WHERE g.owner_user_id = ? AND g.deleted_at IS NULL
                  ORDER BY g.updated_at DESC`,
             )
@@ -49,6 +56,8 @@ export async function onRequestGet(context) {
             title: r.title,
             description: r.description || "",
             accentHue: r.accent_hue,
+            downloadCount: Number(r.source_download_count || 0) || 0,
+            uniqueDownloaders: Number(r.source_unique_downloaders || 0) || 0,
             createdAt: r.created_at,
             updatedAt: r.updated_at,
             sharedFromLabel,
@@ -74,6 +83,15 @@ export async function onRequestPost(context) {
         return json({ error: "title required" }, 400);
     }
     const description = String(body.description || "").trim();
+    const accentHueRaw = body.accentHue;
+    let accentHue = null;
+    if (accentHueRaw !== "" && accentHueRaw != null) {
+        const n = Number(accentHueRaw);
+        if (!Number.isFinite(n) || n < 0 || n > 359) {
+            return json({ error: "accentHue must be between 0 and 359" }, 400);
+        }
+        accentHue = Math.round(n);
+    }
     const { db, userId } = gate;
     const now = Math.floor(Date.now() / 1000);
     const id = newGraphId();
@@ -82,9 +100,9 @@ export async function onRequestPost(context) {
         await db
             .prepare(
                 `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, shared_from_user_id, created_at, updated_at, deleted_at)
-                 VALUES (?, ?, NULL, 'created', ?, ?, ?, NULL, NULL, ?, ?, NULL)`,
+                 VALUES (?, ?, NULL, 'created', ?, ?, ?, ?, NULL, ?, ?, NULL)`,
             )
-            .bind(id, userId, title, description || null, payload, now, now)
+            .bind(id, userId, title, description || null, payload, accentHue, now, now)
             .run();
     } catch (e) {
         console.error("graph create", e);
@@ -97,6 +115,7 @@ export async function onRequestPost(context) {
             kind: "created",
             title,
             description,
+            accentHue,
             createdAt: now,
             updatedAt: now,
         },

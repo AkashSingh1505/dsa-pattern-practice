@@ -349,8 +349,13 @@
         return dsaSiteFeatureEnabled(featureId);
     }
 
+    function normalizePanelId(panelId) {
+        return panelId === "map-tools" ? "library" : panelId;
+    }
+
     function memberHubPanelAllowed(panelId) {
-        if (panelId === "graph" || panelId === "map-tools") {
+        panelId = normalizePanelId(panelId);
+        if (panelId === "graph") {
             return true;
         }
         if (panelId === "library") {
@@ -386,6 +391,7 @@
     }
 
     function navigateDashboardPanel(id) {
+        id = normalizePanelId(id);
         if (!memberHubPanelAllowed(id)) {
             id = "graph";
         }
@@ -643,7 +649,7 @@
             return;
         }
         applyMemberHubFeatureUi();
-        var hash = (location.hash || "").replace(/^#/, "");
+        var hash = normalizePanelId((location.hash || "").replace(/^#/, ""));
         if (hash && PANEL_TITLES[hash] && !memberHubPanelAllowed(hash)) {
             navigateDashboardPanel("graph");
             try {
@@ -1456,7 +1462,7 @@
                 mb.setAttribute("aria-expanded", "false");
             });
         }
-        var hash = (location.hash || "").replace(/^#/, "");
+        var hash = normalizePanelId((location.hash || "").replace(/^#/, ""));
         var target = hash && PANEL_TITLES[hash] && memberHubPanelAllowed(hash) ? hash : "graph";
         showPanel(target);
         if (hash && PANEL_TITLES[hash] && target !== hash) {

@@ -385,6 +385,8 @@
                     : "Your copy — open in the graph workspace to study or edit.");
             var visibility = visibilityLabel(g.visibility);
             var nextVisibility = visibility === "Public" ? "private" : "public";
+            var publishLabel = visibility === "Public" ? "Make private" : "Publish";
+            var deleteLabel = g.kind === "shared" ? "Remove" : "Delete";
             card.innerHTML =
                 '<div class="dsa-glib-preview ' +
                 visualVariant(g.accentHue, idx + 1) +
@@ -411,26 +413,26 @@
                 '<button type="button" class="dsa-glib-card-menu-item dsa-glib-menu-open" data-id="' +
                 escapeHtml(g.id) +
                 '">Open in workspace</button>' +
-                '<button type="button" class="dsa-glib-card-menu-item dsa-glib-card-menu-item--important dsa-glib-menu-publish" data-id="' +
-                escapeHtml(g.id) +
-                '" data-visibility="' +
-                escapeHtml(nextVisibility) +
-                '">' +
-                escapeHtml(visibility === "Public" ? "Make private" : "Publish") +
-                "</button>" +
                 '<button type="button" class="dsa-glib-card-menu-item dsa-glib-menu-share" data-id="' +
                 escapeHtml(g.id) +
                 '">Share with member</button>' +
-                '<button type="button" class="dsa-glib-card-menu-item dsa-glib-card-menu-item--danger dsa-glib-menu-delete" data-id="' +
-                escapeHtml(g.id) +
-                '">' +
-                escapeHtml(g.kind === "shared" ? "Remove from library" : "Delete my copy") +
-                "</button>" +
                 "</div></details></div>" +
                 statsMarkup(g.downloadCount, g.uniqueDownloaders) +
                 '<div class="dsa-glib-card-footer"><span class="dsa-glib-card-updated">' +
                 escapeHtml(updatedLabel(g.updatedAt)) +
                 '</span><div class="dsa-glib-card-actions">' +
+                '<button type="button" class="dsa-glib-action dsa-glib-action--important dsa-glib-btn-publish" data-id="' +
+                escapeHtml(g.id) +
+                '" data-visibility="' +
+                escapeHtml(nextVisibility) +
+                '">' +
+                escapeHtml(publishLabel) +
+                "</button>" +
+                '<button type="button" class="dsa-glib-action dsa-glib-action--danger dsa-glib-btn-delete" data-id="' +
+                escapeHtml(g.id) +
+                '">' +
+                escapeHtml(deleteLabel) +
+                "</button>" +
                 '<button type="button" class="dsa-glib-action dsa-glib-action--ghost dsa-glib-btn-share" data-id="' +
                 escapeHtml(g.id) +
                 '">Share</button>' +
@@ -850,14 +852,14 @@
                 var shareLinkBtn = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-sharelink");
                 var openBtn = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-open");
                 var shareBtn = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-share");
+                var publishBtn = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-publish");
+                var deleteBtn = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-delete");
                 var createBtn = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-create-card");
                 var menuPreview = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-preview");
                 var menuDownload = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-download");
                 var menuShareLink = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-sharelink");
                 var menuOpen = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-open");
-                var menuPublish = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-publish");
                 var menuShare = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-share");
-                var menuDelete = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-delete");
                 if (dl) {
                     downloadCatalog(dl.getAttribute("data-id"));
                 } else if (shareLinkBtn) {
@@ -866,6 +868,10 @@
                     openMineCopy(openBtn.getAttribute("data-id"));
                 } else if (shareBtn) {
                     shareMine(shareBtn.getAttribute("data-id"));
+                } else if (publishBtn) {
+                    setMineVisibility(publishBtn.getAttribute("data-id"), publishBtn.getAttribute("data-visibility"));
+                } else if (deleteBtn) {
+                    deleteMine(deleteBtn.getAttribute("data-id"));
                 } else if (createBtn) {
                     openCreateGraphModal();
                 } else if (menuPreview) {
@@ -880,15 +886,9 @@
                 } else if (menuOpen) {
                     closeMenuFromNode(menuOpen);
                     openMineCopy(menuOpen.getAttribute("data-id"));
-                } else if (menuPublish) {
-                    closeMenuFromNode(menuPublish);
-                    setMineVisibility(menuPublish.getAttribute("data-id"), menuPublish.getAttribute("data-visibility"));
                 } else if (menuShare) {
                     closeMenuFromNode(menuShare);
                     shareMine(menuShare.getAttribute("data-id"));
-                } else if (menuDelete) {
-                    closeMenuFromNode(menuDelete);
-                    deleteMine(menuDelete.getAttribute("data-id"));
                 }
             });
         }

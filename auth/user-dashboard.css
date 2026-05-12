@@ -1531,11 +1531,11 @@ html.dsa-udash-html,
     display: none;
 }
 .dsa-glib-card-menu {
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    background: #fafafa;
-    color: #71717a;
-    width: 36px;
-    height: 36px;
+    border: none;
+    background: transparent;
+    color: #a1a1aa;
+    width: 30px;
+    height: 30px;
     border-radius: 999px;
     padding: 0;
     display: inline-flex;
@@ -1551,18 +1551,19 @@ html.dsa-udash-html,
 }
 .dsa-glib-card-menu:hover,
 .dsa-glib-card-menu-wrap[open] .dsa-glib-card-menu {
-    background: #fff;
+    background: #f4f4f5;
     color: #18181b;
-    border-color: rgba(0, 0, 0, 0.12);
-    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
-    transform: translateY(-1px);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
 }
 .dsa-glib-card-menu-list {
     position: absolute;
     top: calc(100% + 8px);
     right: 0;
     z-index: 3;
-    min-width: 220px;
+    min-width: 240px;
+    max-width: min(260px, calc(100vw - 32px));
+    max-height: min(320px, calc(100vh - 120px));
+    overflow-y: auto;
     padding: 10px;
     display: flex;
     flex-direction: column;
@@ -1572,6 +1573,7 @@ html.dsa-udash-html,
     background: rgba(255, 255, 255, 0.99);
     box-shadow: 0 24px 48px rgba(0, 0, 0, 0.14);
     backdrop-filter: blur(14px);
+    overscroll-behavior: contain;
 }
 .dsa-glib-card-menu-item {
     width: 100%;
@@ -1651,6 +1653,7 @@ html.dsa-udash-html,
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
+    justify-content: flex-end;
 }
 .dsa-glib-action {
     border: 1px solid transparent;
@@ -1691,13 +1694,22 @@ html.dsa-udash-html,
 .dsa-glib-action--primary:hover {
     background: #0077ed;
 }
+.dsa-glib-action--important {
+    background: rgba(0, 113, 227, 0.08);
+    color: #0b63ce;
+    border-color: rgba(0, 113, 227, 0.18);
+}
+.dsa-glib-action--important:hover {
+    background: rgba(0, 113, 227, 0.14);
+    border-color: rgba(0, 113, 227, 0.24);
+}
 .dsa-glib-action--danger {
-    background: transparent;
-    color: #ff3b30;
-    border: none;
+    background: rgba(220, 38, 38, 0.08);
+    color: #dc2626;
+    border-color: rgba(220, 38, 38, 0.14);
 }
 .dsa-glib-action--danger:hover {
-    background: rgba(255, 59, 48, 0.08);
+    background: rgba(220, 38, 38, 0.14);
 }
 .dsa-glib-card--create {
     border-style: dashed;

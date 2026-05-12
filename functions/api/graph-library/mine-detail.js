@@ -1,5 +1,6 @@
 import { json } from "../../_lib/admin-api.js";
 import { requirePracticeUser } from "../../_lib/practice-auth-request.js";
+import { ensureUserGraphVisibilityColumn } from "../../_lib/user-graph-visibility.js";
 
 export async function onRequestGet(context) {
     const { request, env } = context;
@@ -13,6 +14,7 @@ export async function onRequestGet(context) {
         return json({ error: "id required" }, 400);
     }
     const { db, userId } = gate;
+    await ensureUserGraphVisibilityColumn(db);
     let row;
     try {
         row = await db
@@ -74,6 +76,7 @@ export async function onRequestPut(context) {
         return json({ error: "invalid JSON" }, 400);
     }
     const { db, userId } = gate;
+    await ensureUserGraphVisibilityColumn(db);
     let row;
     try {
         row = await db
@@ -154,6 +157,7 @@ export async function onRequestDelete(context) {
         return json({ error: "id required" }, 400);
     }
     const { db, userId } = gate;
+    await ensureUserGraphVisibilityColumn(db);
     const now = Math.floor(Date.now() / 1000);
     try {
         const res = await db

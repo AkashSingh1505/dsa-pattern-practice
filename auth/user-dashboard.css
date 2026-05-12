@@ -1388,7 +1388,7 @@ html.dsa-udash-html,
     display: grid;
     grid-template-columns: repeat(1, minmax(0, 1fr));
     column-gap: 24px;
-    row-gap: 36px;
+    row-gap: 40px;
 }
 @media (min-width: 768px) {
     .dsa-glib-grid {

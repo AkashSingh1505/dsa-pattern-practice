@@ -1,5 +1,6 @@
 import { json } from "../../_lib/admin-api.js";
 import { newGraphId, requirePracticeUser } from "../../_lib/practice-auth-request.js";
+import { ensureUserGraphVisibilityColumn } from "../../_lib/user-graph-visibility.js";
 
 export async function onRequestPost(context) {
     const { request, env } = context;
@@ -21,6 +22,7 @@ export async function onRequestPost(context) {
         return json({ error: "copyId and recipientEmail required" }, 400);
     }
     const { db, userId, email: senderEmail } = gate;
+    await ensureUserGraphVisibilityColumn(db);
     if (recipientEmail === String(senderEmail || "").toLowerCase()) {
         return json({ error: "cannot share with yourself" }, 400);
     }

@@ -1,5 +1,6 @@
 import { json } from "../../_lib/admin-api.js";
 import { newGraphId, requirePracticeUser } from "../../_lib/practice-auth-request.js";
+import { ensureUserGraphVisibilityColumn } from "../../_lib/user-graph-visibility.js";
 
 function defaultPayload(title) {
     const safe = String(title || "My graph").slice(0, 80);
@@ -19,6 +20,7 @@ export async function onRequestGet(context) {
         return gate.response;
     }
     const { db, userId } = gate;
+    await ensureUserGraphVisibilityColumn(db);
     let rows;
     try {
         rows = await db
@@ -103,6 +105,7 @@ export async function onRequestPost(context) {
         accentHue = Math.round(n);
     }
     const { db, userId } = gate;
+    await ensureUserGraphVisibilityColumn(db);
     const now = Math.floor(Date.now() / 1000);
     const id = newGraphId();
     const payload = defaultPayload(title);

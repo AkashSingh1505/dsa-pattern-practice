@@ -280,8 +280,7 @@
                 visualVariant(g.accentHue, idx) +
                 '">' +
                 graphSvgMarkup(visualIdx) +
-                '<div class="dsa-glib-preview-badges"><span class="dsa-glib-badge">Community</span></div>' +
-                '<div class="dsa-glib-preview-visibility"><span class="dsa-glib-badge dsa-glib-badge--visibility">Public</span></div>' +
+                '<div class="dsa-glib-preview-badges"><span class="dsa-glib-badge">Community</span><span class="dsa-glib-badge dsa-glib-badge--visibility">Public</span></div>' +
                 '<div class="dsa-glib-preview-meta">' +
                 escapeHtml(stats.previewMeta) +
                 "</div>" +
@@ -342,6 +341,10 @@
 
     function visibilityLabel(v) {
         return String(v || "private").toLowerCase() === "public" ? "Public" : "Private";
+    }
+
+    function gridHost() {
+        return document.getElementById("udash-glib-public-grid");
     }
 
     function renderMineGrid(host) {
@@ -442,12 +445,23 @@
         host.appendChild(createCard);
     }
 
+    function renderActiveGrid() {
+        var host = gridHost();
+        if (!host) {
+            return;
+        }
+        if (state.activeTab === "community") {
+            renderPublicGrid(host);
+        } else {
+            renderMineGrid(host);
+        }
+    }
+
     async function refreshPublic() {
         var j = await fetchJson("api/graph-library/public", { method: "GET" });
         state.public = j.graphs || [];
-        var host = document.getElementById("udash-glib-public-grid");
-        if (host) {
-            renderPublicGrid(host);
+        if (state.activeTab === "community") {
+            renderActiveGrid();
         }
     }
 
@@ -456,9 +470,8 @@
         state.mine = (j.graphs || []).filter(function (g) {
             return g && (g.kind === "created" || g.kind === "downloaded" || g.kind === "shared");
         });
-        var host = document.getElementById("udash-glib-mine-grid");
-        if (host) {
-            renderMineGrid(host);
+        if (state.activeTab === "personal") {
+            renderActiveGrid();
         }
     }
 
@@ -538,11 +551,6 @@
             btn.classList.toggle("is-active", on);
             btn.setAttribute("aria-selected", on ? "true" : "false");
         });
-        document.querySelectorAll(".dsa-glib-tab-panel").forEach(function (panel) {
-            var on = panel.getAttribute("data-glib-panel") === state.activeTab;
-            panel.classList.toggle("is-active", on);
-            panel.hidden = !on;
-        });
         var personalControls = document.getElementById("udash-glib-personal-controls");
         if (personalControls) {
             personalControls.hidden = state.activeTab !== "personal";
@@ -551,6 +559,7 @@
         if (createBtn) {
             createBtn.hidden = state.activeTab !== "personal";
         }
+        renderActiveGrid();
     }
 
     async function downloadCatalog(id) {
@@ -823,50 +832,44 @@
     }
 
     function wireGrids() {
-        var pub = document.getElementById("udash-glib-public-grid");
-        var mine = document.getElementById("udash-glib-mine-grid");
+        var grid = gridHost();
         document.addEventListener("click", function (ev) {
             var menu = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-card-menu-wrap");
             closeLibraryMenusExcept(menu || null);
         });
-        if (pub) {
-            pub.addEventListener("click", function (ev) {
+        if (grid) {
+            grid.addEventListener("click", function (ev) {
                 var dl = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-dl");
-                var sh = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-sharelink");
+                var shareLinkBtn = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-sharelink");
+                var openBtn = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-open");
+                var shareBtn = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-share");
+                var createBtn = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-create-card");
                 var menuPreview = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-preview");
                 var menuDownload = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-download");
-                var menuShare = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-sharelink");
+                var menuShareLink = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-sharelink");
+                var menuOpen = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-open");
+                var menuPublish = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-publish");
+                var menuShare = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-share");
+                var menuDelete = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-delete");
                 if (dl) {
                     downloadCatalog(dl.getAttribute("data-id"));
-                } else if (sh) {
-                    shareCatalogLink(sh.getAttribute("data-id"));
+                } else if (shareLinkBtn) {
+                    shareCatalogLink(shareLinkBtn.getAttribute("data-id"));
+                } else if (openBtn) {
+                    openMineCopy(openBtn.getAttribute("data-id"));
+                } else if (shareBtn) {
+                    shareMine(shareBtn.getAttribute("data-id"));
+                } else if (createBtn) {
+                    openCreateGraphModal();
                 } else if (menuPreview) {
                     closeMenuFromNode(menuPreview);
                     previewCatalog(menuPreview.getAttribute("data-id"));
                 } else if (menuDownload) {
                     closeMenuFromNode(menuDownload);
                     downloadCatalog(menuDownload.getAttribute("data-id"));
-                } else if (menuShare) {
-                    closeMenuFromNode(menuShare);
-                    shareCatalogLink(menuShare.getAttribute("data-id"));
-                }
-            });
-        }
-        if (mine) {
-            mine.addEventListener("click", function (ev) {
-                var op = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-open");
-                var sh = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-share");
-                var crt = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-btn-create-card");
-                var menuOpen = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-open");
-                var menuPublish = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-publish");
-                var menuShare = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-share");
-                var menuDelete = ev.target && ev.target.closest && ev.target.closest(".dsa-glib-menu-delete");
-                if (op) {
-                    openMineCopy(op.getAttribute("data-id"));
-                } else if (sh) {
-                    shareMine(sh.getAttribute("data-id"));
-                } else if (crt) {
-                    openCreateGraphModal();
+                } else if (menuShareLink) {
+                    closeMenuFromNode(menuShareLink);
+                    shareCatalogLink(menuShareLink.getAttribute("data-id"));
                 } else if (menuOpen) {
                     closeMenuFromNode(menuOpen);
                     openMineCopy(menuOpen.getAttribute("data-id"));
@@ -897,7 +900,7 @@
                 document.querySelectorAll("[data-glib-filter]").forEach(function (b) {
                     b.classList.toggle("is-active", b === btn);
                 });
-                renderMineGrid(document.getElementById("udash-glib-mine-grid"));
+                renderActiveGrid();
             });
         });
         setLibraryTab(state.activeTab);

@@ -1,5 +1,6 @@
 import { json } from "../../_lib/admin-api.js";
 import { newGraphId, requirePracticeUser } from "../../_lib/practice-auth-request.js";
+import { ensureUserGraphVisibilityColumn } from "../../_lib/user-graph-visibility.js";
 
 export async function onRequestPost(context) {
     const { request, env } = context;
@@ -18,6 +19,7 @@ export async function onRequestPost(context) {
         return json({ error: "catalogId required" }, 400);
     }
     const { db, userId } = gate;
+    await ensureUserGraphVisibilityColumn(db);
     let cat;
     try {
         cat = await db

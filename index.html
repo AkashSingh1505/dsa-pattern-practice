@@ -1,279 +1,1706 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Set to your Cloudflare Worker origin (no trailing slash) when using admin OAuth -->
-    <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev">
-    <title>DSA Pattern Practice Studio</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./styles.css?v=14">
-    <link rel="stylesheet" href="./dsa-index-shell.css?v=21">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev">
+<title>DSA Pattern Practice Studio — Learn DSA as a Connected System</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f4f6fb;
+    --bg-2:#eef1f7;
+    --surface:#ffffff;
+    --surface-glass:rgba(255,255,255,0.65);
+    --surface-glass-2:rgba(255,255,255,0.85);
+    --line:rgba(20,30,55,0.08);
+    --line-2:rgba(20,30,55,0.14);
+    --text:#1b2238;
+    --text-2:#2a3148;
+    --muted:#5f6781;
+    --dim:#8d94a8;
+    --slate:#334155;
+    --slate-2:#1e293b;
+    --powder:#bcd4f0;
+    --peach:#ffd6c2;
+    --mint:#b8e8d4;
+    --lilac:#d6cef0;
+    --accent:#4f6bed;
+    --accent-2:#3b56d6;
+    --mint-ink:#2d9b75;
+    --peach-ink:#d4815a;
+  }
+  html,body{background:var(--bg);color:var(--text);font-family:'Inter','SF Pro Display',-apple-system,BlinkMacSystemFont,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  body{
+    background:
+      radial-gradient(900px 600px at 85% -10%, rgba(188,212,240,0.55), transparent 60%),
+      radial-gradient(700px 500px at 0% 30%, rgba(255,214,194,0.45), transparent 60%),
+      radial-gradient(800px 600px at 50% 110%, rgba(184,232,212,0.45), transparent 60%),
+      radial-gradient(700px 500px at 100% 60%, rgba(214,206,240,0.4), transparent 60%),
+      var(--bg);
+  }
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  .mono{font-family:'JetBrains Mono','SF Mono',ui-monospace,monospace;letter-spacing:-0.01em}
+  .container{max-width:1280px;margin:0 auto;padding:0 32px}
+
+  /* Navbar */
+  nav{
+    position:fixed;top:0;left:0;right:0;z-index:50;
+    backdrop-filter:saturate(180%) blur(20px);
+    -webkit-backdrop-filter:saturate(180%) blur(20px);
+    background:rgba(255,255,255,0.6);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{
+    width:34px;height:34px;border-radius:10px;
+    background:linear-gradient(135deg,#334155 0%,#1e293b 100%);
+    position:relative;display:grid;place-items:center;
+    box-shadow:0 8px 20px rgba(30,41,59,0.25), inset 0 1px 0 rgba(255,255,255,0.15);
+  }
+  .logo svg{width:18px;height:18px}
+  .brand-text{display:flex;flex-direction:column;line-height:1.1}
+  .brand-text b{font-size:14px;font-weight:600;letter-spacing:-0.01em;color:var(--text)}
+  .brand-text span{font-size:11px;color:var(--muted);letter-spacing:0.02em}
+  .nav-links{display:flex;align-items:center;gap:4px}
+  .nav-links a{font-size:13.5px;color:var(--muted);padding:8px 14px;border-radius:9px;transition:.2s}
+  .nav-links a:hover{color:var(--text);background:rgba(255,255,255,0.7)}
+  .nav-cta{display:flex;align-items:center;gap:10px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:11px;font-size:13.5px;font-weight:500;transition:.25s;border:1px solid transparent;white-space:nowrap}
+  .btn-ghost{
+    color:var(--text);
+    background:rgba(255,255,255,0.7);
+    border-color:var(--line-2);
+    backdrop-filter:blur(10px);
+  }
+  .btn-ghost:hover{background:rgba(255,255,255,0.9);border-color:rgba(20,30,55,0.2);transform:translateY(-1px)}
+  .btn-primary{
+    background:linear-gradient(180deg,#334155,#1e293b);
+    color:#fff;font-weight:600;
+    box-shadow:0 6px 18px rgba(30,41,59,0.25), inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 10px 28px rgba(30,41,59,0.35)}
+  .btn-premium{
+    background:linear-gradient(135deg,#475569,#1e293b);
+    color:#fff;font-weight:600;
+    box-shadow:0 8px 22px rgba(30,41,59,0.28), inset 0 1px 0 rgba(255,255,255,0.12);
+  }
+  .btn-premium:hover{transform:translateY(-1px);box-shadow:0 12px 30px rgba(30,41,59,0.4)}
+  .btn-lg{padding:14px 24px;font-size:14.5px;border-radius:13px}
+
+  /* HERO */
+  .hero{padding:140px 0 100px;position:relative}
+  .hero-grid{display:grid;grid-template-columns:1.05fr 0.95fr;gap:60px;align-items:center}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:10px;
+    padding:7px 14px;border-radius:99px;
+    border:1px solid var(--line-2);
+    background:rgba(255,255,255,0.65);
+    backdrop-filter:blur(10px);
+    font-size:12px;color:var(--slate);letter-spacing:0.08em;text-transform:uppercase;font-weight:500;
+  }
+  .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--mint-ink);box-shadow:0 0 10px rgba(45,155,117,0.6)}
+  h1.hero-title{
+    font-size:clamp(40px,5.5vw,72px);
+    line-height:1.02;letter-spacing:-0.035em;font-weight:600;margin:24px 0 24px;
+    color:var(--text);
+  }
+  h1.hero-title em{
+    font-style:normal;
+    background:linear-gradient(110deg,#3b56d6 0%,#6d7fea 40%,#2d9b75 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero p.lead{font-size:18px;color:var(--muted);max-width:540px;line-height:1.6}
+  .hero p.lead strong{color:var(--text);font-weight:600}
+  .hero-ctas{display:flex;gap:12px;margin-top:36px;flex-wrap:wrap}
+  .hero-trust{display:flex;gap:28px;margin-top:48px;padding-top:28px;border-top:1px solid var(--line)}
+  .hero-trust .tr{display:flex;flex-direction:column}
+  .hero-trust .num{font-size:24px;font-weight:600;letter-spacing:-0.02em;color:var(--text)}
+  .hero-trust .lab{font-size:12px;color:var(--muted);letter-spacing:0.05em;text-transform:uppercase;margin-top:4px}
+
+  /* Graph visual */
+  .graph-wrap{position:relative;aspect-ratio:1/1;width:100%;max-width:560px;margin-left:auto}
+  .graph-bg{
+    position:absolute;inset:-20px;
+    background:
+      radial-gradient(circle at 30% 30%, rgba(188,212,240,0.7), transparent 60%),
+      radial-gradient(circle at 70% 70%, rgba(184,232,212,0.5), transparent 60%);
+    filter:blur(30px);
+  }
+  .graph-frame{
+    position:relative;width:100%;height:100%;
+    border-radius:26px;
+    background:rgba(255,255,255,0.55);
+    backdrop-filter:blur(24px) saturate(180%);
+    -webkit-backdrop-filter:blur(24px) saturate(180%);
+    border:1px solid rgba(255,255,255,0.7);
+    overflow:hidden;
+    box-shadow:
+      0 30px 70px rgba(30,41,59,0.12),
+      0 1px 0 rgba(255,255,255,0.9) inset,
+      0 0 0 1px rgba(20,30,55,0.04);
+  }
+  .graph-frame::before{
+    content:"";position:absolute;inset:0;
+    background-image:
+      linear-gradient(rgba(20,30,55,0.04) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(20,30,55,0.04) 1px,transparent 1px);
+    background-size:32px 32px;
+    mask-image:radial-gradient(circle at 50% 50%, #000 30%, transparent 75%);
+  }
+  .graph-frame .head{
+    position:absolute;top:0;left:0;right:0;padding:14px 18px;
+    display:flex;align-items:center;justify-content:space-between;
+    border-bottom:1px solid var(--line);
+    background:rgba(255,255,255,0.5);
+    backdrop-filter:blur(10px);z-index:3;
+  }
+  .dots{display:flex;gap:6px}
+  .dots span{width:9px;height:9px;border-radius:50%;background:rgba(20,30,55,0.12)}
+  .dots span:nth-child(1){background:#ff7a70}
+  .dots span:nth-child(2){background:#ffc34a}
+  .dots span:nth-child(3){background:#5ac877}
+  .graph-frame .head .tab{font-size:11px;color:var(--muted);letter-spacing:0.05em}
+  .graph-svg{position:absolute;inset:0;width:100%;height:100%;z-index:2}
+  .node{cursor:pointer}
+  .node circle.ring{fill:rgba(255,255,255,0.85);stroke:rgba(20,30,55,0.2);stroke-width:1.2;transition:.3s}
+  .node:hover circle.ring{stroke:var(--accent);filter:drop-shadow(0 4px 10px rgba(79,107,237,0.35))}
+  .node.active circle.ring{stroke:var(--accent);stroke-width:1.5;fill:rgba(79,107,237,0.08);filter:drop-shadow(0 4px 10px rgba(79,107,237,0.25))}
+  .node.mint circle.ring{stroke:var(--mint-ink)}
+  .node.mint.active circle.ring{filter:drop-shadow(0 4px 10px rgba(45,155,117,0.25));fill:rgba(45,155,117,0.08)}
+  .node text{fill:var(--text);font-size:11px;font-family:'JetBrains Mono',monospace;font-weight:500;text-anchor:middle;dominant-baseline:central;pointer-events:none;letter-spacing:-0.01em}
+  .node .sub{fill:var(--muted);font-size:9px;font-weight:400}
+  .edge{stroke:rgba(20,30,55,0.15);stroke-width:1;fill:none}
+  .edge.active{stroke:url(#edgeGrad);stroke-width:1.5}
+  .pulse{transform-origin:center;animation:pulse 3s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.55}50%{opacity:1}}
+
+  .floater{
+    position:absolute;
+    background:rgba(255,255,255,0.85);
+    backdrop-filter:blur(16px) saturate(180%);
+    -webkit-backdrop-filter:blur(16px) saturate(180%);
+    border:1px solid rgba(255,255,255,0.9);
+    border-radius:12px;padding:10px 14px;
+    display:flex;align-items:center;gap:10px;
+    font-size:12px;color:var(--text);font-weight:500;
+    box-shadow:0 16px 32px rgba(30,41,59,0.12), 0 0 0 1px rgba(20,30,55,0.04);
+    z-index:4;
+  }
+  .floater .pill{width:8px;height:8px;border-radius:50%;background:var(--mint-ink);box-shadow:0 0 8px rgba(45,155,117,0.6)}
+  .float-1{top:14%;left:-6%;animation:float 6s ease-in-out infinite}
+  .float-2{bottom:18%;right:-8%;animation:float 7s ease-in-out infinite reverse}
+  .float-3{bottom:8%;left:-4%;animation:float 5s ease-in-out infinite}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+
+  /* SECTIONS */
+  section{padding:120px 0;position:relative}
+  .sec-head{max-width:760px;margin-bottom:64px}
+  .sec-tag{display:inline-block;font-size:12px;color:var(--accent);letter-spacing:0.12em;text-transform:uppercase;font-weight:600;margin-bottom:18px;font-family:'JetBrains Mono',monospace}
+  .sec-title{font-size:clamp(32px,4vw,52px);font-weight:600;letter-spacing:-0.03em;line-height:1.08;color:var(--text)}
+  .sec-title em{font-style:normal;color:var(--muted)}
+  .sec-sub{margin-top:18px;font-size:17px;color:var(--muted);line-height:1.6;max-width:640px}
+
+  /* Glass card baseline */
+  .glass{
+    background:rgba(255,255,255,0.6);
+    backdrop-filter:blur(20px) saturate(180%);
+    -webkit-backdrop-filter:blur(20px) saturate(180%);
+    border:1px solid rgba(255,255,255,0.7);
+    box-shadow:0 16px 40px rgba(30,41,59,0.08), 0 1px 0 rgba(255,255,255,0.8) inset, 0 0 0 1px rgba(20,30,55,0.04);
+  }
+
+  /* PROVIDE / features */
+  .feat-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:20px}
+  .feat-card{
+    border-radius:22px;
+    padding:32px;
+    position:relative;overflow:hidden;
+    transition:.35s;
+    background:rgba(255,255,255,0.6);
+    backdrop-filter:blur(20px) saturate(180%);
+    -webkit-backdrop-filter:blur(20px) saturate(180%);
+    border:1px solid rgba(255,255,255,0.75);
+    box-shadow:0 14px 36px rgba(30,41,59,0.07), 0 1px 0 rgba(255,255,255,0.85) inset;
+  }
+  .feat-card:hover{transform:translateY(-4px);box-shadow:0 22px 50px rgba(30,41,59,0.1), 0 1px 0 rgba(255,255,255,0.85) inset}
+  .feat-card .icn{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(188,212,240,0.6),rgba(214,206,240,0.5));border:1px solid rgba(255,255,255,0.8);display:grid;place-items:center;margin-bottom:22px;box-shadow:0 4px 12px rgba(79,107,237,0.12)}
+  .feat-card .icn svg{width:20px;height:20px;stroke:var(--accent-2)}
+  .feat-card h3{font-size:19px;font-weight:600;letter-spacing:-0.01em;margin-bottom:10px;color:var(--text)}
+  .feat-card p{color:var(--muted);font-size:14.5px;line-height:1.6}
+  .feat-card.span-7{grid-column:span 7}
+  .feat-card.span-5{grid-column:span 5}
+  .feat-card.span-4{grid-column:span 4}
+  .feat-card.span-8{grid-column:span 8}
+  .feat-card.span-6{grid-column:span 6}
+  .feat-card.glow{
+    background:
+      radial-gradient(400px 200px at 100% 0%, rgba(188,212,240,0.5), transparent 60%),
+      rgba(255,255,255,0.62);
+  }
+  .feat-card .mini-graph{
+    margin-top:24px;
+    height:180px;
+    border-radius:15px;
+    background:linear-gradient(180deg,rgba(255,255,255,0.7),rgba(255,255,255,0.4));
+    border:1px solid rgba(255,255,255,0.85);
+    position:relative;overflow:hidden;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.9), 0 4px 12px rgba(30,41,59,0.04);
+  }
+  .chip{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:7px 13px;border-radius:99px;
+    background:rgba(255,255,255,0.7);
+    border:1px solid rgba(255,255,255,0.9);
+    box-shadow:0 2px 8px rgba(30,41,59,0.05);
+    font-size:12px;color:var(--slate);font-family:'JetBrains Mono',monospace;font-weight:500;
+  }
+
+  /* STUDENT BENEFITS */
+  .bench{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+  .bench-list .row{display:flex;gap:18px;padding:24px 0;border-top:1px solid var(--line)}
+  .bench-list .row:last-child{border-bottom:1px solid var(--line)}
+  .bench-list .num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:13px;font-weight:600;min-width:30px;padding-top:4px}
+  .bench-list h4{font-size:18px;font-weight:600;margin-bottom:6px;letter-spacing:-0.01em;color:var(--text)}
+  .bench-list p{color:var(--muted);font-size:14.5px}
+  .bench-visual{
+    aspect-ratio:1/1.1;
+    border-radius:26px;
+    background:
+      radial-gradient(circle at 30% 20%, rgba(188,212,240,0.7), transparent 55%),
+      radial-gradient(circle at 80% 80%, rgba(184,232,212,0.6), transparent 55%),
+      radial-gradient(circle at 80% 20%, rgba(255,214,194,0.5), transparent 50%),
+      rgba(255,255,255,0.55);
+    backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,0.7);
+    padding:32px;position:relative;overflow:hidden;
+    box-shadow:0 24px 60px rgba(30,41,59,0.1);
+  }
+  .bv-card{
+    position:absolute;
+    background:rgba(255,255,255,0.88);
+    backdrop-filter:blur(18px) saturate(180%);
+    -webkit-backdrop-filter:blur(18px) saturate(180%);
+    border:1px solid rgba(255,255,255,0.95);
+    border-radius:15px;padding:16px;
+    box-shadow:0 18px 40px rgba(30,41,59,0.12), 0 0 0 1px rgba(20,30,55,0.04);
+  }
+  .bv-1{top:8%;left:6%;width:60%}
+  .bv-2{top:35%;right:6%;width:55%}
+  .bv-3{bottom:8%;left:10%;width:65%}
+  .bv-card .lbl{font-size:10px;color:var(--accent);letter-spacing:0.08em;text-transform:uppercase;font-weight:600;font-family:'JetBrains Mono',monospace}
+  .bv-card .ttl{font-size:14px;font-weight:600;margin-top:6px;color:var(--text)}
+  .bv-card .desc{font-size:12px;color:var(--muted);margin-top:4px}
+  .bv-card .bar{height:5px;background:rgba(20,30,55,0.06);border-radius:99px;margin-top:10px;overflow:hidden}
+  .bv-card .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--mint-ink));border-radius:99px}
+
+  /* UNIQUENESS / Studio vs Random */
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .col-card{
+    border-radius:22px;padding:36px;
+    background:rgba(255,255,255,0.55);
+    backdrop-filter:blur(20px) saturate(180%);
+    border:1px solid rgba(255,255,255,0.7);
+    box-shadow:0 14px 36px rgba(30,41,59,0.07);
+  }
+  .col-card.studio{
+    background:
+      radial-gradient(500px 300px at 100% 0%, rgba(188,212,240,0.55), transparent 60%),
+      radial-gradient(400px 250px at 0% 100%, rgba(184,232,212,0.4), transparent 60%),
+      rgba(255,255,255,0.65);
+    border-color:rgba(79,107,237,0.18);
+    box-shadow:0 18px 50px rgba(79,107,237,0.12), 0 1px 0 rgba(255,255,255,0.85) inset;
+  }
+  .col-card h4{font-size:13px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);font-family:'JetBrains Mono',monospace;font-weight:600;margin-bottom:10px}
+  .col-card.studio h4{color:var(--accent)}
+  .col-card .h2{font-size:24px;font-weight:600;letter-spacing:-0.02em;margin-bottom:24px;color:var(--text)}
+  .col-card ul{list-style:none;display:flex;flex-direction:column;gap:14px}
+  .col-card li{display:flex;gap:12px;font-size:15px;color:var(--text-2);align-items:flex-start}
+  .col-card li svg{width:18px;height:18px;flex-shrink:0;margin-top:2px}
+  .col-card.random li{color:var(--muted)}
+  .col-card.random li svg{stroke:#a4abc0}
+  .col-card.studio li svg{stroke:var(--mint-ink)}
+
+  /* STATS */
+  .stats{
+    border-radius:30px;
+    padding:56px;
+    border:1px solid rgba(255,255,255,0.75);
+    background:
+      radial-gradient(700px 300px at 100% 100%, rgba(188,212,240,0.55), transparent 60%),
+      radial-gradient(500px 250px at 0% 0%, rgba(184,232,212,0.45), transparent 60%),
+      radial-gradient(400px 250px at 100% 0%, rgba(255,214,194,0.35), transparent 60%),
+      rgba(255,255,255,0.6);
+    backdrop-filter:blur(24px) saturate(180%);
+    -webkit-backdrop-filter:blur(24px) saturate(180%);
+    display:grid;grid-template-columns:repeat(4,1fr);gap:32px;
+    position:relative;overflow:hidden;
+    box-shadow:0 24px 60px rgba(30,41,59,0.1), 0 1px 0 rgba(255,255,255,0.9) inset;
+  }
+  .stat{position:relative}
+  .stat .big{font-size:54px;font-weight:600;letter-spacing:-0.04em;line-height:1;color:var(--text)}
+  .stat .big sup{font-size:24px;color:var(--accent);margin-left:2px;top:-0.5em;position:relative}
+  .stat .lbl{margin-top:14px;font-size:13.5px;color:var(--muted);line-height:1.5}
+
+  /* PRODUCT PREVIEW */
+  .preview{
+    border-radius:30px;
+    border:1px solid rgba(255,255,255,0.75);
+    background:rgba(255,255,255,0.6);
+    backdrop-filter:blur(24px) saturate(180%);
+    -webkit-backdrop-filter:blur(24px) saturate(180%);
+    overflow:hidden;
+    box-shadow:0 40px 100px rgba(30,41,59,0.12), 0 1px 0 rgba(255,255,255,0.9) inset, 0 0 0 1px rgba(20,30,55,0.04);
+  }
+  .pv-head{padding:14px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.5)}
+  .pv-tabs{display:flex;gap:4px;background:rgba(20,30,55,0.05);border-radius:11px;padding:4px;border:1px solid rgba(20,30,55,0.04)}
+  .pv-tab{padding:7px 14px;font-size:12px;color:var(--muted);border-radius:8px;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:.2s;font-weight:500}
+  .pv-tab.active{background:rgba(255,255,255,0.95);color:var(--text);box-shadow:0 2px 8px rgba(30,41,59,0.08)}
+  .pv-body{display:grid;grid-template-columns:240px 1fr 280px;min-height:580px}
+  .pv-side{border-right:1px solid var(--line);padding:24px 18px;background:rgba(255,255,255,0.3)}
+  .pv-side h6{font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--dim);margin-bottom:14px;font-family:'JetBrains Mono',monospace;font-weight:600}
+  .pv-side .item{display:flex;align-items:center;gap:10px;padding:9px 10px;font-size:13px;color:var(--muted);border-radius:9px;cursor:pointer;margin-bottom:2px;transition:.15s;font-weight:500}
+  .pv-side .item:hover{background:rgba(255,255,255,0.7);color:var(--text)}
+  .pv-side .item.active{background:rgba(79,107,237,0.1);color:var(--accent);border:1px solid rgba(79,107,237,0.2)}
+  .pv-side .item .d{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.6}
+  .pv-canvas{position:relative;background:
+    radial-gradient(circle at 50% 50%, rgba(188,212,240,0.3),transparent 60%);overflow:hidden}
+  .pv-canvas::before{
+    content:"";position:absolute;inset:0;
+    background-image:
+      radial-gradient(rgba(20,30,55,0.08) 1px,transparent 1px);
+    background-size:24px 24px;
+  }
+  .pv-right{border-left:1px solid var(--line);padding:24px;background:rgba(255,255,255,0.3)}
+  .pv-right h6{font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--dim);margin-bottom:14px;font-family:'JetBrains Mono',monospace;font-weight:600}
+  .pv-detail{background:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.85);border-radius:13px;padding:16px;margin-bottom:14px;box-shadow:0 4px 12px rgba(30,41,59,0.04)}
+  .pv-detail .name{font-size:14px;font-weight:600;margin-bottom:4px;color:var(--text)}
+  .pv-detail .meta{font-size:12px;color:var(--muted)}
+  .pv-detail .prog{height:5px;background:rgba(20,30,55,0.06);border-radius:99px;margin-top:12px;overflow:hidden}
+  .pv-detail .prog i{display:block;height:100%;width:62%;background:linear-gradient(90deg,var(--accent),var(--mint-ink));border-radius:99px}
+
+  /* WORKFLOW */
+  .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;position:relative}
+  .flow-step{
+    border-radius:20px;padding:28px;
+    background:rgba(255,255,255,0.6);
+    backdrop-filter:blur(20px) saturate(180%);
+    border:1px solid rgba(255,255,255,0.75);
+    box-shadow:0 12px 30px rgba(30,41,59,0.06), 0 1px 0 rgba(255,255,255,0.85) inset;
+    position:relative;transition:.3s;
+  }
+  .flow-step:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(30,41,59,0.1)}
+  .flow-step .step-num{
+    font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);margin-bottom:18px;display:flex;align-items:center;gap:8px;font-weight:600;
+  }
+  .flow-step .step-num::before{content:"";width:18px;height:1px;background:var(--accent)}
+  .flow-step h4{font-size:17px;font-weight:600;letter-spacing:-0.01em;margin-bottom:8px;color:var(--text)}
+  .flow-step p{color:var(--muted);font-size:14px}
+
+  /* PREMIUM TEASER */
+  .premium-box{
+    border-radius:30px;
+    padding:60px;
+    background:
+      radial-gradient(800px 400px at 0% 100%, rgba(188,212,240,0.6), transparent 60%),
+      radial-gradient(600px 300px at 100% 0%, rgba(255,214,194,0.55), transparent 60%),
+      radial-gradient(500px 300px at 50% 50%, rgba(214,206,240,0.4), transparent 60%),
+      rgba(255,255,255,0.65);
+    backdrop-filter:blur(24px) saturate(180%);
+    -webkit-backdrop-filter:blur(24px) saturate(180%);
+    border:1px solid rgba(255,255,255,0.8);
+    position:relative;overflow:hidden;
+    display:grid;grid-template-columns:1.2fr 0.8fr;gap:60px;align-items:center;
+    box-shadow:0 30px 70px rgba(30,41,59,0.12), 0 1px 0 rgba(255,255,255,0.9) inset;
+  }
+  .premium-box h2{font-size:42px;font-weight:600;letter-spacing:-0.03em;line-height:1.1;margin-bottom:18px;color:var(--text)}
+  .premium-box p{color:var(--muted);font-size:16px;margin-bottom:32px;max-width:480px}
+  .premium-list{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:36px}
+  .premium-list .it{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--text-2);font-weight:500}
+  .premium-list .it svg{width:16px;height:16px;stroke:var(--mint-ink)}
+  .premium-pill{
+    display:flex;align-items:center;gap:8px;
+    padding:8px 14px;border-radius:99px;
+    background:rgba(255,255,255,0.7);
+    border:1px solid rgba(79,107,237,0.2);
+    font-size:12px;color:var(--accent);font-family:'JetBrains Mono',monospace;font-weight:600;
+    width:fit-content;margin-bottom:20px;
+    box-shadow:0 4px 12px rgba(79,107,237,0.1);
+  }
+  .plan-mini{
+    border:1px solid rgba(255,255,255,0.85);
+    border-radius:20px;padding:24px;
+    background:rgba(255,255,255,0.8);
+    backdrop-filter:blur(20px);
+    box-shadow:0 18px 40px rgba(30,41,59,0.1);
+  }
+  .plan-mini .row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px;color:var(--text-2)}
+  .plan-mini .row:last-child{border-bottom:none}
+  .plan-mini .row span{color:var(--muted)}
+  .plan-mini .row b{font-weight:600;color:var(--text)}
+  .plan-mini h5{font-size:13px;color:var(--muted);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px;font-weight:600}
+
+  /* FINAL CTA */
+  .final{
+    text-align:center;padding:120px 32px;
+    border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+    background:
+      radial-gradient(800px 400px at 50% 100%, rgba(188,212,240,0.5), transparent 60%),
+      radial-gradient(600px 300px at 30% 0%, rgba(255,214,194,0.35), transparent 60%);
+    position:relative;
+  }
+  .final h2{font-size:clamp(40px,5vw,68px);font-weight:600;letter-spacing:-0.035em;line-height:1.05;margin-bottom:20px;color:var(--text)}
+  .final h2 em{font-style:normal;background:linear-gradient(110deg,var(--accent),var(--mint-ink));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .final p{color:var(--muted);font-size:18px;max-width:520px;margin:0 auto 36px}
+  .final-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+  /* FOOTER */
+  footer{padding:64px 0 32px;color:var(--muted);font-size:13.5px}
+  .foot-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:48px;margin-bottom:48px}
+  .foot-grid h6{font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text);margin-bottom:18px;font-family:'JetBrains Mono',monospace;font-weight:600}
+  .foot-grid a{display:block;padding:6px 0;transition:.15s}
+  .foot-grid a:hover{color:var(--text)}
+  .foot-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:32px;border-top:1px solid var(--line);font-size:12.5px}
+
+  /* Responsive */
+  @media (max-width:980px){
+    .nav-links{display:none}
+    .hero{padding:120px 0 60px}
+    .hero-grid{grid-template-columns:1fr;gap:40px}
+    .graph-wrap{max-width:480px;margin:0 auto}
+    .feat-card.span-7,.feat-card.span-5,.feat-card.span-4,.feat-card.span-8,.feat-card.span-6{grid-column:span 12}
+    .bench{grid-template-columns:1fr;gap:40px}
+    .compare{grid-template-columns:1fr}
+    .stats{grid-template-columns:1fr 1fr;padding:36px}
+    .pv-body{grid-template-columns:1fr;min-height:auto}
+    .pv-side,.pv-right{display:none}
+    .pv-canvas{min-height:400px}
+    .flow{grid-template-columns:1fr 1fr}
+    .premium-box{grid-template-columns:1fr;padding:36px}
+    .foot-grid{grid-template-columns:1fr 1fr;gap:32px}
+    section{padding:80px 0}
+  }
+  @media (max-width:540px){
+    .container{padding:0 20px}
+    .stats{grid-template-columns:1fr;padding:28px}
+    .flow{grid-template-columns:1fr}
+    .premium-list{grid-template-columns:1fr}
+    .foot-grid{grid-template-columns:1fr}
+    .hero-trust{gap:20px;flex-wrap:wrap}
+  }
+</style>
+<script>
+  (function () {
+    function getPracticeToken() {
+      try {
+        return localStorage.getItem("dsaPracticeUserJwtV1") || sessionStorage.getItem("dsaPracticeUserJwtV1") || "";
+      } catch (e) {
+        return "";
+      }
+    }
+    function parsePayload(token) {
+      if (!token || typeof token !== "string") return null;
+      var parts = token.split(".");
+      if (parts.length !== 3) return null;
+      try {
+        var p = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+        var pad = p.length % 4;
+        if (pad) p += "====".slice(0, 4 - pad);
+        return JSON.parse(atob(p));
+      } catch (e) {
+        return null;
+      }
+    }
+    var payload = parsePayload(getPracticeToken());
+    if (
+      payload &&
+      payload.typ === "practice" &&
+      payload.iss === "dsa-pattern-practice" &&
+      !(typeof payload.exp === "number" && payload.exp < Math.floor(Date.now() / 1000))
+    ) {
+      window.location.replace("./user-dashboard.html");
+    }
+  })();
+</script>
 </head>
-<body class="dsa-page dsa-index-ref">
-    <header class="nav">
-        <div class="nav-inner">
-            <a href="./index.html" class="brand dsa-app-title" aria-label="DSA Pattern Practice home">
-                <span class="brand-mark">DS</span>
-                <span class="brand-copy">
-                    <strong>DSA Pattern Practice</strong>
-                    <small>Visual study studio for patterns</small>
-                </span>
-            </a>
-            <nav class="nav-links" aria-label="Site sections">
-                <a href="./index.html" class="active" aria-current="page">Studio</a>
-                <a href="#why">Why it works</a>
-                <a href="#studio">Live graph</a>
-                <a href="./user-dashboard.html" id="nav-link-dashboard">Dashboard</a>
-            </nav>
-            <div class="nav-auth">
-                <a href="./premium.html" class="nav-premium-entry">Premium</a>
-                <a id="nav-admin-entry" class="nav-admin-entry" href="./account.html">Sign in</a>
-                <button type="button" id="nav-admin-signout" class="signout nav-signout-btn" hidden>Sign out</button>
-            </div>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="container nav-inner">
+    <div class="brand">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="6" r="2.5" fill="#fff"/>
+          <circle cx="18" cy="6" r="2.5" fill="#fff"/>
+          <circle cx="12" cy="18" r="2.5" fill="#fff"/>
+          <path d="M6 6L12 18M18 6L12 18M6 6H18" stroke="#fff" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <b>DSA Pattern Practice</b>
+        <span>Visual study studio</span>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="#studio">Studio</a>
+      <a href="#why">Why it works</a>
+      <a href="#preview">Live graph</a>
+      <a href="#premium">Premium</a>
+    </div>
+    <div class="nav-cta">
+      <button class="btn btn-ghost">Sign in</button>
+      <button class="btn btn-premium">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2L15 8.5L22 9.5L17 14.5L18.5 22L12 18L5.5 22L7 14.5L2 9.5L9 8.5L12 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        Premium
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <div class="eyebrow"><span class="dot"></span> Pattern-first DSA learning studio</div>
+      <h1 class="hero-title">Learn DSA as a <em>connected map</em>, not a random problem list.</h1>
+      <p class="lead">A visual studio where every data structure, algorithm and interview pattern is connected on one graph — so you understand <strong>why a solution works</strong> and where to use it again.</p>
+      <div class="hero-ctas">
+        <button class="btn btn-primary btn-lg">Start learning free
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="btn btn-ghost btn-lg">Compare plans</button>
+      </div>
+      <div class="hero-trust">
+        <div class="tr"><div class="num">2,400+</div><div class="lab">Active learners</div></div>
+        <div class="tr"><div class="num">180+</div><div class="lab">Pattern nodes</div></div>
+        <div class="tr"><div class="num">12k+</div><div class="lab">Connections mapped</div></div>
+      </div>
+    </div>
+
+    <!-- HERO GRAPH -->
+    <div class="graph-wrap">
+      <div class="graph-bg"></div>
+      <div class="graph-frame">
+        <div class="head">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <div class="tab mono">studio / dsa.graph</div>
+          <div class="tab mono" style="color:var(--mint-ink)">● live</div>
         </div>
-    </header>
+        <svg class="graph-svg" viewBox="0 0 500 500">
+          <defs>
+            <linearGradient id="edgeGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#4f6bed"/>
+              <stop offset="1" stop-color="#2d9b75"/>
+            </linearGradient>
+            <radialGradient id="nodeGlow">
+              <stop offset="0" stop-color="#4f6bed" stop-opacity="0.25"/>
+              <stop offset="1" stop-color="#4f6bed" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <!-- edges -->
+          <path class="edge active" d="M250,260 C260,200 280,180 340,160"/>
+          <path class="edge active" d="M250,260 C220,210 180,200 140,180"/>
+          <path class="edge" d="M250,260 C260,320 290,360 350,380"/>
+          <path class="edge" d="M250,260 C220,320 180,340 130,360"/>
+          <path class="edge active" d="M250,260 C320,270 360,290 410,300"/>
+          <path class="edge" d="M250,260 C180,260 130,250 90,230"/>
+          <path class="edge" d="M340,160 C390,150 420,180 430,210"/>
+          <path class="edge" d="M140,180 C90,180 70,220 80,260"/>
+          <path class="edge" d="M350,380 C400,380 430,360 430,320"/>
 
-    <main class="page landing-page">
-        <section class="landing-hero">
-            <div class="landing-hero-copy">
-                <div class="eyebrow">Pattern-first learning studio</div>
-                <h1>Learn DSA as a connected system, not a random problem list.</h1>
-                <p class="landing-hero-lede">
-                    DSA Pattern Practice gives students a visual map of core topics, a focused way to drill one area at a time,
-                    and a member hub for reminders, quizzes, graph tools, and personal progress. It is built to help you see
-                    <b>why</b> a solution pattern works and where to use it again.
-                </p>
-                <div class="landing-hero-actions">
-                    <a href="./account.html" class="landing-btn landing-btn--primary" data-marketing-primary-cta>Start free</a>
-                    <a href="./premium.html" class="landing-btn landing-btn--secondary">See premium plans</a>
-                </div>
-                <div class="landing-proof-strip" aria-label="Community proof">
-                    <article class="landing-proof-card">
-                        <strong data-public-stat="subscribers">--</strong>
-                        <span>subscribers building stronger pattern memory</span>
-                    </article>
-                    <article class="landing-proof-card">
-                        <strong data-public-stat="active_users">--</strong>
-                        <span>active learners using the studio workflow</span>
-                    </article>
-                    <article class="landing-proof-card">
-                        <strong data-public-stat="public_graphs">--</strong>
-                        <span>public graph resources available to explore</span>
-                    </article>
-                    <article class="landing-proof-card">
-                        <strong data-public-stat="graph_downloads">--</strong>
-                        <span>community graph downloads from the library</span>
-                    </article>
-                </div>
-            </div>
+          <!-- center node -->
+          <g class="node active pulse">
+            <circle class="ring" cx="250" cy="260" r="46"/>
+            <circle cx="250" cy="260" r="60" fill="url(#nodeGlow)"/>
+            <text x="250" y="255">DSA Patterns</text>
+            <text x="250" y="270" class="sub">core</text>
+          </g>
+          <!-- top right: Arrays -->
+          <g class="node active">
+            <circle class="ring" cx="340" cy="160" r="36"/>
+            <text x="340" y="156">Arrays</text>
+            <text x="340" y="170" class="sub">12 patterns</text>
+          </g>
+          <!-- top left: Graphs -->
+          <g class="node active mint">
+            <circle class="ring" cx="140" cy="180" r="36"/>
+            <text x="140" y="176">Graphs</text>
+            <text x="140" y="190" class="sub">9 patterns</text>
+          </g>
+          <!-- right: Trees -->
+          <g class="node active">
+            <circle class="ring" cx="410" cy="300" r="34"/>
+            <text x="410" y="296">Trees</text>
+            <text x="410" y="310" class="sub">8 patterns</text>
+          </g>
+          <!-- bottom right: DP -->
+          <g class="node">
+            <circle class="ring" cx="350" cy="380" r="32"/>
+            <text x="350" y="376">DP</text>
+            <text x="350" y="390" class="sub">14 patterns</text>
+          </g>
+          <!-- bottom left: Recursion -->
+          <g class="node">
+            <circle class="ring" cx="130" cy="360" r="32"/>
+            <text x="130" y="356">Recursion</text>
+            <text x="130" y="370" class="sub">6 patterns</text>
+          </g>
+          <!-- left: Hashing -->
+          <g class="node">
+            <circle class="ring" cx="90" cy="230" r="28"/>
+            <text x="90" y="230">Hashing</text>
+          </g>
+          <!-- outer nodes (leaves) -->
+          <g class="node">
+            <circle class="ring" cx="430" cy="210" r="22"/>
+            <text x="430" y="210" style="font-size:9px">Sliding W.</text>
+          </g>
+          <g class="node mint">
+            <circle class="ring" cx="80" cy="260" r="20"/>
+            <text x="80" y="260" style="font-size:9px">BFS</text>
+          </g>
+          <g class="node">
+            <circle class="ring" cx="430" cy="320" r="20"/>
+            <text x="430" y="320" style="font-size:9px">DFS</text>
+          </g>
+        </svg>
 
-            <aside class="landing-hero-panel" aria-label="Studio overview">
-                <div class="landing-surface">
-                    <span class="landing-kicker">What makes the studio useful</span>
-                    <h2>Everything important stays in one visual flow.</h2>
-                    <ul class="landing-checklist">
-                        <li>Browse the full DSA map and understand topic relationships faster.</li>
-                        <li>Switch into one-topic mode when you want focused revision for interviews.</li>
-                        <li>Use the member hub to continue practice with reminders, quizzes, and graph tools.</li>
-                        <li>Unlock premium workflows for personal graphs, collaboration, and deeper study support.</li>
-                    </ul>
-                </div>
-                <div class="landing-mini-grid">
-                    <div class="landing-mini-card">
-                        <span class="landing-mini-label">For students</span>
-                        <p>Less jumping between tabs, more understanding of reusable patterns.</p>
-                    </div>
-                    <div class="landing-mini-card">
-                        <span class="landing-mini-label">For serious prep</span>
-                        <p>A studio layout that moves from discovery to review to premium practice workflows.</p>
-                    </div>
-                </div>
-            </aside>
-        </section>
+        <div class="floater float-1"><span class="pill"></span>Pattern recognized</div>
+        <div class="floater float-2" style="background:rgba(79,107,237,0.12);border-color:rgba(79,107,237,0.3)"><span class="pill" style="background:var(--accent);box-shadow:0 0 10px rgba(79,107,237,0.6)"></span>Sliding Window → Arrays</div>
+        <div class="floater float-3"><span class="pill" style="background:var(--peach-ink);box-shadow:0 0 10px rgba(212,129,90,0.6)"></span>Focus mode active</div>
+      </div>
+    </div>
+  </div>
+</section>
 
-        <section class="landing-section" id="why">
-            <div class="landing-section-head">
-                <div class="eyebrow">Why it works</div>
-                <h2>A unique way to study DSA with context, focus, and follow-through.</h2>
-                <p>
-                    Most practice products stop at topic lists or problem feeds. This studio is designed around how students
-                    actually learn: understand the landscape first, focus on one branch second, then return with saved tools and
-                    premium workflows.
-                </p>
-            </div>
-            <div class="landing-card-grid">
-                <article class="landing-feature-card">
-                    <span class="landing-feature-tag">See the whole map</span>
-                    <h3>Pattern-first, not chapter-first</h3>
-                    <p>Understand how arrays, trees, graphs, recursion, dynamic programming, and other topics connect.</p>
-                </article>
-                <article class="landing-feature-card">
-                    <span class="landing-feature-tag">Stay focused</span>
-                    <h3>Switch from overview to one-topic mode</h3>
-                    <p>Reduce noise when you want to revise a single structure or family of interview patterns.</p>
-                </article>
-                <article class="landing-feature-card">
-                    <span class="landing-feature-tag">Keep momentum</span>
-                    <h3>Move into member tools when you are ready</h3>
-                    <p>Use the hub for reminders, quizzes, profile settings, graph actions, and premium study utilities.</p>
-                </article>
-            </div>
-        </section>
+<!-- WHAT IT PROVIDES -->
+<section id="studio">
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-tag">// what the studio gives you</div>
+      <h2 class="sec-title">Everything important <em>stays in one visual flow.</em></h2>
+      <p class="sec-sub">Not another problem list. This is a studio — discovery, focus, practice and tracking woven into a single map you can actually understand.</p>
+    </div>
 
-        <section class="head" id="studio">
-            <div class="head-text">
-                <div class="eyebrow">Live studio preview</div>
-                <h2>Explore the graph before you even sign in.</h2>
-                <p>
-                    The public graph is the front door of the studio. Start with the <b>full map</b>, switch to
-                    <b>one topic</b> for focused learning, or open <b>customize</b> when your plan allows it.
-                </p>
-            </div>
-            <nav class="seg dsa-view-tabs dsa-seg-track" role="tablist" id="modeSeg" aria-label="Graph layout">
-                <span class="dsa-seg-thumb" aria-hidden="true"></span>
-                <button type="button" class="dsa-view-btn" role="tab" data-mode="full" aria-selected="false">
-                    Full map
-                </button>
-                <button type="button" class="dsa-view-btn" role="tab" data-mode="one" aria-selected="false">
-                    One topic
-                </button>
-                <button type="button" class="dsa-view-btn" role="tab" data-mode="custom" aria-selected="false">
-                    Customize
-                </button>
-            </nav>
-        </section>
-
-        <section class="toolbar" aria-label="Graph toolbar">
-            <div
-                id="dsa-map-toolbar-host"
-                class="dsa-index-toolbar-shell"
-                data-dsa-index-toolbar-slots="1"
-            >
-                <div class="tools-left">
-                    <button type="button" class="btn dark" id="dsa-map-export-json" title="Export mind map JSON">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M12 3v12"></path>
-                            <path d="M7 10l5 5 5-5"></path>
-                            <path d="M5 21h14"></path>
-                        </svg>
-                        Export JSON
-                    </button>
-                    <button type="button" class="btn" id="dsa-map-import-json-trigger" title="Import mind map JSON">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M12 21V9"></path>
-                            <path d="M7 14l5-5 5 5"></path>
-                            <path d="M5 3h14"></path>
-                        </svg>
-                        Import JSON…
-                    </button>
-                    <input type="file" id="dsa-map-import-file" accept="application/json,.json" hidden aria-hidden="true" />
-                    <span class="divider" aria-hidden="true"></span>
-                    <div id="dsa-toolbar-expand-slot" class="dsa-toolbar-expand-slot"></div>
-                </div>
-                <div class="tools-right">
-                    <span class="hint dsa-graph-map-toolbar-hint">
-                        <span class="dot" aria-hidden="true"></span>
-                        <span id="dsa-map-toolbar-inline-hint" class="dsa-graph-map-toolbar-hint-text">
-                            Use ring on each node: <b>−</b> remove • <b>count</b> expand • <b>+</b> add
-                        </span>
-                    </span>
-                    <div id="dsa-toolbar-zoom-host" class="dsa-toolbar-zoom-host"></div>
-                </div>
-            </div>
-        </section>
-
-        <section class="graph-card">
-            <div class="graph-stage">
-                <div id="dsa-hierarchy-root" class="dsa-graph-viewport" aria-label="DSA pattern graph"></div>
-            </div>
-        </section>
-
-        <section class="landing-section landing-uniqueness">
-            <div class="landing-uniqueness-main">
-                <div class="eyebrow">What is unique here</div>
-                <h2>A study product that feels like a studio, not only a catalog.</h2>
-                <ul class="landing-story-list">
-                    <li><strong>Visual-first learning:</strong> ideas are shown as a connected graph, so students remember relationships instead of isolated notes.</li>
-                    <li><strong>Action after discovery:</strong> the experience continues into the member hub, where students can organize practice and revisit work.</li>
-                    <li><strong>Premium depth when needed:</strong> advanced workflows such as personal graphs, collaboration, and richer study tooling can grow with the learner.</li>
-                </ul>
-            </div>
-            <div class="landing-uniqueness-side">
-                <div class="landing-side-stat">
-                    <span class="landing-side-stat-label">Total learners</span>
-                    <strong data-public-stat="total_users">--</strong>
-                </div>
-                <div class="landing-side-stat">
-                    <span class="landing-side-stat-label">Subscriber contacts</span>
-                    <strong data-public-stat="subscriber_contacts">--</strong>
-                </div>
-                <div class="landing-side-stat">
-                    <span class="landing-side-stat-label">Next step</span>
-                    <p>Explore the live graph now, then compare plans when you want more studio power.</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="landing-plan-cta" id="plans">
-            <div>
-                <div class="eyebrow">Premium plans</div>
-                <h2>Compare plans and unlock the workflow that matches your study style.</h2>
-                <p>
-                    The premium page explains the difference between free, pro, team, and lifetime access so students can choose
-                    the right level of features.
-                </p>
-            </div>
-            <div class="landing-plan-actions">
-                <a href="./premium.html" class="landing-btn landing-btn--primary">Open premium page</a>
-                <a href="./account.html" class="landing-btn landing-btn--secondary" data-marketing-primary-cta>Start free</a>
-            </div>
-        </section>
-
-        <p class="foot">
-            Explore the public graph now, then sign in when you want to save your progress and unlock more of the studio workflow.
-        </p>
-    </main>
-
-    <footer class="footer dsa-index-site-footer">
-        <div class="footer-bottom">
-            <div class="footer-copyright">
-                <p>DSA Pattern Practice — visual, pattern-led practice for students and serious interview prep.</p>
-            </div>
-            <div
-                id="footer-visitors"
-                class="footer-visitors"
-                hidden
-                aria-live="polite"
-                role="status"
-                aria-label="Site visits"
-            >
-                <span class="footer-visitors-pulse" aria-hidden="true"></span>
-                <span class="footer-visitors-num" id="footer-visitors-num"></span>
-                <span class="footer-visitors-label">visits</span>
-            </div>
+    <div class="feat-grid">
+      <div class="feat-card span-7 glow">
+        <div class="icn"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="5" r="2.5"/><circle cx="19" cy="5" r="2.5"/><circle cx="12" cy="19" r="2.5"/><path d="M5 5L12 19M19 5L12 19M5 5H19"/></svg></div>
+        <h3>Interactive DSA map</h3>
+        <p>See every data structure, algorithm and pattern connected on one zoomable graph. Click any node to expand its branches, problems and notes — no more jumping between tabs.</p>
+        <div class="mini-graph">
+          <svg viewBox="0 0 500 180" style="width:100%;height:100%">
+            <path d="M80,90 L200,90 L320,40 M200,90 L320,140 M320,40 L420,40 M320,140 L420,140 M420,40 L420,140" stroke="rgba(20,30,55,0.18)" fill="none"/>
+            <g><circle cx="80" cy="90" r="22" fill="rgba(79,107,237,0.12)" stroke="#4f6bed"/><text x="80" y="93" fill="#1b2238" font-size="10" text-anchor="middle" font-family="JetBrains Mono">Arrays</text></g>
+            <g><circle cx="200" cy="90" r="18" fill="rgba(45,155,117,0.12)" stroke="#2d9b75"/><text x="200" y="93" fill="#1b2238" font-size="9" text-anchor="middle" font-family="JetBrains Mono">2 Pointers</text></g>
+            <g><circle cx="320" cy="40" r="16" fill="rgba(255,255,255,0.8)" stroke="rgba(20,30,55,0.22)"/><text x="320" y="43" fill="#5f6781" font-size="9" text-anchor="middle" font-family="JetBrains Mono">Window</text></g>
+            <g><circle cx="320" cy="140" r="16" fill="rgba(255,255,255,0.8)" stroke="rgba(20,30,55,0.22)"/><text x="320" y="143" fill="#5f6781" font-size="9" text-anchor="middle" font-family="JetBrains Mono">Sort</text></g>
+            <g><circle cx="420" cy="40" r="14" fill="rgba(255,255,255,0.8)" stroke="rgba(20,30,55,0.18)"/></g>
+            <g><circle cx="420" cy="140" r="14" fill="rgba(255,255,255,0.8)" stroke="rgba(20,30,55,0.18)"/></g>
+          </svg>
         </div>
-    </footer>
+      </div>
 
-    <script src="./auth/dsa-admin-auth.js?v=5"></script>
-    <script src="./auth/dsa-member-roles.js?v=1"></script>
-    <script src="./auth/dsa-user-auth.js?v=3"></script>
-    <script src="./auth/site-features.js?v=6"></script>
-    <script src="./cms-bootstrap.js?v=3"></script>
-    <script src="./dsa-sketch-native.js?v=3"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script>
-        if (typeof Prism !== "undefined" && Prism.plugins && Prism.plugins.autoloader) {
-            Prism.plugins.autoloader.languages_path =
-                "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/";
-        }
-    </script>
-    <script src="./script.js?v=36"></script>
-    <script src="./marketing-pages.js?v=1"></script>
+      <div class="feat-card span-5">
+        <div class="icn" style="background:linear-gradient(135deg,rgba(184,232,212,0.7),rgba(188,212,240,0.5))"><svg viewBox="0 0 24 24" fill="none" stroke="#2d9b75" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1.2" fill="#2d9b75"/></svg></div>
+        <h3>One-topic focus mode</h3>
+        <p>Switch from the full map into a single branch when you want deep, distraction-free revision — perfect before interviews or focused study sessions.</p>
+        <div style="margin-top:24px;display:flex;flex-direction:column;gap:8px">
+          <div class="chip">○  Trees → Binary Search Tree</div>
+          <div class="chip" style="background:rgba(79,107,237,0.1);color:var(--accent);border-color:rgba(79,107,237,0.25)">● Trees → BST → Inorder traversal</div>
+          <div class="chip">○  Trees → BST → Validate BST</div>
+        </div>
+      </div>
+
+      <div class="feat-card span-4">
+        <div class="icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9H21M8 4V20"/></svg></div>
+        <h3>Member dashboard</h3>
+        <p>Your progress, saved nodes, reminders and quiz history — organized like a real workspace, not a feed.</p>
+      </div>
+
+      <div class="feat-card span-4">
+        <div class="icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2V6M12 18V22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12H6M18 12H22M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93"/></svg></div>
+        <h3>Graph library</h3>
+        <p>Browse, import and export community graphs. Build your own pattern collection or fork study tracks from other learners.</p>
+      </div>
+
+      <div class="feat-card span-4">
+        <div class="icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V12L15 14"/><circle cx="12" cy="12" r="9"/></svg></div>
+        <h3>Reminders & tracking</h3>
+        <p>Smart spaced-revision reminders keep weak patterns surfacing until they really stick.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BENEFITS / How it helps students -->
+<section id="why">
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-tag">// how it helps students</div>
+      <h2 class="sec-title">From <em>"I solved it but I don't know why"</em> to real understanding.</h2>
+    </div>
+
+    <div class="bench">
+      <div class="bench-list">
+        <div class="row">
+          <div class="num">01</div>
+          <div>
+            <h4>Visual memory beats note-taking</h4>
+            <p>Patterns connected on a graph stay in your mind longer than walls of text. You start seeing the shape of a solution before you write it.</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="num">02</div>
+          <div>
+            <h4>Reduced confusion, clearer roadmap</h4>
+            <p>Stop wondering "what should I study next?" The map shows what's connected, what's prerequisite, and what's interview-critical.</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="num">03</div>
+          <div>
+            <h4>Focused revision before interviews</h4>
+            <p>Drop into one-topic mode the night before. Practice the exact branch you're weakest at without losing your place.</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="num">04</div>
+          <div>
+            <h4>Confidence built on patterns, not luck</h4>
+            <p>When you recognize patterns, new problems feel familiar. That's the difference between memorizing and actually preparing.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bench-visual">
+        <div class="bv-card bv-1">
+          <div class="lbl">// pattern</div>
+          <div class="ttl">Sliding Window</div>
+          <div class="desc">Applies to 23 problems across Arrays & Strings</div>
+          <div class="bar"><i style="width:78%"></i></div>
+        </div>
+        <div class="bv-card bv-2">
+          <div class="lbl" style="color:var(--mint-ink)">// progress</div>
+          <div class="ttl">Trees branch · Week 3</div>
+          <div class="desc">8 of 12 patterns mastered</div>
+          <div class="bar"><i style="width:66%"></i></div>
+        </div>
+        <div class="bv-card bv-3">
+          <div class="lbl" style="color:var(--peach-ink)">// reminder</div>
+          <div class="ttl">Revise: DFS on Graph</div>
+          <div class="desc">Due today · last reviewed 5 days ago</div>
+          <div class="bar"><i style="width:42%;background:linear-gradient(90deg,#d4815a,#e8a98e)"></i></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- UNIQUENESS -->
+<section>
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-tag">// what makes us different</div>
+      <h2 class="sec-title">Most sites give you problems. <em>We give you a system.</em></h2>
+      <p class="sec-sub">Random practice lists feel productive but rarely build the connected understanding interviews actually test. We rebuilt the experience from scratch.</p>
+    </div>
+
+    <div class="compare">
+      <div class="col-card random">
+        <h4>Typical DSA sites</h4>
+        <div class="h2">A long catalog of problems</div>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M6 6L18 18M6 18L18 6"/></svg> Topics shown as flat lists or categories</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M6 6L18 18M6 18L18 6"/></svg> No visual sense of how concepts relate</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M6 6L18 18M6 18L18 6"/></svg> You memorize solutions, not patterns</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M6 6L18 18M6 18L18 6"/></svg> Progress tracking is a checkbox, not a map</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M6 6L18 18M6 18L18 6"/></svg> No focus mode for serious revision</li>
+        </ul>
+      </div>
+      <div class="col-card studio">
+        <h4>DSA Pattern Studio</h4>
+        <div class="h2">A connected map you actually think with</div>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Pattern-first, graph-based learning</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Every topic linked to related patterns visually</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Full map → one-topic focus in one click</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Studio workspace: notes, quizzes, reminders</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Built to help patterns stick long-term</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     CALM GLASSY STUDIO THEME — Workflow → Footer
+     Append this block after the previous dark section.
+============================================================ -->
+<div class="calm-studio">
+
+<style>
+  /* ---------- Scoped Calm Studio Theme ---------- */
+  .calm-studio{
+    --c-bg-1:#eef3fb;       /* powder blue */
+    --c-bg-2:#fbeee6;       /* peach */
+    --c-bg-3:#e6f4ee;       /* mint */
+    --c-bg-4:#eef0f5;       /* cool gray */
+    --c-ink:#1b2230;
+    --c-ink-2:#2a3142;
+    --c-mute:#64708a;
+    --c-dim:#8a93a6;
+    --c-line:rgba(20,30,55,0.08);
+    --c-line-2:rgba(20,30,55,0.14);
+    --c-glass:rgba(255,255,255,0.62);
+    --c-glass-2:rgba(255,255,255,0.78);
+    --c-accent:#3a5bd9;
+    --c-accent-2:#6b86f0;
+    --c-mint:#1aa37a;
+    --c-peach:#e08a5b;
+    --c-violet:#7c5cff;
+
+    position:relative;
+    color:var(--c-ink);
+    font-family:'Inter','SF Pro Display',-apple-system,BlinkMacSystemFont,sans-serif;
+    background:
+      radial-gradient(900px 600px at 12% 8%, #d8e6fb 0%, transparent 55%),
+      radial-gradient(800px 600px at 90% 18%, #fbe2d2 0%, transparent 55%),
+      radial-gradient(900px 700px at 80% 88%, #d8efe1 0%, transparent 55%),
+      radial-gradient(800px 600px at 8% 92%, #e6e9f2 0%, transparent 55%),
+      linear-gradient(180deg,#f3f5fa,#eef1f7);
+    overflow:hidden;
+  }
+  .calm-studio::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:
+      radial-gradient(rgba(30,40,70,0.05) 1px, transparent 1px);
+    background-size:28px 28px;
+    mask-image:radial-gradient(ellipse at center, #000 30%, transparent 80%);
+    opacity:.5;
+  }
+  .calm-studio .container{max-width:1280px;margin:0 auto;padding:0 32px;position:relative}
+  .calm-studio section{padding:120px 0;position:relative}
+
+  /* Headings */
+  .calm-studio .sec-head{max-width:760px;margin-bottom:60px}
+  .calm-studio .sec-tag{
+    display:inline-block;
+    font-size:11.5px;letter-spacing:0.14em;text-transform:uppercase;
+    color:var(--c-accent);font-weight:600;
+    font-family:'JetBrains Mono','SF Mono',ui-monospace,monospace;
+    padding:6px 12px;border-radius:99px;
+    background:rgba(58,91,217,0.08);
+    border:1px solid rgba(58,91,217,0.18);
+    margin-bottom:18px;
+  }
+  .calm-studio .sec-title{
+    font-size:clamp(32px,4vw,52px);
+    font-weight:600;letter-spacing:-0.03em;line-height:1.08;color:var(--c-ink);
+  }
+  .calm-studio .sec-title em{font-style:normal;color:var(--c-mute)}
+  .calm-studio .sec-sub{
+    margin-top:18px;font-size:17px;color:var(--c-mute);line-height:1.6;max-width:640px;
+  }
+
+  /* Glass card base */
+  .calm-studio .glass{
+    background:var(--c-glass);
+    -webkit-backdrop-filter:blur(22px) saturate(160%);
+    backdrop-filter:blur(22px) saturate(160%);
+    border:1px solid rgba(255,255,255,0.65);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.9) inset,
+      0 20px 50px -20px rgba(30,40,70,0.18),
+      0 4px 12px -4px rgba(30,40,70,0.06);
+    border-radius:20px;
+    transition:transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s;
+  }
+  .calm-studio .glass:hover{
+    transform:translateY(-3px);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.9) inset,
+      0 28px 60px -22px rgba(30,40,70,0.25),
+      0 6px 16px -4px rgba(30,40,70,0.08);
+  }
+
+  /* Buttons */
+  .calm-studio .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:12px 20px;border-radius:12px;font-size:13.5px;font-weight:500;
+    transition:.25s cubic-bezier(.2,.7,.2,1);border:1px solid transparent;white-space:nowrap;
+    font-family:inherit;cursor:pointer;
+  }
+  .calm-studio .btn-lg{padding:14px 24px;font-size:14.5px;border-radius:13px}
+  .calm-studio .btn-primary{
+    background:linear-gradient(180deg,#2a3142,#1b2230);
+    color:#fff;font-weight:600;
+    box-shadow:0 10px 24px -8px rgba(27,34,48,0.5), inset 0 1px 0 rgba(255,255,255,0.12);
+  }
+  .calm-studio .btn-primary:hover{transform:translateY(-1px);box-shadow:0 14px 28px -8px rgba(27,34,48,0.6), inset 0 1px 0 rgba(255,255,255,0.12)}
+  .calm-studio .btn-secondary{
+    background:rgba(255,255,255,0.7);
+    color:var(--c-ink);
+    border:1px solid rgba(20,30,55,0.12);
+    backdrop-filter:blur(10px);
+  }
+  .calm-studio .btn-secondary:hover{background:rgba(255,255,255,0.92);transform:translateY(-1px)}
+
+  /* Mono helper */
+  .calm-studio .mono{font-family:'JetBrains Mono','SF Mono',ui-monospace,monospace;letter-spacing:-0.01em}
+
+  /* ---------- WORKFLOW ---------- */
+  .calm-studio .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+  .calm-studio .flow-step{padding:30px;position:relative;overflow:hidden}
+  .calm-studio .flow-step .step-num{
+    font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--c-accent);
+    margin-bottom:22px;display:flex;align-items:center;gap:10px;letter-spacing:0.06em;font-weight:600;
+  }
+  .calm-studio .flow-step .step-num::before{
+    content:"";width:22px;height:1.5px;background:linear-gradient(90deg,var(--c-accent),transparent);border-radius:99px;
+  }
+  .calm-studio .flow-step h4{font-size:17px;font-weight:600;letter-spacing:-0.01em;margin-bottom:8px;color:var(--c-ink)}
+  .calm-studio .flow-step p{color:var(--c-mute);font-size:14px;line-height:1.55}
+  .calm-studio .flow-step .step-ico{
+    position:absolute;top:24px;right:24px;
+    width:34px;height:34px;border-radius:10px;
+    background:rgba(58,91,217,0.08);
+    border:1px solid rgba(58,91,217,0.18);
+    display:grid;place-items:center;color:var(--c-accent);
+  }
+  .calm-studio .flow-step .step-ico svg{width:16px;height:16px}
+
+  /* ---------- STATS ---------- */
+  .calm-studio .stats{
+    border-radius:28px;padding:60px;
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.85), rgba(255,255,255,0.55));
+    -webkit-backdrop-filter:blur(28px) saturate(180%);
+    backdrop-filter:blur(28px) saturate(180%);
+    border:1px solid rgba(255,255,255,0.7);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.9) inset,
+      0 30px 80px -30px rgba(30,40,70,0.25);
+    display:grid;grid-template-columns:repeat(4,1fr);gap:40px;
+    position:relative;overflow:hidden;
+  }
+  .calm-studio .stats::before{
+    content:"";position:absolute;inset:0;
+    background:
+      radial-gradient(500px 250px at 0% 0%, rgba(58,91,217,0.08), transparent 60%),
+      radial-gradient(500px 250px at 100% 100%, rgba(224,138,91,0.08), transparent 60%);
+    pointer-events:none;
+  }
+  .calm-studio .stat{position:relative}
+  .calm-studio .stat .big{
+    font-size:56px;font-weight:600;letter-spacing:-0.04em;line-height:1;
+    color:var(--c-ink);
+  }
+  .calm-studio .stat .big sup{font-size:24px;color:var(--c-accent);margin-left:2px;font-weight:500}
+  .calm-studio .stat .lbl{margin-top:14px;font-size:13.5px;color:var(--c-mute);line-height:1.55;max-width:240px}
+  .calm-studio .stat::after{
+    content:"";position:absolute;left:0;top:-6px;width:28px;height:2px;border-radius:99px;
+    background:linear-gradient(90deg,var(--c-accent),transparent);
+  }
+
+  /* ---------- PRODUCT PREVIEW ---------- */
+  .calm-studio .preview{
+    border-radius:28px;overflow:hidden;
+    background:rgba(255,255,255,0.78);
+    -webkit-backdrop-filter:blur(28px) saturate(180%);
+    backdrop-filter:blur(28px) saturate(180%);
+    border:1px solid rgba(255,255,255,0.7);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.9) inset,
+      0 40px 100px -30px rgba(30,40,70,0.3),
+      0 8px 20px -8px rgba(30,40,70,0.08);
+  }
+  .calm-studio .pv-head{
+    padding:14px 20px;border-bottom:1px solid var(--c-line);
+    display:flex;align-items:center;justify-content:space-between;
+    background:rgba(255,255,255,0.5);
+  }
+  .calm-studio .dots{display:flex;gap:6px}
+  .calm-studio .dots span{width:10px;height:10px;border-radius:50%}
+  .calm-studio .dots span:nth-child(1){background:#ff5f57}
+  .calm-studio .dots span:nth-child(2){background:#febc2e}
+  .calm-studio .dots span:nth-child(3){background:#28c840}
+  .calm-studio .tab{font-size:12px;color:var(--c-mute);letter-spacing:0.04em}
+  .calm-studio .pv-tabs{
+    display:flex;gap:4px;
+    background:rgba(20,30,55,0.05);border-radius:11px;padding:4px;
+    border:1px solid var(--c-line);
+  }
+  .calm-studio .pv-tab{
+    padding:7px 14px;font-size:12px;color:var(--c-mute);border-radius:8px;
+    font-family:'JetBrains Mono',monospace;cursor:pointer;transition:.2s;
+  }
+  .calm-studio .pv-tab.active{background:#fff;color:var(--c-ink);box-shadow:0 2px 6px rgba(30,40,70,0.08)}
+  .calm-studio .chip{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:6px 12px;border-radius:99px;
+    background:rgba(255,255,255,0.7);
+    border:1px solid var(--c-line);
+    font-size:11.5px;color:var(--c-mute);
+    font-family:'JetBrains Mono',monospace;
+  }
+
+  .calm-studio .pv-body{display:grid;grid-template-columns:240px 1fr 280px;min-height:580px}
+  .calm-studio .pv-side{
+    border-right:1px solid var(--c-line);padding:24px 18px;
+    background:rgba(255,255,255,0.35);
+  }
+  .calm-studio .pv-side h6{
+    font-size:10.5px;text-transform:uppercase;letter-spacing:0.12em;
+    color:var(--c-dim);margin-bottom:14px;
+    font-family:'JetBrains Mono',monospace;font-weight:600;
+  }
+  .calm-studio .pv-side .item{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 12px;font-size:13px;color:var(--c-ink-2);
+    border-radius:10px;cursor:pointer;margin-bottom:3px;transition:.2s;
+  }
+  .calm-studio .pv-side .item:hover{background:rgba(255,255,255,0.7);color:var(--c-ink)}
+  .calm-studio .pv-side .item.active{
+    background:rgba(58,91,217,0.1);color:var(--c-accent);
+    border:1px solid rgba(58,91,217,0.2);
+  }
+  .calm-studio .pv-side .item .d{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.7}
+  .calm-studio .pv-side .item .count{margin-left:auto;font-size:11px;color:var(--c-dim);font-family:'JetBrains Mono',monospace}
+
+  .calm-studio .pv-canvas{
+    position:relative;overflow:hidden;
+    background:
+      radial-gradient(circle at 50% 40%, rgba(58,91,217,0.06), transparent 60%),
+      radial-gradient(circle at 80% 80%, rgba(26,163,122,0.05), transparent 60%);
+  }
+  .calm-studio .pv-canvas::before{
+    content:"";position:absolute;inset:0;
+    background-image:radial-gradient(rgba(30,40,70,0.08) 1px, transparent 1px);
+    background-size:24px 24px;
+    mask-image:radial-gradient(circle at 50% 50%, #000 35%, transparent 80%);
+  }
+  .calm-studio .pv-svg{position:absolute;inset:0;width:100%;height:100%}
+  .calm-studio .pv-node circle.ring{
+    fill:rgba(255,255,255,0.9);stroke:rgba(30,40,70,0.18);stroke-width:1;
+    transition:.25s;filter:drop-shadow(0 4px 8px rgba(30,40,70,0.08));
+  }
+  .calm-studio .pv-node.active circle.ring{
+    stroke:var(--c-accent);stroke-width:1.5;
+    filter:drop-shadow(0 6px 14px rgba(58,91,217,0.25));
+  }
+  .calm-studio .pv-node.mint circle.ring{stroke:var(--c-mint)}
+  .calm-studio .pv-node text{
+    fill:var(--c-ink);font-size:11px;
+    font-family:'JetBrains Mono',monospace;font-weight:500;
+    text-anchor:middle;dominant-baseline:central;pointer-events:none;
+  }
+  .calm-studio .pv-node .sub{fill:var(--c-mute);font-size:9px}
+  .calm-studio .pv-edge{stroke:rgba(30,40,70,0.18);stroke-width:1;fill:none}
+  .calm-studio .pv-edge.active{stroke:url(#cEdgeGrad);stroke-width:1.5}
+
+  .calm-studio .pv-right{
+    border-left:1px solid var(--c-line);padding:24px;
+    background:rgba(255,255,255,0.35);
+  }
+  .calm-studio .pv-right h6{
+    font-size:10.5px;text-transform:uppercase;letter-spacing:0.12em;
+    color:var(--c-dim);margin-bottom:14px;
+    font-family:'JetBrains Mono',monospace;font-weight:600;
+  }
+  .calm-studio .pv-detail{
+    background:rgba(255,255,255,0.7);
+    border:1px solid var(--c-line);
+    border-radius:13px;padding:16px;margin-bottom:14px;
+    box-shadow:0 4px 10px -4px rgba(30,40,70,0.06);
+  }
+  .calm-studio .pv-detail .name{font-size:14px;font-weight:600;margin-bottom:4px;color:var(--c-ink)}
+  .calm-studio .pv-detail .meta{font-size:12px;color:var(--c-mute);line-height:1.5}
+  .calm-studio .pv-detail .prog{
+    height:5px;background:rgba(20,30,55,0.06);border-radius:99px;
+    margin-top:12px;overflow:hidden;
+  }
+  .calm-studio .pv-detail .prog i{
+    display:block;height:100%;
+    background:linear-gradient(90deg,var(--c-accent),var(--c-mint));border-radius:99px;
+  }
+  .calm-studio .pv-mini-stat{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:10px 12px;font-size:12.5px;color:var(--c-mute);
+    border-top:1px solid var(--c-line);
+  }
+  .calm-studio .pv-mini-stat b{color:var(--c-ink);font-weight:600;font-family:'JetBrains Mono',monospace}
+
+  /* ---------- PREMIUM TEASER ---------- */
+  .calm-studio .premium-box{
+    border-radius:28px;padding:60px;
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.78), rgba(255,255,255,0.5)),
+      radial-gradient(600px 300px at 0% 100%, rgba(124,92,255,0.18), transparent 60%),
+      radial-gradient(500px 300px at 100% 0%, rgba(224,138,91,0.15), transparent 60%);
+    -webkit-backdrop-filter:blur(28px) saturate(180%);
+    backdrop-filter:blur(28px) saturate(180%);
+    border:1px solid rgba(255,255,255,0.7);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.9) inset,
+      0 40px 100px -30px rgba(30,40,70,0.25);
+    display:grid;grid-template-columns:1.2fr 0.8fr;gap:60px;align-items:center;
+    position:relative;overflow:hidden;
+  }
+  .calm-studio .premium-pill{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:8px 14px;border-radius:99px;
+    background:rgba(124,92,255,0.1);
+    border:1px solid rgba(124,92,255,0.25);
+    font-size:11.5px;color:#5d44e0;
+    font-family:'JetBrains Mono',monospace;font-weight:600;letter-spacing:0.06em;
+    width:fit-content;margin-bottom:20px;
+  }
+  .calm-studio .premium-box h2{
+    font-size:42px;font-weight:600;letter-spacing:-0.03em;line-height:1.1;
+    margin-bottom:18px;color:var(--c-ink);
+  }
+  .calm-studio .premium-box > div > p{
+    color:var(--c-mute);font-size:16px;margin-bottom:32px;max-width:480px;line-height:1.6;
+  }
+  .calm-studio .premium-list{
+    display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:36px;
+  }
+  .calm-studio .premium-list .it{
+    display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--c-ink-2);
+  }
+  .calm-studio .premium-list .it svg{width:16px;height:16px;stroke:var(--c-mint);flex-shrink:0}
+  .calm-studio .plan-mini{
+    border:1px solid rgba(255,255,255,0.7);
+    border-radius:20px;padding:26px;
+    background:rgba(255,255,255,0.78);
+    backdrop-filter:blur(20px);
+    box-shadow:0 20px 50px -20px rgba(30,40,70,0.2);
+  }
+  .calm-studio .plan-mini h5{
+    font-size:11.5px;color:var(--c-dim);
+    font-family:'JetBrains Mono',monospace;
+    text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;font-weight:600;
+  }
+  .calm-studio .plan-mini .price{
+    font-size:36px;font-weight:600;letter-spacing:-0.02em;color:var(--c-ink);margin-bottom:4px;
+  }
+  .calm-studio .plan-mini .price span{font-size:14px;color:var(--c-mute);font-weight:400}
+  .calm-studio .plan-mini .desc{font-size:12.5px;color:var(--c-mute);margin-bottom:18px}
+  .calm-studio .plan-mini .row{
+    display:flex;justify-content:space-between;
+    padding:11px 0;border-bottom:1px solid var(--c-line);
+    font-size:12.5px;
+  }
+  .calm-studio .plan-mini .row:last-child{border-bottom:none}
+  .calm-studio .plan-mini .row span{color:var(--c-mute)}
+  .calm-studio .plan-mini .row b{font-weight:600;color:var(--c-ink)}
+
+  /* ---------- FINAL CTA ---------- */
+  .calm-studio .final{
+    text-align:center;padding:140px 32px;
+    border-top:1px solid var(--c-line);
+    position:relative;overflow:hidden;
+  }
+  .calm-studio .final::before{
+    content:"";position:absolute;inset:0;
+    background:
+      radial-gradient(700px 350px at 50% 100%, rgba(58,91,217,0.12), transparent 60%),
+      radial-gradient(500px 250px at 50% 0%, rgba(224,138,91,0.08), transparent 60%);
+    pointer-events:none;
+  }
+  .calm-studio .final h2{
+    font-size:clamp(40px,5vw,68px);font-weight:600;
+    letter-spacing:-0.035em;line-height:1.05;margin-bottom:20px;color:var(--c-ink);
+    position:relative;
+  }
+  .calm-studio .final h2 em{
+    font-style:normal;
+    background:linear-gradient(110deg,var(--c-accent),var(--c-mint));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .calm-studio .final p{
+    color:var(--c-mute);font-size:18px;max-width:520px;
+    margin:0 auto 36px;position:relative;
+  }
+  .calm-studio .final-ctas{
+    display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative;
+  }
+  .calm-studio .final-trust{
+    margin-top:48px;display:flex;justify-content:center;gap:32px;
+    font-size:12px;color:var(--c-dim);
+    font-family:'JetBrains Mono',monospace;letter-spacing:0.05em;
+    position:relative;flex-wrap:wrap;
+  }
+  .calm-studio .final-trust span{display:inline-flex;align-items:center;gap:8px}
+  .calm-studio .final-trust span::before{
+    content:"";width:6px;height:6px;border-radius:50%;background:var(--c-mint);
+    box-shadow:0 0 10px var(--c-mint);
+  }
+
+  /* ---------- FOOTER ---------- */
+  .calm-studio footer{
+    padding:80px 0 40px;color:var(--c-mute);font-size:13.5px;
+    background:rgba(255,255,255,0.4);
+    backdrop-filter:blur(20px);
+    border-top:1px solid var(--c-line);
+    position:relative;
+  }
+  .calm-studio .foot-grid{
+    display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:48px;margin-bottom:48px;
+  }
+  .calm-studio .foot-brand{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .calm-studio .foot-logo{
+    width:36px;height:36px;border-radius:10px;
+    background:linear-gradient(135deg,#3a5bd9,#1aa37a);
+    display:grid;place-items:center;
+    box-shadow:0 6px 16px -4px rgba(58,91,217,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+  .calm-studio .foot-logo svg{width:18px;height:18px}
+  .calm-studio .foot-brand b{font-size:15px;color:var(--c-ink);font-weight:600;letter-spacing:-0.01em}
+  .calm-studio .foot-grid p{font-size:13.5px;color:var(--c-mute);line-height:1.6;max-width:280px}
+  .calm-studio .foot-grid h6{
+    font-size:11.5px;text-transform:uppercase;letter-spacing:0.12em;
+    color:var(--c-ink);margin-bottom:18px;
+    font-family:'JetBrains Mono',monospace;font-weight:600;
+  }
+  .calm-studio .foot-grid a{
+    display:block;padding:7px 0;transition:.15s;color:var(--c-mute);text-decoration:none;
+  }
+  .calm-studio .foot-grid a:hover{color:var(--c-ink)}
+  .calm-studio .foot-bottom{
+    display:flex;justify-content:space-between;align-items:center;
+    padding-top:32px;border-top:1px solid var(--c-line);font-size:12.5px;color:var(--c-dim);
+    flex-wrap:wrap;gap:16px;
+  }
+  .calm-studio .foot-social{display:flex;gap:8px}
+  .calm-studio .foot-social a{
+    width:34px;height:34px;border-radius:9px;
+    background:rgba(255,255,255,0.7);
+    border:1px solid var(--c-line);
+    display:grid;place-items:center;color:var(--c-mute);
+    transition:.2s;
+  }
+  .calm-studio .foot-social a:hover{
+    color:var(--c-ink);background:#fff;transform:translateY(-2px);
+    box-shadow:0 6px 14px -4px rgba(30,40,70,0.15);
+  }
+  .calm-studio .foot-social svg{width:15px;height:15px}
+
+  /* Responsive */
+  @media (max-width:980px){
+    .calm-studio section{padding:80px 0}
+    .calm-studio .flow{grid-template-columns:1fr 1fr}
+    .calm-studio .stats{grid-template-columns:1fr 1fr;padding:40px}
+    .calm-studio .pv-body{grid-template-columns:1fr;min-height:auto}
+    .calm-studio .pv-side,.calm-studio .pv-right{display:none}
+    .calm-studio .pv-canvas{min-height:420px}
+    .calm-studio .premium-box{grid-template-columns:1fr;padding:40px;gap:36px}
+    .calm-studio .foot-grid{grid-template-columns:1fr 1fr;gap:32px}
+  }
+  @media (max-width:540px){
+    .calm-studio .container{padding:0 20px}
+    .calm-studio .flow{grid-template-columns:1fr}
+    .calm-studio .stats{grid-template-columns:1fr;padding:32px;gap:28px}
+    .calm-studio .premium-box{padding:32px}
+    .calm-studio .premium-list{grid-template-columns:1fr}
+    .calm-studio .premium-box h2{font-size:32px}
+    .calm-studio .foot-grid{grid-template-columns:1fr}
+    .calm-studio .pv-head{flex-wrap:wrap;gap:10px}
+  }
+</style>
+
+<!-- WORKFLOW -->
+<section>
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-tag">// the studio workflow</div>
+      <h2 class="sec-title">Discover → focus → practice → review.</h2>
+      <p class="sec-sub">A complete learning loop, not a problem feed. Each step feeds the next.</p>
+    </div>
+    <div class="flow">
+      <div class="flow-step glass">
+        <div class="step-num">STEP 01</div>
+        <div class="step-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21L16 16"/></svg></div>
+        <h4>Explore the map</h4>
+        <p>Open the full DSA graph and understand the landscape. See how arrays connect to strings, trees to graphs, DP to recursion.</p>
+      </div>
+      <div class="flow-step glass">
+        <div class="step-num">STEP 02</div>
+        <div class="step-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg></div>
+        <h4>Switch to one-topic</h4>
+        <p>Pick a branch like “Sliding Window” and zoom in. Focused mode hides everything else.</p>
+      </div>
+      <div class="flow-step glass">
+        <div class="step-num">STEP 03</div>
+        <div class="step-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6H20M4 12H14M4 18H10"/><path d="M17 15L20 18L17 21"/></svg></div>
+        <h4>Practice patterns</h4>
+        <p>Work through problems grouped by pattern, not difficulty. Take notes that stay attached to the node.</p>
+      </div>
+      <div class="flow-step glass">
+        <div class="step-num">STEP 04</div>
+        <div class="step-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V12L15 14"/><circle cx="12" cy="12" r="9"/></svg></div>
+        <h4>Review automatically</h4>
+        <p>Smart reminders bring weak patterns back. Quizzes test recall, not just memorization.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section>
+  <div class="container">
+    <div class="sec-head" style="text-align:center;margin-left:auto;margin-right:auto">
+      <div class="sec-tag">// trusted by serious learners</div>
+      <h2 class="sec-title">Real students. Real preparation. <em>Real progress.</em></h2>
+    </div>
+    <div class="stats">
+      <div class="stat">
+        <div class="big">2,400<sup>+</sup></div>
+        <div class="lbl">Active learners building stronger pattern memory across the studio.</div>
+      </div>
+      <div class="stat">
+        <div class="big">180<sup>+</sup></div>
+        <div class="lbl">Pattern nodes mapped — every major interview pattern, organized.</div>
+      </div>
+      <div class="stat">
+        <div class="big">12k<sup>+</sup></div>
+        <div class="lbl">Concept connections that turn isolated topics into a real system.</div>
+      </div>
+      <div class="stat">
+        <div class="big">94<sup>%</sup></div>
+        <div class="lbl">Of premium users say the map approach finally made DSA click.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCT PREVIEW -->
+<section id="preview">
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-tag">// live studio preview</div>
+      <h2 class="sec-title">See the studio <em>before you even sign in.</em></h2>
+      <p class="sec-sub">The graph is the front door. Start with the full map, switch to one topic, or open the workspace.</p>
+    </div>
+
+    <div class="preview">
+      <div class="pv-head">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <div class="tab mono">studio · public.graph</div>
+        </div>
+        <div class="pv-tabs">
+          <div class="pv-tab active">Full map</div>
+          <div class="pv-tab">One topic</div>
+          <div class="pv-tab">Customize</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <div class="chip">⌘ Export JSON</div>
+          <div class="chip">100%</div>
+        </div>
+      </div>
+
+      <div class="pv-body">
+        <!-- SIDE -->
+        <div class="pv-side">
+          <h6>// patterns</h6>
+          <div class="item active">
+            <span class="d"></span> Arrays
+            <span class="count">12</span>
+          </div>
+          <div class="item">
+            <span class="d"></span> Strings
+            <span class="count">9</span>
+          </div>
+          <div class="item">
+            <span class="d"></span> Hashing
+            <span class="count">7</span>
+          </div>
+          <div class="item">
+            <span class="d"></span> Trees
+            <span class="count">8</span>
+          </div>
+          <div class="item">
+            <span class="d"></span> Graphs
+            <span class="count">9</span>
+          </div>
+          <div class="item">
+            <span class="d"></span> Dynamic Prog.
+            <span class="count">14</span>
+          </div>
+          <div class="item">
+            <span class="d"></span> Recursion
+            <span class="count">6</span>
+          </div>
+
+          <h6 style="margin-top:24px">// tracks</h6>
+          <div class="item">
+            <span class="d" style="color:var(--c-mint)"></span> Interview prep
+          </div>
+          <div class="item">
+            <span class="d" style="color:var(--c-peach)"></span> FAANG track
+          </div>
+          <div class="item">
+            <span class="d" style="color:var(--c-accent)"></span> Weak topics
+          </div>
+        </div>
+
+        <!-- CANVAS -->
+        <div class="pv-canvas">
+          <svg class="pv-svg" viewBox="0 0 600 580" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <linearGradient id="cEdgeGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#3a5bd9"/>
+                <stop offset="1" stop-color="#1aa37a"/>
+              </linearGradient>
+            </defs>
+            <!-- edges -->
+            <path class="pv-edge active" d="M300,290 C310,220 340,200 400,180"/>
+            <path class="pv-edge active" d="M300,290 C260,240 220,220 170,200"/>
+            <path class="pv-edge" d="M300,290 C320,360 360,400 420,420"/>
+            <path class="pv-edge" d="M300,290 C260,360 220,380 160,400"/>
+            <path class="pv-edge active" d="M300,290 C380,300 430,320 490,330"/>
+            <path class="pv-edge" d="M300,290 C220,290 160,280 110,260"/>
+            <path class="pv-edge" d="M400,180 C460,170 490,200 500,240"/>
+            <path class="pv-edge" d="M170,200 C110,200 80,250 95,290"/>
+            <path class="pv-edge" d="M420,420 C480,420 510,400 510,360"/>
+
+            <!-- center -->
+            <g class="pv-node active">
+              <circle class="ring" cx="300" cy="290" r="48"/>
+              <text x="300" y="285">DSA Patterns</text>
+              <text x="300" y="302" class="sub">core</text>
+            </g>
+            <!-- arrays -->
+            <g class="pv-node active">
+              <circle class="ring" cx="400" cy="180" r="36"/>
+              <text x="400" y="176">Arrays</text>
+              <text x="400" y="190" class="sub">12 patterns</text>
+            </g>
+            <!-- graphs -->
+            <g class="pv-node active mint">
+              <circle class="ring" cx="170" cy="200" r="36"/>
+              <text x="170" y="196">Graphs</text>
+              <text x="170" y="210" class="sub">9 patterns</text>
+            </g>
+            <!-- trees -->
+            <g class="pv-node active">
+              <circle class="ring" cx="490" cy="330" r="34"/>
+              <text x="490" y="326">Trees</text>
+              <text x="490" y="340" class="sub">8 patterns</text>
+            </g>
+            <!-- DP -->
+            <g class="pv-node">
+              <circle class="ring" cx="420" cy="420" r="32"/>
+              <text x="420" y="416">DP</text>
+              <text x="420" y="430" class="sub">14 patterns</text>
+            </g>
+            <!-- recursion -->
+            <g class="pv-node">
+              <circle class="ring" cx="160" cy="400" r="32"/>
+              <text x="160" y="396">Recursion</text>
+              <text x="160" y="410" class="sub">6 patterns</text>
+            </g>
+            <!-- hashing -->
+            <g class="pv-node">
+              <circle class="ring" cx="110" cy="260" r="28"/>
+              <text x="110" y="260">Hashing</text>
+            </g>
+            <!-- leaves -->
+            <g class="pv-node">
+              <circle class="ring" cx="500" cy="240" r="22"/>
+              <text x="500" y="240" style="font-size:9px">Sliding W.</text>
+            </g>
+            <g class="pv-node mint">
+              <circle class="ring" cx="95" cy="290" r="20"/>
+              <text x="95" y="290" style="font-size:9px">BFS</text>
+            </g>
+            <g class="pv-node">
+              <circle class="ring" cx="510" cy="360" r="20"/>
+              <text x="510" y="360" style="font-size:9px">DFS</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="pv-right">
+          <h6>// inspector</h6>
+          <div class="pv-detail">
+            <div class="name">Arrays · Sliding Window</div>
+            <div class="meta">Pattern · 23 problems · core technique</div>
+            <div class="prog"><i style="width:62%"></i></div>
+            <div class="pv-mini-stat">
+              <span>Mastery</span><b>62%</b>
+            </div>
+            <div class="pv-mini-stat">
+              <span>Last reviewed</span><b>2 days ago</b>
+            </div>
+          </div>
+          <div class="pv-detail">
+            <div class="name">Linked patterns</div>
+            <div class="meta" style="margin-top:8px">Two pointers · Prefix sum · Monotonic deque</div>
+          </div>
+          <div class="pv-detail" style="background:linear-gradient(180deg,rgba(58,91,217,0.08),rgba(58,91,217,0.02))">
+            <div class="name" style="color:var(--c-accent)">▸ Open in studio</div>
+            <div class="meta">Notes, quizzes & timeline</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PREMIUM TEASER -->
+<section id="premium">
+  <div class="container">
+    <div class="premium-box">
+      <div>
+        <div class="premium-pill">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 2L15 8.5L22 9.5L17 14.5L18.5 22L12 18L5.5 22L7 14.5L2 9.5L9 8.5L12 2Z"/></svg>
+          STUDIO PREMIUM
+        </div>
+        <h2>Go beyond practice — get the full studio.</h2>
+        <p>Unlock unlimited graphs, advanced focus mode, spaced revision and personal pattern collections. Built for learners who're serious about interviews.</p>
+        <div class="premium-list">
+          <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Unlimited personal graphs</div>
+          <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Advanced focus mode</div>
+          <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Smart spaced revision</div>
+          <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Quiz history & analytics</div>
+          <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Export & share graphs</div>
+          <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Priority support</div>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-lg">Upgrade to Premium
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="btn btn-secondary btn-lg">See all features</button>
+        </div>
+      </div>
+
+      <div class="plan-mini">
+        <h5>// premium plan</h5>
+        <div class="price">$9<span>/month</span></div>
+        <div class="desc">Billed monthly · cancel anytime</div>
+        <div class="row"><span>Personal graphs</span><b>Unlimited</b></div>
+        <div class="row"><span>Pattern library</span><b>180+ nodes</b></div>
+        <div class="row"><span>Focus mode</span><b>Advanced</b></div>
+        <div class="row"><span>Revision reminders</span><b>Smart</b></div>
+        <div class="row"><span>Analytics</span><b>Included</b></div>
+        <div class="row"><span>Community graphs</span><b>Full access</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section>
+  <div class="container">
+    <div class="final">
+      <h2>Stop solving problems. <em>Start understanding patterns.</em></h2>
+      <p>Join thousands of learners turning scattered DSA practice into a connected, confident system.</p>
+      <div class="final-ctas">
+        <button class="btn btn-primary btn-lg">Start learning free
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="btn btn-secondary btn-lg">Explore the live map</button>
+      </div>
+      <div class="final-trust">
+        <span>No credit card required</span>
+        <span>Free forever plan</span>
+        <span>Cancel anytime</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div>
+        <div class="foot-brand">
+          <div class="foot-logo">
+            <svg viewBox="0 0 24 24" fill="none">
+              <circle cx="6" cy="6" r="2.5" fill="#fff"/>
+              <circle cx="18" cy="6" r="2.5" fill="#fff"/>
+              <circle cx="12" cy="18" r="2.5" fill="#fff"/>
+              <path d="M6 6L12 18M18 6L12 18M6 6H18" stroke="#fff" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <b>DSA Pattern Practice</b>
+        </div>
+        <p>A visual study studio where every data structure, algorithm and interview pattern lives on one connected map.</p>
+        <div class="foot-social" style="margin-top:20px">
+          <a href="#" aria-label="Twitter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4.5C21.3 4.8 20.5 5 19.7 5.1C20.5 4.6 21.2 3.8 21.5 2.9C20.7 3.4 19.9 3.7 19 3.9C18.2 3.1 17.1 2.6 15.9 2.6C13.6 2.6 11.8 4.4 11.8 6.7C11.8 7 11.8 7.4 11.9 7.7C8.5 7.5 5.4 5.9 3.4 3.4C3 4 2.8 4.7 2.8 5.4C2.8 6.8 3.5 8.1 4.7 8.8C4 8.8 3.4 8.6 2.9 8.3V8.4C2.9 10.4 4.3 12.1 6.2 12.4C5.9 12.5 5.5 12.6 5.1 12.6C4.9 12.6 4.6 12.5 4.4 12.5C4.9 14.2 6.5 15.4 8.4 15.4C7 16.5 5.2 17.1 3.3 17.1C3 17.1 2.6 17.1 2.3 17C4.2 18.2 6.4 18.9 8.8 18.9C15.9 18.9 19.7 13.1 19.7 8.1V7.6C20.5 7 21.2 6.3 22 4.5Z"/></svg></a>
+          <a href="#" aria-label="GitHub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19C4 20.5 4 16.5 2 16M16 22V18.1C16 17 16.1 16.6 15.5 16C18.2 15.7 21 14.5 21 10C20.99 8.85 20.55 7.74 19.77 6.9C20.14 5.83 20.11 4.66 19.69 3.61C19.69 3.61 18.66 3.31 16.06 5.04C14.06 4.5 12 4.5 10 5.04C7.4 3.31 6.37 3.61 6.37 3.61C5.95 4.66 5.92 5.83 6.29 6.9C5.51 7.74 5.06 8.85 5.05 10C5.05 14.5 7.85 15.7 10.55 16C9.95 16.6 9.95 17.2 10.05 18.1V22"/></svg></a>
+          <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8C18.2 8 20 9.8 20 12V21H16V12.5C16 11.7 15.3 11 14.5 11C13.7 11 13 11.7 13 12.5V21H9V12C9 9.8 10.8 8 13 8C14 8 15 8.4 16 9V8Z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+          <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22.5 6.4C22.3 5.4 21.5 4.7 20.5 4.5C18.8 4 12 4 12 4C12 4 5.2 4 3.5 4.5C2.5 4.7 1.7 5.4 1.5 6.4C1 8.1 1 12 1 12C1 12 1 15.9 1.5 17.6C1.7 18.6 2.5 19.3 3.5 19.5C5.2 20 12 20 12 20C12 20 18.8 20 20.5 19.5C21.5 19.3 22.3 18.6 22.5 17.6C23 15.9 23 12 23 12C23 12 23 8.1 22.5 6.4Z"/><polygon points="10,9 15,12 10,15"/></svg></a>
+        </div>
+      </div>
+      <div>
+        <h6>Studio</h6>
+        <a href="#">Full map</a>
+        <a href="#">One-topic mode</a>
+        <a href="#">Graph library</a>
+        <a href="#">Dashboard</a>
+        <a href="#">Reminders</a>
+      </div>
+      <div>
+        <h6>Learn</h6>
+        <a href="#">Arrays & strings</a>
+        <a href="#">Trees & graphs</a>
+        <a href="#">Dynamic prog.</a>
+        <a href="#">Interview tracks</a>
+        <a href="#">Pattern guide</a>
+      </div>
+      <div>
+        <h6>Company</h6>
+        <a href="#">About</a>
+        <a href="#">Pricing</a>
+        <a href="#">Changelog</a>
+        <a href="#">Contact</a>
+        <a href="#">Privacy</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <div>© 2025 DSA Pattern Practice Studio. Built for learners who think in patterns.</div>
+      <div>Made with care · v2.4</div>
+    </div>
+  </div>
+</footer>
+
+</div>
+<!-- ============================================================
+     End of Calm Glassy Studio block
+============================================================ -->
+
+<script>
+  (function () {
+    function go(url) {
+      window.location.href = url;
+    }
+
+    var navSignIn = document.querySelector("nav .btn-ghost");
+    var navPremium = document.querySelector("nav .btn-premium");
+    var heroPrimary = document.querySelector(".hero-ctas .btn-primary");
+    var heroSecondary = document.querySelector(".hero-ctas .btn-ghost");
+    var premiumPrimary = document.querySelector("#premium .btn-primary");
+    var premiumSecondary = document.querySelector("#premium .btn-secondary");
+    var finalPrimary = document.querySelector(".final-ctas .btn-primary");
+    var finalSecondary = document.querySelector(".final-ctas .btn-secondary");
+
+    if (navSignIn) navSignIn.addEventListener("click", function () { go("./account.html"); });
+    if (navPremium) navPremium.addEventListener("click", function () { go("./premium.html"); });
+    if (heroPrimary) heroPrimary.addEventListener("click", function () { go("./account.html"); });
+    if (heroSecondary) heroSecondary.addEventListener("click", function () { go("./premium.html"); });
+    if (premiumPrimary) premiumPrimary.addEventListener("click", function () { go("./premium.html"); });
+    if (premiumSecondary) premiumSecondary.addEventListener("click", function () { go("./premium.html"); });
+    if (finalPrimary) finalPrimary.addEventListener("click", function () { go("./account.html"); });
+    if (finalSecondary) finalSecondary.addEventListener("click", function () { go("#preview"); });
+  })();
+</script>
 </body>
 </html>

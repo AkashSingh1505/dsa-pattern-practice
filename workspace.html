@@ -1,1533 +1,325 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <script>
-    (function () {
-        function assetBaseHref(pageStem) {
-            var u = new URL(location.href);
-            var path = u.pathname.replace(/\/$/, "");
-            var parts = path.split("/").filter(Boolean);
-            var last = parts.length ? parts[parts.length - 1] : "";
-            if (last === pageStem) {
-                parts.pop();
-                u.pathname = "/" + parts.join("/") + (parts.length ? "/" : "");
-                return u.href;
-            }
-            if (last === pageStem + ".html") {
-                u.pathname = path.slice(0, path.length - last.length);
-                return u.href;
-            }
-            return new URL(".", location.href).href;
-        }
-        var b = document.createElement("base");
-        b.href = assetBaseHref("workspace");
-        var cs = document.querySelector("meta[charset]");
-        if (cs && cs.parentNode === document.head) {
-            cs.insertAdjacentElement("afterend", b);
-        } else {
-            document.head.appendChild(b);
-        }
-    })();
-    </script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev" />
-    <title>Studio · public.graph — sandbox</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=14" />
-    <link rel="stylesheet" href="./dsa-index-shell.css?v=20" />
-    <link rel="stylesheet" href="./auth/admin-workspace.css?v=7" />
-    <style>
-        :root {
-            --bg: #f4f1ea;
-            --paper: #fbf9f4;
-            --ink: #1a1a1a;
-            --ink-2: #4a4a4a;
-            --ink-3: #8a857c;
-            --line: rgba(0, 0, 0, 0.09);
-            --line-2: rgba(0, 0, 0, 0.06);
-            --c-accent: #3a5bd9;
-            --c-mint: #1aa37a;
-            --c-peach: #e08658;
-            --c-pink: #d65082;
-            --c-amber: #c89020;
-            --c-red: #d04040;
-            --mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
-            --sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, system-ui, sans-serif;
-            --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 12px 30px rgba(0, 0, 0, 0.06);
-            --ease: cubic-bezier(0.32, 0.72, 0, 1);
-            --spring: cubic-bezier(0.2, 0.9, 0.3, 1.2);
-        }
-        * {
-            box-sizing: border-box;
-            -webkit-font-smoothing: antialiased;
-        }
-        html,
-        body {
-            margin: 0;
-            height: 100%;
-        }
-        body {
-            font-family: var(--sans);
-            color: var(--ink);
-            background:
-                radial-gradient(900px 600px at 8% 6%, rgba(58, 91, 217, 0.06), transparent 60%),
-                radial-gradient(700px 500px at 92% 96%, rgba(26, 163, 122, 0.06), transparent 60%),
-                var(--bg);
-            min-height: 100vh;
-            padding: 24px;
-            overflow-x: hidden;
-        }
-        .preview {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: var(--paper);
-            border: 1px solid var(--line);
-            border-radius: 16px;
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            min-height: calc(100vh - 48px);
-        }
-        .pv-head {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--line);
-            background: linear-gradient(180deg, rgba(0, 0, 0, 0.015), transparent);
-        }
-        .pv-head-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-        .pv-head-row--chips {
-            justify-content: flex-start;
-            flex-wrap: wrap;
-            gap: 8px;
-            padding-top: 2px;
-            border-top: 1px solid var(--line-2);
-        }
-        .pv-head-brand {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-        .pv-head-tabs-wrap {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 10px;
-        }
-        .dots {
-            display: inline-flex;
-            gap: 6px;
-        }
-        .dots span {
-            width: 11px;
-            height: 11px;
-            border-radius: 50%;
-            background: #e5b7b7;
-        }
-        .dots span:nth-child(2) {
-            background: #e8d294;
-        }
-        .dots span:nth-child(3) {
-            background: #a8d3a3;
-        }
-        .mono {
-            font-family: var(--mono);
-            font-size: 11.5px;
-        }
-        .tab {
-            color: var(--ink-3);
-            padding: 4px 10px;
-            border-radius: 6px;
-            background: rgba(0, 0, 0, 0.03);
-            border: 1px solid var(--line-2);
-        }
-        .pv-tabs {
-            display: inline-flex;
-            background: rgba(0, 0, 0, 0.04);
-            border-radius: 8px;
-            padding: 3px;
-            border: 1px solid var(--line-2);
-        }
-        .pv-tab {
-            font-family: var(--mono);
-            font-size: 11px;
-            padding: 6px 12px;
-            border-radius: 6px;
-            color: var(--ink-3);
-            cursor: pointer;
-            transition: all 0.2s var(--ease);
-            user-select: none;
-        }
-        .pv-tab.active {
-            background: var(--paper);
-            color: var(--ink);
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
-        }
-        .pv-tab:not(.active):hover {
-            color: var(--ink-2);
-        }
-        .chip {
-            font-family: var(--mono);
-            font-size: 11px;
-            padding: 6px 11px;
-            border-radius: 7px;
-            background: var(--paper);
-            border: 1px solid var(--line);
-            color: var(--ink-2);
-            cursor: pointer;
-            transition: all 0.15s var(--ease);
-        }
-        .chip:hover {
-            background: #fff;
-            border-color: rgba(0, 0, 0, 0.16);
-        }
-        .chip.live {
-            background: rgba(208, 64, 64, 0.08);
-            border-color: rgba(208, 64, 64, 0.3);
-            color: var(--c-red);
-        }
-        .pv-body {
-            display: grid;
-            grid-template-columns: 260px 1fr 300px;
-            flex: 1;
-            min-height: 0;
-        }
-        .pv-side {
-            border-right: 1px solid var(--line);
-            padding: 12px 10px;
-            background: linear-gradient(180deg, rgba(0, 0, 0, 0.012), transparent);
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-        }
-        h6.ws-h6 {
-            font-family: var(--mono);
-            font-size: 10.5px;
-            font-weight: 500;
-            color: var(--ink-3);
-            margin: 0 0 8px;
-            padding-left: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        h6.ws-h6 .add {
-            cursor: pointer;
-            color: var(--c-accent);
-            padding: 0 6px;
-            border-radius: 4px;
-            font-weight: 600;
-        }
-        h6.ws-h6 .add:hover {
-            background: rgba(58, 91, 217, 0.1);
-        }
-        #ws-graph-tree {
-            flex: 1;
-            min-height: 120px;
-            font-size: 12.5px;
-            user-select: none;
-        }
-        .ws-tree-empty {
-            padding: 10px 8px;
-            color: var(--ink-3);
-            font-size: 12px;
-        }
-        .ws-tree-row {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 3px 4px 3px 0;
-            border-radius: 5px;
-            cursor: pointer;
-            color: var(--ink-2);
-        }
-        .ws-tree-row:hover {
-            background: rgba(0, 0, 0, 0.04);
-            color: var(--ink);
-        }
-        .ws-tree-row.active {
-            background: rgba(58, 91, 217, 0.1);
-            color: var(--c-accent);
-            font-weight: 500;
-        }
-        .ws-tree-indent {
-            flex-shrink: 0;
-            width: calc(var(--depth, 0) * 12px);
-        }
-        .ws-tree-chev {
-            flex-shrink: 0;
-            width: 18px;
-            height: 22px;
-            border: 0;
-            background: transparent;
-            cursor: pointer;
-            color: var(--ink-3);
-            font-size: 10px;
-            padding: 0;
-            line-height: 1;
-        }
-        .ws-tree-chev:disabled {
-            opacity: 0.25;
-            cursor: default;
-        }
-        .ws-tree-label {
-            flex: 1;
-            min-width: 0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .ws-tree-children {
-            display: block;
-        }
-        .ws-tree-children.collapsed {
-            display: none;
-        }
-        .pv-canvas {
-            position: relative;
-            background:
-                radial-gradient(circle at 50% 45%, rgba(58, 91, 217, 0.04), transparent 70%),
-                linear-gradient(135deg, var(--paper), #f7f4ed);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-        }
-        .pv-canvas::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-image: linear-gradient(rgba(0, 0, 0, 0.025) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 0, 0, 0.025) 1px, transparent 1px);
-            background-size: 28px 28px;
-            mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
-            -webkit-mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
-            pointer-events: none;
-        }
-        .pv-canvas .corner {
-            position: absolute;
-            top: 14px;
-            left: 16px;
-            z-index: 4;
-            font-family: var(--mono);
-            font-size: 10px;
-            color: var(--ink-3);
-            letter-spacing: 0.08em;
-        }
-        .pv-canvas .legend-bot {
-            position: absolute;
-            bottom: 14px;
-            left: 16px;
-            z-index: 4;
-            display: flex;
-            gap: 10px;
-            font-family: var(--mono);
-            font-size: 10px;
-            color: var(--ink-3);
-        }
-        .pv-canvas .legend-bot b {
-            color: var(--ink-2);
-            font-weight: 500;
-        }
-        .ws-view-stack {
-            flex: 1;
-            min-height: 0;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            z-index: 2;
-            padding-top: 36px;
-        }
-        body.ws-repr-linear .ws-view--orbital {
-            display: none !important;
-        }
-        body.ws-repr-orbital .ws-view--linear {
-            display: none !important;
-        }
-        .ws-view--linear {
-            flex: 1;
-            min-height: 0;
-            display: flex;
-            flex-direction: column;
-        }
-        .ws-view--orbital {
-            flex: 1;
-            min-height: 0;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .ws-orbital-svg {
-            width: 100%;
-            height: 100%;
-            max-height: min(72vh, 720px);
-            display: block;
-        }
-        .ws-orb-edge {
-            fill: none;
-            stroke: rgba(0, 0, 0, 0.18);
-            stroke-width: 1.4;
-            stroke-linecap: round;
-        }
-        .ws-orb-edge.active {
-            stroke: url(#wsOrbEdgeGrad);
-            stroke-width: 1.8;
-        }
-        .ws-orb-edge.dim {
-            opacity: 0.22;
-        }
-        .ws-orb-node {
-            cursor: pointer;
-        }
-        .ws-orb-node .ring {
-            fill: var(--paper);
-            stroke: rgba(0, 0, 0, 0.22);
-            stroke-width: 1.4;
-            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.06));
-        }
-        .ws-orb-node .prog-track {
-            fill: none;
-            stroke: rgba(0, 0, 0, 0.07);
-            stroke-width: 2.5;
-        }
-        .ws-orb-node .prog-arc {
-            fill: none;
-            stroke-width: 3;
-            stroke-linecap: round;
-            transition: stroke-dasharray 0.6s var(--spring);
-        }
-        .ws-orb-node text {
-            font-family: var(--sans);
-            font-size: 11.5px;
-            font-weight: 600;
-            fill: var(--ink);
-            text-anchor: middle;
-            dominant-baseline: central;
-            pointer-events: none;
-            paint-order: stroke;
-            stroke: var(--paper);
-            stroke-width: 3;
-        }
-        .ws-orb-node text.sub {
-            font-family: var(--mono);
-            font-size: 9px;
-            font-weight: 400;
-            fill: var(--ink-3);
-        }
-        .ws-orb-node:hover .ring {
-            stroke: var(--ink);
-            stroke-width: 2;
-        }
-        .ws-orb-node.selected .ring {
-            stroke-width: 2.5;
-        }
-        .ws-orb-node.selected.accent .ring {
-            fill: var(--c-accent);
-            stroke: var(--c-accent);
-        }
-        .ws-orb-node.selected.mint .ring {
-            fill: var(--c-mint);
-            stroke: var(--c-mint);
-        }
-        .ws-orb-node.selected.peach .ring {
-            fill: var(--c-peach);
-            stroke: var(--c-peach);
-        }
-        .ws-orb-node.selected.amber .ring {
-            fill: var(--c-amber);
-            stroke: var(--c-amber);
-        }
-        .ws-orb-node.selected.pink .ring {
-            fill: var(--c-pink);
-            stroke: var(--c-pink);
-        }
-        .ws-orb-node.selected.red .ring {
-            fill: var(--c-red);
-            stroke: var(--c-red);
-        }
-        .ws-orb-node.selected text,
-        .ws-orb-node.selected text.sub {
-            fill: #fff;
-            stroke: none;
-        }
-        .ws-orb-node.dim {
-            opacity: 0.32;
-        }
-        .ws-graph-embed {
-            flex: 1;
-            min-height: 0;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .ws-graph-embed .dsa-graph-shell.dsa-index-ref {
-            flex: 1;
-            min-height: 0;
-            display: flex;
-            flex-direction: column;
-            background: transparent !important;
-            box-shadow: none !important;
-            border: 0 !important;
-        }
-        .ws-graph-embed .adm-content-graph-studio {
-            flex: 1;
-            min-height: 0;
-            display: flex;
-            flex-direction: column;
-            background: transparent !important;
-        }
-        .ws-graph-embed .adm-ws-studio-head {
-            display: none !important;
-        }
-        .ws-graph-embed .adm-ws-graph-card {
-            flex: 1;
-            min-height: 0;
-            border: 0 !important;
-            background: transparent !important;
-            box-shadow: none !important;
-        }
-        .ws-graph-embed .adm-ws-graph-stage {
-            min-height: min(58vh, 620px);
-        }
-        .ws-offscreen-toolbar-host {
-            position: fixed;
-            left: -9999px;
-            top: 0;
-            width: 1px;
-            height: 1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            pointer-events: none;
-            visibility: hidden;
-        }
-        .pv-right {
-            border-left: 1px solid var(--line);
-            padding: 18px 16px;
-            background: linear-gradient(180deg, rgba(0, 0, 0, 0.012), transparent);
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            min-height: 0;
-        }
-        .pv-detail {
-            padding: 14px;
-            background: var(--paper);
-            border: 1px solid var(--line);
-            border-radius: 10px;
-        }
-        .pv-detail .name {
-            font-size: 13.5px;
-            font-weight: 600;
-            color: var(--ink);
-        }
-        .pv-detail .meta {
-            font-family: var(--mono);
-            font-size: 10.5px;
-            color: var(--ink-3);
-            margin-top: 4px;
-            line-height: 1.5;
-        }
-        .ws-json-panel textarea {
-            width: 100%;
-            min-height: 280px;
-            font-family: var(--mono);
-            font-size: 12px;
-            line-height: 1.45;
-            padding: 10px 12px;
-            border-radius: 8px;
-            border: 1px solid var(--line);
-            resize: vertical;
-        }
-        .ws-json-panel .form-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        .ws-json-panel .btn {
-            appearance: none;
-            border: 0;
-            cursor: pointer;
-            padding: 9px 14px;
-            border-radius: 8px;
-            font: 600 11.5px var(--sans);
-        }
-        .ws-json-panel .btn.primary {
-            background: var(--c-accent);
-            color: #fff;
-        }
-        .ws-json-panel .btn.ghost {
-            background: rgba(0, 0, 0, 0.04);
-            color: var(--ink-2);
-            border: 1px solid var(--line);
-        }
-        .ws-status {
-            max-width: 1400px;
-            margin: 12px auto 0;
-            font-size: 12px;
-            color: var(--ink-2);
-        }
-        body.mode-json .pv-canvas {
-            display: none;
-        }
-        body.mode-json .pv-body {
-            grid-template-columns: 260px 1fr;
-        }
-        body.mode-json .pv-right {
-            border-left: 0;
-            grid-column: 2;
-        }
-        #right-panel-json {
-            display: none;
-        }
-        body.mode-json #right-panel-json {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        body.mode-json #right-panel-inspector {
-            display: none;
-        }
-        @media (max-width: 1000px) {
-            .pv-body {
-                grid-template-columns: 1fr;
-            }
-            .pv-side,
-            .pv-right {
-                border: 0;
-                border-bottom: 1px solid var(--line);
-            }
-            .pv-canvas {
-                min-height: 420px;
-            }
-            body.mode-json .pv-body {
-                grid-template-columns: 1fr;
-            }
-            body.mode-json .pv-right {
-                grid-column: 1;
-            }
-        }
-    </style>
+<meta charset="UTF-8" />
+<script>
+(function(){function assetBaseHref(pageStem){var u=new URL(location.href);var path=u.pathname.replace(/\/$/,"");var parts=path.split("/").filter(Boolean);var last=parts.length?parts[parts.length-1]:"";if(last===pageStem){parts.pop();u.pathname="/"+parts.join("/")+(parts.length?"/":"");return u.href;}if(last===pageStem+".html"){u.pathname=path.slice(0,path.length-last.length);return u.href;}return new URL(".",location.href).href;}var b=document.createElement("base");b.href=assetBaseHref("workspace");var cs=document.querySelector("meta[charset]");if(cs&&cs.parentNode===document.head)cs.insertAdjacentElement("afterend",b);else document.head.appendChild(b);})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev" />
+<title>Studio · public.graph</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="./styles.css?v=14" />
+<link rel="stylesheet" href="./dsa-index-shell.css?v=20" />
+<link rel="stylesheet" href="./auth/admin-workspace.css?v=7" />
+<link rel="stylesheet" href="./workspace-chrome.css?v=1" />
 </head>
-<body class="mode-full ws-repr-linear">
-    <!-- Toolbar mount for script.js (expand / zoom slots). Hidden; chips replace visible toolbar. -->
-    <div
-        id="admin-dsa-map-toolbar-host"
-        class="ws-offscreen-toolbar-host"
-        data-dsa-index-toolbar-slots="1"
-        aria-hidden="true"
-    >
-        <div class="dsa-toolbar-expand-slot" id="admin-dsa-toolbar-expand-slot"></div>
-        <div class="dsa-toolbar-zoom-host" id="admin-dsa-toolbar-zoom-host"></div>
+<body class="mode-customize ws-repr-orbital">
+<div id="admin-dsa-map-toolbar-host" class="ws-offscreen-toolbar-host" data-dsa-index-toolbar-slots="1" aria-hidden="true">
+  <div class="dsa-toolbar-expand-slot" id="admin-dsa-toolbar-expand-slot"></div>
+  <div class="dsa-toolbar-zoom-host" id="admin-dsa-toolbar-zoom-host"></div>
+</div>
+<input type="file" id="ws-hier-import-file" accept="application/json,.json" hidden aria-hidden="true" />
+
+<div class="preview">
+<div class="pv-head">
+  <div style="display:flex;align-items:center;gap:14px"><div class="dots"><span></span><span></span><span></span></div><div class="tab mono">studio · public.graph</div></div>
+  <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+    <div class="pv-tabs" id="tabs" role="tablist" aria-label="Graph layout">
+      <div class="pv-tab" data-mode="map">Full map</div>
+      <div class="pv-tab" data-mode="topic">One topic</div>
+      <div class="pv-tab active" data-mode="customize">Customize</div>
+      <div class="pv-tab" data-mode="json">JSON</div>
     </div>
-    <input type="file" id="ws-hier-import-file" accept="application/json,.json" hidden aria-hidden="true" />
-
-    <div class="preview">
-        <div class="pv-head">
-            <div class="pv-head-row">
-                <div class="pv-head-brand">
-                    <div class="dots"><span></span><span></span><span></span></div>
-                    <div class="tab mono">studio · public.graph</div>
-                </div>
-                <div class="pv-head-tabs-wrap">
-                    <div class="pv-tabs" id="ws-pv-tabs" role="tablist" aria-label="Graph layout">
-                        <div class="pv-tab active" data-ws-mode="map" data-admin-mode="full">Full map</div>
-                        <div class="pv-tab" data-ws-mode="topic" data-admin-mode="one">One topic</div>
-                        <div class="pv-tab" data-ws-mode="customize" data-admin-mode="custom">Customize</div>
-                        <div class="pv-tab" data-ws-mode="json">JSON</div>
-                    </div>
-                    <div class="pv-tabs" id="ws-repr-tabs" role="tablist" aria-label="Graph representation">
-                        <div class="pv-tab" data-repr="orbital">Orbital</div>
-                        <div class="pv-tab active" data-repr="linear">Linear</div>
-                    </div>
-                </div>
-            </div>
-            <div class="pv-head-row pv-head-row--chips">
-                <div class="chip" id="export-chip" title="Download mind map JSON">⌘ Export</div>
-                <div class="chip" id="import-chip" title="Import mind map JSON from file">↑ Import</div>
-                <div class="chip" id="arrange-chip" title="Nudge layout / resize">⟳ Auto-arrange</div>
-                <div class="chip live" id="mode-chip">● full map</div>
-            </div>
-        </div>
-        <div class="pv-body">
-            <div class="pv-side">
-                <h6 class="ws-h6">// graph <span class="add" id="add-pattern" title="Refresh tree &amp; focus first root">↻</span></h6>
-                <div id="ws-graph-tree"></div>
-            </div>
-            <div class="pv-canvas" id="canvas-wrap">
-                <div class="corner mono" id="meta-corner">graph.render</div>
-                <div class="legend-bot">
-                    <span><b>●</b> <span id="legend-repr-label">Linear</span></span>
-                    <span id="hint-text">zoom · pan · tabs above</span>
-                </div>
-                <div class="ws-view-stack">
-                    <div class="ws-view ws-view--linear">
-                        <div class="ws-graph-embed">
-                            <div class="dsa-graph-shell dsa-index-ref">
-                                <main class="page adm-content-graph-studio">
-                                    <section class="head adm-ws-studio-head" aria-hidden="true">
-                                        <nav class="seg dsa-view-tabs dsa-seg-track" role="tablist" id="admin-modeSeg" aria-label="Graph layout">
-                                            <span class="dsa-seg-thumb" aria-hidden="true"></span>
-                                            <button type="button" class="dsa-view-btn" role="tab" data-mode="full" aria-selected="false">Full map</button>
-                                            <button type="button" class="dsa-view-btn" role="tab" data-mode="one" aria-selected="false">One topic</button>
-                                            <button type="button" class="dsa-view-btn" role="tab" data-mode="custom" aria-selected="false">Customize</button>
-                                        </nav>
-                                    </section>
-                                    <section class="graph-card adm-graph-preview adm-ws-graph-card" id="adm-ws-graph-card">
-                                        <div id="adm-ws-empty-placeholder" class="adm-ws-empty-placeholder empty-state">
-                                            <div class="empty-icon">
-                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                    <circle cx="6" cy="6" r="3"></circle>
-                                                    <circle cx="18" cy="6" r="3"></circle>
-                                                    <circle cx="12" cy="18" r="3"></circle>
-                                                    <line x1="8.5" y1="7.5" x2="11" y2="16"></line>
-                                                    <line x1="15.5" y1="7.5" x2="13" y2="16"></line>
-                                                </svg>
-                                            </div>
-                                            <h3>Canvas</h3>
-                                            <p>Load API data or paste JSON (JSON tab).</p>
-                                            <button type="button" class="btn btn-sm adm-ws-empty-open-public" id="adm-ws-empty-open-public">Load <code>GET /api/data?k=dsa</code></button>
-                                        </div>
-                                        <div class="graph-stage adm-ws-graph-stage">
-                                            <div id="admin-dsa-hierarchy-root" class="dsa-graph-viewport" aria-label="Mind map workspace"></div>
-                                        </div>
-                                    </section>
-                                </main>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="ws-view ws-view--orbital" id="ws-orbital-wrap" hidden>
-                        <svg class="ws-orbital-svg" id="ws-orbital-svg" viewBox="0 0 600 580" preserveAspectRatio="xMidYMid meet">
-                            <defs>
-                                <linearGradient id="wsOrbEdgeGrad" x1="0" y1="0" x2="1" y2="1">
-                                    <stop offset="0" stop-color="#3a5bd9" />
-                                    <stop offset="1" stop-color="#1aa37a" />
-                                </linearGradient>
-                            </defs>
-                            <g id="ws-orb-edges"></g>
-                            <g id="ws-orb-nodes"></g>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-            <div class="pv-right" id="pv-right-col">
-                <div id="right-panel-inspector">
-                    <h6 class="ws-h6">// inspector</h6>
-                    <div class="pv-detail">
-                        <div class="name">Mind map</div>
-                        <div class="meta" id="inspector-meta">Use the file tree to jump (Linear). Orbital is a compact preview of roots + first-level topics.</div>
-                    </div>
-                    <div class="pv-detail" style="background: linear-gradient(180deg, rgba(58, 91, 217, 0.06), rgba(58, 91, 217, 0.01))">
-                        <div class="name" style="color: var(--c-accent)">▸ Sandbox</div>
-                        <div class="meta" style="margin-top: 6px">Customize is forced on for testing. Toolbar controls live in a hidden mount for the engine (zoom / expand).</div>
-                    </div>
-                </div>
-                <div id="right-panel-json" class="ws-json-panel">
-                    <h6 class="ws-h6">// graph.json</h6>
-                    <label for="adm-ws-json-editor" class="mono" style="font-size: 10px; color: var(--ink-3)">Mind-map array</label>
-                    <textarea id="adm-ws-json-editor" spellcheck="false" rows="22" aria-label="Graph JSON"></textarea>
-                    <div class="form-actions">
-                        <button type="button" class="btn primary" id="adm-ws-json-apply">Apply to graph</button>
-                        <button type="button" class="btn ghost" id="adm-ws-json-format">Format</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="pv-tabs" id="ws-repr-tabs" role="tablist" aria-label="Representation">
+      <div class="pv-tab active" data-repr="orbital">Orbital</div>
+      <div class="pv-tab" data-repr="linear">Linear</div>
     </div>
-    <p id="adm-ws-msg" class="ws-status" aria-live="polite"></p>
+  </div>
+  <div class="tool-row">
+    <div class="chip" id="import-chip">⤓ Import</div>
+    <div class="chip" id="export-chip">⤒ Export</div>
+    <div class="chip" id="arrange-chip">⟳ Re-layout</div>
+    <div class="chip live" id="mode-chip">● customize</div>
+  </div>
+</div>
+<div class="pv-body">
+  <div class="pv-side">
+    <div id="side-orb">
+    <h6>// nodes <span class="add" id="add-pattern">+</span></h6>
+    <div id="patterns"></div>
+    <h6 style="margin-top:24px">// categories</h6>
+    <div class="item"><span class="d ds"></span> Data Structure <span class="count" id="cnt-ds">0</span></div>
+    <div class="item"><span class="d pattern"></span> Pattern <span class="count" id="cnt-pat">0</span></div>
+    <div class="item"><span class="d problem"></span> Problem <span class="count" id="cnt-prob">0</span></div>
+    <h6 style="margin-top:24px">// difficulty</h6>
+    <div class="item"><span class="d ds" style="color:#7bbf3a"></span> Easy <span class="count" id="cnt-easy">0</span></div>
+    <div class="item"><span class="d ds" style="color:var(--c-amber)"></span> Medium <span class="count" id="cnt-med">0</span></div>
+    <div class="item"><span class="d ds" style="color:var(--c-red)"></span> Hard <span class="count" id="cnt-hard">0</span></div>
+    <h6 style="margin-top:24px">// overall</h6>
+    <div style="padding:8px 10px;font-family:var(--mono);font-size:11px;color:var(--ink-3);">Avg mastery <b style="color:var(--ink);float:right" id="avg-mastery">0%</b></div>
+    </div>
+    <div id="side-lin" style="display:none">
+      <h6>// graph</h6>
+      <div id="ws-graph-tree"></div>
+    </div>
+  </div>
+  <div class="pv-canvas-wrap" id="pv-canvas-wrap">
+  <div class="ws-orbital-pane">
+  <div class="pv-canvas" id="canvas-wrap">
+    <div class="corner mono" id="meta-corner">graph.render</div>
+    <div class="canvas-tools">
+      <div class="zoom-ctrl"><button type="button" id="zoom-out" title="Zoom out">−</button><span id="zoom-val" title="Reset zoom">100%</span><button type="button" id="zoom-in" title="Zoom in">+</button></div>
+      <div class="chip" id="expand-chip" title="Expand all">⤢ Expand</div>
+      <div class="chip" id="collapse-chip" title="Collapse all">⤡ Collapse</div>
+    </div>
+    <div class="breadcrumb" id="breadcrumb"></div>
+    <div class="legend-bot">
+      <span class="legend-shape ds"><i></i> data structure</span>
+      <span class="legend-shape pattern"><i></i> pattern</span>
+      <span class="legend-shape problem"><i></i> problem</span>
+      <span id="hint-text" style="margin-left:auto">drag bg · scroll zoom · 2× click focus</span>
+    </div>
+    <svg class="pv-svg" id="svg" viewBox="0 0 600 580" preserveAspectRatio="xMidYMid meet">
+      <defs><linearGradient id="cEdgeGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a5bd9"/><stop offset="1" stop-color="#1aa37a"/></linearGradient></defs>
+      <g id="edges-g"></g><g id="nodes-g"></g>
+    </svg>
+    <div class="minimap" id="minimap"><svg viewBox="0 0 600 580" preserveAspectRatio="xMidYMid meet" id="mm-svg"><g id="mm-nodes"></g><rect class="vp" id="mm-vp" x="0" y="0" width="600" height="580"/></svg></div>
+    <div class="node-chips" id="node-chips">
+      <div class="node-chip focus" id="chip-focus" title="Focus">◎</div>
+      <div class="node-chip" id="chip-collapse-n" title="Fold">⊟</div>
+      <div class="node-chip add" id="chip-add" title="Add child">+</div>
+      <div class="node-chip" id="chip-edit" title="Edit">✎</div>
+      <div class="node-chip danger" id="chip-del" title="Delete">×</div>
+    </div>
+    <input type="file" id="import-file" accept="application/json" style="display:none" />
+  </div>
+  </div>
+  <div class="ws-linear-pane pv-canvas">
+    <div class="ws-graph-embed">
+      <div class="dsa-graph-shell dsa-index-ref">
+        <main class="page adm-content-graph-studio">
+          <section class="head adm-ws-studio-head" aria-hidden="true">
+            <nav class="seg dsa-view-tabs dsa-seg-track" role="tablist" id="admin-modeSeg" aria-label="Graph layout">
+              <span class="dsa-seg-thumb" aria-hidden="true"></span>
+              <button type="button" class="dsa-view-btn" role="tab" data-mode="full" aria-selected="false">Full map</button>
+              <button type="button" class="dsa-view-btn" role="tab" data-mode="one" aria-selected="false">One topic</button>
+              <button type="button" class="dsa-view-btn" role="tab" data-mode="custom" aria-selected="false">Customize</button>
+            </nav>
+          </section>
+          <section class="graph-card adm-graph-preview adm-ws-graph-card" id="adm-ws-graph-card">
+            <div id="adm-ws-empty-placeholder" class="adm-ws-empty-placeholder empty-state">
+              <h3>Canvas</h3>
+              <p>Load API or use JSON tab.</p>
+              <button type="button" class="btn btn-sm" id="adm-ws-empty-open-public">Load <code>GET /api/data?k=dsa</code></button>
+            </div>
+            <div class="graph-stage adm-ws-graph-stage">
+              <div id="admin-dsa-hierarchy-root" class="dsa-graph-viewport" aria-label="Mind map workspace"></div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="pv-right">
+    <div id="right-panel-inspector">
+      <div class="pv-detail"><div class="name">Linear map</div><div class="meta" id="lin-inspector-meta">Switch to <b>Linear</b> for the live mind map from script.js.</div></div>
+    </div>
+    <div id="right-panel"></div>
+    <div id="right-panel-json" class="ws-json-panel">
+      <h6>// graph.json</h6>
+      <label for="adm-ws-json-editor" class="mono" style="font-size:10px;color:var(--ink-3)">Mind-map array</label>
+      <textarea id="adm-ws-json-editor" spellcheck="false" rows="18"></textarea>
+      <div class="form-actions">
+        <button type="button" class="btn primary" id="adm-ws-json-apply">Apply to graph</button>
+        <button type="button" class="btn danger" id="adm-ws-json-format" style="background:rgba(0,0,0,.06);color:var(--ink);border:1px solid var(--line)">Format</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<p id="adm-ws-msg" class="ws-status" aria-live="polite"></p>
 
-    <script src="./auth/dsa-admin-auth.js?v=6"></script>
-    <script src="./auth/site-features.js?v=6"></script>
-    <script src="./auth/dsa-member-roles.js?v=1"></script>
-    <script src="./auth/dsa-user-auth.js?v=3"></script>
-    <script src="./dsa-sketch-native.js?v=3"></script>
-    <script src="./script.js?v=34"></script>
-    <script>
-        (function () {
-            /* Sandbox: always allow Customize tab + map modes for local testing */
-            window.dsaHasCustomizeGraphAccess = function () {
-                return true;
-            };
-            var _sfu = typeof dsaSiteFeatureUse === "function" ? dsaSiteFeatureUse : null;
-            window.dsaSiteFeatureUse = function (id) {
-                if (id === "graph_customize_tab" || id === "practice_map" || id === "one_topic_mode") {
-                    return true;
-                }
-                return _sfu ? _sfu(id) : true;
-            };
+<script src="./auth/dsa-admin-auth.js?v=6"></script>
+<script src="./auth/site-features.js?v=6"></script>
+<script src="./auth/dsa-member-roles.js?v=1"></script>
+<script src="./auth/dsa-user-auth.js?v=3"></script>
+<script src="./dsa-sketch-native.js?v=3"></script>
+<script src="./script.js?v=34"></script>
+<script src="./workspace-studio.js?v=1"></script>
+<script>
+(function(){
+window.dsaHasCustomizeGraphAccess=function(){return true;};
+var _sfu=typeof dsaSiteFeatureUse==="function"?dsaSiteFeatureUse:null;
+window.dsaSiteFeatureUse=function(id){if(id==="graph_customize_tab"||id==="practice_map"||id==="one_topic_mode")return true;return _sfu?_sfu(id):true;};
 
-            var WS_MOUNT = {
-                viewportId: "admin-dsa-hierarchy-root",
-                mapToolbarHostId: "admin-dsa-map-toolbar-host",
-                shellToolbarId: null,
-            };
+var WS_MOUNT={viewportId:"admin-dsa-hierarchy-root",mapToolbarHostId:"admin-dsa-map-toolbar-host",shellToolbarId:null};
 
-            var ORB = { spec: null, selectedId: null };
-            var CM = {
-                accent: "#3a5bd9",
-                mint: "#1aa37a",
-                peach: "#e08658",
-                amber: "#c89020",
-                pink: "#d65082",
-                red: "#d04040",
-            };
-            var COLORS = ["accent", "mint", "peach", "amber", "pink", "red"];
-            var NS = "http://www.w3.org/2000/svg";
+function $(id){return document.getElementById(id);}
+function wsMsg(t,c){var e=$("adm-ws-msg");if(!e)return;e.textContent=t||"";e.style.color=c==="err"?"var(--c-red)":c==="ok"?"var(--c-mint)":"var(--ink-2)";}
 
-            function wsMsg(text, cls) {
-                var el = document.getElementById("adm-ws-msg");
-                if (!el) return;
-                el.textContent = text || "";
-                el.style.color = cls === "err" ? "var(--c-red)" : cls === "ok" ? "var(--c-mint)" : "var(--ink-2)";
-            }
+function setRepr(repr){
+  var orb=repr==="orbital";
+  document.body.classList.toggle("ws-repr-orbital",orb);
+  document.body.classList.toggle("ws-repr-linear",!orb);
+  document.querySelectorAll("#ws-repr-tabs .pv-tab").forEach(function(x){
+    x.classList.toggle("active",x.getAttribute("data-repr")===repr);
+  });
+  $("side-orb").style.display=orb?"":"none";
+  $("side-lin").style.display=orb?"none":"";
+  var mt=document.querySelector("#tabs .pv-tab.active");
+  var mode=(mt&&mt.getAttribute("data-mode"))||"customize";
+  if(mode==="json"){mode="customize";}
+  document.body.className="mode-"+mode+" "+(orb?"ws-repr-orbital":"ws-repr-linear");
+  if(orb&&window.ORB&&typeof ORB.setMode==="function"){ORB.setMode(mode);}
+  try{window.dispatchEvent(new Event("resize"));}catch(e){}
+}
 
-            function wsGetHierarchyArray() {
-                try {
-                    if (typeof dsaGetMindMapHierarchyJsonString !== "function") {
-                        return [];
-                    }
-                    var arr = JSON.parse(dsaGetMindMapHierarchyJsonString());
-                    return Array.isArray(arr) ? arr : [];
-                } catch (e) {
-                    return [];
-                }
-            }
+function clickAdminMode(m){var s=$("admin-modeSeg");if(!s)return;var b=s.querySelector('[data-mode="'+m+'"]');if(b)b.click();}
 
-            function wsGetDsTreeLocal(ds) {
-                if (!ds || typeof ds !== "object") {
-                    return [];
-                }
-                if (Array.isArray(ds.tree) && ds.tree.length > 0) {
-                    return ds.tree;
-                }
-                return (ds.patterns || []).map(function (p) {
-                    return {
-                        name: p.name,
-                        problems: p.problems || [],
-                        children: p.children || [],
-                    };
-                });
-            }
+function syncPvFromAdmin(){
+  var s=$("admin-modeSeg");if(!s)return;
+  var a=s.querySelector(".dsa-view-btn--active")||s.querySelector('[aria-selected="true"]');
+  var dm=a&&a.getAttribute("data-mode");
+  var map={full:"map",one:"topic",custom:"customize"};
+  var ws=map[dm]||"map";
+  document.querySelectorAll("#tabs .pv-tab").forEach(function(t){
+    if(t.getAttribute("data-mode")==="json")return;
+    t.classList.toggle("active",t.getAttribute("data-mode")===ws);
+  });
+  var repr=document.body.classList.contains("ws-repr-orbital")?"ws-repr-orbital":"ws-repr-linear";
+  document.body.className="mode-"+ws+" "+repr;
+  var mc=$("mode-chip");
+  if(mc&&repr==="ws-repr-linear"){
+    mc.textContent="● "+(ws==="map"?"full map":ws==="topic"?"one topic":"customize");
+    mc.classList.toggle("live",ws==="customize");
+  }
+}
 
-            function wsCountTopicKids(node) {
-                var ch = Array.isArray(node.children) ? node.children : [];
-                if (ch.length) {
-                    return ch.length;
-                }
-                return Array.isArray(node.problems) ? node.problems.length : 0;
-            }
+function refreshJson(){
+  var ta=$("adm-ws-json-editor");if(!ta||typeof dsaGetMindMapHierarchyJsonString!=="function")return;
+  try{ta.value=JSON.stringify(JSON.parse(dsaGetMindMapHierarchyJsonString()),null,2);}
+  catch(e){ta.value=String(dsaGetMindMapHierarchyJsonString());}
+}
 
-            function wsHierarchyToOrbitalSpec(h) {
-                var nodes = {};
-                var edges = [];
-                var cx = 300;
-                var cy = 290;
-                nodes._core = {
-                    id: "_core",
-                    name: "Graph",
-                    x: cx,
-                    y: cy,
-                    r: 44,
-                    color: "accent",
-                    isCore: true,
-                    mastery: 0,
-                    diff: "Mixed",
-                    path: "",
-                };
-                if (!Array.isArray(h) || !h.length) {
-                    return { nodes: nodes, edges: edges, selected: "_core" };
-                }
-                var N = h.length;
-                var R = Math.min(200, 95 + N * 14);
-                h.forEach(function (ds, i) {
-                    var key = String(ds.id != null ? ds.id : "ds" + i);
-                    var orbId = "ds_" + i;
-                    var a = (i / Math.max(N, 1)) * Math.PI * 2 - Math.PI / 2;
-                    var nx = cx + Math.cos(a) * R;
-                    var ny = cy + Math.sin(a) * R;
-                    var tree = wsGetDsTreeLocal(ds);
-                    var col = COLORS[i % COLORS.length];
-                    nodes[orbId] = {
-                        id: orbId,
-                        name: String(ds.name || "Untitled").slice(0, 22),
-                        x: nx,
-                        y: ny,
-                        r: 34,
-                        color: col,
-                        count: tree.length,
-                        mastery: 0,
-                        diff: "Medium",
-                        path: key,
-                    };
-                    edges.push(["_core", orbId, 1]);
-                    var maxKids = 12;
-                    tree.slice(0, maxKids).forEach(function (ch, j) {
-                        var kidId = orbId + "_c" + j;
-                        var spread = (j - (Math.min(tree.length, maxKids) - 1) / 2) * 0.38;
-                        var ba = a + spread;
-                        var d = 78;
-                        nodes[kidId] = {
-                            id: kidId,
-                            name: String(ch.name || "").slice(0, 18),
-                            x: nx + Math.cos(ba) * d,
-                            y: ny + Math.sin(ba) * d,
-                            r: tree.length > 8 ? 15 : 19,
-                            color: col,
-                            count: wsCountTopicKids(ch),
-                            mastery: 0,
-                            diff: "Easy",
-                            path: key + "::" + String(ch.name || ""),
-                        };
-                        edges.push([orbId, kidId, j < 4 ? 1 : 0]);
-                    });
-                });
-                return { nodes: nodes, edges: edges, selected: N ? "ds_0" : "_core" };
-            }
+function bootGraph(){
+  if(typeof dsaMergeGraphMount==="function")dsaMergeGraphMount(WS_MOUNT);
+  if(typeof loadDsaPatternsPage!=="function"){wsMsg("script.js missing","err");return;}
+  loadDsaPatternsPage({graphPreview:true,mount:WS_MOUNT});
+  setTimeout(function(){syncPvFromAdmin();wsRenderTree();},120);
+}
 
-            function orbCurve(a, b) {
-                var dx = b.x - a.x;
-                var dy = b.y - a.y;
-                var L = Math.hypot(dx, dy) || 1;
-                var ux = dx / L;
-                var uy = dy / L;
-                var x1 = a.x + ux * a.r;
-                var y1 = a.y + uy * a.r;
-                var x2 = b.x - ux * b.r;
-                var y2 = b.y - uy * b.r;
-                var px = -uy;
-                var py = ux;
-                var bow = Math.min(22, L * 0.08);
-                var mx = (x1 + x2) / 2 + px * bow;
-                var my = (y1 + y2) / 2 + py * bow;
-                return "M" + x1 + "," + y1 + " Q" + mx + "," + my + " " + x2 + "," + y2;
-            }
+function wsGetH(){
+  try{if(typeof dsaGetMindMapHierarchyJsonString!=="function")return[];
+  var a=JSON.parse(dsaGetMindMapHierarchyJsonString());return Array.isArray(a)?a:[];}catch(e){return[];}
+}
+function wsGetDsTree(ds){
+  if(!ds)return[];
+  if(Array.isArray(ds.tree)&&ds.tree.length)return ds.tree;
+  return(ds.patterns||[]).map(function(p){return{name:p.name,problems:p.problems||[],children:p.children||[]};});
+}
+function wsAppendRows(host,nodes,parentPath,depth){
+  (nodes||[]).forEach(function(node){
+    var name=String(node.name||"");
+    var path=parentPath+"::"+name;
+    var kids=Array.isArray(node.children)?node.children:[];
+    var row=document.createElement("div");row.className="item";row.setAttribute("data-path",path);
+    row.innerHTML='<span class="d pattern"></span> '+name.replace(/</g,"&lt;")+' <span class="count">'+(kids.length||((node.problems||[]).length))+"</span>";
+    row.onclick=function(){var vp=$("admin-dsa-hierarchy-root");if(!vp)return;var el=vp.querySelector('[data-dsa-path="'+path.replace(/"/g,'\\"')+'"]');if(el)el.scrollIntoView({behavior:"smooth",block:"nearest"});};
+    host.appendChild(row);
+    if(kids.length){wsAppendRows(host,kids,path,depth+1);}
+  });
+}
+function wsRenderTree(){
+  var h=$("ws-graph-tree");if(!h)return;h.innerHTML="";
+  var data=wsGetH();if(!data.length){h.innerHTML='<p class="meta" style="padding:8px;color:var(--ink-3)">No data</p>';return;}
+  data.forEach(function(ds,di){
+    var key=String(ds.id!=null?ds.id:"ds"+di);
+    var row=document.createElement("div");row.className="item";row.setAttribute("data-path",key);
+    row.innerHTML='<span class="d ds"></span> '+String(ds.name||key).replace(/</g,"&lt;")+' <span class="count">'+wsGetDsTree(ds).length+"</span>";
+    row.onclick=function(){var b=document.querySelector('#admin-dsa-hierarchy-root .dsa-node-root[data-ds-id="'+key+'"]');if(b)b.click();};
+    h.appendChild(row);wsAppendRows(h,wsGetDsTree(ds),key,1);
+  });
+}
 
-            function E(tag, attrs) {
-                var el = document.createElementNS(NS, tag);
-                if (attrs) {
-                    for (var k in attrs) {
-                        if (Object.prototype.hasOwnProperty.call(attrs, k)) {
-                            el.setAttribute(k, attrs[k]);
-                        }
-                    }
-                }
-                return el;
-            }
+document.querySelectorAll("#ws-repr-tabs .pv-tab").forEach(function(tab){
+  tab.addEventListener("click",function(){setRepr(tab.getAttribute("data-repr"));if(tab.getAttribute("data-repr")==="linear"){wsRenderTree();}});
+});
 
-            function orbBuildNode(n, selectedId) {
-                var g = E("g", {
-                    class:
-                        "ws-orb-node " +
-                        n.color +
-                        (n.id === selectedId ? " selected" : "") +
-                        (!n.isCore ? " active" : ""),
-                    "data-id": n.id,
-                    "data-path": n.path || "",
-                    transform: "translate(" + n.x + "," + n.y + ")",
-                });
-                var pR = n.r + 6;
-                var circ = 2 * Math.PI * pR;
-                var pct = Math.max(0, Math.min(100, n.mastery || 0)) / 100;
-                g.appendChild(E("circle", { class: "prog-track", cx: 0, cy: 0, r: pR }));
-                if (pct > 0) {
-                    g.appendChild(
-                        E("circle", {
-                            class: "prog-arc",
-                            cx: 0,
-                            cy: 0,
-                            r: pR,
-                            stroke: CM[n.color] || CM.accent,
-                            "stroke-dasharray": circ * pct + " " + circ,
-                            transform: "rotate(-90)",
-                        }),
-                    );
-                }
-                g.appendChild(E("circle", { class: "ring", cx: 0, cy: 0, r: n.r }));
-                var sub = n.isCore ? "core" : n.count != null ? n.count + " items" : "";
-                var showSub = sub && n.r >= 17;
-                var t = E("text", { x: 0, y: showSub ? -5 : 0 });
-                t.textContent = n.name;
-                if (n.r <= 16) {
-                    t.setAttribute("font-size", "10px");
-                }
-                g.appendChild(t);
-                if (showSub) {
-                    var s = E("text", { class: "sub", x: 0, y: 10 });
-                    s.textContent = sub;
-                    g.appendChild(s);
-                }
-                return g;
-            }
+document.querySelectorAll("#tabs .pv-tab").forEach(function(tab){
+  tab.addEventListener("click",function(){
+    var m=tab.getAttribute("data-mode");
+    if(m==="json"){
+      document.querySelectorAll("#tabs .pv-tab").forEach(function(x){x.classList.toggle("active",x===tab);});
+      document.body.className="mode-json "+(document.body.classList.contains("ws-repr-orbital")?"ws-repr-orbital":"ws-repr-linear");
+      refreshJson();return;
+    }
+    document.querySelectorAll("#tabs .pv-tab").forEach(function(x){if(x.getAttribute("data-mode")==="json")return;x.classList.toggle("active",x===tab);});
+    var am={map:"full",topic:"one",customize:"custom"}[m];
+    if(document.body.classList.contains("ws-repr-linear")&&am){clickAdminMode(am);syncPvFromAdmin();}
+    else if(document.body.classList.contains("ws-repr-orbital")&&window.ORB&&typeof ORB.setMode==="function"){ORB.setMode(m);}
+    try{window.dispatchEvent(new Event("resize"));}catch(e2){}
+  });
+});
 
-            function wsOrbitalApplyDim(id) {
-                var spec = ORB.spec;
-                if (!spec || !id) {
-                    return;
-                }
-                var rel = {};
-                rel[id] = true;
-                spec.edges.forEach(function (e) {
-                    var f = e[0];
-                    var t = e[1];
-                    if (f === id) {
-                        rel[t] = true;
-                    }
-                    if (t === id) {
-                        rel[f] = true;
-                    }
-                });
-                document.querySelectorAll("#ws-orb-nodes .ws-orb-node").forEach(function (node) {
-                    var nid = node.getAttribute("data-id");
-                    node.classList.toggle("dim", !rel[nid]);
-                });
-                document.querySelectorAll("#ws-orb-edges .ws-orb-edge").forEach(function (edge) {
-                    var f = edge.getAttribute("data-from");
-                    var t = edge.getAttribute("data-to");
-                    var inv = rel[f] && rel[t];
-                    edge.classList.toggle("dim", !inv);
-                });
-            }
+$("import-chip").addEventListener("click",function(){
+  if(document.body.classList.contains("ws-repr-orbital")){$("import-file").click();}
+  else{$("ws-hier-import-file").click();}
+});
+$("export-chip").addEventListener("click",function(){
+  if(document.body.classList.contains("ws-repr-orbital")){if(window.ORB)ORB.exportJson();}
+  else{if(typeof dsaExportMindMapHierarchyJson==="function")dsaExportMindMapHierarchyJson();}
+  wsMsg("Exported.","ok");
+});
+$("arrange-chip").addEventListener("click",function(){
+  if(document.body.classList.contains("ws-repr-orbital")&&window.ORB&&typeof ORB.relayout==="function"){ORB.relayout();}
+  try{window.dispatchEvent(new Event("resize"));}catch(e3){}
+  wsMsg(document.body.classList.contains("ws-repr-orbital")?"Orbital re-layout.":"Resize nudge.","ok");
+});
+$("import-file").addEventListener("change",function(){
+  var f=this.files&&this.files[0];if(!f)return;
+  var r=new FileReader();r.onload=function(){
+    try{if(window.ORB&&typeof ORB.importFromText==="function")ORB.importFromText(String(r.result||""));wsMsg("Orbital graph imported.","ok");}
+    catch(err){wsMsg(err.message||"Invalid JSON","err");}
+  };r.readAsText(f);this.value="";
+});
 
-            function wsOrbitalRender() {
-                var eg = document.getElementById("ws-orb-edges");
-                var ng = document.getElementById("ws-orb-nodes");
-                var wrap = document.getElementById("ws-orbital-wrap");
-                if (!eg || !ng || !wrap) {
-                    return;
-                }
-                var h = wsGetHierarchyArray();
-                var spec = wsHierarchyToOrbitalSpec(h);
-                ORB.spec = spec;
-                ORB.selectedId = ORB.selectedId && spec.nodes[ORB.selectedId] ? ORB.selectedId : spec.selected;
-                eg.innerHTML = "";
-                ng.innerHTML = "";
-                spec.edges.forEach(function (e) {
-                    var A = spec.nodes[e[0]];
-                    var B = spec.nodes[e[1]];
-                    if (!A || !B) {
-                        return;
-                    }
-                    eg.appendChild(
-                        E("path", {
-                            class: "ws-orb-edge" + (e[2] ? " active" : ""),
-                            d: orbCurve(A, B),
-                            "data-from": e[0],
-                            "data-to": e[1],
-                        }),
-                    );
-                });
-                Object.keys(spec.nodes).forEach(function (k) {
-                    var n = spec.nodes[k];
-                    var g = orbBuildNode(n, ORB.selectedId);
-                    g.addEventListener("click", function (ev) {
-                        ev.stopPropagation();
-                        ORB.selectedId = n.id;
-                        wsOrbitalRender();
-                        wsTreeHighlightPath(n.path || "");
-                        wsFocusLinearByPath(n.path || "");
-                    });
-                    ng.appendChild(g);
-                });
-                wsOrbitalApplyDim(ORB.selectedId);
-            }
+$("ws-hier-import-file").addEventListener("change",function(){
+  var f=this.files&&this.files[0];if(!f)return;
+  var r=new FileReader();r.onload=function(){
+    try{if(typeof dsaImportMindMapHierarchyFromText==="function")dsaImportMindMapHierarchyFromText(String(r.result||""));wsMsg("Imported.","ok");setTimeout(function(){syncPvFromAdmin();wsRenderTree();},80);}
+    catch(err){wsMsg(err.message||"Import failed","err");}
+  };r.readAsText(f);this.value="";
+});
 
-            function wsOrbitalRenderIfActive() {
-                if (document.body.classList.contains("ws-repr-orbital")) {
-                    wsOrbitalRender();
-                }
-            }
+$("adm-ws-json-apply").addEventListener("click",function(){
+  var ta=$("adm-ws-json-editor");if(!ta||typeof dsaReloadGraphFromEditorJson!=="function")return;
+  try{JSON.parse(ta.value);}catch(e4){wsMsg("Invalid JSON","err");return;}
+  var r=dsaReloadGraphFromEditorJson(ta.value,WS_MOUNT);
+  if(!r.ok){wsMsg((r.error&&r.error.message)||"Apply failed","err");return;}
+  wsMsg("Graph updated.","ok");
+  document.querySelectorAll("#tabs .pv-tab").forEach(function(x){x.classList.toggle("active",x.getAttribute("data-mode")==="map");});
+  document.body.className="mode-map ws-repr-linear";setRepr("linear");clickAdminMode("full");setTimeout(function(){syncPvFromAdmin();wsRenderTree();},80);
+});
+$("adm-ws-json-format").addEventListener("click",function(){
+  var ta=$("adm-ws-json-editor");if(!ta)return;
+  try{ta.value=JSON.stringify(JSON.parse(ta.value),null,2);wsMsg("Formatted.","ok");}catch(e5){wsMsg("Invalid JSON","err");}
+});
+$("adm-ws-empty-open-public")&&$("adm-ws-empty-open-public").addEventListener("click",function(){
+  if(typeof dsaLoadHierarchyFromSources!=="function")return;
+  dsaLoadHierarchyFromSources().then(function(){bootGraph();refreshJson();});
+});
 
-            function wsSetRepr(repr) {
-                var linear = repr !== "orbital";
-                document.querySelectorAll("#ws-repr-tabs .pv-tab").forEach(function (t) {
-                    t.classList.toggle("active", t.getAttribute("data-repr") === (linear ? "linear" : "orbital"));
-                });
-                var leg = document.getElementById("legend-repr-label");
-                if (leg) {
-                    leg.textContent = linear ? "Linear" : "Orbital";
-                }
-                var ow = document.getElementById("ws-orbital-wrap");
-                if (ow) {
-                    ow.hidden = linear;
-                    ow.style.display = linear ? "none" : "";
-                }
-                setBodyMode(getActiveLayoutWsMode());
-                if (!linear) {
-                    wsOrbitalRender();
-                }
-                try {
-                    window.dispatchEvent(new Event("resize"));
-                } catch (e1) {}
-            }
+if(typeof ORB!=="undefined")ORB.init();
 
-            document.querySelectorAll("#ws-repr-tabs .pv-tab").forEach(function (tab) {
-                tab.addEventListener("click", function () {
-                    wsSetRepr(tab.getAttribute("data-repr"));
-                });
-            });
+if(typeof dsaLoadHierarchyFromSources==="function"){
+  dsaLoadHierarchyFromSources().then(function(){bootGraph();refreshJson();wsMsg("Ready.","ok");});
+}else{bootGraph();}
 
-            function wsTreeHighlightPath(path) {
-                document.querySelectorAll("#ws-graph-tree .ws-tree-row").forEach(function (row) {
-                    row.classList.toggle("active", path && row.getAttribute("data-path") === path);
-                });
-            }
-
-            function wsFindLinearElByPath(path) {
-                if (!path) {
-                    return null;
-                }
-                var vp = document.getElementById("admin-dsa-hierarchy-root");
-                if (!vp) {
-                    return null;
-                }
-                var all = vp.querySelectorAll("[data-dsa-path]");
-                for (var i = 0; i < all.length; i++) {
-                    if (String(all[i].getAttribute("data-dsa-path") || "") === path) {
-                        return all[i];
-                    }
-                }
-                return null;
-            }
-
-            function wsFocusLinearByPath(path) {
-                if (!path || !document.body.classList.contains("ws-repr-linear")) {
-                    return;
-                }
-                var parts = path.split("::");
-                var vp = document.getElementById("admin-dsa-hierarchy-root");
-                if (!vp) {
-                    return;
-                }
-                if (parts.length === 1) {
-                    var rid = parts[0];
-                    var rootBtn = vp.querySelector('.dsa-node-root[data-ds-id="' + rid.replace(/"/g, '\\"') + '"]');
-                    if (!rootBtn) {
-                        rootBtn = Array.from(vp.querySelectorAll(".dsa-node-root")).find(function (b) {
-                            return String(b.getAttribute("data-ds-id") || "") === rid;
-                        });
-                    }
-                    if (rootBtn) {
-                        rootBtn.click();
-                    }
-                }
-                requestAnimationFrame(function () {
-                    var el = wsFindLinearElByPath(path);
-                    if (el && typeof el.scrollIntoView === "function") {
-                        el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
-                    }
-                });
-            }
-
-            function wsAppendTreeRows(container, topics, parentPath, depth) {
-                (topics || []).forEach(function (node) {
-                    var name = String(node.name || "");
-                    var path = parentPath + "::" + name;
-                    var kids = Array.isArray(node.children) ? node.children : [];
-                    var hasKids = kids.length > 0;
-                    var row = document.createElement("div");
-                    row.className = "ws-tree-row";
-                    row.setAttribute("data-path", path);
-                    row.style.setProperty("--depth", String(depth));
-                    var ind = document.createElement("span");
-                    ind.className = "ws-tree-indent";
-                    var chev = document.createElement("button");
-                    chev.type = "button";
-                    chev.className = "ws-tree-chev";
-                    chev.textContent = hasKids ? "▾" : "·";
-                    chev.disabled = !hasKids;
-                    var lab = document.createElement("span");
-                    lab.className = "ws-tree-label";
-                    lab.textContent = name;
-                    row.appendChild(ind);
-                    row.appendChild(chev);
-                    row.appendChild(lab);
-                    var childWrap = document.createElement("div");
-                    childWrap.className = "ws-tree-children";
-                    if (hasKids) {
-                        wsAppendTreeRows(childWrap, kids, path, depth + 1);
-                    }
-                    chev.addEventListener("click", function (e) {
-                        e.stopPropagation();
-                        if (!hasKids) {
-                            return;
-                        }
-                        childWrap.classList.toggle("collapsed");
-                        chev.textContent = childWrap.classList.contains("collapsed") ? "▸" : "▾";
-                    });
-                    row.addEventListener("click", function () {
-                        wsTreeHighlightPath(path);
-                        wsFocusLinearByPath(path);
-                        if (document.body.classList.contains("ws-repr-orbital")) {
-                            ORB.selectedId = null;
-                            Object.keys(ORB.spec ? ORB.spec.nodes : {}).forEach(function (oid) {
-                                var n = ORB.spec.nodes[oid];
-                                if (n && n.path === path) {
-                                    ORB.selectedId = oid;
-                                }
-                            });
-                            wsOrbitalRender();
-                        }
-                    });
-                    container.appendChild(row);
-                    container.appendChild(childWrap);
-                });
-            }
-
-            function wsRenderGraphTree() {
-                var host = document.getElementById("ws-graph-tree");
-                if (!host) {
-                    return;
-                }
-                host.innerHTML = "";
-                var data = wsGetHierarchyArray();
-                if (!data.length) {
-                    host.innerHTML = '<p class="ws-tree-empty">No graph — load API or apply JSON.</p>';
-                    return;
-                }
-                data.forEach(function (ds, di) {
-                    var key = String(ds.id != null ? ds.id : "ds" + di);
-                    var rootLabel = String(ds.name || key);
-                    var row = document.createElement("div");
-                    row.className = "ws-tree-row";
-                    row.setAttribute("data-path", key);
-                    row.style.setProperty("--depth", "0");
-                    var ind = document.createElement("span");
-                    ind.className = "ws-tree-indent";
-                    var chev = document.createElement("button");
-                    chev.type = "button";
-                    chev.className = "ws-tree-chev";
-                    var tree = wsGetDsTreeLocal(ds);
-                    var hasKids = tree.length > 0;
-                    chev.textContent = hasKids ? "▾" : "·";
-                    chev.disabled = !hasKids;
-                    var lab = document.createElement("span");
-                    lab.className = "ws-tree-label";
-                    lab.textContent = rootLabel;
-                    row.appendChild(ind);
-                    row.appendChild(chev);
-                    row.appendChild(lab);
-                    var childWrap = document.createElement("div");
-                    childWrap.className = "ws-tree-children";
-                    if (hasKids) {
-                        wsAppendTreeRows(childWrap, tree, key, 1);
-                    }
-                    chev.addEventListener("click", function (e) {
-                        e.stopPropagation();
-                        if (!hasKids) {
-                            return;
-                        }
-                        childWrap.classList.toggle("collapsed");
-                        chev.textContent = childWrap.classList.contains("collapsed") ? "▸" : "▾";
-                    });
-                    row.addEventListener("click", function () {
-                        wsTreeHighlightPath(key);
-                        wsFocusLinearByPath(key);
-                    });
-                    host.appendChild(row);
-                    host.appendChild(childWrap);
-                });
-            }
-
-            function getActiveLayoutWsMode() {
-                var active = document.querySelector("#ws-pv-tabs .pv-tab.active[data-ws-mode]");
-                return (active && active.getAttribute("data-ws-mode")) || "map";
-            }
-
-            function isReprOrbitalActive() {
-                var t = document.querySelector('#ws-repr-tabs .pv-tab[data-repr="orbital"]');
-                return !!(t && t.classList.contains("active"));
-            }
-
-            function setBodyMode(ws) {
-                var mode = ws != null ? ws : getActiveLayoutWsMode();
-                document.body.className =
-                    "mode-" + mode + " " + (isReprOrbitalActive() ? "ws-repr-orbital" : "ws-repr-linear");
-                var chip = document.getElementById("mode-chip");
-                if (chip) {
-                    chip.textContent =
-                        "● " +
-                        ws
-                            .replace("map", "full map")
-                            .replace("topic", "one topic")
-                            .replace("customize", "customize")
-                            .replace("json", "json");
-                    chip.classList.toggle("live", ws === "json" || ws === "customize");
-                }
-                var hint = document.getElementById("hint-text");
-                if (hint) {
-                    if (ws === "json") {
-                        hint.textContent = "editing json — apply to refresh";
-                    } else if (ws === "topic") {
-                        hint.textContent = "one topic · pick a root in the tree";
-                    } else if (ws === "customize") {
-                        hint.textContent = "customize · edit rings on the linear map";
-                    } else {
-                        hint.textContent = "zoom · pan · tree / tabs";
-                    }
-                }
-            }
-
-            function clickAdminMode(mode) {
-                var seg = document.getElementById("admin-modeSeg");
-                if (!seg) {
-                    return;
-                }
-                var btn = seg.querySelector('[data-mode="' + mode + '"]');
-                if (btn) {
-                    btn.click();
-                }
-            }
-
-            function setPvTabFromAdmin() {
-                var seg = document.getElementById("admin-modeSeg");
-                if (!seg) {
-                    return;
-                }
-                var active = seg.querySelector(".dsa-view-btn--active") || seg.querySelector('[aria-selected="true"]');
-                var dm = active && active.getAttribute("data-mode");
-                var map = { full: "map", one: "topic", custom: "customize" };
-                var ws = map[dm] || "map";
-                document.querySelectorAll("#ws-pv-tabs .pv-tab").forEach(function (t) {
-                    if (t.getAttribute("data-ws-mode") === "json") {
-                        return;
-                    }
-                    t.classList.toggle("active", t.getAttribute("data-ws-mode") === ws);
-                });
-                setBodyMode(ws);
-            }
-
-            document.querySelectorAll("#ws-pv-tabs .pv-tab").forEach(function (tab) {
-                tab.addEventListener("click", function () {
-                    var ws = tab.getAttribute("data-ws-mode");
-                    if (ws === "json") {
-                        document.querySelectorAll("#ws-pv-tabs .pv-tab").forEach(function (x) {
-                            x.classList.toggle("active", x === tab);
-                        });
-                        setBodyMode("json");
-                        refreshJsonFromGraph();
-                        return;
-                    }
-                    document.querySelectorAll("#ws-pv-tabs .pv-tab").forEach(function (x) {
-                        if (x.getAttribute("data-ws-mode") === "json") {
-                            return;
-                        }
-                        x.classList.toggle("active", x === tab);
-                    });
-                    var am = tab.getAttribute("data-admin-mode");
-                    if (am) {
-                        clickAdminMode(am);
-                    }
-                    setPvTabFromAdmin();
-                    try {
-                        window.dispatchEvent(new Event("resize"));
-                    } catch (e2) {}
-                });
-            });
-
-            function refreshJsonFromGraph() {
-                var ta = document.getElementById("adm-ws-json-editor");
-                if (!ta || typeof dsaGetMindMapHierarchyJsonString !== "function") {
-                    return;
-                }
-                try {
-                    ta.value = JSON.stringify(JSON.parse(dsaGetMindMapHierarchyJsonString()), null, 2);
-                } catch (e3) {
-                    ta.value = String(dsaGetMindMapHierarchyJsonString());
-                }
-            }
-
-            function setGraphCardIdle(idle) {
-                var card = document.getElementById("adm-ws-graph-card");
-                if (!card) {
-                    return;
-                }
-                card.classList.toggle("adm-ws-graph-card--idle", !!idle);
-            }
-
-            function bootGraphFromHierarchy() {
-                if (typeof dsaMergeGraphMount === "function") {
-                    dsaMergeGraphMount(WS_MOUNT);
-                }
-                if (typeof loadDsaPatternsPage !== "function") {
-                    wsMsg("script.js not loaded.", "err");
-                    return;
-                }
-                loadDsaPatternsPage({ graphPreview: true, mount: WS_MOUNT });
-                setGraphCardIdle(false);
-                setTimeout(function () {
-                    setPvTabFromAdmin();
-                    syncMetaCorner();
-                    wsRenderGraphTree();
-                    wsOrbitalRenderIfActive();
-                }, 120);
-            }
-
-            function syncMetaCorner() {
-                var el = document.getElementById("meta-corner");
-                if (!el) {
-                    return;
-                }
-                var n = wsGetHierarchyArray().length;
-                el.textContent = "graph.render · " + n + " root(s) · live";
-            }
-
-            document.getElementById("export-chip") &&
-                document.getElementById("export-chip").addEventListener("click", function () {
-                    if (typeof dsaExportMindMapHierarchyJson === "function") {
-                        dsaExportMindMapHierarchyJson();
-                    }
-                    wsMsg("Export JSON (download).", "ok");
-                });
-
-            document.getElementById("import-chip") &&
-                document.getElementById("import-chip").addEventListener("click", function () {
-                    var f = document.getElementById("ws-hier-import-file");
-                    if (f) {
-                        f.click();
-                    }
-                });
-
-            document.getElementById("ws-hier-import-file") &&
-                document.getElementById("ws-hier-import-file").addEventListener("change", function () {
-                    var inp = document.getElementById("ws-hier-import-file");
-                    var file = inp && inp.files && inp.files[0];
-                    if (!file) {
-                        return;
-                    }
-                    var reader = new FileReader();
-                    reader.onload = function () {
-                        try {
-                            if (typeof dsaImportMindMapHierarchyFromText === "function") {
-                                dsaImportMindMapHierarchyFromText(String(reader.result || ""));
-                            }
-                            wsMsg("Imported — graph reloaded.", "ok");
-                            setTimeout(function () {
-                                setPvTabFromAdmin();
-                                syncMetaCorner();
-                                wsRenderGraphTree();
-                                wsOrbitalRenderIfActive();
-                            }, 80);
-                        } catch (err) {
-                            wsMsg((err && err.message) || "Import failed", "err");
-                        }
-                    };
-                    reader.readAsText(file);
-                    inp.value = "";
-                });
-
-            document.getElementById("arrange-chip") &&
-                document.getElementById("arrange-chip").addEventListener("click", function () {
-                    try {
-                        window.dispatchEvent(new Event("resize"));
-                    } catch (e4) {}
-                    wsMsg("Layout nudge: window resize dispatched.", "ok");
-                });
-
-            document.getElementById("add-pattern") &&
-                document.getElementById("add-pattern").addEventListener("click", function () {
-                    wsRenderGraphTree();
-                    wsOrbitalRenderIfActive();
-                    var first = document.querySelector("#admin-dsa-hierarchy-root .dsa-node-root");
-                    if (first) {
-                        first.click();
-                        wsMsg("Tree refreshed · focused first root.", "ok");
-                    } else {
-                        wsMsg("No roots in the map yet.", "info");
-                    }
-                });
-
-            document.getElementById("adm-ws-json-apply") &&
-                document.getElementById("adm-ws-json-apply").addEventListener("click", function () {
-                    var ta = document.getElementById("adm-ws-json-editor");
-                    if (!ta || typeof dsaReloadGraphFromEditorJson !== "function") {
-                        return;
-                    }
-                    try {
-                        JSON.parse(ta.value);
-                    } catch (e5) {
-                        wsMsg("Invalid JSON: " + e5.message, "err");
-                        return;
-                    }
-                    var r = dsaReloadGraphFromEditorJson(ta.value, WS_MOUNT);
-                    if (!r.ok) {
-                        wsMsg((r.error && r.error.message) || "Could not apply graph", "err");
-                        return;
-                    }
-                    setGraphCardIdle(false);
-                    wsMsg("Graph updated.", "ok");
-                    document.querySelectorAll("#ws-pv-tabs .pv-tab").forEach(function (x) {
-                        x.classList.toggle("active", x.getAttribute("data-ws-mode") === "map");
-                    });
-                    setBodyMode("map");
-                    clickAdminMode("full");
-                    setTimeout(function () {
-                        setPvTabFromAdmin();
-                        syncMetaCorner();
-                        wsRenderGraphTree();
-                        wsOrbitalRenderIfActive();
-                    }, 80);
-                });
-
-            document.getElementById("adm-ws-json-format") &&
-                document.getElementById("adm-ws-json-format").addEventListener("click", function () {
-                    var ta = document.getElementById("adm-ws-json-editor");
-                    if (!ta) {
-                        return;
-                    }
-                    try {
-                        ta.value = JSON.stringify(JSON.parse(ta.value), null, 2);
-                        wsMsg("Formatted.", "ok");
-                    } catch (e6) {
-                        wsMsg("Invalid JSON: " + e6.message, "err");
-                    }
-                });
-
-            document.getElementById("adm-ws-empty-open-public") &&
-                document.getElementById("adm-ws-empty-open-public").addEventListener("click", function () {
-                    if (typeof dsaLoadHierarchyFromSources !== "function") {
-                        return;
-                    }
-                    dsaLoadHierarchyFromSources().then(function () {
-                        bootGraphFromHierarchy();
-                        refreshJsonFromGraph();
-                        wsMsg("Loaded from API (or placeholder).", "ok");
-                    });
-                });
-
-            if (typeof MutationObserver !== "undefined") {
-                var root = document.getElementById("admin-dsa-hierarchy-root");
-                if (root) {
-                    var mo = new MutationObserver(function () {
-                        syncMetaCorner();
-                    });
-                    mo.observe(root, { childList: true, subtree: true });
-                }
-            }
-
-            if (typeof dsaLoadHierarchyFromSources === "function") {
-                dsaLoadHierarchyFromSources().then(function () {
-                    bootGraphFromHierarchy();
-                    refreshJsonFromGraph();
-                    wsMsg("Studio ready.", "ok");
-                });
-            } else {
-                bootGraphFromHierarchy();
-            }
-        })();
-    </script>
+})();
+</script>
 </body>
 </html>

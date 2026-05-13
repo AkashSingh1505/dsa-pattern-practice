@@ -1,0 +1,1249 @@
+/**
+ * Orbital graph studio (workspace sandbox) — sector radial layout, zoom/pan, minimap, chips.
+ * Expects DOM in #ws-orbital-pane (see workspace.html). Call ORB.init() after DOM ready.
+ */
+(function () {
+    var CATS = { ds: "Data Structure", pattern: "Pattern", problem: "Problem" };
+    var CAT_COLORS = { ds: "#3a5bd9", pattern: "#c89020", problem: "#d65082" };
+    var NODE_CATS = {
+        core: "pattern",
+        arrays: "ds",
+        graphs: "ds",
+        hashing: "pattern",
+        strings: "ds",
+        recursion: "pattern",
+        dp: "pattern",
+        trees: "ds",
+        sliding: "pattern",
+        bfs: "pattern",
+        dfs: "pattern",
+    };
+    var S = {
+        nodes: {
+            core: { id: "core", name: "DSA", r: 46, color: "accent", isCore: true, mastery: 54, diff: "Mixed" },
+            arrays: { id: "arrays", name: "Arrays", r: 30, color: "accent", count: 12, mastery: 62, diff: "Medium" },
+            graphs: { id: "graphs", name: "Graphs", r: 30, color: "mint", count: 9, mastery: 41, diff: "Hard" },
+            hashing: { id: "hashing", name: "Hashing", r: 30, color: "peach", count: 7, mastery: 74, diff: "Easy" },
+            strings: { id: "strings", name: "Strings", r: 30, color: "amber", count: 9, mastery: 48, diff: "Easy" },
+            recursion: { id: "recursion", name: "Recursion", r: 30, color: "pink", count: 6, mastery: 60, diff: "Medium" },
+            dp: { id: "dp", name: "DP", r: 30, color: "red", count: 14, mastery: 28, diff: "Hard" },
+            trees: { id: "trees", name: "Trees", r: 30, color: "accent", count: 8, mastery: 55, diff: "Medium" },
+            sliding: { id: "sliding", name: "Sliding W.", r: 22, color: "accent", count: 6, mastery: 62, diff: "Medium" },
+            bfs: { id: "bfs", name: "BFS", r: 22, color: "mint", count: 5, mastery: 70, diff: "Medium" },
+            dfs: { id: "dfs", name: "DFS", r: 22, color: "accent", count: 7, mastery: 58, diff: "Medium" },
+        },
+        edges: [
+            ["core", "arrays", 1],
+            ["core", "graphs", 1],
+            ["core", "hashing", 0],
+            ["core", "strings", 0],
+            ["core", "recursion", 0],
+            ["core", "dp", 0],
+            ["core", "trees", 1],
+            ["arrays", "sliding", 1],
+            ["graphs", "bfs", 0],
+            ["trees", "dfs", 0],
+        ],
+        selected: "core",
+        mode: "customize",
+        uid: 100,
+        zoom: 1,
+        pan: { x: 0, y: 0 },
+        collapsed: new Set(),
+        focus: "core",
+    };
+    Object.keys(S.nodes).forEach(function (k) {
+        S.nodes[k].category = NODE_CATS[k] || "pattern";
+    });
+
+    var CM = {
+        accent: "#3a5bd9",
+        mint: "#1aa37a",
+        peach: "#e08658",
+        amber: "#c89020",
+        pink: "#d65082",
+        red: "#d04040",
+    };
+    var DIF = ["Easy", "Medium", "Hard", "Mixed"];
+    var NS = "http://www.w3.org/2000/svg";
+    var svg,
+        eg,
+        ng,
+        cw,
+        cb;
+    var VB = { w: 600, h: 580, cx: 300, cy: 290 };
+
+    function $(id) {
+        return document.getElementById(id);
+    }
+    function E(t, a) {
+        var e = document.createElementNS(NS, t);
+        a = a || {};
+        for (var k in a) {
+            if (Object.prototype.hasOwnProperty.call(a, k)) {
+                e.setAttribute(k, a[k]);
+            }
+        }
+        return e;
+    }
+    function clamp(v, lo, hi) {
+        return Math.max(lo, Math.min(hi, v));
+    }
+
+    function childIds(id) {
+        return S.edges
+            .filter(function (ft) {
+                return ft[0] === id;
+            })
+            .map(function (ft) {
+                return ft[1];
+            })
+            .filter(function (t) {
+                return S.nodes[t];
+            });
+    }
+    function parentOf(id) {
+        var e = S.edges.find(function (ft) {
+            return ft[1] === id;
+        });
+        return e ? e[0] : null;
+    }
+    function pathTo(id) {
+        var out = [];
+        var c = id;
+        while (c) {
+            out.unshift(c);
+            c = parentOf(c);
+        }
+        return out;
+    }
+    function inSubtree(id, root) {
+        if (id === root) {
+            return true;
+        }
+        var c = parentOf(id);
+        while (c) {
+            if (c === root) {
+                return true;
+            }
+            c = parentOf(c);
+        }
+        return false;
+    }
+    function relDepth(id, root) {
+        if (id === root) {
+            return 0;
+        }
+        var d = 0,
+            c = id;
+        while (c && c !== root) {
+            c = parentOf(c);
+            d++;
+            if (d > 50) {
+                break;
+            }
+        }
+        return d;
+    }
+    function hiddenCount(id) {
+        var c = 0;
+        var stk = [id];
+        while (stk.length) {
+            var x = stk.pop();
+            childIds(x).forEach(function (k) {
+                c++;
+                stk.push(k);
+            });
+        }
+        return c;
+    }
+    function visible(id) {
+        if (id === S.focus) {
+            return true;
+        }
+        if (!inSubtree(id, S.focus)) {
+            return false;
+        }
+        var c = parentOf(id);
+        while (c && c !== S.focus) {
+            if (S.collapsed.has(c)) {
+                return false;
+            }
+            c = parentOf(c);
+        }
+        return true;
+    }
+
+    function layoutRadial() {
+        var root = S.focus;
+        var RINGS = [0, 150, 250, 335, 400, 455];
+        var SIZES = [46, 30, 22, 17, 14, 12];
+        function w(id) {
+            var k = childIds(id);
+            if (!k.length) {
+                return 1;
+            }
+            return k.reduce(function (s, c) {
+                return s + w(c);
+            }, 0);
+        }
+        function place(id, depth, a0, a1) {
+            var n = S.nodes[id];
+            if (!n) {
+                return;
+            }
+            if (id === root) {
+                n.x = VB.cx;
+                n.y = VB.cy;
+                n.r = SIZES[0];
+            } else {
+                var mid = (a0 + a1) / 2,
+                    r = RINGS[Math.min(depth, RINGS.length - 1)];
+                n.x = VB.cx + Math.cos(mid) * r;
+                n.y = VB.cy + Math.sin(mid) * r;
+                n.r = SIZES[Math.min(depth, SIZES.length - 1)];
+            }
+            var k = childIds(id);
+            if (!k.length) {
+                return;
+            }
+            var ws = k.map(function (c) {
+                    return w(c);
+                }),
+                tot = ws.reduce(function (a, b) {
+                    return a + b;
+                }, 0);
+            var cur = a0;
+            k.forEach(function (c, i) {
+                var wd = (a1 - a0) * (ws[i] / tot);
+                place(c, depth + 1, cur, cur + wd);
+                cur += wd;
+            });
+        }
+        place(root, 0, -Math.PI / 2, (Math.PI * 3) / 2);
+    }
+
+    function autoCollapseDeep(maxDepth) {
+        maxDepth = maxDepth == null ? 2 : maxDepth;
+        S.collapsed = new Set();
+        Object.keys(S.nodes).forEach(function (id) {
+            if (id === S.focus || !inSubtree(id, S.focus)) {
+                return;
+            }
+            if (relDepth(id, S.focus) >= maxDepth && childIds(id).length) {
+                S.collapsed.add(id);
+            }
+        });
+    }
+
+    function curve(a, b) {
+        var dx = b.x - a.x,
+            dy = b.y - a.y,
+            L = Math.hypot(dx, dy) || 1,
+            ux = dx / L,
+            uy = dy / L,
+            x1 = a.x + ux * a.r,
+            y1 = a.y + uy * a.r,
+            x2 = b.x - ux * b.r,
+            y2 = b.y - uy * b.r,
+            px = -uy,
+            py = ux,
+            bow = Math.min(18, L * 0.06),
+            mx = (x1 + x2) / 2 + px * bow,
+            my = (y1 + y2) / 2 + py * bow;
+        return "M" + x1 + "," + y1 + " Q" + mx + "," + my + " " + x2 + "," + y2;
+    }
+
+    function catBadge(n) {
+        if (n.r < 18 || n.isCore) {
+            return null;
+        }
+        var cat = n.category || "pattern";
+        var ang = -Math.PI / 4,
+            d = n.r * 0.78,
+            x = Math.cos(ang) * d,
+            y = Math.sin(ang) * d,
+            br = clamp(n.r * 0.3, 5, 8),
+            ir = br * 0.55;
+        var grp = E("g", { "pointer-events": "none" });
+        grp.appendChild(E("circle", { class: "cat-bg", cx: x, cy: y, r: br }));
+        if (cat === "ds") {
+            grp.appendChild(E("circle", { cx: x, cy: y, r: ir, fill: CAT_COLORS.ds }));
+        } else if (cat === "pattern") {
+            grp.appendChild(E("rect", { x: x - ir, y: y - ir, width: ir * 2, height: ir * 2, rx: 0.5, fill: CAT_COLORS.pattern }));
+        } else {
+            var pts = [];
+            for (var i = 0; i < 6; i++) {
+                var a = (Math.PI / 3) * i - Math.PI / 2;
+                pts.push((x + Math.cos(a) * ir).toFixed(1) + "," + (y + Math.sin(a) * ir).toFixed(1));
+            }
+            grp.appendChild(E("polygon", { points: pts.join(" "), fill: CAT_COLORS.problem }));
+        }
+        return grp;
+    }
+
+    function buildNode(n) {
+        var g = E("g", {
+            class: "pv-node " + n.color + (n.id === S.selected ? " selected" : ""),
+            "data-id": n.id,
+            transform: "translate(" + n.x + "," + n.y + ")",
+        });
+        var r = n.r,
+            circ = 2 * Math.PI * r,
+            pct = (Math.max(0, Math.min(100, n.mastery || 0)) / 100);
+        g.appendChild(E("circle", { class: "ring", cx: 0, cy: 0, r: r }));
+        g.appendChild(E("circle", { class: "prog-track", cx: 0, cy: 0, r: r }));
+        if (pct > 0) {
+            g.appendChild(
+                E("circle", {
+                    class: "prog-arc",
+                    cx: 0,
+                    cy: 0,
+                    r: r,
+                    stroke: CM[n.color] || CM.accent,
+                    "stroke-dasharray": circ * pct + " " + circ,
+                    transform: "rotate(-90)",
+                }),
+            );
+        }
+        var sub = n.isCore ? "core" : n.count != null ? n.count + " items" : "";
+        var showSub = sub && r >= 24;
+        var t = E("text", { x: 0, y: showSub ? -5 : 0 });
+        t.textContent = n.name;
+        if (r <= 18) {
+            t.setAttribute("style", "font-size:9.5px");
+        } else if (r <= 22) {
+            t.setAttribute("style", "font-size:10.5px");
+        }
+        g.appendChild(t);
+        if (showSub) {
+            var ss = E("text", { class: "sub", x: 0, y: 10 });
+            ss.textContent = sub;
+            g.appendChild(ss);
+        }
+        var bg = catBadge(n);
+        if (bg) {
+            g.appendChild(bg);
+        }
+        if (S.collapsed.has(n.id)) {
+            var hc = hiddenCount(n.id);
+            if (hc > 0) {
+                var bx = n.r * 0.72,
+                    by = n.r * 0.72,
+                    bgr = Math.max(8, n.r * 0.32);
+                g.appendChild(E("circle", { cx: bx, cy: by, r: bgr, fill: CM[n.color] || CM.accent, stroke: "#fff", "stroke-width": 2 }));
+                var bt = E("text", { class: "hbadge", x: bx, y: by });
+                bt.textContent = "+" + hc;
+                g.appendChild(bt);
+            }
+        }
+        return g;
+    }
+
+    function semanticZoom() {
+        var z = S.zoom;
+        document.querySelectorAll("#svg .pv-node text.sub").forEach(function (t) {
+            t.style.opacity = z >= 0.75 ? 1 : 0;
+        });
+    }
+
+    function applyView() {
+        var w = VB.w / S.zoom,
+            h = VB.h / S.zoom;
+        var x = VB.cx - w / 2 + (S.pan.x || 0);
+        var y = VB.cy - h / 2 + (S.pan.y || 0);
+        svg.setAttribute("viewBox", x + " " + y + " " + w + " " + h);
+        var zv = $("zoom-val");
+        if (zv) {
+            zv.textContent = Math.round(S.zoom * 100) + "%";
+        }
+        meta();
+        drawMinimap();
+        semanticZoom();
+    }
+
+    function drawMinimap() {
+        var mng = $("mm-nodes");
+        var vp = $("mm-vp");
+        if (!mng || !vp || !svg) {
+            return;
+        }
+        mng.innerHTML = "";
+        Object.values(S.nodes).forEach(function (n) {
+            if (!visible(n.id)) {
+                return;
+            }
+            mng.appendChild(
+                E("circle", {
+                    cx: n.x,
+                    cy: n.y,
+                    r: Math.max(4, n.r * 0.45),
+                    fill: CM[n.color] || "#888",
+                    opacity: 0.45,
+                }),
+            );
+        });
+        var vb = svg.viewBox.baseVal;
+        vp.setAttribute("x", vb.x);
+        vp.setAttribute("y", vb.y);
+        vp.setAttribute("width", vb.width);
+        vp.setAttribute("height", vb.height);
+    }
+
+    function meta() {
+        var mc = $("meta-corner");
+        if (mc) {
+            mc.textContent =
+                "graph.render · " +
+                Object.keys(S.nodes).length +
+                "n · " +
+                S.edges.length +
+                "e · z" +
+                Math.round(S.zoom * 100) +
+                "%";
+        }
+        var e = 0,
+            m = 0,
+            h = 0,
+            total = 0,
+            sum = 0,
+            cds = 0,
+            cp = 0,
+            cpr = 0;
+        Object.values(S.nodes).forEach(function (n) {
+            if (n.category === "ds") {
+                cds++;
+            } else if (n.category === "pattern") {
+                cp++;
+            } else if (n.category === "problem") {
+                cpr++;
+            }
+            if (n.isCore) {
+                return;
+            }
+            var c = n.count || 0;
+            if (n.diff === "Easy") {
+                e += c;
+            } else if (n.diff === "Hard") {
+                h += c;
+            } else if (n.diff === "Medium") {
+                m += c;
+            }
+            sum += n.mastery || 0;
+            total++;
+        });
+        var ge = $("cnt-easy"),
+            gm = $("cnt-med"),
+            gh = $("cnt-hard");
+        if (ge) {
+            ge.textContent = e;
+        }
+        if (gm) {
+            gm.textContent = m;
+        }
+        if (gh) {
+            gh.textContent = h;
+        }
+        var cd = $("cnt-ds"),
+            cpat = $("cnt-pat"),
+            cprob = $("cnt-prob");
+        if (cd) {
+            cd.textContent = cds;
+        }
+        if (cpat) {
+            cpat.textContent = cp;
+        }
+        if (cprob) {
+            cprob.textContent = cpr;
+        }
+        var am = $("avg-mastery");
+        if (am) {
+            am.textContent = (total ? Math.round(sum / total) : 0) + "%";
+        }
+    }
+
+    function sidebar() {
+        var w = $("patterns");
+        if (!w) {
+            return;
+        }
+        w.innerHTML = "";
+        childIds(S.focus).forEach(function (id) {
+            var n = S.nodes[id];
+            if (!n) {
+                return;
+            }
+            var it = document.createElement("div");
+            it.className = "item" + (S.selected === id ? " active" : "");
+            it.dataset.id = id;
+            it.innerHTML =
+                '<span class="d ' +
+                (n.category || "pattern") +
+                '" style="color:' +
+                (CM[n.color] || CM.accent) +
+                '"></span> ' +
+                n.name +
+                ' <span class="count">' +
+                (n.count || hiddenCount(id) || 0) +
+                "</span>";
+            it.onclick = function () {
+                select(id);
+            };
+            w.appendChild(it);
+        });
+    }
+
+    function select(id) {
+        S.selected = id;
+        apply();
+        sidebar();
+        inspector();
+    }
+
+    function apply() {
+        var id = S.selected;
+        document.querySelectorAll("#svg .pv-node").forEach(function (n) {
+            n.classList.toggle("selected", n.dataset.id === id);
+        });
+        var rel = {};
+        rel[id] = true;
+        S.edges.forEach(function (ft) {
+            var f = ft[0],
+                t = ft[1];
+            if (f === id) {
+                rel[t] = true;
+            }
+            if (t === id) {
+                rel[f] = true;
+            }
+        });
+        var fm = S.mode === "topic";
+        document.querySelectorAll("#svg .pv-node").forEach(function (n) {
+            n.classList.toggle("dim", fm && !rel[n.dataset.id]);
+        });
+        document.querySelectorAll("#svg .pv-edge").forEach(function (e) {
+            var inv = rel[e.getAttribute("data-from")] && rel[e.getAttribute("data-to")];
+            e.classList.toggle("dim", fm && !inv);
+        });
+    }
+
+    function esc(s) {
+        return String(s).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+    }
+
+    function conns(id) {
+        var ns = {};
+        S.edges.forEach(function (ft) {
+            var f = ft[0],
+                t = ft[1];
+            if (f === id && t !== S.focus && S.nodes[t]) {
+                ns[S.nodes[t].name] = 1;
+            }
+            if (t === id && f !== S.focus && S.nodes[f]) {
+                ns[S.nodes[f].name] = 1;
+            }
+        });
+        return Object.keys(ns).filter(Boolean).join(" · ");
+    }
+
+    function inspector() {
+        var p = $("right-panel");
+        if (!p) {
+            return;
+        }
+        p.innerHTML = "";
+        var n = S.nodes[S.selected];
+        if (!n) {
+            return;
+        }
+        var cat = n.category || "pattern";
+        if (S.mode === "customize") {
+            p.innerHTML =
+                '<h6>// edit node</h6><div class="pv-detail">' +
+                '<div class="field"><label>Name</label><input type="text" id="f-name" value="' +
+                esc(n.name) +
+                '"></div>' +
+                '<div class="field"><label>Category <b>' +
+                CATS[cat] +
+                '</b></label><div class="seg" id="f-cat">' +
+                Object.keys(CATS)
+                    .map(function (k) {
+                        return (
+                            '<button type="button" data-c="' +
+                            k +
+                            '" class="cat-' +
+                            k +
+                            " " +
+                            (cat === k ? "on" : "") +
+                            '"><i></i>' +
+                            CATS[k] +
+                            "</button>"
+                        );
+                    })
+                    .join("") +
+                "</div></div>" +
+                '<div class="field"><label>Color</label><div class="swatches" id="f-sw">' +
+                Object.keys(CM)
+                    .map(function (k) {
+                        return (
+                            '<div class="swatch ' +
+                            (n.color === k ? "on" : "") +
+                            '" data-c="' +
+                            k +
+                            '" style="background:' +
+                            CM[k] +
+                            '"></div>'
+                        );
+                    })
+                    .join("") +
+                "</div></div>" +
+                (n.isCore
+                    ? ""
+                    : '<div class="field"><label>Difficulty</label><div class="seg" id="f-diff">' +
+                      DIF.map(function (d) {
+                          return '<button type="button" data-d="' + d + '" class="' + (n.diff === d ? "on" : "") + '">' + d + "</button>";
+                      }).join("") +
+                      "</div></div>" +
+                      '<div class="field"><label>Items count</label><input type="number" id="f-count" min="0" max="9999" value="' +
+                      (n.count || 0) +
+                      '"></div>') +
+                '<div class="field"><label>Mastery <b id="f-mv">' +
+                (n.mastery || 0) +
+                '%</b></label><input type="range" id="f-m" min="0" max="100" value="' +
+                (n.mastery || 0) +
+                '"></div>' +
+                '<div class="form-actions"><button type="button" class="btn primary" id="f-add">+ Add child</button>' +
+                (n.isCore ? "" : '<button type="button" class="btn danger" id="f-del">Delete</button>') +
+                "</div>" +
+                '<div class="kbd-row"><div><span>Focus on node</span><span class="kbd">2× click</span></div>' +
+                '<div><span>Pan canvas</span><span class="kbd">drag bg</span></div>' +
+                '<div><span>Zoom</span><span class="kbd">scroll</span></div>' +
+                '<div><span>Deselect</span><span class="kbd">Esc</span></div></div></div>' +
+                '<div class="pv-detail" style="background:linear-gradient(180deg,rgba(58,91,217,.06),rgba(58,91,217,.01))">' +
+                '<div class="name" style="color:var(--c-accent)">▸ Connections</div>' +
+                '<div class="meta" style="margin-top:6px">' +
+                (conns(n.id) || "No connections") +
+                "</div></div>";
+            wire(n);
+        } else {
+            var l = conns(n.id) || "—";
+            p.innerHTML =
+                '<h6>// inspector</h6><div class="pv-detail">' +
+                '<div class="name">' +
+                esc(n.name) +
+                ' <span class="cat-badge ' +
+                cat +
+                '"><i></i>' +
+                CATS[cat] +
+                "</span></div>" +
+                '<div class="meta">' +
+                (n.isCore ? "Root" : CATS[cat]) +
+                " · " +
+                (n.count || "multi") +
+                " items · " +
+                (n.diff || "mixed") +
+                '</div><div class="prog"><i style="width:' +
+                (n.mastery || 0) +
+                '%"></i></div>' +
+                '<div class="pv-mini-stat"><span>Mastery</span><b>' +
+                (n.mastery || 0) +
+                "%</b></div>" +
+                '<div class="pv-mini-stat"><span>Category</span><b>' +
+                CATS[cat] +
+                "</b></div>" +
+                '<div class="pv-mini-stat"><span>Difficulty</span><b>' +
+                (n.diff || "Mixed") +
+                "</b></div>" +
+                '<div class="pv-mini-stat"><span>Children</span><b>' +
+                childIds(n.id).length +
+                "</b></div>" +
+                '<div class="pv-mini-stat"><span>Descendants</span><b>' +
+                hiddenCount(n.id) +
+                "</b></div></div>" +
+                '<div class="pv-detail"><div class="name">Linked nodes</div><div class="meta" style="margin-top:8px">' +
+                l +
+                "</div></div>";
+        }
+    }
+
+    function wire(n) {
+        var fn = $("f-name");
+        if (fn) {
+            fn.oninput = function (e) {
+                n.name = e.target.value || "Untitled";
+                var g = ng.querySelector('.pv-node[data-id="' + n.id + '"]');
+                if (g) {
+                    var t = g.querySelector("text:not(.sub):not(.hbadge)");
+                    if (t) {
+                        t.textContent = n.name;
+                    }
+                }
+                sidebar();
+            };
+        }
+        var ct = $("f-cat");
+        if (ct) {
+            ct.querySelectorAll("button").forEach(function (b) {
+                b.onclick = function () {
+                    n.category = b.getAttribute("data-c");
+                    render();
+                };
+            });
+        }
+        document.querySelectorAll("#f-sw .swatch").forEach(function (s) {
+            s.onclick = function () {
+                n.color = s.getAttribute("data-c");
+                render();
+            };
+        });
+        var df = $("f-diff");
+        if (df) {
+            df.querySelectorAll("button").forEach(function (b) {
+                b.onclick = function () {
+                    n.diff = b.getAttribute("data-d");
+                    df.querySelectorAll("button").forEach(function (x) {
+                        x.classList.toggle("on", x.getAttribute("data-d") === n.diff);
+                    });
+                    meta();
+                };
+            });
+        }
+        var cn = $("f-count");
+        if (cn) {
+            cn.oninput = function (e) {
+                n.count = +e.target.value || 0;
+                sidebar();
+                meta();
+            };
+        }
+        var fm = $("f-m");
+        if (fm) {
+            fm.oninput = function (e) {
+                n.mastery = +e.target.value;
+                var mv = $("f-mv");
+                if (mv) {
+                    mv.textContent = n.mastery + "%";
+                }
+                render();
+            };
+        }
+        var fa = $("f-add");
+        if (fa) {
+            fa.onclick = function () {
+                addChild(n.id);
+            };
+        }
+        var dl = $("f-del");
+        if (dl) {
+            dl.onclick = function () {
+                if (confirm('Delete "' + n.name + '"?')) {
+                    del(n.id);
+                }
+            };
+        }
+    }
+
+    function addChild(pid) {
+        var p = S.nodes[pid];
+        if (!p) {
+            return;
+        }
+        var id = "n" + ++S.uid;
+        var cat = p.category === "ds" ? "pattern" : "problem";
+        S.nodes[id] = {
+            id: id,
+            name: cat === "problem" ? "New problem" : cat === "ds" ? "New DS" : "New pattern",
+            r: 20,
+            color: p.color || "accent",
+            count: 0,
+            mastery: 0,
+            diff: "Medium",
+            category: cat,
+        };
+        S.edges.push([pid, id, 1]);
+        S.selected = id;
+        layoutRadial();
+        render();
+    }
+
+    function del(id) {
+        if (id === "core" || id === S.focus) {
+            return;
+        }
+        descendants(id).forEach(function (d) {
+            delete S.nodes[d];
+        });
+        delete S.nodes[id];
+        S.edges = S.edges.filter(function (ft) {
+            return S.nodes[ft[0]] && S.nodes[ft[1]];
+        });
+        S.selected = S.focus;
+        layoutRadial();
+        render();
+    }
+
+    function descendants(id) {
+        var out = [];
+        var stk = [id];
+        while (stk.length) {
+            var c = stk.pop();
+            childIds(c).forEach(function (k) {
+                out.push(k);
+                stk.push(k);
+            });
+        }
+        return out;
+    }
+
+    function setFocus(id) {
+        if (!S.nodes[id]) {
+            return;
+        }
+        S.focus = id;
+        S.selected = id;
+        S.pan = { x: 0, y: 0 };
+        S.zoom = 1;
+        applyView();
+        layoutRadial();
+        autoCollapseDeep(2);
+        render();
+    }
+
+    function exitFocus() {
+        setFocus("core");
+    }
+
+    function drawBreadcrumb() {
+        var bc = $("breadcrumb");
+        if (!bc) {
+            return;
+        }
+        if (S.focus === "core") {
+            bc.classList.remove("show");
+            return;
+        }
+        bc.classList.add("show");
+        var path = pathTo(S.focus);
+        bc.innerHTML =
+            path
+                .map(function (id, i) {
+                    var node = S.nodes[id];
+                    var isLast = i === path.length - 1;
+                    return (
+                        '<span class="crumb' +
+                        (isLast ? " current" : "") +
+                        '" data-id="' +
+                        esc(id) +
+                        '">' +
+                        esc((node && node.name) || id) +
+                        "</span>" +
+                        (isLast ? "" : '<span class="sep">›</span>')
+                    );
+                })
+                .join("") + '<span class="exit" id="bc-exit">× exit focus</span>';
+        bc.querySelectorAll(".crumb").forEach(function (c) {
+            c.onclick = function () {
+                setFocus(c.getAttribute("data-id"));
+            };
+        });
+        var ex = $("bc-exit");
+        if (ex) {
+            ex.onclick = exitFocus;
+        }
+    }
+
+    function toggleCollapse(id) {
+        if (S.collapsed.has(id)) {
+            S.collapsed.delete(id);
+        } else {
+            S.collapsed.add(id);
+        }
+        render();
+    }
+
+    function expandAll() {
+        S.collapsed = new Set();
+        render();
+    }
+
+    function collapseAll() {
+        S.collapsed = new Set();
+        Object.keys(S.nodes).forEach(function (id) {
+            if (id === S.focus) {
+                return;
+            }
+            if (inSubtree(id, S.focus) && relDepth(id, S.focus) >= 1 && childIds(id).length) {
+                S.collapsed.add(id);
+            }
+        });
+        render();
+    }
+
+    var hover = null;
+
+    function showChips(n) {
+        if (S.mode !== "customize") {
+            return;
+        }
+        hover = n;
+        var sr = svg.getBoundingClientRect(),
+            wr = cw.getBoundingClientRect(),
+            vb = svg.viewBox.baseVal;
+        var sx = sr.width / vb.width,
+            sy = sr.height / vb.height;
+        cb.style.left = sr.left - wr.left + (n.x - vb.x) * sx + "px";
+        cb.style.top = sr.top - wr.top + (n.y - vb.y - n.r - 6) * sy + "px";
+        cb.classList.add("show");
+        var cd = $("chip-del");
+        if (cd) {
+            cd.style.display = n.isCore || n.id === S.focus ? "none" : "";
+        }
+        var cf = $("chip-focus");
+        if (cf) {
+            cf.style.display = n.id === S.focus ? "none" : "";
+        }
+        var cc = $("chip-collapse-n");
+        if (cc) {
+            cc.textContent = S.collapsed.has(n.id) ? "⊞" : "⊟";
+        }
+    }
+
+    var drag = null;
+    function startDrag(e, n) {
+        if (S.mode !== "customize" || e.button !== 0) {
+            return;
+        }
+        e.stopPropagation();
+        select(n.id);
+        var pt = svgPt(e);
+        drag = { n: n, ox: pt.x - n.x, oy: pt.y - n.y };
+        var gn = ng.querySelector('.pv-node[data-id="' + n.id + '"]');
+        if (gn) {
+            gn.classList.add("dragging");
+        }
+        cb.classList.remove("show");
+    }
+    function svgPt(e) {
+        var p = svg.createSVGPoint();
+        p.x = e.clientX;
+        p.y = e.clientY;
+        return p.matrixTransform(svg.getScreenCTM().inverse());
+    }
+
+    var panDrag = null;
+
+    function render() {
+        eg.innerHTML = "";
+        ng.innerHTML = "";
+        S.edges.forEach(function (ft) {
+            var f = ft[0],
+                t = ft[1],
+                a = ft[2];
+            if (!visible(f) || !visible(t)) {
+                return;
+            }
+            var A = S.nodes[f],
+                B = S.nodes[t];
+            if (!A || !B) {
+                return;
+            }
+            eg.appendChild(
+                E("path", {
+                    class: "pv-edge" + (a ? " active" : ""),
+                    d: curve(A, B),
+                    "data-from": f,
+                    "data-to": t,
+                }),
+            );
+        });
+        Object.values(S.nodes).forEach(function (n) {
+            if (!visible(n.id)) {
+                return;
+            }
+            var g = buildNode(n);
+            ng.appendChild(g);
+            g.addEventListener("mousedown", function (e) {
+                startDrag(e, n);
+            });
+            g.addEventListener("mouseenter", function () {
+                showChips(n);
+            });
+            g.addEventListener("dblclick", function (e) {
+                e.stopPropagation();
+                setFocus(n.id);
+            });
+        });
+        apply();
+        sidebar();
+        inspector();
+        meta();
+        drawBreadcrumb();
+        drawMinimap();
+        semanticZoom();
+    }
+
+    function exportJson() {
+        var blob = new Blob([JSON.stringify({ nodes: S.nodes, edges: S.edges, focus: S.focus }, null, 2)], { type: "application/json" });
+        var u = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = u;
+        a.download = "orbital-graph.json";
+        a.click();
+        URL.revokeObjectURL(u);
+    }
+
+    function importFromFile(text) {
+        var data = JSON.parse(text);
+        if (data.nodes) {
+            S.nodes = data.nodes;
+        }
+        if (data.edges) {
+            S.edges = data.edges;
+        }
+        if (data.focus && S.nodes[data.focus]) {
+            S.focus = data.focus;
+        }
+        layoutRadial();
+        render();
+    }
+
+    function bindUi() {
+        svg = $("svg");
+        eg = $("edges-g");
+        ng = $("nodes-g");
+        cw = $("canvas-wrap");
+        cb = $("node-chips");
+        if (!svg || !eg || !ng || !cw) {
+            return;
+        }
+
+        cw.addEventListener("mouseleave", function () {
+            if (cb) {
+                cb.classList.remove("show");
+            }
+        });
+
+        var chipFocus = $("chip-focus");
+        if (chipFocus) {
+            chipFocus.onclick = function (e) {
+                e.stopPropagation();
+                if (hover) {
+                    setFocus(hover.id);
+                }
+            };
+        }
+        var chipCol = $("chip-collapse-n");
+        if (chipCol) {
+            chipCol.onclick = function (e) {
+                e.stopPropagation();
+                if (hover && childIds(hover.id).length) {
+                    toggleCollapse(hover.id);
+                }
+            };
+        }
+        var chipAdd = $("chip-add");
+        if (chipAdd) {
+            chipAdd.onclick = function (e) {
+                e.stopPropagation();
+                if (hover) {
+                    addChild(hover.id);
+                }
+            };
+        }
+        var chipEdit = $("chip-edit");
+        if (chipEdit) {
+            chipEdit.onclick = function (e) {
+                e.stopPropagation();
+                if (hover) {
+                    select(hover.id);
+                }
+            };
+        }
+        var chipDel = $("chip-del");
+        if (chipDel) {
+            chipDel.onclick = function (e) {
+                e.stopPropagation();
+                if (hover && !hover.isCore && confirm('Delete "' + hover.name + '" and all descendants?')) {
+                    del(hover.id);
+                }
+            };
+        }
+
+        window.addEventListener("mousemove", function (e) {
+            if (drag) {
+                var pt = svgPt(e);
+                drag.n.x = pt.x - drag.ox;
+                drag.n.y = pt.y - drag.oy;
+                var g = ng.querySelector('.pv-node[data-id="' + drag.n.id + '"]');
+                if (g) {
+                    g.setAttribute("transform", "translate(" + drag.n.x + "," + drag.n.y + ")");
+                }
+                S.edges.forEach(function (ft) {
+                    var f = ft[0],
+                        t = ft[1];
+                    if (f === drag.n.id || t === drag.n.id) {
+                        var pth = document.querySelector('.pv-edge[data-from="' + f + '"][data-to="' + t + '"]');
+                        if (pth && S.nodes[f] && S.nodes[t]) {
+                            pth.setAttribute("d", curve(S.nodes[f], S.nodes[t]));
+                        }
+                    }
+                });
+                drawMinimap();
+            } else if (panDrag) {
+                var dx = e.clientX - panDrag.sx,
+                    dy = e.clientY - panDrag.sy;
+                var sr = svg.getBoundingClientRect();
+                S.pan.x = panDrag.ix - (dx * (VB.w / S.zoom)) / sr.width;
+                S.pan.y = panDrag.iy - (dy * (VB.h / S.zoom)) / sr.height;
+                applyView();
+            }
+        });
+        window.addEventListener("mouseup", function () {
+            if (drag) {
+                var gn = ng.querySelector('.pv-node[data-id="' + drag.n.id + '"]');
+                if (gn) {
+                    gn.classList.remove("dragging");
+                }
+                drag = null;
+            }
+            if (panDrag) {
+                svg.classList.remove("panning");
+                panDrag = null;
+            }
+        });
+
+        svg.addEventListener("mousedown", function (e) {
+            if (e.target === svg || e.target === eg || e.target === ng) {
+                panDrag = { sx: e.clientX, sy: e.clientY, ix: S.pan.x, iy: S.pan.y };
+                svg.classList.add("panning");
+                if (cb) {
+                    cb.classList.remove("show");
+                }
+            }
+        });
+
+        svg.addEventListener(
+            "wheel",
+            function (e) {
+                e.preventDefault();
+                var delta = e.deltaY > 0 ? 0.92 : 1.08;
+                S.zoom = clamp(S.zoom * delta, 0.35, 2.75);
+                applyView();
+            },
+            { passive: false },
+        );
+
+        var zin = $("zoom-in"),
+            zout = $("zoom-out"),
+            zval = $("zoom-val");
+        if (zin) {
+            zin.onclick = function () {
+                S.zoom = clamp(S.zoom * 1.12, 0.35, 2.75);
+                applyView();
+            };
+        }
+        if (zout) {
+            zout.onclick = function () {
+                S.zoom = clamp(S.zoom / 1.12, 0.35, 2.75);
+                applyView();
+            };
+        }
+        if (zval) {
+            zval.onclick = function () {
+                S.zoom = 1;
+                S.pan = { x: 0, y: 0 };
+                applyView();
+            };
+        }
+
+        var ex = $("expand-chip"),
+            col = $("collapse-chip");
+        if (ex) {
+            ex.onclick = expandAll;
+        }
+        if (col) {
+            col.onclick = collapseAll;
+        }
+
+        var ap = $("add-pattern");
+        if (ap) {
+            ap.onclick = function () {
+                addChild(S.focus);
+            };
+        }
+
+        document.addEventListener("keydown", function (e) {
+            if (
+                !document.body.classList.contains("ws-repr-orbital") ||
+                document.body.classList.contains("mode-json")
+            ) {
+                return;
+            }
+            if (["INPUT", "TEXTAREA", "SELECT"].indexOf(document.activeElement.tagName) >= 0) {
+                return;
+            }
+            var n = S.nodes[S.selected];
+            if (e.key === "Escape") {
+                S.selected = "core";
+                apply();
+                sidebar();
+                inspector();
+            } else if ((e.key === "Delete" || e.key === "Backspace") && n && !n.isCore) {
+                if (confirm('Delete "' + n.name + '"?')) {
+                    del(n.id);
+                }
+            }
+        });
+    }
+
+    function relayout() {
+        layoutRadial();
+        autoCollapseDeep(2);
+        render();
+    }
+
+    function setMode(m) {
+        S.mode = m || "customize";
+        var reprCls = document.body.classList.contains("ws-repr-orbital") ? "ws-repr-orbital" : "ws-repr-linear";
+        document.body.className = "mode-" + S.mode + " " + reprCls;
+        var mc = $("mode-chip");
+        if (mc) {
+            mc.textContent = "● " + S.mode;
+            mc.classList.toggle("live", S.mode === "customize");
+        }
+        var ht = $("hint-text");
+        if (ht) {
+            ht.textContent =
+                S.mode === "customize"
+                    ? "drag bg · scroll zoom · 2× click focus"
+                    : S.mode === "topic"
+                      ? "topic lens"
+                      : "full map";
+        }
+        render();
+    }
+
+    function init() {
+        if (window.__wsOrbStudioInited) {
+            return;
+        }
+        window.__wsOrbStudioInited = true;
+        bindUi();
+        layoutRadial();
+        autoCollapseDeep(2);
+        render();
+    }
+
+    window.ORB = {
+        init: init,
+        exportJson: exportJson,
+        importFromText: importFromFile,
+        setMode: setMode,
+        relayout: relayout,
+        getState: function () {
+            return S;
+        },
+    };
+})();

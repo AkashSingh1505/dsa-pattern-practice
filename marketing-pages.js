@@ -68,6 +68,11 @@
         loadPublicStats();
     }
 
+    document.addEventListener("dsa-site-marketing-ready", function () {
+        loadPublicStats();
+        syncPrimaryCtas();
+    });
+
     document.addEventListener("dsa-site-features-ready", syncPrimaryCtas);
     window.addEventListener("load", syncPrimaryCtas);
 

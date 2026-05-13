@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" data-site-mk-page="content">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev">
+<title>Site content — DSA Pattern Practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./auth/site-toolbar.css?v=5">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#f4f6fb;--text:#1b2238;--muted:#5f6781;--line:rgba(20,30,55,0.1);--accent:#4f6bed}
+  html,body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;line-height:1.55}
+  .mk-wrap{max-width:720px;margin:0 auto;padding:48px 20px 80px}
+  .mk-hero{padding-bottom:28px;border-bottom:1px solid var(--line);margin-bottom:28px}
+  .mk-hero h1{font-size:clamp(26px,4vw,36px);letter-spacing:-0.02em;line-height:1.15}
+  .mk-hero p{margin-top:12px;color:var(--muted);font-size:15px}
+  #smk-content-body{font-size:15px;color:var(--text)}
+  #smk-content-body p{margin-bottom:14px}
+  #smk-content-body ul{margin:0 0 14px 20px}
+  .faq-section{padding-top:48px}
+  .faq-list{max-width:720px;margin:0 auto}
+  details.faq-item{border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.55);margin-bottom:10px;padding:0 14px}
+  details.faq-item summary{cursor:pointer;font-weight:600;padding:14px 0;list-style:none;display:flex;justify-content:space-between;gap:12px}
+  details.faq-item summary::-webkit-details-marker{display:none}
+  details.faq-item .faq-panel{padding:0 0 14px;color:var(--muted);font-size:14px}
+  .sec-tag{font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:12px}
+  .sec-title{font-size:clamp(22px,3vw,30px);font-weight:600}
+  .sec-sub{margin-top:10px;font-size:14px;color:var(--muted)}
+  footer{margin-top:64px;padding:40px 0;border-top:1px solid var(--line);background:rgba(255,255,255,.4)}
+  .foot-grid{display:grid;grid-template-columns:1.2fr repeat(3,1fr);gap:28px;max-width:1100px;margin:0 auto;padding:0 24px}
+  @media(max-width:900px){.foot-grid{grid-template-columns:1fr 1fr}}
+  .foot-brand{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .foot-logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#334155,#1e293b);display:grid;place-items:center}
+  .foot-grid h6{font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px}
+  .foot-grid a{display:block;color:var(--text);text-decoration:none;margin:6px 0;font-size:14px}
+  .foot-bottom{max-width:1100px;margin:24px auto 0;padding:16px 24px 0;border-top:1px solid var(--line);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<nav class="dsa-site-nav">
+  <div class="container nav-inner">
+    <a href="./index.html" class="brand" id="dsa-brand-home" aria-label="DSA Pattern Practice home">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="6" r="2.5" fill="#fff"/>
+          <circle cx="18" cy="6" r="2.5" fill="#fff"/>
+          <circle cx="12" cy="18" r="2.5" fill="#fff"/>
+          <path d="M6 6L12 18M18 6L12 18M6 6H18" stroke="#fff" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <b id="smk-brand-title">DSA Pattern Practice</b>
+        <span id="smk-brand-sub">Visual study studio</span>
+      </div>
+    </a>
+    <div class="nav-links" id="smk-nav-links">
+      <a href="./index.html#studio">Studio</a>
+      <a href="./index.html#why">Why it works</a>
+      <a href="./index.html#preview">Live graph</a>
+    </div>
+    <div class="nav-cta">
+      <a class="btn btn-ghost" id="smk-toolbar-signin" href="./account.html">Sign in</a>
+      <a class="btn btn-premium" id="smk-toolbar-premium" href="./premium.html">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2L15 8.5L22 9.5L17 14.5L18.5 22L12 18L5.5 22L7 14.5L2 9.5L9 8.5L12 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <span id="smk-toolbar-premium-label">Premium</span>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<main class="mk-wrap">
+  <header class="mk-hero">
+    <h1 id="smk-content-hero-title">Content & policies</h1>
+    <p id="smk-content-hero-sub">Edit this page from <strong>Site admin → Site → Marketing pages</strong>.</p>
+  </header>
+  <article id="smk-content-body">
+    <p>This page loads public copy from the site marketing API. Replace defaults in the admin panel.</p>
+  </article>
+
+  <section class="faq-section" aria-labelledby="smk-content-faq-h">
+    <div class="sec-tag" id="smk-content-faq-tag">// frequently asked</div>
+    <h2 class="sec-title" id="smk-content-faq-h">Common <em>questions</em></h2>
+    <p class="sec-sub" id="smk-content-faq-sub">Add or remove FAQ rows in the admin panel.</p>
+    <div class="faq-list" id="smk-content-faq-list"></div>
+  </section>
+</main>
+
+<footer data-smk-footer="content">
+  <div class="container">
+    <div class="foot-grid">
+      <div>
+        <div class="foot-brand">
+          <div class="foot-logo">
+            <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+              <circle cx="6" cy="6" r="2.5" fill="#fff"/>
+              <circle cx="18" cy="6" r="2.5" fill="#fff"/>
+              <circle cx="12" cy="18" r="2.5" fill="#fff"/>
+              <path d="M6 6L12 18M18 6L12 18M6 6H18" stroke="#fff" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <b>DSA Pattern Practice</b>
+        </div>
+        <p id="smk-footer-tagline">A visual study studio where every data structure, algorithm and interview pattern lives on one connected map.</p>
+      </div>
+      <div><h6>Studio</h6><a href="./index.html#studio">Product tour</a><a href="./premium.html">Pricing</a></div>
+      <div><h6>Account</h6><a href="./account.html">Sign in</a><a href="./user-dashboard.html">Member area</a></div>
+      <div><h6>Company</h6><a href="./index.html">Home</a><a href="./account.html">Contact</a></div>
+    </div>
+    <div class="foot-bottom"><div>© 2026 DSA Pattern Practice</div><div>Content page</div></div>
+  </div>
+</footer>
+
+<script src="./auth/dsa-admin-auth.js?v=6"></script>
+<script src="./auth/dsa-user-auth.js?v=3"></script>
+<script src="./marketing-pages.js?v=2"></script>
+<script src="./auth/site-marketing-hydrate.js?v=1"></script>
+<script>
+(function () {
+  var brand = document.getElementById("dsa-brand-home");
+  if (!brand) return;
+  brand.addEventListener("click", function (e) {
+    try {
+      if (typeof dsaIsPracticeUser === "function" && dsaIsPracticeUser()) e.preventDefault();
+    } catch (err) {}
+  });
+})();
+</script>
+</body>
+</html>

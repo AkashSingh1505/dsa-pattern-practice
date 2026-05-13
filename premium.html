@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-site-mk-page="premium">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -46,20 +46,20 @@
         </svg>
       </div>
       <div class="brand-text">
-        <b>DSA Pattern Practice</b>
-        <span>Visual study studio</span>
+        <b id="smk-brand-title">DSA Pattern Practice</b>
+        <span id="smk-brand-sub">Visual study studio</span>
       </div>
     </a>
-    <div class="nav-links">
+    <div class="nav-links" id="smk-nav-links">
       <a href="./index.html#studio">Studio</a>
       <a href="./index.html#why">Why it works</a>
       <a href="./index.html#preview">Live graph</a>
     </div>
     <div class="nav-cta">
-      <a class="btn btn-ghost" href="./account.html">Sign in</a>
-      <a class="btn btn-premium" href="./premium.html" aria-current="page">
+      <a class="btn btn-ghost" id="smk-toolbar-signin" href="./account.html">Sign in</a>
+      <a class="btn btn-premium" id="smk-toolbar-premium" href="./premium.html" aria-current="page">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2L15 8.5L22 9.5L17 14.5L18.5 22L12 18L5.5 22L7 14.5L2 9.5L9 8.5L12 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-        Premium
+        <span id="smk-toolbar-premium-label">Premium</span>
       </a>
     </div>
   </div>
@@ -587,12 +587,12 @@
 <section id="faq" class="faq-section" aria-labelledby="faq-heading">
   <div class="container">
     <div class="sec-head" style="text-align:center;margin-left:auto;margin-right:auto;margin-bottom:40px">
-      <div class="sec-tag">// frequently asked</div>
+      <div class="sec-tag" id="smk-premium-faq-tag">// frequently asked</div>
       <h2 class="sec-title" id="faq-heading">Questions <em>answered</em></h2>
-      <p class="sec-sub" style="margin-left:auto;margin-right:auto;text-align:center">Tap a question to expand the answer. The full comparison table is <a href="#compare" style="color:var(--c-accent);font-weight:600">above</a> — these entries go deeper on common questions.</p>
+      <p class="sec-sub" id="smk-premium-faq-sub" style="margin-left:auto;margin-right:auto;text-align:center">Tap a question to expand the answer. The full comparison table is <a href="#compare" style="color:var(--c-accent);font-weight:600">above</a> — these entries go deeper on common questions.</p>
     </div>
 
-    <div class="faq-list">
+    <div class="faq-list" id="smk-premium-faq-list">
       <details class="faq-item">
         <summary>What is included in the Free plan?</summary>
         <div class="faq-panel">
@@ -686,8 +686,8 @@
 <section>
   <div class="container">
     <div class="final">
-      <h2>Try the studio now, <em>upgrade when you need more.</em></h2>
-      <p>Open the public graph, create your account, and move into the tier that matches how you study. Questions? See the <a href="#faq" style="color:var(--c-accent);font-weight:600">FAQ</a> on this page.</p>
+      <h2 id="smk-premium-final-title">Try the studio now, <em>upgrade when you need more.</em></h2>
+      <p id="smk-premium-final-lead">Open the public graph, create your account, and move into the tier that matches how you study. Questions? See the <a href="#faq" style="color:var(--c-accent);font-weight:600">FAQ</a> on this page.</p>
       <div class="final-ctas">
         <a class="btn btn-primary btn-lg" href="./account.html" data-marketing-primary-cta>Start free</a>
         <a class="btn btn-secondary btn-lg" href="./index.html">Back to studio home</a>
@@ -696,7 +696,7 @@
   </div>
 </section>
 
-<footer>
+<footer data-smk-footer="premium">
   <div class="container">
     <div class="foot-grid">
       <div>
@@ -711,7 +711,7 @@
           </div>
           <b>DSA Pattern Practice</b>
         </div>
-        <p>A visual study studio where every data structure, algorithm and interview pattern lives on one connected map.</p>
+        <p id="smk-footer-tagline">A visual study studio where every data structure, algorithm and interview pattern lives on one connected map.</p>
       </div>
       <div>
         <h6>Studio</h6>
@@ -741,7 +741,8 @@
 
 <script src="./auth/dsa-admin-auth.js?v=5"></script>
 <script src="./auth/dsa-user-auth.js?v=3"></script>
-<script src="./marketing-pages.js?v=1"></script>
+<script src="./marketing-pages.js?v=2"></script>
+<script src="./auth/site-marketing-hydrate.js?v=1"></script>
 <script>
   (function () {
     function isPracticeUserSignedIn() {

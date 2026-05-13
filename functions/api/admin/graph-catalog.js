@@ -1,6 +1,7 @@
 import { json } from "../../_lib/admin-api.js";
 import { verifyPracticeToken } from "../../_lib/practice-jwt.js";
 import { newGraphId, requireGraphCatalogWriter } from "../../_lib/practice-auth-request.js";
+import { normalizeGraphCategoriesBody, parseGraphCategoriesJson } from "../../_lib/graph-catalog-categories.js";
 
 function slugify(s) {
     return String(s || "")
@@ -52,7 +53,7 @@ export async function onRequestGet(context) {
         try {
             row = await db
                 .prepare(
-                    `SELECT c.id, c.slug, c.title, c.description, c.visibility, c.creator_user_id, c.payload_json, c.accent_hue, c.tags_json, c.difficulty,
+                    `SELECT c.id, c.slug, c.title, c.description, c.visibility, c.creator_user_id, c.payload_json, c.accent_hue, c.tags_json, c.categories_json, c.difficulty,
                             c.estimated_minutes, c.download_count, c.created_at, c.updated_at,
                             pu.email AS creator_email
                      FROM graph_catalog c
@@ -89,6 +90,7 @@ export async function onRequestGet(context) {
                 creatorEmail: row.creator_email || null,
                 accentHue: row.accent_hue,
                 tags: parseTagsJson(row.tags_json),
+                categories: parseGraphCategoriesJson(row.categories_json),
                 difficulty: row.difficulty || null,
                 estimatedMinutes: row.estimated_minutes,
                 downloadCount: row.download_count || 0,
@@ -103,7 +105,7 @@ export async function onRequestGet(context) {
     try {
         rows = await db
             .prepare(
-                `SELECT c.id, c.slug, c.title, c.description, c.visibility, c.accent_hue, c.tags_json, c.difficulty,
+                `SELECT c.id, c.slug, c.title, c.description, c.visibility, c.accent_hue, c.tags_json, c.categories_json, c.difficulty,
                         c.estimated_minutes, c.download_count, c.created_at, c.updated_at, c.deleted_at,
                         pu.email AS creator_email
                  FROM graph_catalog c
@@ -159,6 +161,10 @@ export async function onRequestPost(context) {
         typeof body.accentHue === "number" && Number.isFinite(body.accentHue)
             ? Math.floor(body.accentHue) % 360
             : null;
+    const catNorm = normalizeGraphCategoriesBody(body.categories == null ? [] : body.categories);
+    if (!catNorm.ok) {
+        return json({ error: catNorm.error }, 400);
+    }
     const slugIn = String(body.slug || "").trim();
     const base = slugify(slugIn || title);
 
@@ -188,8 +194,8 @@ export async function onRequestPost(context) {
     try {
         await db
             .prepare(
-                `INSERT INTO graph_catalog (id, slug, title, description, visibility, creator_user_id, payload_json, accent_hue, tags_json, difficulty, estimated_minutes, download_count, created_at, updated_at, deleted_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, NULL)`,
+                `INSERT INTO graph_catalog (id, slug, title, description, visibility, creator_user_id, payload_json, accent_hue, tags_json, categories_json, difficulty, estimated_minutes, download_count, created_at, updated_at, deleted_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, NULL)`,
             )
             .bind(
                 id,
@@ -201,6 +207,7 @@ export async function onRequestPost(context) {
                 payloadJson,
                 accentHue,
                 tags,
+                catNorm.json,
                 difficulty,
                 estimatedMinutes,
                 now,
@@ -263,6 +270,14 @@ export async function onRequestPatch(context) {
     if (Array.isArray(body.tags)) {
         updates.push("tags_json = ?");
         binds.push(JSON.stringify(body.tags.map((x) => String(x))));
+    }
+    if (body.categories !== undefined) {
+        const catNorm = normalizeGraphCategoriesBody(body.categories);
+        if (!catNorm.ok) {
+            return json({ error: catNorm.error }, 400);
+        }
+        updates.push("categories_json = ?");
+        binds.push(catNorm.json);
     }
     if (body.difficulty != null) {
         updates.push("difficulty = ?");

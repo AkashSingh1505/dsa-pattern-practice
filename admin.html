@@ -979,6 +979,17 @@
                                                 <input id="adm-glib-difficulty" type="text" placeholder="e.g. beginner" maxlength="32" autocomplete="off" />
                                             </div>
                                             <div class="adm-field adm-field--span-2">
+                                                <label class="adm-glib-cat-field-label" id="adm-glib-cat-field-label">Categories <span class="adm-glib-label-muted">name required, color optional</span></label>
+                                                <div class="adm-glib-cat-toolbar">
+                                                    <label class="adm-glib-cat-inline-check">
+                                                        <input type="checkbox" id="adm-glib-cat-random" autocomplete="off" />
+                                                        <span>Auto-assign random distinct colors</span>
+                                                    </label>
+                                                </div>
+                                                <div id="adm-glib-categories-list" class="adm-glib-cat-list" role="list"></div>
+                                                <button type="button" class="btn ghost btn-sm adm-glib-cat-add" id="adm-glib-cat-add">+ Add category</button>
+                                            </div>
+                                            <div class="adm-field adm-field--span-2">
                                                 <label for="adm-glib-tags">Tags <span class="adm-glib-label-muted">comma-separated</span></label>
                                                 <input id="adm-glib-tags" type="text" placeholder="interview, graphs, …" autocomplete="off" />
                                             </div>

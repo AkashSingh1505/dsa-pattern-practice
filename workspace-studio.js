@@ -44,7 +44,7 @@
             ["graphs", "bfs", 0],
             ["trees", "dfs", 0],
         ],
-        selected: "core",
+        selected: null,
         mode: "customize",
         uid: 100,
         zoom: 1,
@@ -86,17 +86,17 @@
         }
         return e;
     }
+    /** Resolves url(#id) when the page uses a base URL (bare fragment refs can break). */
+    function svgFragUrl(id) {
+        try {
+            if (typeof document !== "undefined" && document.baseURI) {
+                return "url(" + new URL("#" + id, document.baseURI).href + ")";
+            }
+        } catch (e) {}
+        return "url(#" + id + ")";
+    }
     function clamp(v, lo, hi) {
         return Math.max(lo, Math.min(hi, v));
-    }
-    /** Stable pseudo-random for layout jitter from id string. */
-    function hashStr(s) {
-        s = String(s || "");
-        var h = 0;
-        for (var i = 0; i < s.length; i++) {
-            h = (h * 31 + s.charCodeAt(i)) | 0;
-        }
-        return Math.abs(h);
     }
 
     function childIds(id) {
@@ -116,6 +116,18 @@
             return ft[1] === id;
         });
         return e ? e[0] : null;
+    }
+    /** Chain from current focus root down to `id` (inclusive). */
+    function pathFocusTo(id) {
+        if (!id || !S.nodes[id]) {
+            return [];
+        }
+        var full = pathTo(id);
+        var i = full.indexOf(S.focus);
+        if (i < 0) {
+            return [];
+        }
+        return full.slice(i);
     }
     function pathTo(id) {
         var out = [];
@@ -206,16 +218,8 @@
                 n.y = VB.cy;
                 n.r = SIZES[0];
             } else {
-                var depthIdx = Math.min(depth, RINGS.length - 1);
-                var baseR = RINGS[depthIdx];
-                var fan = childIds(id).length;
-                // Fewer children → tighter orbit; more children → pushed outward (scattered ring).
-                var radialScale = 0.84 + Math.min(fan, 28) * 0.034;
-                var r = baseR * radialScale;
-                var span = Math.max(a1 - a0, 1e-4);
-                var mid = (a0 + a1) / 2;
-                var jitterA = ((hashStr(id) % 1000) / 1000 - 0.5) * Math.min(span, 0.55) * 0.42;
-                mid = clamp(mid + jitterA, a0 + span * 0.06, a1 - span * 0.06);
+                var mid = (a0 + a1) / 2,
+                    r = RINGS[Math.min(depth, RINGS.length - 1)];
                 n.x = VB.cx + Math.cos(mid) * r;
                 n.y = VB.cy + Math.sin(mid) * r;
                 n.r = SIZES[Math.min(depth, SIZES.length - 1)];
@@ -245,22 +249,76 @@
             }
         });
         recalcNodeRadii();
+        resolveOverlaps();
     }
 
-    /** After layout, grow each non-core radius slightly by outbound child count. */
+    /** Push overlapping nodes apart (core fixed); keeps bodies inside the view box. */
+    function resolveOverlaps(maxIter) {
+        maxIter = maxIter == null ? 16 : maxIter;
+        var pad = 8;
+        var margin = 20;
+        var list = Object.keys(S.nodes)
+            .map(function (k) {
+                return S.nodes[k];
+            })
+            .filter(function (n) {
+                return visible(n.id);
+            });
+        for (var iter = 0; iter < maxIter; iter++) {
+            var moved = false;
+            for (var i = 0; i < list.length; i++) {
+                for (var j = i + 1; j < list.length; j++) {
+                    var a = list[i],
+                        b = list[j];
+                    var dx = b.x - a.x,
+                        dy = b.y - a.y;
+                    var d = Math.hypot(dx, dy) || 1e-6;
+                    var need = a.r + b.r + pad;
+                    if (d >= need) {
+                        continue;
+                    }
+                    var gap = need - d;
+                    var ux = dx / d,
+                        uy = dy / d;
+                    if (a.isCore && !b.isCore) {
+                        b.x += ux * gap;
+                        b.y += uy * gap;
+                        moved = true;
+                    } else if (b.isCore && !a.isCore) {
+                        a.x -= ux * gap;
+                        a.y -= uy * gap;
+                        moved = true;
+                    } else if (!a.isCore && !b.isCore) {
+                        var half = gap / 2;
+                        a.x -= ux * half;
+                        a.y -= uy * half;
+                        b.x += ux * half;
+                        b.y += uy * half;
+                        moved = true;
+                    }
+                }
+            }
+            if (!moved) {
+                break;
+            }
+        }
+        list.forEach(function (n) {
+            if (n.isCore) {
+                return;
+            }
+            n.x = clamp(n.x, margin + n.r, VB.w - margin - n.r);
+            n.y = clamp(n.y, margin + n.r, VB.h - margin - n.r);
+        });
+    }
+
+    /** After layout, radii match `_lr` from depth (no child-count sizing). */
     function recalcNodeRadii() {
         Object.keys(S.nodes).forEach(function (nid) {
             var nn = S.nodes[nid];
             if (!nn || nn._lr == null) {
                 return;
             }
-            if (nn.isCore) {
-                nn.r = nn._lr;
-                return;
-            }
-            var ch = childIds(nid).length;
-            var scale = 0.82 + Math.min(ch, 40) * 0.026;
-            nn.r = clamp(nn._lr * scale, 11, 58);
+            nn.r = nn._lr;
         });
     }
 
@@ -340,7 +398,7 @@
             S.nodes = nodes;
             S.edges = [];
             S.focus = "core";
-            S.selected = "core";
+            S.selected = null;
             S.collapsed = new Set();
             S.uid = Math.max(S.uid || 0, uid) + 100;
             layoutRadial();
@@ -394,7 +452,7 @@
         S.nodes = nodes;
         S.edges = edges;
         S.focus = "core";
-        S.selected = "core";
+        S.selected = null;
         S.collapsed = new Set();
         S.uid = Math.max(S.uid || 0, uid) + 100;
 
@@ -423,6 +481,15 @@
         return "M" + x1 + "," + y1 + " Q" + mx + "," + my + " " + x2 + "," + y2;
     }
 
+    function truncateLabel(str, maxLen) {
+        str = String(str || "");
+        maxLen = Math.max(2, maxLen | 0);
+        if (str.length <= maxLen) {
+            return str;
+        }
+        return str.slice(0, maxLen - 1) + "\u2026";
+    }
+
     /** Short “channel” label under the node — no icon shapes. */
     function getCategoryLaneText(cat, r) {
         var longForm = {
@@ -438,7 +505,7 @@
 
     function buildNode(n) {
         var g = E("g", {
-            class: "pv-node " + n.color + (n.id === S.selected ? " selected" : ""),
+            class: "pv-node " + n.color + (!!S.selected && n.id === S.selected ? " selected" : ""),
             "data-id": n.id,
             transform: "translate(" + n.x + "," + n.y + ")",
         });
@@ -448,6 +515,19 @@
         var cat = n.category || "pattern";
         var ringStroke = n.isCore ? "rgba(0,0,0,.16)" : CAT_COLORS[cat] || CAT_COLORS.pattern;
         var ringSw = n.isCore ? 1.15 : 1.5;
+        var safeId = String(n.id).replace(/[^a-zA-Z0-9_-]/g, "_");
+        var clipId = "nclip_" + safeId;
+        var localDefs = E("defs");
+        var cp = E("clipPath", { id: clipId });
+        cp.appendChild(
+            E("circle", {
+                cx: 0,
+                cy: 0,
+                r: Math.max(5, r - 4),
+            }),
+        );
+        localDefs.appendChild(cp);
+        g.appendChild(localDefs);
         g.appendChild(
             E("circle", {
                 class: "ring",
@@ -472,27 +552,30 @@
                 }),
             );
         }
+        var labelG = E("g", { class: "pv-node-labels", "clip-path": svgFragUrl(clipId) });
         var sub = n.isCore ? "core" : n.count != null ? n.count + " items" : "";
         var showSub = sub && r >= 24;
+        var titleMax = Math.max(4, Math.floor(r / 4.2));
+        var subMax = Math.max(6, Math.floor(r / 3.2));
         var t = E("text", { class: "node-title", x: 0, y: showSub ? -5 : 0 });
-        t.textContent = n.name;
+        t.textContent = truncateLabel(n.name, titleMax);
         if (r <= 18) {
             t.setAttribute("style", "font-size:9.5px");
         } else if (r <= 22) {
             t.setAttribute("style", "font-size:10.5px");
         }
-        g.appendChild(t);
+        labelG.appendChild(t);
         if (showSub) {
             var ss = E("text", { class: "sub", x: 0, y: 10 });
-            ss.textContent = sub;
-            g.appendChild(ss);
+            ss.textContent = truncateLabel(sub, subMax);
+            labelG.appendChild(ss);
         }
         if (!n.isCore && r >= 14) {
             var laneY = showSub ? 22 : clamp(r * 0.62, 12, 18);
             var lane = E("text", { class: "cat-lane", x: 0, y: laneY });
-            lane.textContent = getCategoryLaneText(cat, r);
+            lane.textContent = truncateLabel(getCategoryLaneText(cat, r), Math.max(5, Math.floor(r / 3.8)));
             lane.setAttribute("fill", CAT_COLORS[cat] || CAT_COLORS.pattern);
-            g.appendChild(lane);
+            labelG.appendChild(lane);
         }
         if (S.collapsed.has(n.id)) {
             var hc = hiddenCount(n.id);
@@ -500,12 +583,13 @@
                 var bx = n.r * 0.72,
                     by = n.r * 0.72,
                     bgr = Math.max(8, n.r * 0.32);
-                g.appendChild(E("circle", { cx: bx, cy: by, r: bgr, fill: CM[n.color] || CM.accent, stroke: "#fff", "stroke-width": 2 }));
+                labelG.appendChild(E("circle", { cx: bx, cy: by, r: bgr, fill: CM[n.color] || CM.accent, stroke: "#fff", "stroke-width": 2 }));
                 var bt = E("text", { class: "hbadge", x: bx, y: by });
                 bt.textContent = "+" + hc;
-                g.appendChild(bt);
+                labelG.appendChild(bt);
             }
         }
+        g.appendChild(labelG);
         return g;
     }
 
@@ -671,53 +755,56 @@
         inspector();
     }
 
+    function clearSelection() {
+        S.selected = null;
+        apply();
+        sidebar();
+        inspector();
+    }
+
     function apply() {
         var id = S.selected;
         document.querySelectorAll("#svg .pv-node").forEach(function (n) {
-            n.classList.toggle("selected", n.dataset.id === id);
+            n.classList.toggle("selected", !!id && n.dataset.id === id);
         });
-        var rel = {};
-        rel[id] = true;
-        S.edges.forEach(function (ft) {
-            var f = ft[0],
-                t = ft[1];
-            if (f === id) {
-                rel[t] = true;
-            }
-            if (t === id) {
-                rel[f] = true;
-            }
+        if (!id || !S.nodes[id]) {
+            document.querySelectorAll("#svg .pv-node").forEach(function (el) {
+                el.classList.remove("dim");
+            });
+            document.querySelectorAll("#svg .pv-edge").forEach(function (e) {
+                e.classList.remove("dim", "sel-ring");
+            });
+            return;
+        }
+        var bright = {};
+        var path = pathFocusTo(id);
+        if (!path.length) {
+            path = [id];
+        }
+        path.forEach(function (nid) {
+            bright[nid] = true;
         });
-        var isolate = id !== "core" && S.nodes[id];
+        childIds(id).forEach(function (c) {
+            bright[c] = true;
+        });
         document.querySelectorAll("#svg .pv-node").forEach(function (el) {
             var nid = el.dataset.id;
-            var inRel = !!rel[nid];
-            if (!isolate) {
-                el.classList.remove("dim", "vnbr");
-                return;
-            }
-            if (nid === id) {
-                el.classList.remove("dim", "vnbr");
-            } else if (inRel) {
-                el.classList.add("dim", "vnbr");
+            if (bright[nid]) {
+                el.classList.remove("dim");
             } else {
                 el.classList.add("dim");
-                el.classList.remove("vnbr");
             }
         });
         document.querySelectorAll("#svg .pv-edge").forEach(function (e) {
             var nf = e.getAttribute("data-from"),
                 nt = e.getAttribute("data-to");
-            var inv = rel[nf] && rel[nt];
-            if (!isolate) {
-                e.classList.remove("dim", "sel-ring");
-                return;
-            }
-            if (inv) {
-                e.classList.add("dim", "sel-ring");
+            var both = bright[nf] && bright[nt];
+            if (both) {
+                e.classList.add("sel-ring");
+                e.classList.remove("dim");
             } else {
-                e.classList.add("dim");
                 e.classList.remove("sel-ring");
+                e.classList.add("dim");
             }
         });
     }
@@ -749,6 +836,11 @@
             return;
         }
         p.innerHTML = "";
+        if (!S.selected || !S.nodes[S.selected]) {
+            p.innerHTML =
+                '<h6>// inspector</h6><div class="pv-detail"><div class="meta">Select a node on the map or from the list. Click empty canvas to clear.</div></div>';
+            return;
+        }
         var n = S.nodes[S.selected];
         if (!n) {
             return;
@@ -978,7 +1070,7 @@
         S.edges = S.edges.filter(function (ft) {
             return S.nodes[ft[0]] && S.nodes[ft[1]];
         });
-        S.selected = S.focus;
+        S.selected = null;
         layoutRadial();
         render();
     }
@@ -1207,6 +1299,7 @@
         if (data.focus && S.nodes[data.focus]) {
             S.focus = data.focus;
         }
+        S.selected = null;
         layoutRadial();
         render();
     }
@@ -1294,6 +1387,9 @@
                 });
                 drawMinimap();
             } else if (panDrag) {
+                if (Math.hypot(e.clientX - panDrag.sx, e.clientY - panDrag.sy) > 5) {
+                    panDrag.moved = true;
+                }
                 var dx = e.clientX - panDrag.sx,
                     dy = e.clientY - panDrag.sy;
                 var sr = svg.getBoundingClientRect();
@@ -1311,18 +1407,25 @@
                 drag = null;
             }
             if (panDrag) {
+                if (!panDrag.moved) {
+                    clearSelection();
+                }
                 svg.classList.remove("panning");
                 panDrag = null;
             }
         });
 
         svg.addEventListener("mousedown", function (e) {
-            if (e.target === svg || e.target === eg || e.target === ng) {
-                panDrag = { sx: e.clientX, sy: e.clientY, ix: S.pan.x, iy: S.pan.y };
-                svg.classList.add("panning");
-                if (cb) {
-                    cb.classList.remove("show");
-                }
+            if (e.button !== 0) {
+                return;
+            }
+            if (e.target.closest && e.target.closest(".pv-node")) {
+                return;
+            }
+            panDrag = { sx: e.clientX, sy: e.clientY, ix: S.pan.x, iy: S.pan.y, moved: false };
+            svg.classList.add("panning");
+            if (cb) {
+                cb.classList.remove("show");
             }
         });
 
@@ -1386,12 +1489,9 @@
             if (["INPUT", "TEXTAREA", "SELECT"].indexOf(document.activeElement.tagName) >= 0) {
                 return;
             }
-            var n = S.nodes[S.selected];
+            var n = S.selected ? S.nodes[S.selected] : null;
             if (e.key === "Escape") {
-                S.selected = "core";
-                apply();
-                sidebar();
-                inspector();
+                clearSelection();
             } else if ((e.key === "Delete" || e.key === "Backspace") && n && !n.isCore) {
                 if (confirm('Delete "' + n.name + '"?')) {
                     del(n.id);

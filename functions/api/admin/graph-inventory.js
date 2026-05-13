@@ -1,4 +1,5 @@
 import { json, requireAdmin } from "../../_lib/admin-api.js";
+import { parseGraphCategoriesJson } from "../../_lib/graph-catalog-categories.js";
 
 function parseTagsJson(s) {
     if (!s || typeof s !== "string") {
@@ -57,7 +58,7 @@ export async function onRequestGet(context) {
         try {
             row = await db
                 .prepare(
-                    `SELECT c.id, c.slug, c.title, c.description, c.visibility, c.creator_user_id, c.payload_json, c.accent_hue, c.tags_json, c.difficulty,
+                    `SELECT c.id, c.slug, c.title, c.description, c.visibility, c.creator_user_id, c.payload_json, c.accent_hue, c.tags_json, c.categories_json, c.difficulty,
                             c.estimated_minutes, c.download_count, c.created_at, c.updated_at,
                             pu.email AS creator_email
                      FROM graph_catalog c
@@ -95,6 +96,7 @@ export async function onRequestGet(context) {
                 creatorEmail: row.creator_email || null,
                 accentHue: row.accent_hue,
                 tags: parseTagsJson(row.tags_json),
+                categories: parseGraphCategoriesJson(row.categories_json),
                 difficulty: row.difficulty || null,
                 estimatedMinutes: row.estimated_minutes,
                 downloadCount: row.download_count || 0,

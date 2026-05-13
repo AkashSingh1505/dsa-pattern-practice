@@ -1,5 +1,6 @@
 import { json } from "../../_lib/admin-api.js";
 import { requirePracticeUser } from "../../_lib/practice-auth-request.js";
+import { parseGraphCategoriesJson } from "../../_lib/graph-catalog-categories.js";
 
 export async function onRequestGet(context) {
     const { request, env } = context;
@@ -17,7 +18,7 @@ export async function onRequestGet(context) {
     try {
         row = await db
             .prepare(
-                `SELECT c.id, c.slug, c.title, c.description, c.visibility, c.payload_json, c.accent_hue, c.tags_json,
+                `SELECT c.id, c.slug, c.title, c.description, c.visibility, c.payload_json, c.accent_hue, c.tags_json, c.categories_json,
                         c.difficulty, c.estimated_minutes, c.download_count, c.created_at, c.updated_at,
                         pu.email AS creator_email, up.display_name AS creator_display_name
                  FROM graph_catalog c
@@ -57,6 +58,7 @@ export async function onRequestGet(context) {
             visibility: vis,
             accentHue: row.accent_hue,
             tags: safeJsonArray(row.tags_json),
+            categories: parseGraphCategoriesJson(row.categories_json),
             difficulty: row.difficulty || null,
             estimatedMinutes: row.estimated_minutes,
             downloadCount: row.download_count || 0,

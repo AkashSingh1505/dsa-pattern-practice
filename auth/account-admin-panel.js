@@ -121,6 +121,213 @@
 
     const DEFAULT_GLIB_PAYLOAD_TEXT = JSON.stringify(buildDefaultGraphPayloadFromTitle("Untitled graph"), null, 2);
 
+    const GLIB_CAT_PALETTE = [
+        "#ef4444",
+        "#f59e0b",
+        "#10b981",
+        "#06b6d4",
+        "#3b82f6",
+        "#8b5cf6",
+        "#ec4899",
+        "#84cc16",
+        "#f97316",
+        "#14b8a6",
+        "#a855f7",
+        "#0ea5e9",
+    ];
+
+    function glibIsHexColor(s) {
+        return typeof s === "string" && /^#[0-9a-fA-F]{6}$/.test(s.trim());
+    }
+
+    function glibPickDistinctColors(n) {
+        if (n <= 0) {
+            return [];
+        }
+        if (n <= GLIB_CAT_PALETTE.length) {
+            const shuffled = GLIB_CAT_PALETTE.slice().sort(function () {
+                return Math.random() - 0.5;
+            });
+            return shuffled.slice(0, n);
+        }
+        return Array.from({ length: n }, function (_, i) {
+            return "hsl(" + Math.round((360 / n) * i) + ", 70%, 55%)";
+        });
+    }
+
+    function glibSyncCatColorWrapsDisabled() {
+        const rand = document.getElementById("adm-glib-cat-random");
+        const on = rand && rand.checked;
+        const list = document.getElementById("adm-glib-categories-list");
+        if (!list) {
+            return;
+        }
+        list.querySelectorAll(".adm-glib-cat-color-wrap").forEach(function (w) {
+            w.classList.toggle("adm-glib-cat-color-wrap--disabled", !!on);
+        });
+    }
+
+    function glibMakeCategoryRow(name, color) {
+        const listEl = document.getElementById("adm-glib-categories-list");
+        if (!listEl) {
+            return null;
+        }
+        const initial = glibIsHexColor(color) ? color.trim() : GLIB_CAT_PALETTE[listEl.children.length % GLIB_CAT_PALETTE.length];
+        const row = document.createElement("div");
+        row.className = "adm-glib-cat-row";
+        row.setAttribute("role", "listitem");
+        const inp = document.createElement("input");
+        inp.type = "text";
+        inp.className = "adm-glib-cat-name";
+        inp.placeholder = "Category name *";
+        inp.value = name != null ? String(name) : "";
+        inp.autocomplete = "off";
+        const wrap = document.createElement("div");
+        wrap.className = "adm-glib-cat-color-wrap";
+        const col = document.createElement("input");
+        col.type = "color";
+        col.className = "adm-glib-cat-color";
+        col.value = initial;
+        const hex = document.createElement("span");
+        hex.className = "adm-glib-cat-color-hex";
+        hex.textContent = String(initial).toUpperCase();
+        col.addEventListener("input", function () {
+            hex.textContent = col.value.toUpperCase();
+        });
+        wrap.appendChild(col);
+        wrap.appendChild(hex);
+        const rm = document.createElement("button");
+        rm.type = "button";
+        rm.className = "adm-glib-cat-remove";
+        rm.setAttribute("aria-label", "Remove category");
+        rm.textContent = "✕";
+        rm.addEventListener("click", function () {
+            row.remove();
+            if (!listEl.children.length) {
+                glibMakeCategoryRow("", "");
+            }
+            refreshGlibSaveAndWorkspaceUi();
+        });
+        row.appendChild(inp);
+        row.appendChild(wrap);
+        row.appendChild(rm);
+        listEl.appendChild(row);
+        glibSyncCatColorWrapsDisabled();
+        return row;
+    }
+
+    function glibResetCategoriesFields() {
+        const rand = document.getElementById("adm-glib-cat-random");
+        if (rand) {
+            rand.checked = false;
+        }
+        const list = document.getElementById("adm-glib-categories-list");
+        if (list) {
+            list.innerHTML = "";
+            glibMakeCategoryRow("", "");
+        } else {
+            glibSyncCatColorWrapsDisabled();
+        }
+    }
+
+    function glibSetCategoriesFromGraph(categories) {
+        const rand = document.getElementById("adm-glib-cat-random");
+        if (rand) {
+            rand.checked = false;
+        }
+        const list = document.getElementById("adm-glib-categories-list");
+        if (!list) {
+            return;
+        }
+        list.innerHTML = "";
+        const arr = Array.isArray(categories) && categories.length ? categories : [{ name: "", color: "" }];
+        arr.forEach(function (c) {
+            glibMakeCategoryRow((c && c.name) || "", (c && c.color) || "");
+        });
+        glibSyncCatColorWrapsDisabled();
+    }
+
+    function glibSerializeCategoriesStateForSnapshot() {
+        const rand = document.getElementById("adm-glib-cat-random");
+        const random = rand ? !!rand.checked : false;
+        const listEl = document.getElementById("adm-glib-categories-list");
+        const rows = [];
+        if (listEl) {
+            listEl.querySelectorAll(".adm-glib-cat-row").forEach(function (r) {
+                const nameEl = r.querySelector(".adm-glib-cat-name");
+                const colEl = r.querySelector(".adm-glib-cat-color");
+                rows.push({
+                    name: nameEl ? String(nameEl.value || "").trim() : "",
+                    color: colEl ? String(colEl.value || "") : "",
+                });
+            });
+        }
+        return JSON.stringify({ random: random, rows: rows });
+    }
+
+    function glibCollectCategoriesForSave() {
+        const listEl = document.getElementById("adm-glib-categories-list");
+        const rand = document.getElementById("adm-glib-cat-random");
+        if (!listEl) {
+            return { ok: true, categories: [] };
+        }
+        const cats = [];
+        listEl.querySelectorAll(".adm-glib-cat-row").forEach(function (r) {
+            const nameEl = r.querySelector(".adm-glib-cat-name");
+            const colEl = r.querySelector(".adm-glib-cat-color");
+            const name = nameEl ? String(nameEl.value || "").trim() : "";
+            const color = colEl ? String(colEl.value || "").trim() : "#6b7280";
+            if (name.length) {
+                cats.push({ name: name, color: color });
+            }
+        });
+        if (rand && rand.checked && cats.length) {
+            const picked = glibPickDistinctColors(cats.length);
+            cats.forEach(function (c, i) {
+                c.color = picked[i];
+            });
+        }
+        const names = cats.map(function (c) {
+            return c.name.toLowerCase();
+        });
+        for (let i = 0; i < names.length; i++) {
+            if (names.indexOf(names[i]) !== i) {
+                return { ok: false, err: 'Duplicate category name: "' + cats[i].name + '"' };
+            }
+        }
+        return { ok: true, categories: cats };
+    }
+
+    function glibBindCategoriesUiOnce() {
+        const list = document.getElementById("adm-glib-categories-list");
+        if (!list || list.dataset.admGlibCatBound === "1") {
+            return;
+        }
+        list.dataset.admGlibCatBound = "1";
+        list.addEventListener("input", function () {
+            refreshGlibSaveAndWorkspaceUi();
+        });
+        const rand = document.getElementById("adm-glib-cat-random");
+        if (rand && rand.dataset.admGlibCatBound !== "1") {
+            rand.dataset.admGlibCatBound = "1";
+            rand.addEventListener("change", function () {
+                glibSyncCatColorWrapsDisabled();
+                refreshGlibSaveAndWorkspaceUi();
+            });
+        }
+        const addBtn = document.getElementById("adm-glib-cat-add");
+        if (addBtn && addBtn.dataset.admGlibCatBound !== "1") {
+            addBtn.dataset.admGlibCatBound = "1";
+            addBtn.addEventListener("click", function () {
+                glibMakeCategoryRow("", "");
+                refreshGlibSaveAndWorkspaceUi();
+            });
+        }
+        if (!list.children.length) {
+            glibMakeCategoryRow("", "");
+        }
+    }
+
     const ADMIN_THEME_KEY = "dsaAdminThemeV1";
 
     /** Section titles moved into each pane; keep hook for future instrumentation */
@@ -523,6 +730,7 @@
             est: est,
             diff: diff,
             tags: tags,
+            catSnap: glibSerializeCategoriesStateForSnapshot(),
             payload: payload,
         });
     }
@@ -775,6 +983,20 @@
                 el.disabled = !editable;
             }
         });
+        const catRand = document.getElementById("adm-glib-cat-random");
+        if (catRand) {
+            catRand.disabled = !editable;
+        }
+        const catAdd = document.getElementById("adm-glib-cat-add");
+        if (catAdd) {
+            catAdd.disabled = !editable;
+        }
+        const catList = document.getElementById("adm-glib-categories-list");
+        if (catList) {
+            catList.querySelectorAll("input, button").forEach(function (el) {
+                el.disabled = !editable;
+            });
+        }
         const del = document.getElementById("adm-glib-delete");
         if (del) {
             del.disabled = !editable || !(document.getElementById("adm-glib-edit-id") && document.getElementById("adm-glib-edit-id").value.trim());
@@ -851,6 +1073,7 @@
         if (tags) {
             tags.value = "";
         }
+        glibResetCategoriesFields();
         const pay = document.getElementById("adm-glib-payload");
         if (pay) {
             pay.value = JSON.stringify(buildDefaultGraphPayloadFromTitle(""), null, 2);
@@ -935,6 +1158,7 @@
         if (diff) {
             diff.value = graph.difficulty || "";
         }
+        glibSetCategoriesFromGraph(graph.categories);
         const tags = document.getElementById("adm-glib-tags");
         if (tags) {
             tags.value = Array.isArray(graph.tags) ? graph.tags.join(", ") : "";
@@ -1007,6 +1231,7 @@
         if (diff) {
             diff.value = "";
         }
+        glibResetCategoriesFields();
         const tags = document.getElementById("adm-glib-tags");
         if (tags) {
             tags.value = graph.kind ? "kind: " + String(graph.kind) : "";
@@ -1171,6 +1396,12 @@
         const accentHue = accentRaw != null ? Math.floor(accentRaw) % 360 : null;
         const estRaw = readGlibOptionalNumber("adm-glib-estimated");
         const estimatedMinutes = estRaw != null ? Math.max(0, Math.floor(estRaw)) : null;
+        const catRes = glibCollectCategoriesForSave();
+        if (!catRes.ok) {
+            setGlibStatus(catRes.err, "err");
+            return;
+        }
+        const categories = catRes.categories;
 
         setGlibStatus("Saving…", "");
         try {
@@ -1185,6 +1416,7 @@
                         visibility,
                         payload,
                         tags,
+                        categories,
                         difficulty,
                         accentHue,
                         estimatedMinutes,
@@ -1200,6 +1432,7 @@
                     visibility,
                     payload,
                     tags,
+                    categories,
                     difficulty,
                     accentHue,
                     estimatedMinutes,
@@ -1937,6 +2170,8 @@
             return;
         }
         root.dataset.admGlibBound = "1";
+
+        glibBindCategoriesUiOnce();
 
         document.getElementById("adm-glib-filter-apply") &&
             document.getElementById("adm-glib-filter-apply").addEventListener("click", function () {

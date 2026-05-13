@@ -2451,13 +2451,9 @@
 
     function setSiteFeatureFlagButtonsDisabled(disabled) {
         const saveBtn = document.getElementById("adm-site-features-save");
-        const relBtn = document.getElementById("adm-site-features-reload");
         const resetBtn = document.getElementById("adm-site-features-reset");
         if (saveBtn) {
             saveBtn.disabled = !!disabled;
-        }
-        if (relBtn) {
-            relBtn.disabled = !!disabled;
         }
         if (resetBtn) {
             resetBtn.disabled = !!disabled;
@@ -2553,7 +2549,7 @@
                 row.appendChild(visPart.cell);
                 host.appendChild(row);
             });
-            setStatus("adm-site-features-msg", "Loaded from server. Save flags writes app_kv; Revert drops unsaved toggles.", "ok");
+            setStatus("adm-site-features-msg", "Loaded from server. Use header Reload to discard unsaved toggles.", "ok");
         } finally {
             siteFeaturesMatrixLoading = false;
             setSiteFeaturesMatrixLoadingUi(host, false);
@@ -2639,6 +2635,9 @@
             if (sj) sj.value = JSON.stringify(d.rows || [], null, 2);
             setStatus("adm-kv-msg", "Loaded " + (d.rows && d.rows.length) + " keys.", "ok");
             await loadSiteFeaturesEditor({ lockToolbar: false });
+            if (typeof window.dsaAdminReloadSiteMarketing === "function") {
+                await window.dsaAdminReloadSiteMarketing();
+            }
         } catch (e) {
             setStatus("adm-kv-msg", e.message, "err");
         }
@@ -3114,6 +3113,30 @@
         });
     }
 
+    function initAdmSiteUiTabs() {
+        const wrap = document.querySelector("[data-adm-site-tabs]");
+        if (!wrap) {
+            return;
+        }
+        wrap.querySelectorAll("[data-adm-site-tab]").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                const tab = btn.getAttribute("data-adm-site-tab");
+                if (!tab) {
+                    return;
+                }
+                wrap.querySelectorAll("[data-adm-site-tab]").forEach(function (b) {
+                    const on = b === btn;
+                    b.classList.toggle("active", on);
+                    b.setAttribute("aria-selected", on ? "true" : "false");
+                });
+                document.querySelectorAll("[data-adm-site-panel]").forEach(function (p) {
+                    const id = p.getAttribute("data-adm-site-panel");
+                    p.classList.toggle("adm-hidden", id !== tab);
+                });
+            });
+        });
+    }
+
     window.dsaInitAccountAdminPanel = function () {
         if (typeof dsaIsAdminSession !== "function" || !dsaIsAdminSession()) {
             return;
@@ -3165,6 +3188,7 @@
         Object.keys(dualMode).forEach(function (k) {
             setDualSection(k, dualMode[k]);
         });
+        initAdmSiteUiTabs();
         initAdminThemeControls();
         syncAdminConsoleHeader();
 
@@ -3207,12 +3231,8 @@
             if (!host) return;
             host.appendChild(kvRowEl("", "", null, host.children.length));
         });
-        const kvReload = document.getElementById("adm-kv-reload");
-        if (kvReload) kvReload.addEventListener("click", loadKvUi);
         const sfSave = document.getElementById("adm-site-features-save");
         if (sfSave) sfSave.addEventListener("click", saveSiteFeaturesFromEditor);
-        const sfRel = document.getElementById("adm-site-features-reload");
-        if (sfRel) sfRel.addEventListener("click", loadSiteFeaturesEditor);
         const sfReset = document.getElementById("adm-site-features-reset");
         if (sfReset) sfReset.addEventListener("click", resetSiteFeaturesDefaults);
         const siteJL = document.getElementById("adm-site-json-load");

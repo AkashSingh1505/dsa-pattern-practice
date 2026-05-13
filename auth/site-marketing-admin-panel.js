@@ -431,30 +431,31 @@
         if (!root || root.getAttribute("data-mk-mounted") === "1") return;
         root.setAttribute("data-mk-mounted", "1");
         root.innerHTML =
-            '<section class="adm-site-block" aria-labelledby="adm-site-sec-mk">' +
-            '<div class="adm-site-block__head">' +
-            '<h4 id="adm-site-sec-mk" class="adm-site-block__title">Marketing copy</h4>' +
-            '<p class="adm-site-block__meta">Pick a page below · <code>' +
+            '<div class="adm-site-marketing-inner">' +
+            '<p class="helper adm-site-tab__hint">Public copy for Index, Premium, and Content · <code>' +
             MK_KEY +
-            "</code> · merged via <code>GET /api/site-marketing</code></p>" +
-            "</div>" +
+            '</code>. Use the header <b>Reload</b> to refetch merged defaults + server.</p>' +
+            '<div class="adm-site-tabs-rail">' +
             '<div class="adm-seg adm-site-mk-seg" role="tablist" aria-label="Marketing page">' +
             '<button type="button" class="active" data-mk-tab="index">Index</button>' +
             '<button type="button" data-mk-tab="premium">Premium</button>' +
             '<button type="button" data-mk-tab="contentPage">Content</button>' +
-            "</div>" +
-            '<details class="adm-site-block__details">' +
-            '<summary class="adm-site-block__summary">What you can edit here</summary>' +
-            '<p class="helper adm-site-block__help">Nav links (add/remove), hero and FAQ fields, footer JSON. <b>Save copy</b> writes the whole document. <b>Refresh merged</b> reloads defaults + server (drops unsaved edits). <b>Clear D1 key</b> removes custom marketing and restores built-ins.</p>' +
+            "</div></div>" +
+            '<details class="adm-site-tab__details">' +
+            '<summary class="adm-site-tab__summary">Editing tips</summary>' +
+            '<p class="helper adm-site-tab__help">Nav links (add/remove), hero and FAQ fields, footer JSON. <b>Save</b> writes the full document. <b>Clear key</b> removes custom marketing from D1 (confirm).</p>' +
             "</details>" +
-            '<div id="adm-site-marketing-panel" class="adm-site-block__panel"></div>' +
-            '<div class="adm-site-block__toolbar">' +
-            '<button type="button" class="btn btn-sm" id="adm-site-marketing-save">Save copy</button>' +
-            '<button type="button" class="btn ghost btn-sm" id="adm-site-marketing-reload">Refresh merged</button>' +
-            '<button type="button" class="btn ghost btn-sm" id="adm-site-marketing-reset">Clear D1 key</button>' +
+            '<div id="adm-site-marketing-panel" class="adm-site-marketing-panel"></div>' +
+            '<div class="adm-site-actions-row">' +
+            '<button type="button" class="btn btn-sm adm-btn-with-ico" id="adm-site-marketing-save" title="Save marketing to app_kv">' +
+            '<svg class="adm-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>' +
+            "<span>Save</span></button>" +
+            '<button type="button" class="btn ghost btn-sm adm-btn-with-ico" id="adm-site-marketing-reset" title="Delete marketing key from D1">' +
+            '<svg class="adm-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>' +
+            "<span>Clear key</span></button>" +
             "</div>" +
-            '<p id="adm-site-marketing-msg" class="status adm-site-block__status" aria-live="polite"></p>' +
-            "</section>";
+            '<p id="adm-site-marketing-msg" class="status adm-site-tab__status" aria-live="polite"></p>' +
+            "</div>";
 
         root.querySelectorAll("[data-mk-tab]").forEach(function (b) {
             b.addEventListener("click", function () {
@@ -466,12 +467,6 @@
         syncMkTabActive();
         document.getElementById("adm-site-marketing-save").addEventListener("click", function () {
             saveMarketing().catch(function (e) {
-                var st = document.getElementById("adm-site-marketing-msg");
-                if (st) st.textContent = String(e.message || e);
-            });
-        });
-        document.getElementById("adm-site-marketing-reload").addEventListener("click", function () {
-            loadMarketing().catch(function (e) {
                 var st = document.getElementById("adm-site-marketing-msg");
                 if (st) st.textContent = String(e.message || e);
             });
@@ -488,6 +483,17 @@
             if (st) st.textContent = String(e.message || e);
         });
     }
+
+    window.dsaAdminReloadSiteMarketing = function () {
+        var h = document.getElementById("adm-site-marketing-host");
+        if (!h || h.getAttribute("data-mk-mounted") !== "1") {
+            return Promise.resolve();
+        }
+        return loadMarketing().catch(function (e) {
+            var st = document.getElementById("adm-site-marketing-msg");
+            if (st) st.textContent = String(e.message || e);
+        });
+    };
 
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", mount);

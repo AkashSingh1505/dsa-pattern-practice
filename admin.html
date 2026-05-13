@@ -33,7 +33,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev" />
     <title>Site admin — DSA Pattern Practice</title>
-    <link rel="stylesheet" href="./auth/portal-shell.css?v=21" />
+    <link rel="stylesheet" href="./auth/portal-shell.css?v=22" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -247,7 +247,7 @@
                                 <h3>Site settings</h3>
                             </div>
                             <div class="adm-pane-head-controls">
-                                <button type="button" class="adm-section-reload-btn adm-refresh-trigger" title="Reload current section" aria-label="Reload current section">
+                                <button type="button" class="adm-section-reload-btn adm-refresh-trigger" title="Reload from server: key list, feature flags, marketing" aria-label="Reload from server: key list, feature flags, marketing">
                                     <svg class="adm-section-reload-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                         <path d="M23 4v6h-6" />
                                         <path d="M1 20v-6h6" />
@@ -263,43 +263,52 @@
                         </div>
                         <div data-adm-panel="site-ui" class="adm-site-console">
                             <p class="helper adm-site-console__intro">
-                                <b>Site</b> reads/writes the content database <code>app_kv</code> (string values, often JSON). Use <b>UI</b> below for flags, marketing copy, and the key list — or switch to <b>JSON</b> in the header for bulk rows.
+                                <b>Site</b> uses <code>app_kv</code> (string values, often JSON). Pick a tab below for flags, marketing, or all keys. The header <b>Reload</b> refetches from the server; use <b>JSON</b> in the header for bulk rows.
                             </p>
 
-                            <section class="adm-site-block" aria-labelledby="adm-site-sec-features">
-                                <div class="adm-site-block__head">
-                                    <h4 id="adm-site-sec-features" class="adm-site-block__title">Feature flags</h4>
-                                    <p class="adm-site-block__meta"><code>site_user_features</code> · Enabled vs Visibility columns</p>
+                            <div class="adm-site-tabs-rail">
+                                <div class="adm-seg adm-site-main-seg" role="tablist" aria-label="Site settings" data-adm-site-tabs>
+                                    <button type="button" class="active" role="tab" aria-selected="true" aria-controls="adm-site-panel-features" id="adm-site-tab-btn-features" data-adm-site-tab="features">Features</button>
+                                    <button type="button" role="tab" aria-selected="false" aria-controls="adm-site-panel-marketing" id="adm-site-tab-btn-marketing" data-adm-site-tab="marketing">Marketing</button>
+                                    <button type="button" role="tab" aria-selected="false" aria-controls="adm-site-panel-keys" id="adm-site-tab-btn-keys" data-adm-site-tab="keys">All keys</button>
                                 </div>
-                                <div class="adm-site-block__toolbar">
-                                    <button type="button" class="btn btn-sm" id="adm-site-features-save">Save flags</button>
-                                    <button type="button" class="btn ghost btn-sm" id="adm-site-features-reload">Revert to server</button>
-                                    <button type="button" class="btn ghost btn-sm" id="adm-site-features-reset">Defaults</button>
+                            </div>
+
+                            <div id="adm-site-panel-features" class="adm-site-tab-panel" role="tabpanel" aria-labelledby="adm-site-tab-btn-features" data-adm-site-panel="features">
+                                <p class="helper adm-site-tab__hint"><code>site_user_features</code> — <b>Enabled</b> = works when reached; <b>Visibility</b> = shown in nav/chrome.</p>
+                                <div class="adm-site-actions-row">
+                                    <button type="button" class="btn btn-sm adm-btn-with-ico" id="adm-site-features-save" title="Save flags to server">
+                                        <svg class="adm-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                                        <span>Save</span>
+                                    </button>
+                                    <button type="button" class="btn ghost btn-sm adm-btn-with-ico" id="adm-site-features-reset" title="Write default flags to server">
+                                        <svg class="adm-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                                        <span>Defaults</span>
+                                    </button>
                                 </div>
-                                <details class="adm-site-block__details">
-                                    <summary class="adm-site-block__summary">What Enabled and Visibility mean</summary>
-                                    <p class="helper adm-site-block__help">
-                                        <b>Enabled</b> = the feature works when reached. <b>Visibility</b> = it appears in navigation / chrome. They can differ (visible + disabled = faded in nav). <b>Revert</b> reloads from the server and drops unsaved toggles.
-                                    </p>
+                                <details class="adm-site-tab__details">
+                                    <summary class="adm-site-tab__summary">More about Enabled vs Visibility</summary>
+                                    <p class="helper adm-site-tab__help">They can differ (e.g. visible but disabled = faded in nav). Pane <b>Reload</b> drops unsaved toggles and reloads this matrix, marketing, and the key list.</p>
                                 </details>
                                 <div id="adm-site-features-matrix" class="adm-site-features-matrix" aria-live="polite"></div>
-                                <p id="adm-site-features-msg" class="status adm-site-block__status" aria-live="polite"></p>
-                            </section>
+                                <p id="adm-site-features-msg" class="status adm-site-tab__status" aria-live="polite"></p>
+                            </div>
 
-                            <div id="adm-site-marketing-host" class="adm-site-marketing-host"></div>
+                            <div id="adm-site-panel-marketing" class="adm-site-tab-panel adm-hidden" role="tabpanel" aria-labelledby="adm-site-tab-btn-marketing" data-adm-site-panel="marketing">
+                                <div id="adm-site-marketing-host" class="adm-site-marketing-host"></div>
+                            </div>
 
-                            <section class="adm-site-block" aria-labelledby="adm-site-sec-kv">
-                                <div class="adm-site-block__head">
-                                    <h4 id="adm-site-sec-kv" class="adm-site-block__title">All keys</h4>
-                                    <p class="adm-site-block__meta">Browse and edit rows; JSON tab for batch apply</p>
-                                </div>
-                                <div class="adm-site-block__toolbar">
-                                    <button type="button" class="btn ghost btn-sm" id="adm-kv-add">Add row</button>
-                                    <button type="button" class="btn btn-sm" id="adm-kv-reload">Refresh list</button>
+                            <div id="adm-site-panel-keys" class="adm-site-tab-panel adm-hidden" role="tabpanel" aria-labelledby="adm-site-tab-btn-keys" data-adm-site-panel="keys">
+                                <p class="helper adm-site-tab__hint">Per-row save/delete. Header <b>Reload</b> refreshes this list from the server.</p>
+                                <div class="adm-site-actions-row">
+                                    <button type="button" class="btn ghost btn-sm adm-btn-with-ico" id="adm-kv-add" title="Append a new key row">
+                                        <svg class="adm-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                        <span>Add row</span>
+                                    </button>
                                 </div>
                                 <div id="adm-kv-list"></div>
-                                <p id="adm-kv-msg" class="status adm-site-block__status" aria-live="polite"></p>
-                            </section>
+                                <p id="adm-kv-msg" class="status adm-site-tab__status" aria-live="polite"></p>
+                            </div>
                         </div>
                         <div data-adm-panel="site-json" class="adm-hidden">
                             <p class="helper" style="margin-top:0">Array of <code>{ "k", "v", "meta" }</code>. Apply runs PUT per row.</p>
@@ -1084,8 +1093,8 @@
     <script src="./auth/dsa-user-auth.js?v=3"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
     <script src="./script.js?v=34"></script>
-    <script src="./auth/account-admin-panel.js?v=31"></script>
-    <script src="./auth/site-marketing-admin-panel.js?v=2"></script>
+    <script src="./auth/account-admin-panel.js?v=32"></script>
+    <script src="./auth/site-marketing-admin-panel.js?v=3"></script>
     <script src="./auth/admin-site-page.js?v=11"></script>
 </body>
 </html>

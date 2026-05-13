@@ -33,7 +33,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev" />
     <title>Site admin — DSA Pattern Practice</title>
-    <link rel="stylesheet" href="./auth/portal-shell.css?v=19" />
+    <link rel="stylesheet" href="./auth/portal-shell.css?v=20" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -264,20 +264,30 @@
                         <div data-adm-panel="site-ui">
                             <p class="helper" style="margin-top:0">Remote key/value config in <code>app_kv</code>. Values are strings (often JSON). <b>Save</b> writes one key; <b>Delete key</b> removes it from D1. JSON tab can bulk-apply many rows.</p>
                             <div class="adm-subcard adm-site-features-card">
-                                <h4>User-facing features</h4>
-                                <p class="helper" style="margin-top:0">
-                                    Controls what <b>all visitors and members</b> see on the public site (practice map, tabs, dashboard link, sign-in, OAuth buttons, footer, member hub modules, etc.).
-                                    Stored as JSON under key <code>site_user_features</code>. <b>Enabled</b> = the feature works when reached; <b>Visibility</b> = it appears in navigation and other UI. You can set them independently (for example, visible but disabled shows in the nav as faded). Use <b>Save to server</b> to persist, <b>Reload from server</b> to refresh the matrix (drops unsaved edits).
-                                </p>
-                                <div id="adm-site-features-matrix" class="adm-site-features-matrix" aria-live="polite"></div>
-                                <div class="adm-toolbar-row" style="margin-top:12px">
-                                    <button type="button" class="btn btn-sm" id="adm-site-features-save">Save to server</button>
-                                    <button type="button" class="btn ghost btn-sm" id="adm-site-features-reload">Reload from server</button>
-                                    <button type="button" class="btn ghost btn-sm" id="adm-site-features-reset">All on (defaults)</button>
+                                <div class="adm-site-features-card__head">
+                                    <div class="adm-site-features-card__head-text">
+                                        <h4>User-facing features</h4>
+                                        <p class="adm-site-features-card__lede">
+                                            Control <b>capability</b> (enabled) vs <b>discoverability</b> (visibility) for the public site and member hub. Persisted in <code>app_kv</code> as <code>site_user_features</code>.
+                                        </p>
+                                    </div>
+                                    <div class="adm-site-features-card__head-actions">
+                                        <button type="button" class="btn btn-sm" id="adm-site-features-save">Save</button>
+                                        <button type="button" class="btn ghost btn-sm" id="adm-site-features-reload">Reload</button>
+                                        <button type="button" class="btn ghost btn-sm" id="adm-site-features-reset">Defaults</button>
+                                    </div>
                                 </div>
-                                <p id="adm-site-features-msg" class="status" aria-live="polite"></p>
+                                <details class="adm-site-features-card__details">
+                                    <summary class="adm-site-features-card__summary">Matrix guide</summary>
+                                    <p class="helper adm-site-features-card__help-body">
+                                        <b>Enabled</b> = the feature works when someone reaches it. <b>Visibility</b> = it appears in navigation and other UI. They can differ (e.g. visible but disabled shows faded in the nav).
+                                        <b>Save</b> writes to D1; <b>Reload</b> drops unsaved edits and refetches from the server.
+                                    </p>
+                                </details>
+                                <div id="adm-site-features-matrix" class="adm-site-features-matrix" aria-live="polite"></div>
+                                <p id="adm-site-features-msg" class="status adm-site-features-card__status" aria-live="polite"></p>
                             </div>
-                            <div id="adm-site-marketing-host"></div>
+                            <div id="adm-site-marketing-host" class="adm-site-marketing-host"></div>
                             <div class="adm-toolbar-row">
                                 <button type="button" class="btn ghost btn-sm" id="adm-kv-add">Add row</button>
                                 <button type="button" class="btn btn-sm" id="adm-kv-reload">Reload from server</button>
@@ -1069,7 +1079,7 @@
     <script src="./dsa-sketch-native.js?v=3"></script>
     <script src="./script.js?v=34"></script>
     <script src="./auth/account-admin-panel.js?v=31"></script>
-    <script src="./auth/site-marketing-admin-panel.js?v=1"></script>
+    <script src="./auth/site-marketing-admin-panel.js?v=2"></script>
     <script src="./auth/admin-site-page.js?v=11"></script>
 </body>
 </html>

@@ -421,23 +421,30 @@
         if (!root || root.getAttribute("data-mk-mounted") === "1") return;
         root.setAttribute("data-mk-mounted", "1");
         root.innerHTML =
-            '<div class="adm-subcard adm-site-features-card" style="margin-top:18px">' +
-            "<h4>Marketing pages (index, premium, content)</h4>" +
-            '<p class="helper" style="margin-top:6px">Stored in <code>app_kv</code> as <code>' +
+            '<div class="adm-subcard adm-site-features-card adm-site-features-card--marketing">' +
+            '<div class="adm-site-features-card__head">' +
+            '<div class="adm-site-features-card__head-text">' +
+            "<h4>Marketing pages</h4>" +
+            '<p class="adm-site-features-card__lede">Public copy for <b>index</b>, <b>premium</b>, and <b>content.html</b>. Stored in <code>app_kv</code> as <code>' +
             MK_KEY +
-            "</code>. Public read: <code>GET /api/site-marketing</code>. Edit nav links, hero copy, studio blurb, final CTA, premium FAQ, content page body, and footer columns (JSON). <b>Save</b> writes the full merged document.</p>" +
-            '<div class="adm-toolbar-row" style="margin-top:10px;flex-wrap:wrap;gap:8px">' +
+            "</code>; read via <code>GET /api/site-marketing</code>.</p>" +
+            "</div>" +
+            '<div class="adm-site-features-card__head-actions adm-site-marketing-tabs">' +
             '<button type="button" class="btn ghost btn-sm" data-mk-tab="index">Index</button>' +
             '<button type="button" class="btn ghost btn-sm" data-mk-tab="premium">Premium</button>' +
             '<button type="button" class="btn ghost btn-sm" data-mk-tab="contentPage">Content</button>' +
+            "</div></div>" +
+            '<details class="adm-site-features-card__details">' +
+            '<summary class="adm-site-features-card__summary">Editing scope</summary>' +
+            '<p class="helper adm-site-features-card__help-body">Use the tabs for each surface. Nav links support add/remove. Premium and Content include FAQ rows (question + answer HTML). Footer blocks are edited as JSON. <b>Save</b> writes the full document; <b>Reload</b> refetches merged defaults + server; <b>Reset</b> deletes the KV key.</p>' +
+            "</details>" +
+            '<div id="adm-site-marketing-panel" style="padding:0 14px 12px"></div>' +
+            '<div class="adm-site-features-card__head-actions" style="padding:0 14px 12px;justify-content:flex-start;border-top:1px solid rgba(15,23,32,0.06)">' +
+            '<button type="button" class="btn btn-sm" id="adm-site-marketing-save">Save</button>' +
+            '<button type="button" class="btn ghost btn-sm" id="adm-site-marketing-reload">Reload</button>' +
+            '<button type="button" class="btn ghost btn-sm" id="adm-site-marketing-reset">Reset defaults</button>' +
             "</div>" +
-            '<div id="adm-site-marketing-panel" style="margin-top:14px"></div>' +
-            '<div class="adm-toolbar-row" style="margin-top:14px">' +
-            '<button type="button" class="btn btn-sm" id="adm-site-marketing-save">Save to server</button>' +
-            '<button type="button" class="btn ghost btn-sm" id="adm-site-marketing-reload">Reload from server</button>' +
-            '<button type="button" class="btn ghost btn-sm" id="adm-site-marketing-reset">Reset to defaults</button>' +
-            "</div>" +
-            '<p id="adm-site-marketing-msg" class="status" aria-live="polite"></p>' +
+            '<p id="adm-site-marketing-msg" class="status adm-site-features-card__status" aria-live="polite"></p>' +
             "</div>";
 
         root.querySelectorAll("[data-mk-tab]").forEach(function (b) {

@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Temporary DSA Graph Customize Preview</title>
+    <style>
+        :root {
+            --bg: #f7f8f4;
+            --card: rgba(255, 255, 255, 0.82);
+            --glass: rgba(255, 255, 255, 0.72);
+            --glass-2: rgba(255, 255, 255, 0.58);
+            --ink: #20261a;
+            --ink-2: #5f6952;
+            --muted: #8a927b;
+            --line: rgba(118, 126, 85, 0.24);
+            --shadow: 0 20px 60px rgba(54, 64, 38, 0.14), 0 2px 10px rgba(54, 64, 38, 0.07);
+            --accent: #7b61ff;
+            --accent-soft: #f4f2ff;
+            --accent-mid: #9f8cff;
+            --udash-shadow: 0 28px 76px rgba(38, 48, 29, 0.16);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            min-height: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at 16% 5%, rgba(123, 97, 255, 0.18), transparent 28rem),
+                radial-gradient(circle at 84% 0%, rgba(171, 204, 92, 0.22), transparent 24rem),
+                linear-gradient(180deg, #fbfcf8 0%, var(--bg) 52%, #eef2e8 100%);
+        }
+
+        button {
+            font: inherit;
+        }
+
+        .preview-shell {
+            width: min(1480px, calc(100vw - 32px));
+            margin: 24px auto;
+            padding: 22px;
+            border: 1px solid rgba(255, 255, 255, 0.76);
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.44);
+            box-shadow: var(--shadow);
+        }
+
+        .dsa-graph-workspace {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-height: calc(100vh - 92px);
+        }
+
+        .head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 24px;
+            padding: 4px 4px 0;
+        }
+
+        .eyebrow {
+            margin-bottom: 8px;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: clamp(28px, 3vw, 42px);
+            line-height: 1;
+            letter-spacing: -0.04em;
+        }
+
+        .head-text p {
+            max-width: 760px;
+            margin: 0;
+            color: var(--ink-2);
+            font-size: 13.5px;
+            line-height: 1.55;
+        }
+
+        .head-text b {
+            color: var(--ink);
+        }
+
+        .seg {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            flex-shrink: 0;
+            gap: 0;
+            padding: 4px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: var(--glass-2);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.64);
+            backdrop-filter: blur(20px) saturate(140%);
+        }
+
+        .seg-thumb {
+            position: absolute;
+            top: 4px;
+            bottom: 4px;
+            left: calc(66.666% + 1px);
+            width: calc(33.333% - 5px);
+            border-radius: 10px;
+            background: #fff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 4px 14px rgba(0, 0, 0, 0.05);
+        }
+
+        .dsa-view-btn {
+            position: relative;
+            z-index: 1;
+            height: 36px;
+            padding: 0 16px;
+            border: 0;
+            border-radius: 10px;
+            background: transparent;
+            color: var(--ink-2);
+            cursor: default;
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .dsa-view-btn--active {
+            color: var(--ink);
+        }
+
+        .toolbar {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.76);
+            border-radius: 18px;
+            background: var(--glass);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(28px) saturate(160%);
+        }
+
+        .toolbar::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.48), rgba(255, 255, 255, 0) 42%);
+            pointer-events: none;
+        }
+
+        .toolbar-inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            width: 100%;
+            min-width: 0;
+        }
+
+        .tools-left,
+        .tools-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .btn,
+        .zoom button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 36px;
+            padding: 0 13px;
+            border: 1px solid rgba(118, 126, 85, 0.32);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #465036;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .btn.dark {
+            border-color: rgba(32, 38, 26, 0.24);
+            background: #20261a;
+            color: #fff;
+        }
+
+        .btn svg {
+            width: 16px;
+            height: 16px;
+            margin-right: 7px;
+        }
+
+        .divider {
+            width: 1px;
+            height: 24px;
+            background: rgba(118, 126, 85, 0.24);
+        }
+
+        .zoom {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px;
+            border: 1px solid rgba(118, 126, 85, 0.22);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.62);
+        }
+
+        .zoom button {
+            min-width: 34px;
+            min-height: 32px;
+            padding: 0 10px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .zoom .val {
+            min-width: 50px;
+            color: var(--ink-2);
+            font-size: 12px;
+            font-weight: 800;
+            text-align: center;
+        }
+
+        .graph-frame {
+            flex: 1;
+            min-height: 520px;
+            display: flex;
+            overflow: hidden;
+            border-radius: 20px;
+            box-shadow: var(--udash-shadow);
+        }
+
+        .graph-card {
+            flex: 1;
+            display: flex;
+            min-width: 0;
+            margin: 0;
+            border: 1px solid rgba(118, 126, 85, 0.2);
+            border-radius: 20px;
+            background: #fff;
+            overflow: hidden;
+        }
+
+        .graph-stage {
+            position: relative;
+            flex: 1;
+            min-width: 0;
+            min-height: min(72vh, 860px);
+            background:
+                linear-gradient(rgba(148, 163, 184, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(148, 163, 184, 0.1) 1px, transparent 1px),
+                #f3f4f6;
+            background-size: 28px 28px;
+        }
+
+        .dsa-graph-viewport {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+        }
+
+        .graph-status {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            z-index: 4;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 11px;
+            border: 1px solid rgba(118, 126, 85, 0.24);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.88);
+            color: #647052;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+            font-size: 12px;
+            font-weight: 800;
+            backdrop-filter: blur(12px);
+        }
+
+        .graph-status .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #7b61ff;
+            box-shadow: 0 0 0 4px rgba(123, 97, 255, 0.14);
+        }
+
+        .mind-scroll {
+            position: absolute;
+            inset: 0;
+            overflow: auto;
+            padding: 72px 42px 46px;
+            text-align: center;
+            overscroll-behavior: contain;
+        }
+
+        .zoom-sizer {
+            display: inline-block;
+            vertical-align: top;
+            min-width: 0;
+        }
+
+        .zoom-content {
+            display: inline-block;
+            vertical-align: top;
+            transform-origin: top left;
+        }
+
+        .h-tree {
+            display: inline-block;
+            width: max-content;
+            max-width: none;
+            margin: 0 auto;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .h-branch {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 0;
+            --dsa-accent: var(--accent);
+            --dsa-accent-soft: var(--accent-soft);
+            --dsa-accent-mid: var(--accent-mid);
+        }
+
+        .h-branch-root {
+            gap: clamp(16px, 3vw, 28px);
+            width: max-content;
+        }
+
+        .h-branch-head {
+            display: flex;
+            flex-shrink: 0;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .h-branch-head-root {
+            align-items: center;
+            justify-content: center;
+        }
+
+        .h-root-hub {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 18px 22px;
+            border: 2px solid var(--dsa-accent);
+            border-radius: 18px;
+            background: linear-gradient(160deg, #fff 0%, var(--dsa-accent-soft) 58%, var(--dsa-accent-soft) 100%);
+            box-shadow: 0 4px 22px color-mix(in srgb, var(--dsa-accent) 22%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        .h-label-row {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: nowrap;
+        }
+
+        .name-chip {
+            display: inline-flex;
+            align-items: stretch;
+            min-width: 0;
+            max-width: min(100%, calc(100vw - 40px));
+            padding: 0 4px 0 0;
+            border: 1px solid color-mix(in srgb, var(--dsa-accent) 16%, #e5e7eb);
+            border-radius: 999px;
+            background: #fff;
+            box-shadow: 0 1px 3px color-mix(in srgb, var(--dsa-accent) 10%, transparent);
+            overflow: visible;
+        }
+
+        .name-zone {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+            padding: 6px 10px 6px 12px;
+            overflow: hidden;
+        }
+
+        .h-label {
+            display: inline-block;
+            max-width: 270px;
+            overflow: hidden;
+            color: #243018;
+            font-size: 13.5px;
+            font-weight: 800;
+            line-height: 1.15;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .h-label-root {
+            max-width: none;
+            font-size: 15px;
+        }
+
+        .done-count {
+            flex-shrink: 0;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background: color-mix(in srgb, var(--dsa-accent) 11%, #f8fafc);
+            color: color-mix(in srgb, var(--dsa-accent) 74%, #334155);
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        .pipe {
+            width: 1px;
+            min-width: 1px;
+            margin-right: 10px;
+            align-self: stretch;
+            background: color-mix(in srgb, var(--dsa-accent-mid) 35%, #cbd5e1 65%);
+        }
+
+        .badge-ring {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            min-width: 56px;
+            height: 32px;
+            padding: 3px 5px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, var(--dsa-accent), color-mix(in srgb, var(--dsa-accent) 72%, #111827));
+            color: #fff;
+            box-shadow: 0 7px 18px color-mix(in srgb, var(--dsa-accent) 30%, transparent);
+            flex-shrink: 0;
+        }
+
+        .ring-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            padding: 0;
+            border: 0;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.18);
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .ring-count {
+            min-width: 18px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 900;
+            text-align: center;
+        }
+
+        .node-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+            margin-left: 6px;
+        }
+
+        .edit-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            border: 1px solid color-mix(in srgb, var(--dsa-accent) 35%, #e5e7eb);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--dsa-accent);
+            cursor: pointer;
+        }
+
+        .edit-btn:hover,
+        .ring-btn:hover {
+            filter: brightness(1.06);
+        }
+
+        .h-children {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            margin-left: 0;
+            padding-left: 32px;
+            border-left: none;
+        }
+
+        .h-children::before {
+            content: "";
+            position: absolute;
+            top: 17px;
+            bottom: 17px;
+            left: 16px;
+            width: 2px;
+            border-radius: 999px;
+            background: color-mix(in srgb, var(--dsa-accent) 32%, #cbd5e1);
+        }
+
+        .h-branch-child {
+            position: relative;
+        }
+
+        .h-branch-child::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: -16px;
+            width: 16px;
+            height: 2px;
+            border-radius: 999px;
+            background: color-mix(in srgb, var(--dsa-accent) 32%, #cbd5e1);
+        }
+
+        .h-children.collapsed {
+            display: none;
+        }
+
+        .problem-card {
+            max-width: 520px;
+            margin-top: 9px;
+            margin-left: 12px;
+            padding: 10px;
+            border: 1px solid color-mix(in srgb, var(--dsa-accent) 14%, #e2e8f0);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.84);
+            box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+        }
+
+        .problem-card-title {
+            margin: 0 0 8px;
+            color: var(--ink-2);
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .problem-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(180px, 1fr));
+            gap: 8px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .problem-list li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 8px 9px;
+            border: 1px solid #edf0e8;
+            border-radius: 12px;
+            background: #fff;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .diff {
+            flex-shrink: 0;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background: #eef2ff;
+            color: #5145cd;
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .json-dock {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 16px;
+            align-items: center;
+            padding: 13px 16px;
+            border: 1px solid rgba(118, 126, 85, 0.22);
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.7);
+            color: var(--ink-2);
+            font-size: 12.5px;
+        }
+
+        .json-dock code {
+            color: #5145cd;
+            font-weight: 800;
+        }
+
+        .toast {
+            position: fixed;
+            right: 22px;
+            bottom: 22px;
+            z-index: 30;
+            max-width: 340px;
+            padding: 12px 14px;
+            border: 1px solid rgba(118, 126, 85, 0.24);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.94);
+            box-shadow: var(--shadow);
+            color: var(--ink-2);
+            font-size: 13px;
+            font-weight: 700;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.18s ease, transform 0.18s ease;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 900px) {
+            .preview-shell {
+                width: calc(100vw - 18px);
+                margin: 9px auto;
+                padding: 14px;
+                border-radius: 20px;
+            }
+
+            .head {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .toolbar-inner,
+            .json-dock {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .problem-list {
+                grid-template-columns: 1fr;
+            }
+
+            .mind-scroll {
+                padding-left: 22px;
+                padding-right: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="preview-shell">
+        <section class="dsa-graph-workspace">
+            <header class="head">
+                <div class="head-text">
+                    <div class="eyebrow">Workspace</div>
+                    <h1>Graph workspace</h1>
+                    <p>
+                        Temporary standalone preview with <b>Customize</b> mode already selected. The graph below is rendered from inline JSON data and uses inline CSS only, so it can be pasted into any online HTML viewer.
+                    </p>
+                </div>
+                <nav class="seg" aria-label="Graph layout">
+                    <span class="seg-thumb" aria-hidden="true"></span>
+                    <button type="button" class="dsa-view-btn" aria-selected="false">Full map</button>
+                    <button type="button" class="dsa-view-btn" aria-selected="false">One topic</button>
+                    <button type="button" class="dsa-view-btn dsa-view-btn--active" aria-selected="true">Customize</button>
+                </nav>
+            </header>
+
+            <section class="toolbar" aria-label="Graph toolbar">
+                <div class="toolbar-inner">
+                    <div class="tools-left">
+                        <button type="button" class="btn dark" id="export-json">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 3v12"></path>
+                                <path d="M7 10l5 5 5-5"></path>
+                                <path d="M5 21h14"></path>
+                            </svg>
+                            Export JSON
+                        </button>
+                        <button type="button" class="btn" id="expand-all">Expand all</button>
+                        <button type="button" class="btn" id="collapse-all">Collapse all</button>
+                        <span class="divider" aria-hidden="true"></span>
+                        <button type="button" class="btn" id="fake-import">Import JSON...</button>
+                    </div>
+                    <div class="tools-right">
+                        <div class="zoom" role="group" aria-label="Zoom">
+                            <button type="button" id="zoom-out" aria-label="Zoom out">−</button>
+                            <span class="val" id="zoom-value">100%</span>
+                            <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="graph-frame">
+                <section class="graph-card">
+                    <div class="graph-stage">
+                        <div class="graph-status"><span class="dot"></span>Customize mode active</div>
+                        <div id="graph-root" class="dsa-graph-viewport" aria-label="DSA pattern graph"></div>
+                    </div>
+                </section>
+            </div>
+
+            <aside class="json-dock">
+                <div>
+                    Source data lives inside this file as <code>INLINE_GRAPH_DATA</code>. Node rings show <code>− count +</code> just like the customize graph controls.
+                </div>
+                <button type="button" class="btn" id="show-json">Preview inline JSON</button>
+            </aside>
+        </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+        const INLINE_GRAPH_DATA = [
+            {
+                id: "arrays",
+                name: "Arrays & Hashing",
+                tree: [
+                    {
+                        name: "Frequency maps",
+                        children: [
+                            {
+                                name: "Counting with hash table",
+                                problems: [
+                                    { name: "Valid Anagram", difficulty: "Easy" },
+                                    { name: "Group Anagrams", difficulty: "Medium" },
+                                    { name: "Top K Frequent Elements", difficulty: "Medium" },
+                                ],
+                            },
+                            {
+                                name: "Prefix bucket tricks",
+                                problems: [
+                                    { name: "Subarray Sum Equals K", difficulty: "Medium" },
+                                    { name: "Contiguous Array", difficulty: "Medium" },
+                                ],
+                            },
+                        ],
+                    },
+                    {
+                        name: "Prefix sums",
+                        children: [
+                            {
+                                name: "Range query",
+                                problems: [
+                                    { name: "Range Sum Query", difficulty: "Easy" },
+                                    { name: "Product of Array Except Self", difficulty: "Medium" },
+                                ],
+                            },
+                            {
+                                name: "Difference array",
+                                problems: [
+                                    { name: "Car Pooling", difficulty: "Medium" },
+                                    { name: "Corporate Flight Bookings", difficulty: "Medium" },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                id: "two-pointers",
+                name: "Two Pointers & Sliding Window",
+                tree: [
+                    {
+                        name: "Opposite ends",
+                        problems: [
+                            { name: "Two Sum II", difficulty: "Easy" },
+                            { name: "Container With Most Water", difficulty: "Medium" },
+                            { name: "Trapping Rain Water", difficulty: "Hard" },
+                        ],
+                    },
+                    {
+                        name: "Variable window",
+                        children: [
+                            {
+                                name: "Longest valid segment",
+                                problems: [
+                                    { name: "Longest Substring Without Repeating Characters", difficulty: "Medium" },
+                                    { name: "Longest Repeating Character Replacement", difficulty: "Medium" },
+                                ],
+                            },
+                            {
+                                name: "Minimum covering segment",
+                                problems: [
+                                    { name: "Minimum Window Substring", difficulty: "Hard" },
+                                    { name: "Permutation in String", difficulty: "Medium" },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                id: "binary-search",
+                name: "Binary Search",
+                tree: [
+                    {
+                        name: "Search on answer",
+                        problems: [
+                            { name: "Koko Eating Bananas", difficulty: "Medium" },
+                            { name: "Capacity To Ship Packages", difficulty: "Medium" },
+                            { name: "Split Array Largest Sum", difficulty: "Hard" },
+                        ],
+                    },
+                    {
+                        name: "Rotated sorted array",
+                        problems: [
+                            { name: "Search in Rotated Sorted Array", difficulty: "Medium" },
+                            { name: "Find Minimum in Rotated Sorted Array", difficulty: "Medium" },
+                        ],
+                    },
+                ],
+            },
+            {
+                id: "trees",
+                name: "Trees & Traversals",
+                tree: [
+                    {
+                        name: "DFS recursion",
+                        children: [
+                            {
+                                name: "Path accumulation",
+                                problems: [
+                                    { name: "Path Sum", difficulty: "Easy" },
+                                    { name: "Binary Tree Maximum Path Sum", difficulty: "Hard" },
+                                ],
+                            },
+                            {
+                                name: "Subtree return values",
+                                problems: [
+                                    { name: "Diameter of Binary Tree", difficulty: "Easy" },
+                                    { name: "Balanced Binary Tree", difficulty: "Easy" },
+                                ],
+                            },
+                        ],
+                    },
+                    {
+                        name: "BFS levels",
+                        problems: [
+                            { name: "Binary Tree Level Order Traversal", difficulty: "Medium" },
+                            { name: "Right Side View", difficulty: "Medium" },
+                        ],
+                    },
+                ],
+            },
+            {
+                id: "graphs",
+                name: "Graphs",
+                tree: [
+                    {
+                        name: "Traversal",
+                        children: [
+                            {
+                                name: "BFS layers",
+                                problems: [
+                                    { name: "Rotting Oranges", difficulty: "Medium" },
+                                    { name: "Word Ladder", difficulty: "Hard" },
+                                ],
+                            },
+                            {
+                                name: "DFS visited set",
+                                problems: [
+                                    { name: "Number of Islands", difficulty: "Medium" },
+                                    { name: "Clone Graph", difficulty: "Medium" },
+                                ],
+                            },
+                        ],
+                    },
+                    {
+                        name: "Ordering and components",
+                        children: [
+                            {
+                                name: "Topological sort",
+                                problems: [
+                                    { name: "Course Schedule", difficulty: "Medium" },
+                                    { name: "Alien Dictionary", difficulty: "Hard" },
+                                ],
+                            },
+                            {
+                                name: "Union find",
+                                problems: [
+                                    { name: "Redundant Connection", difficulty: "Medium" },
+                                    { name: "Accounts Merge", difficulty: "Medium" },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                id: "dp",
+                name: "Dynamic Programming",
+                tree: [
+                    {
+                        name: "1D decisions",
+                        problems: [
+                            { name: "Climbing Stairs", difficulty: "Easy" },
+                            { name: "House Robber", difficulty: "Medium" },
+                            { name: "Coin Change", difficulty: "Medium" },
+                        ],
+                    },
+                    {
+                        name: "2D states",
+                        children: [
+                            {
+                                name: "Grid paths",
+                                problems: [
+                                    { name: "Unique Paths", difficulty: "Medium" },
+                                    { name: "Minimum Path Sum", difficulty: "Medium" },
+                                ],
+                            },
+                            {
+                                name: "String matching",
+                                problems: [
+                                    { name: "Longest Common Subsequence", difficulty: "Medium" },
+                                    { name: "Edit Distance", difficulty: "Hard" },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+        ];
+
+        const THEMES = [
+            ["#7b61ff", "#f4f2ff", "#9f8cff"],
+            ["#0f9f8f", "#e8fbf7", "#66d7c8"],
+            ["#e07a3f", "#fff1e8", "#f0a36e"],
+            ["#2563eb", "#eff6ff", "#7ca7ff"],
+            ["#be4bdb", "#fbf0ff", "#df8ef2"],
+            ["#8a9a23", "#f6f9df", "#b8c64c"],
+        ];
+
+        const root = document.getElementById("graph-root");
+        const toast = document.getElementById("toast");
+        let scale = 1;
+
+        function countChildren(node) {
+            const children = Array.isArray(node.children) ? node.children.length : 0;
+            const problems = Array.isArray(node.problems) ? node.problems.length : 0;
+            return children + problems;
+        }
+
+        function countProblems(node) {
+            let total = Array.isArray(node.problems) ? node.problems.length : 0;
+            (node.children || []).forEach((child) => {
+                total += countProblems(child);
+            });
+            return total;
+        }
+
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.add("show");
+            window.clearTimeout(showToast.timer);
+            showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 1900);
+        }
+
+        function themeFor(index) {
+            return THEMES[index % THEMES.length];
+        }
+
+        function makeRing(count, label, kidsEl) {
+            const ring = document.createElement("span");
+            ring.className = "badge-ring";
+
+            const minus = document.createElement("button");
+            minus.type = "button";
+            minus.className = "ring-btn";
+            minus.textContent = "−";
+            minus.title = "Collapse";
+
+            const value = document.createElement("span");
+            value.className = "ring-count";
+            value.textContent = String(count);
+
+            const plus = document.createElement("button");
+            plus.type = "button";
+            plus.className = "ring-btn";
+            plus.textContent = "+";
+            plus.title = "Add item";
+
+            minus.addEventListener("click", (event) => {
+                event.stopPropagation();
+                if (kidsEl) {
+                    kidsEl.classList.toggle("collapsed");
+                    minus.textContent = kidsEl.classList.contains("collapsed") ? "+" : "−";
+                }
+            });
+            plus.addEventListener("click", (event) => {
+                event.stopPropagation();
+                showToast("Temporary preview: add flow would open for " + label + ".");
+            });
+
+            ring.append(minus, value, plus);
+            return ring;
+        }
+
+        function makeProblemCard(problems) {
+            if (!problems || problems.length === 0) return null;
+            const card = document.createElement("div");
+            card.className = "problem-card";
+            const title = document.createElement("p");
+            title.className = "problem-card-title";
+            title.textContent = "Practice problems";
+            const list = document.createElement("ul");
+            list.className = "problem-list";
+            problems.forEach((problem) => {
+                const item = document.createElement("li");
+                const name = document.createElement("span");
+                name.textContent = problem.name;
+                const diff = document.createElement("span");
+                diff.className = "diff";
+                diff.textContent = problem.difficulty || "Mixed";
+                item.append(name, diff);
+                list.appendChild(item);
+            });
+            card.append(title, list);
+            return card;
+        }
+
+        function makeChip(label, problemCount, childCount, kidsEl, node) {
+            const chip = document.createElement("span");
+            chip.className = "name-chip";
+
+            const nameZone = document.createElement("span");
+            nameZone.className = "name-zone";
+            const name = document.createElement("span");
+            name.className = "h-label";
+            name.textContent = label;
+            const done = document.createElement("span");
+            done.className = "done-count";
+            done.textContent = Math.max(0, Math.floor(problemCount / 3)) + "/" + problemCount;
+            nameZone.append(name, done);
+
+            const pipe = document.createElement("span");
+            pipe.className = "pipe";
+
+            const ring = makeRing(childCount, label, kidsEl);
+
+            const actions = document.createElement("span");
+            actions.className = "node-actions";
+            const edit = document.createElement("button");
+            edit.type = "button";
+            edit.className = "edit-btn";
+            edit.title = "Rename / edit";
+            edit.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+            edit.addEventListener("click", (event) => {
+                event.stopPropagation();
+                showToast("Temporary preview: edit dialog would open for " + label + ".");
+            });
+            actions.appendChild(edit);
+
+            chip.append(nameZone, pipe, ring, actions);
+            return chip;
+        }
+
+        function buildNode(node, depth, index) {
+            const branch = document.createElement("div");
+            branch.className = "h-branch h-branch-child";
+            const theme = themeFor(index + depth);
+            branch.style.setProperty("--dsa-accent", theme[0]);
+            branch.style.setProperty("--dsa-accent-soft", theme[1]);
+            branch.style.setProperty("--dsa-accent-mid", theme[2]);
+
+            const head = document.createElement("div");
+            head.className = "h-branch-head";
+            const labelRow = document.createElement("div");
+            labelRow.className = "h-label-row";
+
+            const kids = document.createElement("div");
+            kids.className = "h-children";
+            const children = Array.isArray(node.children) ? node.children : [];
+            children.forEach((child, childIndex) => {
+                kids.appendChild(buildNode(child, depth + 1, index + childIndex + 1));
+            });
+
+            const problemCard = makeProblemCard(node.problems || []);
+            if (problemCard) kids.appendChild(problemCard);
+
+            labelRow.appendChild(makeChip(node.name, countProblems(node), countChildren(node), kids.childNodes.length ? kids : null, node));
+            head.appendChild(labelRow);
+            branch.appendChild(head);
+            if (kids.childNodes.length) branch.appendChild(kids);
+            return branch;
+        }
+
+        function renderGraph() {
+            root.innerHTML = "";
+            const scroll = document.createElement("div");
+            scroll.className = "mind-scroll";
+            const sizer = document.createElement("div");
+            sizer.className = "zoom-sizer";
+            const content = document.createElement("div");
+            content.className = "zoom-content";
+            const tree = document.createElement("div");
+            tree.className = "h-tree";
+
+            const rootBranch = document.createElement("div");
+            rootBranch.className = "h-branch h-branch-root";
+            rootBranch.style.setProperty("--dsa-accent", "#7b61ff");
+            rootBranch.style.setProperty("--dsa-accent-soft", "#f4f2ff");
+            rootBranch.style.setProperty("--dsa-accent-mid", "#9f8cff");
+
+            const head = document.createElement("div");
+            head.className = "h-branch-head h-branch-head-root";
+            const hub = document.createElement("div");
+            hub.className = "h-root-hub";
+            const labelRow = document.createElement("div");
+            labelRow.className = "h-label-row";
+
+            const kids = document.createElement("div");
+            kids.className = "h-children";
+            INLINE_GRAPH_DATA.forEach((ds, index) => {
+                const theme = themeFor(index);
+                const node = { name: ds.name, children: ds.tree || [], problems: ds.problems || [] };
+                const branch = buildNode(node, 1, index);
+                branch.style.setProperty("--dsa-accent", theme[0]);
+                branch.style.setProperty("--dsa-accent-soft", theme[1]);
+                branch.style.setProperty("--dsa-accent-mid", theme[2]);
+                kids.appendChild(branch);
+            });
+
+            const rootChip = makeChip("DSA Patterns", INLINE_GRAPH_DATA.reduce((sum, item) => sum + countProblems({ children: item.tree || [], problems: item.problems || [] }), 0), INLINE_GRAPH_DATA.length, kids, null);
+            rootChip.querySelector(".h-label").classList.add("h-label-root");
+            labelRow.appendChild(rootChip);
+            hub.appendChild(labelRow);
+            head.appendChild(hub);
+            rootBranch.append(head, kids);
+            tree.appendChild(rootBranch);
+            content.appendChild(tree);
+            sizer.appendChild(content);
+            scroll.appendChild(sizer);
+            root.appendChild(scroll);
+            syncZoom();
+        }
+
+        function syncZoom() {
+            const content = root.querySelector(".zoom-content");
+            const sizer = root.querySelector(".zoom-sizer");
+            if (!content || !sizer) return;
+            content.style.transform = "none";
+            const width = Math.max(1, content.offsetWidth);
+            const height = Math.max(1, content.offsetHeight);
+            content.style.transform = "scale(" + scale + ")";
+            sizer.style.width = Math.ceil(Math.max(width, width * scale)) + "px";
+            sizer.style.height = Math.ceil(Math.max(height, height * scale)) + "px";
+            document.getElementById("zoom-value").textContent = Math.round(scale * 100) + "%";
+        }
+
+        document.getElementById("zoom-in").addEventListener("click", () => {
+            scale = Math.min(2.4, scale + 0.12);
+            syncZoom();
+        });
+
+        document.getElementById("zoom-out").addEventListener("click", () => {
+            scale = Math.max(0.45, scale - 0.12);
+            syncZoom();
+        });
+
+        document.getElementById("expand-all").addEventListener("click", () => {
+            root.querySelectorAll(".h-children").forEach((el) => el.classList.remove("collapsed"));
+            root.querySelectorAll(".badge-ring .ring-btn:first-child").forEach((btn) => (btn.textContent = "−"));
+            showToast("Expanded all graph branches.");
+            syncZoom();
+        });
+
+        document.getElementById("collapse-all").addEventListener("click", () => {
+            root.querySelectorAll(".h-children").forEach((el, index) => {
+                if (index > 0) el.classList.add("collapsed");
+            });
+            root.querySelectorAll(".badge-ring .ring-btn:first-child").forEach((btn, index) => {
+                if (index > 0) btn.textContent = "+";
+            });
+            showToast("Collapsed nested graph branches.");
+            syncZoom();
+        });
+
+        document.getElementById("fake-import").addEventListener("click", () => {
+            showToast("Temporary preview: import is disabled because all data is inline.");
+        });
+
+        document.getElementById("show-json").addEventListener("click", () => {
+            const text = JSON.stringify(INLINE_GRAPH_DATA, null, 2);
+            const popup = window.open("", "_blank", "width=900,height=720");
+            if (popup) {
+                popup.document.write("<pre style='white-space:pre-wrap;font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;padding:20px;background:#0f172a;color:#e2e8f0;margin:0'>" + text.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]) + "</pre>");
+                popup.document.close();
+            } else {
+                showToast("Popup blocked. Use Export JSON instead.");
+            }
+        });
+
+        document.getElementById("export-json").addEventListener("click", () => {
+            const blob = new Blob([JSON.stringify(INLINE_GRAPH_DATA, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "temporary-dsa-graph.json";
+            link.click();
+            URL.revokeObjectURL(url);
+            showToast("Inline JSON exported.");
+        });
+
+        window.addEventListener("resize", syncZoom);
+        renderGraph();
+    </script>
+</body>
+</html>

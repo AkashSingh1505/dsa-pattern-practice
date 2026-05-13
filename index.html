@@ -83,12 +83,6 @@
     box-shadow:0 6px 18px rgba(30,41,59,0.25), inset 0 1px 0 rgba(255,255,255,0.1);
   }
   .btn-primary:hover{transform:translateY(-1px);box-shadow:0 10px 28px rgba(30,41,59,0.35)}
-  .btn-premium{
-    background:linear-gradient(135deg,#475569,#1e293b);
-    color:#fff;font-weight:600;
-    box-shadow:0 8px 22px rgba(30,41,59,0.28), inset 0 1px 0 rgba(255,255,255,0.12);
-  }
-  .btn-premium:hover{transform:translateY(-1px);box-shadow:0 12px 30px rgba(30,41,59,0.4)}
   .btn-lg{padding:14px 24px;font-size:14.5px;border-radius:13px}
 
   /* HERO */
@@ -504,14 +498,9 @@
       <a href="#studio">Studio</a>
       <a href="#why">Why it works</a>
       <a href="#preview">Live graph</a>
-      <a href="./premium.html">Premium</a>
     </div>
     <div class="nav-cta">
       <button class="btn btn-ghost">Sign in</button>
-      <button class="btn btn-premium">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2L15 8.5L22 9.5L17 14.5L18.5 22L12 18L5.5 22L7 14.5L2 9.5L9 8.5L12 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-        Premium
-      </button>
     </div>
   </div>
 </nav>
@@ -1557,14 +1546,12 @@
     }
 
     var navSignIn = document.querySelector("nav .btn-ghost");
-    var navPremium = document.querySelector("nav .btn-premium");
     var heroPrimary = document.querySelector(".hero-ctas .btn-primary");
     var heroSecondary = document.querySelector(".hero-ctas .btn-ghost");
     var finalPrimary = document.querySelector(".final-ctas .btn-primary");
     var finalSecondary = document.querySelector(".final-ctas .btn-secondary");
 
     if (navSignIn) navSignIn.addEventListener("click", function () { go("./account.html"); });
-    if (navPremium) navPremium.addEventListener("click", function () { go("./premium.html"); });
     if (heroPrimary) heroPrimary.addEventListener("click", function () { go("./account.html"); });
     if (heroSecondary) heroSecondary.addEventListener("click", function () { go("./premium.html"); });
     if (finalPrimary) finalPrimary.addEventListener("click", function () { go("./account.html"); });

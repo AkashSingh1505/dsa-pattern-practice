@@ -2329,7 +2329,7 @@
         f2.className = "adm-field";
         f2.innerHTML = "<label>Value (string, often JSON)</label>";
         const ta = document.createElement("textarea");
-        ta.className = "adm-kv-v";
+        ta.className = "adm-kv-v adm-code-surface adm-code-surface--json";
         ta.rows = 4;
         ta.value = v != null ? String(v) : "";
         f2.appendChild(ta);
@@ -2338,7 +2338,7 @@
         f3.className = "adm-field";
         f3.innerHTML = "<label>Meta (optional string)</label>";
         const taMeta = document.createElement("textarea");
-        taMeta.className = "adm-kv-meta";
+        taMeta.className = "adm-kv-meta adm-code-surface adm-code-surface--meta";
         taMeta.rows = 2;
         taMeta.value = meta != null ? String(meta) : "";
         f3.appendChild(taMeta);
@@ -2355,12 +2355,18 @@
         actions.className = "adm-kv-row-actions";
         const btnSave = document.createElement("button");
         btnSave.type = "button";
-        btnSave.className = "btn btn-sm adm-kv-save";
-        btnSave.textContent = "Save";
+        btnSave.className = "btn btn-sm adm-kv-save adm-btn-with-ico";
+        btnSave.title = "Save row";
+        btnSave.innerHTML =
+            '<svg class="adm-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg><span>Save</span>';
         const btnRm = document.createElement("button");
         btnRm.type = "button";
-        btnRm.className = "btn ghost btn-sm adm-kv-remove";
-        btnRm.textContent = sk ? "Delete key" : "Discard row";
+        btnRm.className = "btn ghost btn-sm adm-kv-remove adm-btn-with-ico";
+        btnRm.title = sk ? "Delete key from server" : "Remove unsaved row";
+        btnRm.innerHTML =
+            '<svg class="adm-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg><span>' +
+            (sk ? "Delete" : "Discard") +
+            "</span>";
         actions.appendChild(btnSave);
         actions.appendChild(btnRm);
 
@@ -2638,6 +2644,12 @@
             if (typeof window.dsaAdminReloadSiteMarketing === "function") {
                 await window.dsaAdminReloadSiteMarketing();
             }
+            requestAnimationFrame(function () {
+                if (typeof positionAdmSiteMainThumb === "function") {
+                    positionAdmSiteMainThumb();
+                    requestAnimationFrame(positionAdmSiteMainThumb);
+                }
+            });
         } catch (e) {
             setStatus("adm-kv-msg", e.message, "err");
         }
@@ -3113,11 +3125,40 @@
         });
     }
 
+    function positionAdmSiteMainThumb() {
+        const track = document.querySelector("[data-adm-site-tabs]");
+        if (!track) {
+            return;
+        }
+        const thumb = track.querySelector("[data-adm-seg-thumb]");
+        const active = track.querySelector("[data-adm-site-tab].active");
+        if (!thumb || !active) {
+            return;
+        }
+        const tr = track.getBoundingClientRect();
+        const br = active.getBoundingClientRect();
+        if (br.width < 8) {
+            return;
+        }
+        thumb.style.width = br.width + "px";
+        thumb.style.transform = "translateX(" + (br.left - tr.left) + "px)";
+    }
+
     function initAdmSiteUiTabs() {
         const wrap = document.querySelector("[data-adm-site-tabs]");
         if (!wrap) {
             return;
         }
+        let resizeT = null;
+        function onResize() {
+            if (resizeT) {
+                window.clearTimeout(resizeT);
+            }
+            resizeT = window.setTimeout(function () {
+                positionAdmSiteMainThumb();
+            }, 80);
+        }
+        window.addEventListener("resize", onResize);
         wrap.querySelectorAll("[data-adm-site-tab]").forEach(function (btn) {
             btn.addEventListener("click", function () {
                 const tab = btn.getAttribute("data-adm-site-tab");
@@ -3133,7 +3174,15 @@
                     const id = p.getAttribute("data-adm-site-panel");
                     p.classList.toggle("adm-hidden", id !== tab);
                 });
+                requestAnimationFrame(function () {
+                    positionAdmSiteMainThumb();
+                    requestAnimationFrame(positionAdmSiteMainThumb);
+                });
             });
+        });
+        requestAnimationFrame(function () {
+            positionAdmSiteMainThumb();
+            requestAnimationFrame(positionAdmSiteMainThumb);
         });
     }
 

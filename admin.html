@@ -33,7 +33,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev" />
     <title>Site admin — DSA Pattern Practice</title>
-    <link rel="stylesheet" href="./auth/portal-shell.css?v=22" />
+    <link rel="stylesheet" href="./auth/portal-shell.css?v=23" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -256,8 +256,14 @@
                                     <span>Reload</span>
                                 </button>
                                 <div class="adm-seg" data-adm-dual-wrap="site">
-                                    <button type="button" class="active" data-adm-dual="site" data-adm-mode="ui">UI</button>
-                                    <button type="button" data-adm-dual="site" data-adm-mode="json">JSON</button>
+                                    <button type="button" class="btn btn-sm active adm-btn-with-ico" data-adm-dual="site" data-adm-mode="ui" aria-pressed="true">
+                                        <svg class="adm-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                                        <span>UI</span>
+                                    </button>
+                                    <button type="button" class="btn btn-sm adm-btn-with-ico" data-adm-dual="site" data-adm-mode="json" aria-pressed="false">
+                                        <svg class="adm-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+                                        <span>JSON</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -266,11 +272,21 @@
                                 <b>Site</b> uses <code>app_kv</code> (string values, often JSON). Pick a tab below for flags, marketing, or all keys. The header <b>Reload</b> refetches from the server; use <b>JSON</b> in the header for bulk rows.
                             </p>
 
-                            <div class="adm-site-tabs-rail">
-                                <div class="adm-seg adm-site-main-seg" role="tablist" aria-label="Site settings" data-adm-site-tabs>
-                                    <button type="button" class="active" role="tab" aria-selected="true" aria-controls="adm-site-panel-features" id="adm-site-tab-btn-features" data-adm-site-tab="features">Features</button>
-                                    <button type="button" role="tab" aria-selected="false" aria-controls="adm-site-panel-marketing" id="adm-site-tab-btn-marketing" data-adm-site-tab="marketing">Marketing</button>
-                                    <button type="button" role="tab" aria-selected="false" aria-controls="adm-site-panel-keys" id="adm-site-tab-btn-keys" data-adm-site-tab="keys">All keys</button>
+                            <div class="adm-site-tabs-rail adm-site-tabs-rail--sticky">
+                                <div class="adm-site-seg adm-seg adm-site-main-seg" role="tablist" aria-label="Site settings" data-adm-site-tabs>
+                                    <span class="adm-site-seg__thumb" data-adm-seg-thumb aria-hidden="true"></span>
+                                    <button type="button" class="adm-site-seg__btn active" role="tab" aria-selected="true" aria-controls="adm-site-panel-features" id="adm-site-tab-btn-features" data-adm-site-tab="features">
+                                        <svg class="adm-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                                        <span>Features</span>
+                                    </button>
+                                    <button type="button" class="adm-site-seg__btn" role="tab" aria-selected="false" aria-controls="adm-site-panel-marketing" id="adm-site-tab-btn-marketing" data-adm-site-tab="marketing">
+                                        <svg class="adm-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+                                        <span>Marketing</span>
+                                    </button>
+                                    <button type="button" class="adm-site-seg__btn" role="tab" aria-selected="false" aria-controls="adm-site-panel-keys" id="adm-site-tab-btn-keys" data-adm-site-tab="keys">
+                                        <svg class="adm-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="M15.5 7.5l3 3L22 7l-3-3"/></svg>
+                                        <span>All keys</span>
+                                    </button>
                                 </div>
                             </div>
 
@@ -312,10 +328,16 @@
                         </div>
                         <div data-adm-panel="site-json" class="adm-hidden">
                             <p class="helper" style="margin-top:0">Array of <code>{ "k", "v", "meta" }</code>. Apply runs PUT per row.</p>
-                            <textarea id="adm-site-json" class="adm-json-input" spellcheck="false"></textarea>
-                            <div class="adm-toolbar-row">
-                                <button type="button" class="btn ghost btn-sm" id="adm-site-json-load">Load from server</button>
-                                <button type="button" class="btn btn-sm" id="adm-site-json-apply">Apply JSON</button>
+                            <textarea id="adm-site-json" class="adm-json-input adm-code-surface adm-code-surface--json" spellcheck="false"></textarea>
+                            <div class="adm-toolbar-row adm-site-actions-row adm-site-json-toolbar">
+                                <button type="button" class="btn ghost btn-sm adm-btn-with-ico" id="adm-site-json-load" title="Load keys from server">
+                                    <svg class="adm-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    <span>Load</span>
+                                </button>
+                                <button type="button" class="btn btn-sm adm-btn-with-ico" id="adm-site-json-apply" title="Apply JSON rows">
+                                    <svg class="adm-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M4 21h16"/></svg>
+                                    <span>Apply</span>
+                                </button>
                             </div>
                             <p id="adm-site-json-msg" class="status" aria-live="polite"></p>
                         </div>
@@ -1093,8 +1115,8 @@
     <script src="./auth/dsa-user-auth.js?v=3"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
     <script src="./script.js?v=34"></script>
-    <script src="./auth/account-admin-panel.js?v=32"></script>
-    <script src="./auth/site-marketing-admin-panel.js?v=3"></script>
+    <script src="./auth/account-admin-panel.js?v=33"></script>
+    <script src="./auth/site-marketing-admin-panel.js?v=4"></script>
     <script src="./auth/admin-site-page.js?v=11"></script>
 </body>
 </html>

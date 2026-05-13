@@ -58,15 +58,32 @@
         cur[parts[parts.length - 1]] = val;
     }
 
+    function editorExtraClasses(path, type) {
+        if (type !== "textarea") {
+            return "";
+        }
+        var p = String(path || "");
+        if (/Json$/i.test(p) || /TrustJson$/i.test(p)) {
+            return " adm-code-surface adm-code-surface--json";
+        }
+        if (/Html$/i.test(p) || /bodyHtml/i.test(p)) {
+            return " adm-code-surface adm-code-surface--html";
+        }
+        return "";
+    }
+
     function field(label, path, type, rows) {
         var v = getPath(gMarketing, path);
         if (v == null) v = "";
         var id = "mk-" + path.replace(/\./g, "-");
+        var extra = editorExtraClasses(path, type);
         var ta =
             type === "textarea"
-                ? '<textarea class="adm-json-input" style="min-height:' +
+                ? '<textarea class="adm-json-input' +
+                  extra +
+                  '" style="min-height:' +
                   (rows || 3) +
-                  'px" id="' +
+                  'px;width:100%" id="' +
                   id +
                   '" data-path="' +
                   path +
@@ -119,11 +136,11 @@
                     idx +
                     "\" data-k=\"href\" value=\"" +
                     escapeAttr(row.href) +
-                    "\" /></td><td><button type=\"button\" class=\"btn ghost btn-sm\" data-nav-del=\"" +
+                    "\" /></td><td><button type=\"button\" class=\"btn ghost btn-sm adm-btn-with-ico\" data-nav-del=\"" +
                     pageKey +
                     "\" data-i=\"" +
                     idx +
-                    "\">Remove</button></td></tr>"
+                    "\" title=\"Remove link\"><svg class=\"adm-ico\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><polyline points=\"3 6 5 6 21 6\"/><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"/></svg><span>Remove</span></button></td></tr>"
                 );
             })
             .join("");
@@ -133,9 +150,9 @@
             pageKey +
             '">' +
             rows +
-            '</tbody></table><button type="button" class="btn ghost btn-sm" data-nav-add="' +
+            '</tbody></table><button type="button" class="btn ghost btn-sm adm-btn-with-ico" data-nav-add="' +
             pageKey +
-            '">Add link</button></div>'
+            '" title="Add nav link"><svg class="adm-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>Add link</span></button></div>'
         );
     }
 

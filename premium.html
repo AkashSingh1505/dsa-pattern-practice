@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./auth/site-toolbar.css?v=1">
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   :root{
@@ -29,62 +30,11 @@
   }
   a{color:inherit}
   button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
-  .container{max-width:1280px;margin:0 auto;padding:0 32px}
-
-  nav{
-    position:fixed;top:0;left:0;right:0;z-index:50;
-    backdrop-filter:saturate(180%) blur(20px);
-    -webkit-backdrop-filter:saturate(180%) blur(20px);
-    background:rgba(255,255,255,0.6);
-    border-bottom:1px solid var(--line);
-  }
-  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px}
-  .brand{display:flex;align-items:center;gap:12px}
-  a.brand{text-decoration:none;color:inherit;cursor:pointer}
-  .logo{
-    width:34px;height:34px;border-radius:10px;
-    background:linear-gradient(135deg,#334155 0%,#1e293b 100%);
-    display:grid;place-items:center;
-    box-shadow:0 8px 20px rgba(30,41,59,0.25), inset 0 1px 0 rgba(255,255,255,0.15);
-  }
-  .logo svg{width:18px;height:18px}
-  .brand-text{display:flex;flex-direction:column;line-height:1.1}
-  .brand-text b{font-size:14px;font-weight:600;letter-spacing:-0.01em;color:var(--text)}
-  .brand-text span{font-size:11px;color:var(--muted);letter-spacing:0.02em}
-  .nav-links{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
-  .nav-links a{font-size:13.5px;color:var(--muted);padding:8px 14px;border-radius:9px;transition:.2s;text-decoration:none}
-  .nav-links a:hover{color:var(--text);background:rgba(255,255,255,0.7)}
-  .nav-cta{display:flex;align-items:center;gap:10px}
-  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:11px;font-size:13.5px;font-weight:500;transition:.25s;border:1px solid transparent;white-space:nowrap;text-decoration:none}
-  .btn-ghost{
-    color:var(--text);
-    background:rgba(255,255,255,0.7);
-    border-color:var(--line-2);
-    backdrop-filter:blur(10px);
-  }
-  .btn-ghost:hover{background:rgba(255,255,255,0.9);transform:translateY(-1px)}
-  .btn-outline{
-    color:var(--text);
-    background:rgba(255,255,255,0.55);
-    border:1px solid var(--line-2);
-  }
-  .btn-outline:hover{background:rgba(255,255,255,0.9);transform:translateY(-1px)}
-  .btn-premium{
-    background:linear-gradient(135deg,#475569,#1e293b);
-    color:#fff;font-weight:600;
-    box-shadow:0 8px 22px rgba(30,41,59,0.28), inset 0 1px 0 rgba(255,255,255,0.12);
-  }
-  .btn-premium:hover{transform:translateY(-1px);box-shadow:0 12px 30px rgba(30,41,59,0.4)}
-  .btn-premium[aria-current="page"]{cursor:default;opacity:0.95}
-
-  @media (max-width:720px){
-    .nav-links{display:none}
-  }
 </style>
 </head>
 <body>
 
-<nav>
+<nav class="dsa-site-nav">
   <div class="container nav-inner">
     <a href="./index.html" class="brand" id="dsa-brand-home" aria-label="DSA Pattern Practice home">
       <div class="logo">
@@ -107,7 +57,10 @@
     </div>
     <div class="nav-cta">
       <a class="btn btn-ghost" href="./account.html">Sign in</a>
-      <span class="btn btn-premium" aria-current="page">Premium</span>
+      <a class="btn btn-premium" href="./premium.html" aria-current="page">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2L15 8.5L22 9.5L17 14.5L18.5 22L12 18L5.5 22L7 14.5L2 9.5L9 8.5L12 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        Premium
+      </a>
     </div>
   </div>
 </nav>

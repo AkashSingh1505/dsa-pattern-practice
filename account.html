@@ -33,152 +33,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Practice account — DSA Pattern Practice</title>
     <link rel="stylesheet" href="./auth/portal-shell.css?v=19" />
-    <style>
-      :root {
-        --site-line: rgba(20, 30, 55, 0.08);
-        --site-line-2: rgba(20, 30, 55, 0.14);
-        --site-text: #1b2238;
-        --site-muted: #5f6781;
-      }
-      body.dsa-account-site {
-        margin: 0;
-        padding-top: 68px;
-      }
-      body.dsa-account-site .dsa-portal-page {
-        min-height: calc(100vh - 68px);
-      }
-      body.dsa-account-site nav .container {
-        max-width: 1280px;
-        margin: 0 auto;
-        padding: 0 32px;
-      }
-      body.dsa-account-site nav {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 50;
-        backdrop-filter: saturate(180%) blur(20px);
-        -webkit-backdrop-filter: saturate(180%) blur(20px);
-        background: rgba(255, 255, 255, 0.6);
-        border-bottom: 1px solid var(--site-line);
-      }
-      body.dsa-account-site .nav-inner {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        height: 68px;
-      }
-      body.dsa-account-site .brand {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-      body.dsa-account-site a.brand {
-        text-decoration: none;
-        color: inherit;
-        cursor: pointer;
-      }
-      body.dsa-account-site .logo {
-        width: 34px;
-        height: 34px;
-        border-radius: 10px;
-        background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
-        display: grid;
-        place-items: center;
-        box-shadow: 0 8px 20px rgba(30, 41, 59, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-      }
-      body.dsa-account-site .logo svg {
-        width: 18px;
-        height: 18px;
-      }
-      body.dsa-account-site .brand-text {
-        display: flex;
-        flex-direction: column;
-        line-height: 1.1;
-      }
-      body.dsa-account-site .brand-text b {
-        font-size: 14px;
-        font-weight: 600;
-        letter-spacing: -0.01em;
-        color: var(--site-text);
-      }
-      body.dsa-account-site .brand-text span {
-        font-size: 11px;
-        color: var(--site-muted);
-        letter-spacing: 0.02em;
-      }
-      body.dsa-account-site .nav-links {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        flex-wrap: wrap;
-      }
-      body.dsa-account-site .nav-links a {
-        font-size: 13.5px;
-        color: var(--site-muted);
-        padding: 8px 14px;
-        border-radius: 9px;
-        transition: 0.2s;
-        text-decoration: none;
-      }
-      body.dsa-account-site .nav-links a:hover {
-        color: var(--site-text);
-        background: rgba(255, 255, 255, 0.7);
-      }
-      body.dsa-account-site .nav-cta {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-      body.dsa-account-site .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 18px;
-        border-radius: 11px;
-        font-size: 13.5px;
-        font-weight: 500;
-        transition: 0.25s;
-        border: 1px solid transparent;
-        white-space: nowrap;
-        font-family: inherit;
-        text-decoration: none;
-        cursor: pointer;
-        box-sizing: border-box;
-      }
-      body.dsa-account-site .btn-ghost {
-        color: var(--site-text);
-        background: rgba(255, 255, 255, 0.7);
-        border-color: var(--site-line-2);
-        backdrop-filter: blur(10px);
-      }
-      body.dsa-account-site .btn-ghost:hover {
-        background: rgba(255, 255, 255, 0.9);
-      }
-      body.dsa-account-site .btn-premium {
-        background: linear-gradient(135deg, #475569, #1e293b);
-        color: #fff;
-        font-weight: 600;
-        box-shadow: 0 8px 22px rgba(30, 41, 59, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-      }
-      body.dsa-account-site .btn-premium:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 12px 30px rgba(30, 41, 59, 0.4);
-      }
-      body.dsa-account-site .btn-ghost[aria-current="page"] {
-        cursor: default;
-        opacity: 0.95;
-      }
-      @media (max-width: 720px) {
-        body.dsa-account-site .nav-links {
-          display: none;
-        }
-      }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./auth/site-toolbar.css?v=1" />
 </head>
-<body class="dsa-account-site">
-    <nav>
+<body class="dsa-account-site has-dsa-site-nav-offset">
+    <nav class="dsa-site-nav">
         <div class="container nav-inner">
             <a href="./index.html" class="brand" id="dsa-brand-home" aria-label="DSA Pattern Practice home">
                 <div class="logo">
@@ -200,7 +61,7 @@
                 <a href="./index.html#preview">Live graph</a>
             </div>
             <div class="nav-cta">
-                <span class="btn btn-ghost" aria-current="page">Sign in</span>
+                <a class="btn btn-ghost" href="./account.html" aria-current="page">Sign in</a>
                 <a class="btn btn-premium" href="./premium.html">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2L15 8.5L22 9.5L17 14.5L18.5 22L12 18L5.5 22L7 14.5L2 9.5L9 8.5L12 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" /></svg>
                     Premium

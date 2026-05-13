@@ -24,7 +24,10 @@
     }
 
     async function fetchJson(url, opts) {
-        var r = await fetch(url, Object.assign({ headers: authHeaders() }, opts || {}));
+        opts = opts || {};
+        var merged = Object.assign({}, opts);
+        merged.headers = Object.assign({}, authHeaders(), opts.headers || {});
+        var r = await fetch(url, merged);
         var text = await r.text();
         var j = null;
         try {
@@ -196,35 +199,48 @@
         var rows = arr
             .map(function (row, idx) {
                 return (
-                    "<tr><td><input type=\"text\" data-nav=\"" +
+                    '<div class="adm-mk-item-card" data-mk-nav-card="' +
+                    pageKey +
+                    '" data-i="' +
+                    idx +
+                    '">' +
+                    '<div class="adm-mk-item-card__head"><span class="adm-mk-item-card__badge">Link ' +
+                    (idx + 1) +
+                    "</span></div>" +
+                    '<div class="adm-mk-item-card__grid">' +
+                    '<div class="adm-field adm-field--compact"><label>Label</label><input type="text" data-nav="' +
                     pageKey +
                     "\" data-i=\"" +
                     idx +
                     "\" data-k=\"label\" value=\"" +
                     escapeAttr(row.label) +
-                    "\" /></td><td><input type=\"text\" data-nav=\"" +
+                    '" /></div>' +
+                    '<div class="adm-field adm-field--compact"><label>URL</label><input type="text" data-nav="' +
                     pageKey +
                     "\" data-i=\"" +
                     idx +
                     "\" data-k=\"href\" value=\"" +
                     escapeAttr(row.href) +
-                    "\" /></td><td><button type=\"button\" class=\"btn ghost btn-sm adm-btn-with-ico\" data-nav-del=\"" +
+                    '" /></div></div>' +
+                    '<button type="button" class="btn ghost btn-sm adm-mk-item-card__foot" data-nav-del="' +
                     pageKey +
                     "\" data-i=\"" +
                     idx +
-                    "\" title=\"Remove link\"><svg class=\"adm-ico\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><polyline points=\"3 6 5 6 21 6\"/><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"/></svg><span>Remove</span></button></td></tr>"
+                    '" title="Remove this link">Remove link</button></div>'
                 );
             })
             .join("");
         return (
-            '<div class="adm-subcard" style="margin-top:14px"><h4>Toolbar links (center nav)</h4>' +
-            '<table class="admin-table" style="margin-top:8px"><thead><tr><th>Label</th><th>href</th><th></th></tr></thead><tbody id="mk-nav-tbody-' +
-            pageKey +
-            '">' +
+            '<div class="adm-mk-collection adm-subcard" style="margin-top:14px">' +
+            '<div class="adm-mk-collection__head">' +
+            "<h4>Toolbar links</h4>" +
+            '<p class="helper adm-mk-collection__lede">Center navigation — each link is its own block. Save writes the full marketing document.</p></div>' +
+            '<div class="adm-mk-item-list">' +
             rows +
-            '</tbody></table><button type="button" class="btn ghost btn-sm adm-btn-with-ico" data-nav-add="' +
+            "</div>" +
+            '<button type="button" class="btn ghost btn-sm adm-mk-collection__add" data-nav-add="' +
             pageKey +
-            '" title="Add nav link"><svg class="adm-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>Add link</span></button></div>'
+            '" title="Add another nav link">Add link</button></div>'
         );
     }
 
@@ -233,18 +249,22 @@
         var blocks = arr
             .map(function (it, idx) {
                 return (
-                    '<div class="adm-subcard" style="margin-top:12px" data-faq-card="' +
+                    '<div class="adm-mk-item-card adm-mk-item-card--faq" data-faq-card="' +
                     pageKey +
                     '" data-i="' +
                     idx +
-                    '"><div class="adm-field"><label>Question</label><input type="text" data-faq-q="' +
+                    '">' +
+                    '<div class="adm-mk-item-card__head"><span class="adm-mk-item-card__badge">FAQ ' +
+                    (idx + 1) +
+                    "</span></div>" +
+                    '<div class="adm-field adm-field--compact"><label>Question</label><input type="text" data-faq-q="' +
                     pageKey +
                     '" data-i="' +
                     idx +
                     '" value="' +
                     escapeAttr(it.question || "") +
                     '" style="width:100%"/></div>' +
-                    '<div class="adm-field"><label>Answer HTML</label><div class="adm-html-editor-wrap adm-json-input adm-code-surface adm-code-surface--html" style="min-height:120px">' +
+                    '<div class="adm-field adm-field--compact"><label>Answer HTML</label><div class="adm-html-editor-wrap adm-json-input adm-code-surface adm-code-surface--html" style="min-height:120px">' +
                     '<pre class="adm-html-editor-highlight" spellcheck="false" aria-hidden="true"></pre>' +
                     '<textarea class="adm-json-input adm-html-editor-ta" data-faq-a="' +
                     pageKey +
@@ -253,20 +273,25 @@
                     '" spellcheck="false" style="min-height:120px;width:100%">' +
                     escapeHtml(it.answerHtml || "") +
                     "</textarea></div></div>" +
-                    '<button type="button" class="btn ghost btn-sm adm-btn-with-ico" data-faq-del="' +
+                    '<button type="button" class="btn ghost btn-sm adm-mk-item-card__foot" data-faq-del="' +
                     pageKey +
                     "\" data-i=\"" +
                     idx +
-                    "\" title=\"Remove FAQ\"><svg class=\"adm-ico\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><polyline points=\"3 6 5 6 21 6\"/><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"/></svg><span>Remove</span></button></div>"
+                    '" title=\"Remove this FAQ\">Remove FAQ</button></div>'
                 );
             })
             .join("");
         return (
-            '<div style="margin-top:16px"><h4>FAQ items</h4><p class="helper" style="margin-top:4px">Add, remove, reorder. Answer fields allow a small subset of HTML (same as shipped pages).</p>' +
+            '<div class="adm-mk-collection adm-subcard" style="margin-top:16px">' +
+            '<div class="adm-mk-collection__head">' +
+            "<h4>FAQ items</h4>" +
+            '<p class="helper adm-mk-collection__lede">Each FAQ is its own block — question, HTML answer, and remove. Same HTML subset as live pages.</p></div>' +
+            '<div class="adm-mk-item-list">' +
             blocks +
-            '<button type="button" class="btn ghost btn-sm adm-btn-with-ico" data-faq-add="' +
+            "</div>" +
+            '<button type="button" class="btn ghost btn-sm adm-mk-collection__add" data-faq-add="' +
             pageKey +
-            '" title="Add FAQ item"><svg class="adm-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>Add FAQ</span></button></div>'
+            '" title="Add another FAQ">Add FAQ</button></div>'
         );
     }
 
@@ -555,13 +580,10 @@
             '<div class="adm-site-seg adm-seg adm-site-mk-seg" data-mk-site-seg role="tablist" aria-label="Marketing page">' +
             '<span class="adm-site-seg__thumb" data-adm-seg-thumb aria-hidden="true"></span>' +
             '<button type="button" class="adm-site-seg__btn active" data-mk-tab="index">' +
-            '<svg class="adm-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>' +
             "<span>Index</span></button>" +
             '<button type="button" class="adm-site-seg__btn" data-mk-tab="premium">' +
-            '<svg class="adm-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' +
             "<span>Premium</span></button>" +
             '<button type="button" class="adm-site-seg__btn" data-mk-tab="contentPage">' +
-            '<svg class="adm-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' +
             "<span>Content</span></button>" +
             "</div></div>" +
             '<details class="adm-site-tab__details">' +
@@ -570,11 +592,9 @@
             "</details>" +
             '<div id="adm-site-marketing-panel" class="adm-site-marketing-panel"></div>' +
             '<div class="adm-site-actions-row">' +
-            '<button type="button" class="btn btn-sm adm-btn-with-ico" id="adm-site-marketing-save" title="Save marketing to app_kv">' +
-            '<svg class="adm-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>' +
+            '<button type="button" class="btn btn-sm" id="adm-site-marketing-save" title="Save marketing to app_kv">' +
             "<span>Save</span></button>" +
-            '<button type="button" class="btn ghost btn-sm adm-btn-with-ico" id="adm-site-marketing-reset" title="Delete marketing key from D1">' +
-            '<svg class="adm-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>' +
+            '<button type="button" class="btn ghost btn-sm" id="adm-site-marketing-reset" title="Delete marketing key from D1">' +
             "<span>Clear key</span></button>" +
             "</div>" +
             '<p id="adm-site-marketing-msg" class="status adm-site-tab__status" aria-live="polite"></p>' +

@@ -102,42 +102,18 @@
         };
     }
 
-    function graphSvgMarkup(kind) {
-        if (kind === 2) {
-            return (
-                '<svg class="dsa-glib-card__graph" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
-                '<g stroke="rgba(255,255,255,0.5)" stroke-width="1.3" fill="none" stroke-linecap="round">' +
-                '<path d="M60 100 C 110 60, 150 60, 200 60"/><path d="M60 100 C 110 100, 150 100, 200 100"/><path d="M60 100 C 110 140, 150 140, 200 140"/>' +
-                '<path d="M200 60 C 240 55, 270 55, 310 50"/><path d="M200 60 C 240 65, 270 70, 310 75"/><path d="M200 100 C 240 100, 270 100, 310 100"/><path d="M200 140 C 240 140, 270 145, 310 150"/>' +
-                "</g>" +
-                '<circle class="glib-root-ring" cx="60" cy="100" r="12"/><circle class="glib-root-core--teal" cx="60" cy="100" r="5"/>' +
-                '<g class="glib-pill"><rect x="186" y="53" width="28" height="14" rx="3"/><rect x="186" y="93" width="28" height="14" rx="3"/><rect x="186" y="133" width="28" height="14" rx="3"/></g>' +
-                '<g fill="#fff"><circle cx="310" cy="50" r="4.5"/><circle cx="310" cy="75" r="4.5"/><circle cx="310" cy="100" r="4.5"/><circle cx="310" cy="150" r="4.5"/></g>' +
-                "</svg>"
-            );
-        }
-        if (kind === 3) {
-            return (
-                '<svg class="dsa-glib-card__graph" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
-                '<g stroke="rgba(255,255,255,0.55)" stroke-width="1.4" fill="none" stroke-linecap="round">' +
-                '<path d="M80 110 L 170 60"/><path d="M80 110 L 170 110"/><path d="M80 110 L 170 160"/><path d="M170 60 L 290 50"/><path d="M170 110 L 290 100"/><path d="M170 110 L 290 130"/>' +
-                "</g>" +
-                '<circle class="glib-root-ring" cx="80" cy="110" r="14"/><circle class="glib-root-core--warm" cx="80" cy="110" r="6"/>' +
-                '<g class="glib-pill"><rect x="156" y="53" width="28" height="14" rx="3"/><rect x="156" y="103" width="28" height="14" rx="3"/><rect x="156" y="153" width="28" height="14" rx="3"/></g>' +
-                '<g fill="#fff"><circle cx="290" cy="50" r="5"/><circle cx="290" cy="100" r="5"/><circle cx="290" cy="130" r="5"/></g>' +
-                "</svg>"
-            );
-        }
+    function graphPreviewMarkup(kind) {
+        var mod = kind === 2 ? "k2" : kind === 3 ? "k3" : "k1";
         return (
-            '<svg class="dsa-glib-card__graph" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
-            '<g stroke="rgba(255,255,255,0.45)" stroke-width="1.2" fill="none" stroke-linecap="round">' +
-            '<path d="M70 100 C 120 50, 160 50, 210 45"/><path d="M70 100 C 120 70, 160 70, 210 75"/><path d="M70 100 C 120 95, 160 100, 210 105"/><path d="M70 100 C 120 120, 160 130, 210 135"/><path d="M70 100 C 120 145, 160 160, 210 165"/>' +
-            '<path d="M210 45 C 250 40, 280 35, 320 30"/><path d="M210 75 C 250 70, 280 70, 320 70"/><path d="M210 105 C 250 105, 280 110, 320 110"/><path d="M210 135 C 250 138, 280 142, 320 145"/>' +
-            "</g>" +
-            '<circle class="glib-root-ring" cx="70" cy="100" r="14"/><circle class="glib-root-core--violet" cx="70" cy="100" r="6"/>' +
-            '<g class="glib-pill"><rect x="195" y="38" width="30" height="14" rx="3"/><rect x="195" y="68" width="30" height="14" rx="3"/><rect x="195" y="98" width="30" height="14" rx="3"/><rect x="195" y="128" width="30" height="14" rx="3"/><rect x="195" y="158" width="30" height="14" rx="3"/></g>' +
-            '<g><circle cx="320" cy="30" r="5" fill="#f472b6"/><circle cx="320" cy="70" r="5" fill="#fbbf24"/><circle cx="320" cy="110" r="5" fill="#34d399"/><circle cx="320" cy="145" r="5" fill="#60a5fa"/></g>' +
-            "</svg>"
+            '<div class="dsa-glib-card__preview dsa-glib-card__preview--' +
+            mod +
+            '" aria-hidden="true">' +
+            '<span class="dsa-glib-card__pv-root"></span>' +
+            '<span class="dsa-glib-card__pv-spine"></span>' +
+            '<span class="dsa-glib-card__pv-dot dsa-glib-card__pv-dot--a"></span>' +
+            '<span class="dsa-glib-card__pv-dot dsa-glib-card__pv-dot--b"></span>' +
+            '<span class="dsa-glib-card__pv-dot dsa-glib-card__pv-dot--c"></span>' +
+            "</div>"
         );
     }
 
@@ -287,7 +263,7 @@
                 '<div class="dsa-glib-preview ' +
                 visualVariant(g.accentHue, idx) +
                 '">' +
-                graphSvgMarkup(visualIdx) +
+                graphPreviewMarkup(visualIdx) +
                 '<div class="dsa-glib-preview-badges"><span class="dsa-glib-badge">Community</span><span class="dsa-glib-badge dsa-glib-badge--visibility">Public</span></div>' +
                 '<div class="dsa-glib-preview-meta">' +
                 escapeHtml(stats.previewMeta) +
@@ -390,7 +366,7 @@
                 '<div class="dsa-glib-preview ' +
                 visualVariant(g.accentHue, idx + 1) +
                 '">' +
-                graphSvgMarkup(visualIdx) +
+                graphPreviewMarkup(visualIdx) +
                 '<div class="dsa-glib-preview-badges">' +
                 pill +
                 '<span class="dsa-glib-badge dsa-glib-badge--visibility">' +

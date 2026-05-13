@@ -1435,33 +1435,93 @@ html.dsa-udash-html,
         radial-gradient(420px 220px at 14% 76%, rgba(255, 255, 255, 0.12), transparent 58%),
         linear-gradient(135deg, #7c2d12 0%, #dc2626 45%, #f59e0b 100%);
 }
-.dsa-glib-card__graph {
+.dsa-glib-card__preview {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
+    pointer-events: none;
+    overflow: hidden;
 }
-.dsa-glib-card__graph line,
-.dsa-glib-card__graph path {
-    stroke: rgba(255, 255, 255, 0.5);
-    stroke-width: 1.4;
-    fill: none;
-    stroke-linecap: round;
+.dsa-glib-card__pv-root {
+    position: absolute;
+    left: 14%;
+    top: 50%;
+    width: 13%;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.28);
 }
-.dsa-glib-card__graph .glib-pill {
-    fill: rgba(255, 255, 255, 0.95);
+.dsa-glib-card__pv-spine {
+    position: absolute;
+    left: 22%;
+    top: 18%;
+    bottom: 18%;
+    width: 38%;
+    border-radius: 10px;
+    border: 1.5px solid rgba(255, 255, 255, 0.38);
+    background: repeating-linear-gradient(
+        180deg,
+        transparent,
+        transparent 11px,
+        rgba(255, 255, 255, 0.1) 11px,
+        rgba(255, 255, 255, 0.1) 14px
+    );
+    opacity: 0.85;
 }
-.dsa-glib-card__graph .glib-root-ring {
-    fill: #fff;
+.dsa-glib-card__pv-dot {
+    position: absolute;
+    right: 10%;
+    width: 4.5%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.88);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
-.dsa-glib-card__graph .glib-root-core--violet {
-    fill: #4f46e5;
+.dsa-glib-card__preview--k1 .dsa-glib-card__pv-dot--a {
+    top: 22%;
 }
-.dsa-glib-card__graph .glib-root-core--teal {
-    fill: #0d9488;
+.dsa-glib-card__preview--k1 .dsa-glib-card__pv-dot--b {
+    top: 46%;
 }
-.dsa-glib-card__graph .glib-root-core--warm {
-    fill: #b91c1c;
+.dsa-glib-card__preview--k1 .dsa-glib-card__pv-dot--c {
+    top: 70%;
+}
+.dsa-glib-card__preview--k2 .dsa-glib-card__pv-spine {
+    width: 34%;
+    opacity: 0.95;
+}
+.dsa-glib-card__preview--k2 .dsa-glib-card__pv-dot--a {
+    top: 28%;
+    background: rgba(255, 255, 255, 0.95);
+}
+.dsa-glib-card__preview--k2 .dsa-glib-card__pv-dot--b {
+    top: 50%;
+    background: rgba(255, 255, 255, 0.85);
+}
+.dsa-glib-card__preview--k2 .dsa-glib-card__pv-dot--c {
+    top: 68%;
+    background: rgba(255, 255, 255, 0.78);
+}
+.dsa-glib-card__preview--k3 .dsa-glib-card__pv-root {
+    left: 17%;
+}
+.dsa-glib-card__preview--k3 .dsa-glib-card__pv-spine {
+    left: 26%;
+    width: 36%;
+    border-style: dashed;
+    opacity: 0.75;
+}
+.dsa-glib-card__preview--k3 .dsa-glib-card__pv-dot--a {
+    top: 26%;
+}
+.dsa-glib-card__preview--k3 .dsa-glib-card__pv-dot--b {
+    top: 52%;
+}
+.dsa-glib-card__preview--k3 .dsa-glib-card__pv-dot--c {
+    top: 72%;
 }
 .dsa-glib-preview-badges {
     position: absolute;

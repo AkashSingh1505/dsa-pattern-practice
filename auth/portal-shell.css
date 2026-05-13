@@ -207,7 +207,7 @@
             text-decoration:none;
             font-weight:600;
         }
-        .cta, .btn {
+        .cta, .dsa-portal-page .btn {
             width: 100%;
             height: 50px;
             border: 0;
@@ -219,21 +219,21 @@
             cursor: pointer;
             font-family: inherit;
         }
-        .cta{
+        .dsa-portal-page .cta{
             display:flex;
             align-items:center;
             justify-content:center;
             gap:8px;
             box-shadow:0 8px 22px rgba(15,23,32,.25), inset 0 1px 0 rgba(255,255,255,.12);
         }
-        .btn.ghost {
+        .dsa-portal-page .btn.ghost {
             background: #fff;
             color: var(--ink-2);
             border: 1px solid var(--line);
             height: 42px;
         }
-        .cta:disabled,
-        .btn:disabled,
+        .dsa-portal-page .cta:disabled,
+        .dsa-portal-page .btn:disabled,
         button.cta:disabled,
         button.btn:disabled {
             opacity: 0.48;

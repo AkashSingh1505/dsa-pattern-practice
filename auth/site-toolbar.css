@@ -36,11 +36,15 @@ nav.dsa-site-nav .nav-inner {
   align-items: center;
   justify-content: space-between;
   height: 68px;
+  min-width: 0;
+  gap: 10px;
 }
 nav.dsa-site-nav .brand {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
+  flex-shrink: 1;
 }
 nav.dsa-site-nav a.brand {
   text-decoration: none;
@@ -70,6 +74,9 @@ nav.dsa-site-nav .brand-text b {
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--dsa-toolbar-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 nav.dsa-site-nav .brand-text span {
   font-size: 11px;
@@ -98,6 +105,7 @@ nav.dsa-site-nav .nav-cta {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
 }
 nav.dsa-site-nav .btn {
   display: inline-flex;
@@ -112,6 +120,12 @@ nav.dsa-site-nav .btn {
   white-space: nowrap;
   font-family: inherit;
   cursor: pointer;
+  width: auto;
+  max-width: none;
+  height: auto;
+  min-height: 0;
+  flex: 0 0 auto;
+  box-sizing: border-box;
 }
 nav.dsa-site-nav a.btn {
   text-decoration: none;
@@ -170,4 +184,6 @@ body.has-dsa-site-nav-offset {
 }
 body.has-dsa-site-nav-offset .dsa-portal-page {
   min-height: calc(100vh - 68px);
+  /* portal-shell uses 28px top padding; body already clears the 68px bar */
+  padding-top: 10px;
 }

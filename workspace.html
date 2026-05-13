@@ -149,7 +149,7 @@
 <script src="./auth/dsa-user-auth.js?v=3"></script>
 <script src="./dsa-sketch-native.js?v=3"></script>
 <script src="./script.js?v=34"></script>
-<script src="./workspace-studio.js?v=1"></script>
+<script src="./workspace-studio.js?v=2"></script>
 <script>
 (function(){
 window.dsaHasCustomizeGraphAccess=function(){return true;};
@@ -175,6 +175,7 @@ function setRepr(repr){
   if(mode==="json"){mode="customize";}
   document.body.className="mode-"+mode+" "+(orb?"ws-repr-orbital":"ws-repr-linear");
   if(orb&&window.ORB&&typeof ORB.setMode==="function"){ORB.setMode(mode);}
+  if(orb&&window.ORB&&typeof ORB.syncFromMindMapHierarchy==="function"){ORB.syncFromMindMapHierarchy();}
   try{window.dispatchEvent(new Event("resize"));}catch(e){}
 }
 
@@ -209,7 +210,7 @@ function bootGraph(){
   if(typeof dsaMergeGraphMount==="function")dsaMergeGraphMount(WS_MOUNT);
   if(typeof loadDsaPatternsPage!=="function"){wsMsg("script.js missing","err");return;}
   loadDsaPatternsPage({graphPreview:true,mount:WS_MOUNT});
-  setTimeout(function(){syncPvFromAdmin();wsRenderTree();},120);
+  setTimeout(function(){syncPvFromAdmin();wsRenderTree();if(window.ORB&&typeof ORB.syncFromMindMapHierarchy==="function")ORB.syncFromMindMapHierarchy();},120);
 }
 
 function wsGetH(){
@@ -290,7 +291,7 @@ $("import-file").addEventListener("change",function(){
 $("ws-hier-import-file").addEventListener("change",function(){
   var f=this.files&&this.files[0];if(!f)return;
   var r=new FileReader();r.onload=function(){
-    try{if(typeof dsaImportMindMapHierarchyFromText==="function")dsaImportMindMapHierarchyFromText(String(r.result||""));wsMsg("Imported.","ok");setTimeout(function(){syncPvFromAdmin();wsRenderTree();},80);}
+    try{if(typeof dsaImportMindMapHierarchyFromText==="function")dsaImportMindMapHierarchyFromText(String(r.result||""));wsMsg("Imported.","ok");setTimeout(function(){syncPvFromAdmin();wsRenderTree();if(window.ORB&&typeof ORB.syncFromMindMapHierarchy==="function")ORB.syncFromMindMapHierarchy();},80);}
     catch(err){wsMsg(err.message||"Import failed","err");}
   };r.readAsText(f);this.value="";
 });
@@ -302,7 +303,7 @@ $("adm-ws-json-apply").addEventListener("click",function(){
   if(!r.ok){wsMsg((r.error&&r.error.message)||"Apply failed","err");return;}
   wsMsg("Graph updated.","ok");
   document.querySelectorAll("#tabs .pv-tab").forEach(function(x){x.classList.toggle("active",x.getAttribute("data-mode")==="map");});
-  document.body.className="mode-map ws-repr-linear";setRepr("linear");clickAdminMode("full");setTimeout(function(){syncPvFromAdmin();wsRenderTree();},80);
+  document.body.className="mode-map ws-repr-linear";setRepr("linear");clickAdminMode("full");setTimeout(function(){syncPvFromAdmin();wsRenderTree();if(window.ORB&&typeof ORB.syncFromMindMapHierarchy==="function")ORB.syncFromMindMapHierarchy();},80);
 });
 $("adm-ws-json-format").addEventListener("click",function(){
   var ta=$("adm-ws-json-editor");if(!ta)return;
@@ -310,7 +311,7 @@ $("adm-ws-json-format").addEventListener("click",function(){
 });
 $("adm-ws-empty-open-public")&&$("adm-ws-empty-open-public").addEventListener("click",function(){
   if(typeof dsaLoadHierarchyFromSources!=="function")return;
-  dsaLoadHierarchyFromSources().then(function(){bootGraph();refreshJson();});
+  dsaLoadHierarchyFromSources().then(function(){bootGraph();refreshJson();if(window.ORB&&typeof ORB.syncFromMindMapHierarchy==="function")ORB.syncFromMindMapHierarchy();});
 });
 
 if(typeof ORB!=="undefined")ORB.init();

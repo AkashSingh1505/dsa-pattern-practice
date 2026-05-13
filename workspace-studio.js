@@ -236,6 +236,134 @@
         });
     }
 
+    /** Same tree resolution as script.js getDsTree (inline for orbital sync). */
+    function getDsTreeForOrb(ds) {
+        if (!ds || typeof ds !== "object") {
+            return [];
+        }
+        if (Array.isArray(ds.tree) && ds.tree.length > 0) {
+            return ds.tree;
+        }
+        return (ds.patterns || []).map(function (p) {
+            return {
+                name: p.name,
+                problems: p.problems || [],
+                children: p.children || [],
+            };
+        });
+    }
+
+    /**
+     * Rebuild orbital graph from live mind-map JSON (same source as Linear / Apply).
+     * @returns {boolean} true if rebuild ran
+     */
+    function syncFromMindMapHierarchy() {
+        if (typeof dsaGetMindMapHierarchyJsonString !== "function") {
+            return false;
+        }
+        var arr;
+        try {
+            arr = JSON.parse(dsaGetMindMapHierarchyJsonString());
+        } catch (e1) {
+            return false;
+        }
+        if (!Array.isArray(arr)) {
+            return false;
+        }
+
+        var nodes = {};
+        var edges = [];
+        var colors = ["accent", "mint", "peach", "amber", "pink", "red"];
+        var uid = 0;
+        function nextId() {
+            uid += 1;
+            return "h_" + uid;
+        }
+
+        var metaLabel =
+            arr.length === 1 && arr[0] && typeof arr[0].name === "string" && String(arr[0].name).trim()
+                ? String(arr[0].name).trim().slice(0, 28)
+                : "Graph";
+        nodes.core = {
+            id: "core",
+            name: metaLabel,
+            r: 44,
+            color: "accent",
+            isCore: true,
+            mastery: 0,
+            diff: "Mixed",
+            category: "pattern",
+        };
+
+        if (!arr.length) {
+            S.nodes = nodes;
+            S.edges = [];
+            S.focus = "core";
+            S.selected = "core";
+            S.collapsed = new Set();
+            S.uid = Math.max(S.uid || 0, uid) + 100;
+            layoutRadial();
+            autoCollapseDeep(2);
+            render();
+            applyView();
+            return true;
+        }
+
+        arr.forEach(function (ds, i) {
+            if (!ds || typeof ds !== "object") {
+                return;
+            }
+            var dsKey = nextId();
+            var dsName = String(ds.name != null ? ds.name : "Root " + (i + 1)).slice(0, 22);
+            var tree = getDsTreeForOrb(ds);
+            var col = colors[i % colors.length];
+            nodes[dsKey] = {
+                id: dsKey,
+                name: dsName,
+                r: 32,
+                color: col,
+                count: tree.length,
+                mastery: 0,
+                diff: "Medium",
+                category: "ds",
+            };
+            edges.push(["core", dsKey, 1]);
+
+            var maxTopics = 14;
+            tree.slice(0, maxTopics).forEach(function (ch, j) {
+                var tKey = nextId();
+                var chChildren = Array.isArray(ch.children) ? ch.children : [];
+                var probs = Array.isArray(ch.problems) ? ch.problems : [];
+                var cnt = chChildren.length || probs.length;
+                var isLeafProblems = probs.length > 0 && chChildren.length === 0;
+                nodes[tKey] = {
+                    id: tKey,
+                    name: String(ch.name != null ? ch.name : "Topic").slice(0, 18),
+                    r: tree.length > 10 ? 17 : 20,
+                    color: col,
+                    count: cnt,
+                    mastery: 0,
+                    diff: "Easy",
+                    category: isLeafProblems ? "problem" : "pattern",
+                };
+                edges.push([dsKey, tKey, j < 5 ? 1 : 0]);
+            });
+        });
+
+        S.nodes = nodes;
+        S.edges = edges;
+        S.focus = "core";
+        S.selected = "core";
+        S.collapsed = new Set();
+        S.uid = Math.max(S.uid || 0, uid) + 100;
+
+        layoutRadial();
+        autoCollapseDeep(2);
+        render();
+        applyView();
+        return true;
+    }
+
     function curve(a, b) {
         var dx = b.x - a.x,
             dy = b.y - a.y,
@@ -1242,6 +1370,7 @@
         importFromText: importFromFile,
         setMode: setMode,
         relayout: relayout,
+        syncFromMindMapHierarchy: syncFromMindMapHierarchy,
         getState: function () {
             return S;
         },

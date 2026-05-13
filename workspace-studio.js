@@ -51,6 +51,7 @@
         pan: { x: 0, y: 0 },
         collapsed: new Set(),
         focus: "core",
+        prevSelected: null,
     };
     Object.keys(S.nodes).forEach(function (k) {
         S.nodes[k].category = NODE_CATS[k] || "pattern";
@@ -64,6 +65,131 @@
         pink: "#d65082",
         red: "#d04040",
     };
+
+    function pickMindGc(obj) {
+        if (!obj || typeof obj !== "object") {
+            return "";
+        }
+        var a = obj.graphCategoryId != null ? String(obj.graphCategoryId).trim() : "";
+        var b = obj.catalogCategoryId != null ? String(obj.catalogCategoryId).trim() : "";
+        return a || b;
+    }
+
+    function hexForMindCategory(gcId) {
+        var id = String(gcId || "").trim();
+        if (!id) {
+            return "";
+        }
+        var cats =
+            typeof window !== "undefined" && Array.isArray(window.__dsaGraphBodyCategories)
+                ? window.__dsaGraphBodyCategories
+                : [];
+        for (var i = 0; i < cats.length; i++) {
+            var c = cats[i];
+            if (c && String(c.id) === id && c.color) {
+                return String(c.color).trim();
+            }
+        }
+        return "";
+    }
+
+    function refreshOrbitalLegendBot() {
+        var lb = document.querySelector(".legend-bot");
+        if (!lb) {
+            return;
+        }
+        var hint = lb.querySelector("#hint-text");
+        var cats =
+            typeof window !== "undefined" && Array.isArray(window.__dsaGraphBodyCategories)
+                ? window.__dsaGraphBodyCategories
+                : [];
+        lb.querySelectorAll(".legend-tone").forEach(function (el) {
+            el.remove();
+        });
+        if (cats.length) {
+            cats.forEach(function (c) {
+                if (!c || (!c.name && !c.id)) {
+                    return;
+                }
+                var sp = document.createElement("span");
+                sp.className = "legend-tone";
+                var col = String(c.color || "#6b7280").trim();
+                sp.style.borderLeft = "3px solid " + col;
+                sp.style.paddingLeft = "6px";
+                sp.textContent = String(c.name || c.id || "");
+                if (hint) {
+                    lb.insertBefore(sp, hint);
+                } else {
+                    lb.appendChild(sp);
+                }
+            });
+        } else {
+            ["structure", "pattern", "problems"].forEach(function (lab, idx) {
+                var sp = document.createElement("span");
+                sp.className = "legend-tone";
+                var cols = ["var(--c-accent)", "var(--c-amber)", "var(--c-pink)"];
+                sp.style.borderLeft = "3px solid " + cols[idx];
+                sp.style.paddingLeft = "6px";
+                sp.textContent = lab;
+                if (hint) {
+                    lb.insertBefore(sp, hint);
+                } else {
+                    lb.appendChild(sp);
+                }
+            });
+        }
+    }
+    function rgbaFromHex(hex, a) {
+        var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(String(hex || ""));
+        if (!m) {
+            return "rgba(58,91,217," + a + ")";
+        }
+        return (
+            "rgba(" +
+            parseInt(m[1], 16) +
+            "," +
+            parseInt(m[2], 16) +
+            "," +
+            parseInt(m[3], 16) +
+            "," +
+            a +
+            ")"
+        );
+    }
+    /** Darken a #RRGGBB badge color for node ring stroke (factor 0–1, lower = darker). */
+    function darkenHex(hex, factor) {
+        factor = factor == null ? 0.58 : factor;
+        var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(String(hex || ""));
+        if (!m) {
+            return "#243a9a";
+        }
+        function ch(x) {
+            x = Math.round(parseInt(x, 16) * factor);
+            return Math.max(0, Math.min(255, x));
+        }
+        function h2(n) {
+            var h = n.toString(16);
+            return h.length === 1 ? "0" + h : h;
+        }
+        return "#" + h2(ch(m[1])) + h2(ch(m[2])) + h2(ch(m[3]));
+    }
+    /** Lighten #RRGGBB toward white (t 0–1, higher = brighter). */
+    function brightenHex(hex, t) {
+        t = t == null ? 0.22 : t;
+        var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(String(hex || ""));
+        if (!m) {
+            return "#5a7aff";
+        }
+        function lift(ch) {
+            var x = parseInt(ch, 16);
+            return Math.round(Math.min(255, x + (255 - x) * t));
+        }
+        function h2(n) {
+            var h = n.toString(16);
+            return h.length === 1 ? "0" + h : h;
+        }
+        return "#" + h2(lift(m[1])) + h2(lift(m[2])) + h2(lift(m[3]));
+    }
     var DIF = ["Easy", "Medium", "Hard", "Mixed"];
     var NS = "http://www.w3.org/2000/svg";
     var svg,
@@ -97,6 +223,13 @@
     }
     function clamp(v, lo, hi) {
         return Math.max(lo, Math.min(hi, v));
+    }
+    function advanceSelection(newSel) {
+        if (S.selected === newSel) {
+            return;
+        }
+        S.prevSelected = S.selected;
+        S.selected = newSel;
     }
 
     function childIds(id) {
@@ -200,7 +333,9 @@
         var RINGS = [0, 150, 250, 335, 400, 455];
         var SIZES = [46, 30, 22, 17, 14, 12];
         function w(id) {
-            var k = childIds(id);
+            var k = childIds(id).filter(function (c) {
+                return visible(c);
+            });
             if (!k.length) {
                 return 1;
             }
@@ -224,7 +359,9 @@
                 n.y = VB.cy + Math.sin(mid) * r;
                 n.r = SIZES[Math.min(depth, SIZES.length - 1)];
             }
-            var k = childIds(id);
+            var k = childIds(id).filter(function (c) {
+                return visible(c);
+            });
             if (!k.length) {
                 return;
             }
@@ -311,25 +448,24 @@
         });
     }
 
-    /** After layout, radii match `_lr` from depth (no child-count sizing). */
+    /** After layout, grow each node radius so title + optional child count fit without clipping. */
     function recalcNodeRadii() {
         Object.keys(S.nodes).forEach(function (nid) {
             var nn = S.nodes[nid];
             if (!nn || nn._lr == null) {
                 return;
             }
-            nn.r = nn._lr;
+            nn.r = computeMinRadiusForNode(nn, nn._lr);
         });
     }
 
-    function autoCollapseDeep(maxDepth) {
-        maxDepth = maxDepth == null ? 2 : maxDepth;
+    function autoCollapseFirstLevelSubtrees() {
         S.collapsed = new Set();
         Object.keys(S.nodes).forEach(function (id) {
             if (id === S.focus || !inSubtree(id, S.focus)) {
                 return;
             }
-            if (relDepth(id, S.focus) >= maxDepth && childIds(id).length) {
+            if (relDepth(id, S.focus) === 1 && childIds(id).length) {
                 S.collapsed.add(id);
             }
         });
@@ -362,7 +498,11 @@
         }
         var arr;
         try {
-            arr = JSON.parse(dsaGetMindMapHierarchyJsonString());
+            arr = JSON.parse(
+                typeof dsaGetMindMapHierarchyMergedJsonString === "function"
+                    ? dsaGetMindMapHierarchyMergedJsonString()
+                    : dsaGetMindMapHierarchyJsonString(),
+            );
         } catch (e1) {
             return false;
         }
@@ -392,6 +532,7 @@
             mastery: 0,
             diff: "Mixed",
             category: "pattern",
+            ringHex: "",
         };
 
         if (!arr.length) {
@@ -399,12 +540,14 @@
             S.edges = [];
             S.focus = "core";
             S.selected = null;
+            S.prevSelected = null;
             S.collapsed = new Set();
             S.uid = Math.max(S.uid || 0, uid) + 100;
+            autoCollapseFirstLevelSubtrees();
             layoutRadial();
-            autoCollapseDeep(2);
             render();
             applyView();
+            refreshOrbitalLegendBot();
             return true;
         }
 
@@ -416,11 +559,13 @@
             var dsName = String(ds.name != null ? ds.name : "Root " + (i + 1)).slice(0, 22);
             var tree = getDsTreeForOrb(ds);
             var col = colors[i % colors.length];
+            var hexDs = hexForMindCategory(pickMindGc(ds));
             nodes[dsKey] = {
                 id: dsKey,
                 name: dsName,
                 r: 32,
                 color: col,
+                ringHex: hexDs || "",
                 count: tree.length,
                 mastery: 0,
                 diff: "Medium",
@@ -435,11 +580,13 @@
                 var probs = Array.isArray(ch.problems) ? ch.problems : [];
                 var cnt = chChildren.length || probs.length;
                 var isLeafProblems = probs.length > 0 && chChildren.length === 0;
+                var hexCh = hexForMindCategory(pickMindGc(ch));
                 nodes[tKey] = {
                     id: tKey,
                     name: String(ch.name != null ? ch.name : "Topic").slice(0, 18),
                     r: tree.length > 10 ? 17 : 20,
                     color: col,
+                    ringHex: hexCh || "",
                     count: cnt,
                     mastery: 0,
                     diff: "Easy",
@@ -453,13 +600,15 @@
         S.edges = edges;
         S.focus = "core";
         S.selected = null;
+        S.prevSelected = null;
         S.collapsed = new Set();
         S.uid = Math.max(S.uid || 0, uid) + 100;
 
+        autoCollapseFirstLevelSubtrees();
         layoutRadial();
-        autoCollapseDeep(2);
         render();
         applyView();
+        refreshOrbitalLegendBot();
         return true;
     }
 
@@ -481,40 +630,156 @@
         return "M" + x1 + "," + y1 + " Q" + mx + "," + my + " " + x2 + "," + y2;
     }
 
-    function truncateLabel(str, maxLen) {
-        str = String(str || "");
-        maxLen = Math.max(2, maxLen | 0);
-        if (str.length <= maxLen) {
-            return str;
+    /** Padding between ring and label content (~8dp in CSS px). */
+    var NODE_CONTENT_PAD = 8;
+
+    function wrapLines(str, maxWpx, fontPx) {
+        str = String(str || "").trim();
+        var maxChars = Math.max(4, Math.floor(maxWpx / (fontPx * 0.5)));
+        function hardChunk(word) {
+            var out = [],
+                w = word;
+            while (w.length > maxChars) {
+                out.push(w.slice(0, maxChars));
+                w = w.slice(maxChars);
+            }
+            if (w) {
+                out.push(w);
+            }
+            return out.length ? out : [""];
         }
-        return str.slice(0, maxLen - 1) + "\u2026";
+        if (!str) {
+            return [" "];
+        }
+        var words = str.split(/\s+/);
+        var lines = [];
+        var cur = "";
+        words.forEach(function (word) {
+            var parts = word.length > maxChars ? hardChunk(word) : [word];
+            parts.forEach(function (pw) {
+                var next = cur ? cur + " " + pw : pw;
+                if (next.length <= maxChars) {
+                    cur = next;
+                } else {
+                    if (cur) {
+                        lines.push(cur);
+                    }
+                    cur = pw;
+                }
+            });
+        });
+        if (cur) {
+            lines.push(cur);
+        }
+        return lines.length ? lines : [" "];
     }
 
-    /** Short “channel” label under the node — no icon shapes. */
-    function getCategoryLaneText(cat, r) {
-        var longForm = {
-            ds: "· struct lattice ·",
-            pattern: "· rule shell ·",
-            problem: "· case orbit ·",
-        };
-        var shortForm = { ds: "lattice", pattern: "shell", problem: "orbit" };
-        var useShort = r < 22;
-        var m = useShort ? shortForm : longForm;
-        return m[cat] || (useShort ? "shell" : longForm.pattern);
+    /** Layout plan for title (and optional sub row); `truncated` true if text had to ellipsize. */
+    function planLabelLines(n, r, reserveSubRow) {
+        var fontPx = r <= 18 ? 9.5 : r <= 22 ? 10.5 : 11.5;
+        var innerR = Math.max(4, r - NODE_CONTENT_PAD);
+        var maxW = 2 * innerR;
+        var lh = fontPx * 1.18;
+        var maxChars = Math.max(4, Math.floor(maxW / (fontPx * 0.5)));
+        var lines = wrapLines(n.name, maxW, fontPx);
+        var truncated = false;
+        lines = lines.map(function (ln) {
+            if (ln.length <= maxChars) {
+                return ln;
+            }
+            truncated = true;
+            return ln.slice(0, Math.max(1, maxChars - 1)) + "\u2026";
+        });
+        var innerD = 2 * innerR;
+        var subReserve = reserveSubRow ? 18 : 0;
+        var maxLinesByH = Math.max(1, Math.floor((innerD - fontPx - subReserve) / lh));
+        var maxLines = Math.min(r <= 18 ? 5 : r <= 22 ? 6 : 7, maxLinesByH);
+        if (lines.length > maxLines) {
+            truncated = true;
+            lines = lines.slice(0, maxLines);
+            var lastPlain = lines[maxLines - 1].replace(/\u2026$/, "");
+            lines[maxLines - 1] = lastPlain.slice(0, Math.max(1, maxChars - 1)) + "\u2026";
+        }
+        var startY = -((lines.length - 1) * lh) / 2;
+        return { lines: lines, fontPx: fontPx, lh: lh, truncated: truncated, startY: startY };
+    }
+
+    function computeMinRadiusForNode(n, baseR) {
+        var ch = childIds(n.id).length;
+        var reserve = ch > 0;
+        var cap = n.isCore ? 64 : Math.min(56, Math.max(30, baseR + 28));
+        var lo = Math.max(12, baseR);
+        var r;
+        for (r = lo; r <= cap; r++) {
+            if (!planLabelLines(n, r, reserve).truncated) {
+                return r;
+            }
+        }
+        return cap;
+    }
+
+    function appendNodeLabels(labelG, n, r) {
+        var ch = childIds(n.id).length;
+        var plan = planLabelLines(n, r, ch > 0);
+        var t = E("text", {
+            class: "node-title",
+            x: 0,
+            y: plan.startY,
+            "text-anchor": "middle",
+        });
+        if (r <= 18) {
+            t.setAttribute("font-size", "9.5px");
+        } else if (r <= 22) {
+            t.setAttribute("font-size", "10.5px");
+        }
+        plan.lines.forEach(function (ln, i) {
+            var ts = E("tspan", { x: 0, dy: i === 0 ? 0 : plan.lh });
+            ts.textContent = ln;
+            t.appendChild(ts);
+        });
+        labelG.appendChild(t);
+        if (ch > 0) {
+            var subFs = r <= 20 ? 8.5 : 9.5;
+            var gap = 5;
+            var subY = plan.startY + (plan.lines.length - 1) * plan.lh + plan.fontPx * 0.72 + gap + subFs * 0.35;
+            var st = E("text", {
+                class: "sub",
+                x: 0,
+                y: subY,
+                "text-anchor": "middle",
+            });
+            st.setAttribute("font-size", subFs + "px");
+            st.textContent = ch === 1 ? "1 child" : ch + " children";
+            labelG.appendChild(st);
+        }
     }
 
     function buildNode(n) {
+        var isSel = !!S.selected && n.id === S.selected;
+        var isPrev = S.prevSelected && n.id === S.prevSelected && n.id !== S.selected;
+        var brandHex = (n.ringHex && String(n.ringHex).trim()) || CM[n.color] || CM.accent;
+        var cls =
+            "pv-node " +
+            n.color +
+            (isSel ? " selected" : "") +
+            (!n.isCore ? " active" : "") +
+            (isPrev && !isSel ? " prev-selected" : "");
         var g = E("g", {
-            class: "pv-node " + n.color + (!!S.selected && n.id === S.selected ? " selected" : ""),
+            class: cls.replace(/\s+/g, " ").trim(),
             "data-id": n.id,
             transform: "translate(" + n.x + "," + n.y + ")",
         });
+        if (isPrev && !isSel) {
+            g.style.setProperty("--prev-ring-fill", rgbaFromHex(brandHex, 0.14));
+            g.style.setProperty("--prev-ring-stroke", brightenHex(brandHex, 0.26));
+        } else {
+            g.style.removeProperty("--prev-ring-fill");
+            g.style.removeProperty("--prev-ring-stroke");
+        }
         var r = n.r,
-            circ = 2 * Math.PI * r,
+            pR = n.r + 6,
+            circ = 2 * Math.PI * pR,
             pct = (Math.max(0, Math.min(100, n.mastery || 0)) / 100);
-        var cat = n.category || "pattern";
-        var ringStroke = n.isCore ? "rgba(0,0,0,.16)" : CAT_COLORS[cat] || CAT_COLORS.pattern;
-        var ringSw = n.isCore ? 1.15 : 1.5;
         var safeId = String(n.id).replace(/[^a-zA-Z0-9_-]/g, "_");
         var clipId = "nclip_" + safeId;
         var localDefs = E("defs");
@@ -523,84 +788,41 @@
             E("circle", {
                 cx: 0,
                 cy: 0,
-                r: Math.max(5, r - 4),
+                r: Math.max(4, r - NODE_CONTENT_PAD),
             }),
         );
         localDefs.appendChild(cp);
         g.appendChild(localDefs);
-        g.appendChild(
-            E("circle", {
-                class: "ring",
-                cx: 0,
-                cy: 0,
-                r: r,
-                stroke: ringStroke,
-                "stroke-width": ringSw,
-            }),
-        );
-        g.appendChild(E("circle", { class: "prog-track", cx: 0, cy: 0, r: r }));
+        g.appendChild(E("circle", { class: "prog-track", cx: 0, cy: 0, r: pR }));
         if (pct > 0) {
             g.appendChild(
                 E("circle", {
                     class: "prog-arc",
                     cx: 0,
                     cy: 0,
-                    r: r,
-                    stroke: CM[n.color] || CM.accent,
+                    r: pR,
+                    stroke: brandHex,
                     "stroke-dasharray": circ * pct + " " + circ,
                     transform: "rotate(-90)",
                 }),
             );
         }
+        g.appendChild(
+            E("circle", {
+                class: "ring",
+                cx: 0,
+                cy: 0,
+                r: r,
+            }),
+        );
         var labelG = E("g", { class: "pv-node-labels", "clip-path": svgFragUrl(clipId) });
-        var sub = n.isCore ? "core" : n.count != null ? n.count + " items" : "";
-        var showSub = sub && r >= 24;
-        var titleMax = Math.max(4, Math.floor(r / 4.2));
-        var subMax = Math.max(6, Math.floor(r / 3.2));
-        var t = E("text", { class: "node-title", x: 0, y: showSub ? -5 : 0 });
-        t.textContent = truncateLabel(n.name, titleMax);
-        if (r <= 18) {
-            t.setAttribute("style", "font-size:9.5px");
-        } else if (r <= 22) {
-            t.setAttribute("style", "font-size:10.5px");
-        }
-        labelG.appendChild(t);
-        if (showSub) {
-            var ss = E("text", { class: "sub", x: 0, y: 10 });
-            ss.textContent = truncateLabel(sub, subMax);
-            labelG.appendChild(ss);
-        }
-        if (!n.isCore && r >= 14) {
-            var laneY = showSub ? 22 : clamp(r * 0.62, 12, 18);
-            var lane = E("text", { class: "cat-lane", x: 0, y: laneY });
-            lane.textContent = truncateLabel(getCategoryLaneText(cat, r), Math.max(5, Math.floor(r / 3.8)));
-            lane.setAttribute("fill", CAT_COLORS[cat] || CAT_COLORS.pattern);
-            labelG.appendChild(lane);
-        }
-        if (S.collapsed.has(n.id)) {
-            var hc = hiddenCount(n.id);
-            if (hc > 0) {
-                var bx = n.r * 0.72,
-                    by = n.r * 0.72,
-                    bgr = Math.max(8, n.r * 0.32);
-                labelG.appendChild(E("circle", { cx: bx, cy: by, r: bgr, fill: CM[n.color] || CM.accent, stroke: "#fff", "stroke-width": 2 }));
-                var bt = E("text", { class: "hbadge", x: bx, y: by });
-                bt.textContent = "+" + hc;
-                labelG.appendChild(bt);
-            }
-        }
+        appendNodeLabels(labelG, n, r);
         g.appendChild(labelG);
         return g;
     }
 
     function semanticZoom() {
-        var z = S.zoom;
-        document.querySelectorAll("#svg .pv-node text.sub").forEach(function (t) {
-            t.style.opacity = z >= 0.75 ? 1 : 0;
-        });
-        document.querySelectorAll("#svg .pv-node text.cat-lane").forEach(function (t) {
-            t.style.opacity = z >= 0.78 ? 1 : 0;
-        });
+        /* Labels stay visible at all zoom levels. */
     }
 
     function applyView() {
@@ -634,7 +856,7 @@
                     cx: n.x,
                     cy: n.y,
                     r: Math.max(4, n.r * 0.45),
-                    fill: CM[n.color] || "#888",
+                    fill: (n.ringHex && String(n.ringHex).trim()) || CM[n.color] || "#888",
                     opacity: 0.45,
                 }),
             );
@@ -732,7 +954,7 @@
             var it = document.createElement("div");
             it.className = "item" + (S.selected === id ? " active" : "");
             it.dataset.id = id;
-            var tone = CAT_COLORS[n.category || "pattern"] || CAT_COLORS.pattern;
+            var tone = (n.ringHex && String(n.ringHex).trim()) || CAT_COLORS[n.category || "pattern"] || CAT_COLORS.pattern;
             it.innerHTML =
                 '<span class="orb-row-tone" style="border-left:3px solid ' +
                 tone +
@@ -749,17 +971,52 @@
     }
 
     function select(id) {
-        S.selected = id;
+        var n = S.nodes[id];
+        var didExpand = false;
+        if (n && childIds(id).length && S.collapsed.has(id)) {
+            S.collapsed.delete(id);
+            layoutRadial();
+            didExpand = true;
+        }
+        advanceSelection(id);
+        if (didExpand) {
+            render();
+        } else {
+            apply();
+            sidebar();
+            inspector();
+        }
+    }
+
+    function clearSelection() {
+        advanceSelection(null);
         apply();
         sidebar();
         inspector();
     }
 
-    function clearSelection() {
-        S.selected = null;
-        apply();
-        sidebar();
-        inspector();
+    function patchRingPaint() {
+        document.querySelectorAll("#svg .pv-node").forEach(function (g) {
+            var nid = g.dataset.id;
+            var node = S.nodes[nid];
+            var ring = g.querySelector(".ring");
+            if (!ring || !node) {
+                return;
+            }
+            var isPrev = S.prevSelected && nid === S.prevSelected && nid !== S.selected;
+            g.classList.toggle("prev-selected", !!isPrev && !g.classList.contains("selected"));
+            if (isPrev && !g.classList.contains("selected")) {
+                var bh = (node.ringHex && String(node.ringHex).trim()) || CM[node.color] || CM.accent;
+                g.style.setProperty("--prev-ring-fill", rgbaFromHex(bh, 0.14));
+                g.style.setProperty("--prev-ring-stroke", brightenHex(bh, 0.26));
+            } else {
+                g.style.removeProperty("--prev-ring-fill");
+                g.style.removeProperty("--prev-ring-stroke");
+            }
+            ring.removeAttribute("fill");
+            ring.removeAttribute("stroke");
+            ring.removeAttribute("stroke-width");
+        });
     }
 
     function apply() {
@@ -774,6 +1031,7 @@
             document.querySelectorAll("#svg .pv-edge").forEach(function (e) {
                 e.classList.remove("dim", "sel-ring");
             });
+            patchRingPaint();
             return;
         }
         var bright = {};
@@ -807,6 +1065,7 @@
                 e.classList.add("dim");
             }
         });
+        patchRingPaint();
     }
 
     function esc(s) {
@@ -966,9 +1225,12 @@
                 n.name = e.target.value || "Untitled";
                 var g = ng.querySelector('.pv-node[data-id="' + n.id + '"]');
                 if (g) {
-                    var t = g.querySelector("text.node-title");
-                    if (t) {
-                        t.textContent = n.name;
+                    var lg = g.querySelector(".pv-node-labels");
+                    if (lg) {
+                        while (lg.firstChild) {
+                            lg.removeChild(lg.firstChild);
+                        }
+                        appendNodeLabels(lg, n, n.r);
                     }
                 }
                 sidebar();
@@ -1054,7 +1316,7 @@
             category: cat,
         };
         S.edges.push([pid, id, 1]);
-        S.selected = id;
+        advanceSelection(id);
         layoutRadial();
         render();
     }
@@ -1071,6 +1333,8 @@
             return S.nodes[ft[0]] && S.nodes[ft[1]];
         });
         S.selected = null;
+        S.prevSelected = null;
+        autoCollapseFirstLevelSubtrees();
         layoutRadial();
         render();
     }
@@ -1093,12 +1357,12 @@
             return;
         }
         S.focus = id;
-        S.selected = id;
+        advanceSelection(id);
         S.pan = { x: 0, y: 0 };
         S.zoom = 1;
         applyView();
+        autoCollapseFirstLevelSubtrees();
         layoutRadial();
-        autoCollapseDeep(2);
         render();
     }
 
@@ -1151,11 +1415,13 @@
         } else {
             S.collapsed.add(id);
         }
+        layoutRadial();
         render();
     }
 
     function expandAll() {
         S.collapsed = new Set();
+        layoutRadial();
         render();
     }
 
@@ -1165,10 +1431,11 @@
             if (id === S.focus) {
                 return;
             }
-            if (inSubtree(id, S.focus) && relDepth(id, S.focus) >= 1 && childIds(id).length) {
+            if (inSubtree(id, S.focus) && relDepth(id, S.focus) === 1 && childIds(id).length) {
                 S.collapsed.add(id);
             }
         });
+        layoutRadial();
         render();
     }
 
@@ -1300,6 +1567,8 @@
             S.focus = data.focus;
         }
         S.selected = null;
+        S.prevSelected = null;
+        autoCollapseFirstLevelSubtrees();
         layoutRadial();
         render();
     }
@@ -1501,8 +1770,8 @@
     }
 
     function relayout() {
+        autoCollapseFirstLevelSubtrees();
         layoutRadial();
-        autoCollapseDeep(2);
         render();
     }
 
@@ -1533,9 +1802,10 @@
         }
         window.__wsOrbStudioInited = true;
         bindUi();
+        autoCollapseFirstLevelSubtrees();
         layoutRadial();
-        autoCollapseDeep(2);
         render();
+        refreshOrbitalLegendBot();
     }
 
     window.ORB = {
@@ -1545,6 +1815,7 @@
         setMode: setMode,
         relayout: relayout,
         syncFromMindMapHierarchy: syncFromMindMapHierarchy,
+        refreshLegend: refreshOrbitalLegendBot,
         getState: function () {
             return S;
         },

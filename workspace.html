@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="./styles.css?v=14" />
 <link rel="stylesheet" href="./dsa-index-shell.css?v=20" />
 <link rel="stylesheet" href="./auth/admin-workspace.css?v=7" />
-<link rel="stylesheet" href="./workspace-chrome.css?v=1" />
+<link rel="stylesheet" href="./workspace-chrome.css?v=13" />
 </head>
 <body class="mode-customize ws-repr-orbital">
 <div id="admin-dsa-map-toolbar-host" class="ws-offscreen-toolbar-host" data-dsa-index-toolbar-slots="1" aria-hidden="true">
@@ -152,7 +152,7 @@
 <script src="./auth/dsa-user-auth.js?v=3"></script>
 <script src="./dsa-sketch-native.js?v=3"></script>
 <script src="./script.js?v=34"></script>
-<script src="./workspace-studio.js?v=9"></script>
+<script src="./workspace-studio.js?v=21"></script>
 <script>
 (function(){
 window.dsaHasCustomizeGraphAccess=function(){return true;};
@@ -176,6 +176,13 @@ function setRepr(repr){
   var mt=document.querySelector("#tabs .pv-tab.active");
   var mode=(mt&&mt.getAttribute("data-mode"))||"customize";
   if(mode==="json"){mode="customize";}
+  if(orb&&mode==="topic"){
+    mode="map";
+    document.querySelectorAll("#tabs .pv-tab").forEach(function(x){
+      if(x.getAttribute("data-mode")==="json")return;
+      x.classList.toggle("active",x.getAttribute("data-mode")==="map");
+    });
+  }
   document.body.className="mode-"+mode+" "+(orb?"ws-repr-orbital":"ws-repr-linear");
   if(orb&&window.ORB&&typeof ORB.setMode==="function"){ORB.setMode(mode);}
   if(orb&&window.ORB&&typeof ORB.syncFromMindMapHierarchy==="function"){ORB.syncFromMindMapHierarchy();}

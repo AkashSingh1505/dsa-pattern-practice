@@ -469,6 +469,7 @@ function dsaResolveParentNode(clone, parentKey) {
 
 function dsaTryApplyOneUserNode(clone, e) {
     const { parentKey, type, name, url, id } = e;
+    const gc = e && e.graphCategoryId != null ? String(e.graphCategoryId).trim() : "";
     if (!parentKey || !name || !type) {
         return true;
     }
@@ -482,7 +483,11 @@ function dsaTryApplyOneUserNode(clone, e) {
             if (clone.some((d) => d && dsaDsIdEq(d.id, id))) {
                 return true;
             }
-            clone.push({ id, name: name.trim(), tree: [] });
+            const rootObj = { id, name: name.trim(), tree: [] };
+            if (gc) {
+                rootObj.graphCategoryId = gc;
+            }
+            clone.push(rootObj);
             return true;
         }
         return true;
@@ -530,6 +535,9 @@ function dsaTryApplyOneUserNode(clone, e) {
             return true;
         }
         const newNode = { name: nm, children: [] };
+        if (gc) {
+            newNode.graphCategoryId = gc;
+        }
         if (!parentNode) {
             if (topArray.some((n) => n && String(n.name || "").trim() === nm)) {
                 return true;
@@ -760,13 +768,18 @@ function dsaPersistUserPayload() {
 
 function dsaAddUserNode(entry) {
     const id = `u-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-    dsaUserPayload.nodes.push({
+    const row = {
         id,
         parentKey: entry.parentKey,
         type: entry.type,
         name: entry.name.trim(),
         url: (entry.url || "").trim(),
-    });
+    };
+    const gbc = entry.graphCategoryId != null ? String(entry.graphCategoryId).trim() : "";
+    if (gbc) {
+        row.graphCategoryId = gbc;
+    }
+    dsaUserPayload.nodes.push(row);
     dsaPersistUserPayload();
     dsaScheduleDsaCmsSync();
 }
@@ -976,6 +989,10 @@ function dsaBuildProblemFromQuestionEntry(e, name, href) {
         o.done = true;
     }
     o.difficulty = dsaNormalizeProblemDifficulty(e && e.difficulty);
+    const gbc = e && e.graphCategoryId != null ? String(e.graphCategoryId).trim() : "";
+    if (gbc) {
+        o.graphCategoryId = gbc;
+    }
     return o;
 }
 
@@ -1091,7 +1108,7 @@ function dsaMergedProblemRowToQuestionEntry(row, parentKey, problemName) {
     const solutions = dsaSolutionsFromMergedRow(row);
     const firstCode =
         solutions.find((s) => String(s.code || "").trim()) || solutions[0] || null;
-    return {
+    const o = {
         id: row.userNodeId || undefined,
         parentKey,
         type: "problem",
@@ -1112,6 +1129,11 @@ function dsaMergedProblemRowToQuestionEntry(row, parentKey, problemName) {
         done: !!(row && row.done),
         difficulty: dsaNormalizeProblemDifficulty(row && row.difficulty),
     };
+    const gbc = row && row.graphCategoryId != null ? String(row.graphCategoryId).trim() : "";
+    if (gbc) {
+        o.graphCategoryId = gbc;
+    }
+    return o;
 }
 
 /** Prefer user-payload row; else merged tree (same data shown on the card). */
@@ -1202,6 +1224,15 @@ function dsaUpsertUserQuestionNode(payload) {
         done: payload.done === true,
         difficulty: dsaNormalizeProblemDifficulty(payload.difficulty),
     };
+    const prevRow = idx >= 0 ? dsaUserPayload.nodes[idx] : null;
+    if (Object.prototype.hasOwnProperty.call(payload, "graphCategoryId")) {
+        const gb = payload.graphCategoryId != null ? String(payload.graphCategoryId).trim() : "";
+        if (gb) {
+            row.graphCategoryId = gb;
+        }
+    } else if (prevRow && prevRow.graphCategoryId) {
+        row.graphCategoryId = prevRow.graphCategoryId;
+    }
     if (idx >= 0) {
         dsaUserPayload.nodes[idx] = row;
     } else {
@@ -1337,8 +1368,17 @@ function dsaGetMindMapHierarchyJsonString() {
 }
 window.dsaGetMindMapHierarchyJsonString = dsaGetMindMapHierarchyJsonString;
 
+/** Merge CMS hierarchy + user overlay (same as render); use before saving personal cloud graphs so categories persist. */
+function dsaGetMindMapHierarchyMergedJsonString() {
+    return JSON.stringify(getDsaHierarchyMerged());
+}
+window.dsaGetMindMapHierarchyMergedJsonString = dsaGetMindMapHierarchyMergedJsonString;
+
 /** Reload published CMS map (`/api/data?k=dsa`) and redraw (e.g. leave a personal cloud graph). */
 async function dsaReloadSiteDefaultMapInView() {
+    if (typeof window !== "undefined") {
+        window.__dsaGraphBodyCategories = [];
+    }
     await dsaLoadHierarchyFromSources();
     const st = typeof dsaCaptureGraphViewState === "function" ? dsaCaptureGraphViewState() : null;
     loadDsaPatternsPage({ restore: st });
@@ -1371,6 +1411,9 @@ function dsaWireMapToolbarExportImport(expId, impTrigId, impFileId) {
         const reader = new FileReader();
         reader.onload = () => {
             try {
+                if (typeof window !== "undefined") {
+                    window.__dsaGraphBodyCategories = [];
+                }
                 dsaImportMindMapHierarchyFromText(String(reader.result || ""));
             } catch (e) {
                 window.alert((e && e.message) || "Could not import JSON.");
@@ -5407,7 +5450,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     catFs.className = "dsa-fieldset dsa-u-cat";
     const catLeg = document.createElement("legend");
     catLeg.className = "dsa-field-legend";
-    catLeg.textContent = "Category";
+    catLeg.textContent = "Item type";
     const rowCat = document.createElement("div");
     rowCat.className = "dsa-u-cat-row";
     const radQ = document.createElement("input");
@@ -5457,6 +5500,58 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         catFs.hidden = true;
         radQ.checked = true;
         radN.checked = false;
+    }
+
+    const graphBodyCats =
+        typeof window !== "undefined" && Array.isArray(window.__dsaGraphBodyCategories) ? window.__dsaGraphBodyCategories : [];
+    const graphBodyCatFs = document.createElement("fieldset");
+    graphBodyCatFs.className = "dsa-fieldset dsa-u-graph-body-cat";
+    const graphBodyCatLeg = document.createElement("legend");
+    graphBodyCatLeg.className = "dsa-field-legend";
+    graphBodyCatLeg.textContent = "Group (this graph)";
+    const graphBodyCatRow = document.createElement("div");
+    graphBodyCatRow.className = "dsa-q-field";
+    const graphBodyCatLab = document.createElement("label");
+    graphBodyCatLab.className = "dsa-field-label";
+    graphBodyCatLab.setAttribute("for", "dsa-graph-body-category");
+    graphBodyCatLab.textContent = "Category";
+    const graphBodyCatSelect = document.createElement("select");
+    graphBodyCatSelect.id = "dsa-graph-body-category";
+    graphBodyCatSelect.className = "dsa-field-control";
+    const optNoneGb = document.createElement("option");
+    optNoneGb.value = "";
+    optNoneGb.textContent = "— None —";
+    if (!graphBodyCats.length) {
+        graphBodyCatSelect.appendChild(optNoneGb);
+    }
+    graphBodyCats.forEach((c) => {
+        if (!c || !c.id) {
+            return;
+        }
+        const o = document.createElement("option");
+        o.value = String(c.id);
+        o.textContent = String(c.name || c.id);
+        graphBodyCatSelect.appendChild(o);
+    });
+    if (graphBodyCats.length) {
+        graphBodyCatSelect.value = String(graphBodyCats[0].id);
+    }
+    graphBodyCatRow.appendChild(graphBodyCatLab);
+    graphBodyCatRow.appendChild(graphBodyCatSelect);
+    graphBodyCatFs.appendChild(graphBodyCatLeg);
+    graphBodyCatFs.appendChild(graphBodyCatRow);
+    graphBodyCatFs.hidden = true;
+
+    function syncGraphBodyCategoryFieldset() {
+        if (!graphBodyCats.length || isMetaRoot) {
+            graphBodyCatFs.hidden = true;
+            return;
+        }
+        if (isRenameNode) {
+            graphBodyCatFs.hidden = true;
+            return;
+        }
+        graphBodyCatFs.hidden = false;
     }
 
     const nodeBlock = document.createElement("div");
@@ -6689,6 +6784,9 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         nodeIn.classList.remove("dsa-field-control--error");
         nameIn.classList.remove("dsa-field-control--error");
         difficultySelect.classList.remove("dsa-field-control--error");
+        if (graphBodyCatSelect) {
+            graphBodyCatSelect.classList.remove("dsa-field-control--error");
+        }
     }
 
     nameIn.addEventListener("input", () => {
@@ -6710,18 +6808,23 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     difficultySelect.addEventListener("change", () => {
         difficultySelect.classList.remove("dsa-field-control--error");
     });
+    graphBodyCatSelect.addEventListener("change", () => {
+        graphBodyCatSelect.classList.remove("dsa-field-control--error");
+    });
 
     function syncCategory() {
         if (isRenameNode) {
             nodeBlock.hidden = false;
             qBlock.hidden = true;
             headerTabsRow.hidden = true;
+            syncGraphBodyCategoryFieldset();
             return;
         }
         const nodeMode = radN.checked;
         nodeBlock.hidden = !nodeMode;
         qBlock.hidden = nodeMode;
         headerTabsRow.hidden = nodeMode;
+        syncGraphBodyCategoryFieldset();
     }
     radQ.addEventListener("change", syncCategory);
     radN.addEventListener("change", syncCategory);
@@ -6789,6 +6892,9 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         sheetCodeTa.disabled = ro;
         sheetCancel.disabled = ro;
         sheetSave.disabled = ro;
+        if (graphBodyCatSelect) {
+            graphBodyCatSelect.disabled = ro;
+        }
         if (btnAddSolutionEl) {
             btnAddSolutionEl.disabled = ro;
             btnAddSolutionEl.hidden = ro;
@@ -6961,7 +7067,26 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
                     return;
                 }
             }
-            dsaAddUserNode({ parentKey, type: "pattern", name, url: "" });
+            if (
+                graphBodyCats.length &&
+                graphBodyCatSelect &&
+                !graphBodyCatFs.hidden &&
+                !graphBodyCatSelect.value.trim()
+            ) {
+                graphBodyCatSelect.classList.add("dsa-field-control--error");
+                graphBodyCatSelect.focus();
+                return;
+            }
+            const nodeEntry = {
+                parentKey,
+                type: "pattern",
+                name,
+                url: "",
+            };
+            if (graphBodyCats.length && graphBodyCatSelect && !graphBodyCatFs.hidden) {
+                nodeEntry.graphCategoryId = graphBodyCatSelect.value.trim();
+            }
+            dsaAddUserNode(nodeEntry);
             if (fromFullscreen && typeof scratchApi.exitFullscreen === "function") {
                 scratchApi.exitFullscreen();
             }
@@ -6996,6 +7121,16 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             alert("This topic has subtopics. Remove or move them before adding problems here.");
             return;
         }
+        if (
+            graphBodyCats.length &&
+            graphBodyCatSelect &&
+            !graphBodyCatFs.hidden &&
+            !graphBodyCatSelect.value.trim()
+        ) {
+            graphBodyCatSelect.classList.add("dsa-field-control--error");
+            graphBodyCatSelect.focus();
+            return;
+        }
         if (typeof scratchApi.syncHasInkFromPixels === "function") {
             scratchApi.syncHasInkFromPixels();
         }
@@ -7027,7 +7162,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
                         dsaNormalizeSolutionCategory(s.approach)),
             );
         const firstCode = solPayload.find((s) => String(s.code || "").trim());
-        dsaUpsertUserQuestionNode({
+        const upsertPayload = {
             id: persistId || undefined,
             parentKey,
             name,
@@ -7046,7 +7181,11 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             starred: importantInput.checked === true,
             done: !!(entForId && entForId.done),
             difficulty: dsaNormalizeProblemDifficulty(difficultySelect.value),
-        });
+        };
+        if (graphBodyCats.length && graphBodyCatSelect && !graphBodyCatFs.hidden) {
+            upsertPayload.graphCategoryId = graphBodyCatSelect.value.trim();
+        }
+        dsaUpsertUserQuestionNode(upsertPayload);
         if (fromFullscreen) {
             if (typeof scratchApi.exitFullscreen === "function") {
                 scratchApi.exitFullscreen();
@@ -7066,6 +7205,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         dlg.appendChild(adminNote);
     }
     dlg.appendChild(catFs);
+    dlg.appendChild(graphBodyCatFs);
     dlg.appendChild(nodeBlock);
     dlg.appendChild(qBlock);
     setAdminDisabled();
@@ -7087,6 +7227,14 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         syncNameToEntry();
         if (isAdmin) {
             urlIn.focus();
+        }
+        if (graphBodyCats.length && graphBodyCatSelect) {
+            const entPick = editUserNodeId
+                ? dsaFindUserQuestionById(editUserNodeId)
+                : dsaResolveQuestionForModal(parentKey, editQuestionName, "");
+            const gid = entPick && entPick.graphCategoryId != null ? String(entPick.graphCategoryId).trim() : "";
+            const okOpt = gid && [...graphBodyCatSelect.options].some((o) => o.value === gid);
+            graphBodyCatSelect.value = okOpt ? gid : "";
         }
     } else if (isRenameNode) {
         nodeIn.focus();

@@ -746,6 +746,14 @@
                     <input id="udash-glib-create-accent" class="dsa-udash-input" type="number" min="0" max="359" step="1" placeholder="e.g. 248" />
                 </div>
                 <div class="dsa-udash-field">
+                    <label for="udash-glib-create-cat-name">First category <span style="font-weight:600">(required)</span></label>
+                    <input id="udash-glib-create-cat-name" class="dsa-udash-input" type="text" maxlength="120" placeholder="e.g. Foundations, Patterns, Problems" autocomplete="off" />
+                </div>
+                <div class="dsa-udash-field">
+                    <label for="udash-glib-create-cat-color">Category color</label>
+                    <input id="udash-glib-create-cat-color" class="dsa-udash-input" type="color" value="#64748b" title="Legend and node grouping color" />
+                </div>
+                <div class="dsa-udash-field">
                     <label for="udash-glib-create-description">Description</label>
                     <textarea id="udash-glib-create-description" class="dsa-udash-textarea" rows="4" maxlength="1000" placeholder="Short description for your graph"></textarea>
                 </div>
@@ -766,6 +774,6 @@
     <script src="./dsa-sketch-native.js?v=3"></script>
     <script src="./script.js?v=35"></script>
     <script src="./auth/user-dashboard-page.js?v=18"></script>
-    <script src="./auth/graph-library-panel.js?v=9"></script>
+    <script src="./auth/graph-library-panel.js?v=10"></script>
 </body>
 </html>

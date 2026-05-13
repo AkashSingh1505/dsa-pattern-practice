@@ -157,6 +157,9 @@
         try {
             if (!ctx) {
                 sessionStorage.removeItem(SESSION_KEY);
+                if (typeof window !== "undefined") {
+                    window.__dsaGraphBodyCategories = [];
+                }
             } else {
                 sessionStorage.setItem(SESSION_KEY, JSON.stringify(ctx));
             }
@@ -587,6 +590,9 @@
             }
             dsaImportMindMapHierarchyFromText(JSON.stringify(payload));
             writeSession(null);
+            if (typeof window !== "undefined") {
+                window.__dsaGraphBodyCategories = Array.isArray(j.graph && j.graph.categories) ? j.graph.categories : [];
+            }
             toast("Preview loaded — not saved to your library");
             if (typeof window.__dsaUdashNavigatePanel === "function") {
                 window.__dsaUdashNavigatePanel("graph");
@@ -602,6 +608,9 @@
             var g = j.graph;
             if (!g || !g.payload || typeof dsaImportMindMapHierarchyFromText !== "function") {
                 throw new Error("Could not open graph");
+            }
+            if (typeof window !== "undefined") {
+                window.__dsaGraphBodyCategories = Array.isArray(g.categories) ? g.categories : [];
             }
             dsaImportMindMapHierarchyFromText(JSON.stringify(g.payload));
             writeSession({ copyId: g.id, title: g.title || title || "Graph", kind: g.kind || kind || "created" });
@@ -683,6 +692,8 @@
             name: document.getElementById("udash-glib-create-name"),
             accent: document.getElementById("udash-glib-create-accent"),
             description: document.getElementById("udash-glib-create-description"),
+            catName: document.getElementById("udash-glib-create-cat-name"),
+            catColor: document.getElementById("udash-glib-create-cat-color"),
             cancel: document.getElementById("udash-glib-create-cancel"),
             save: document.getElementById("udash-glib-create-save"),
         };
@@ -723,6 +734,15 @@
             }
             return;
         }
+        var catName = els.catName && els.catName.value ? String(els.catName.value).trim() : "";
+        var catColor = els.catColor && els.catColor.value ? String(els.catColor.value).trim() : "#64748b";
+        if (!catName) {
+            toast("Category name required — define how you group nodes (you can add more later in the editor).");
+            if (els.catName) {
+                els.catName.focus();
+            }
+            return;
+        }
         if (accentHue != null && (!Number.isFinite(accentHue) || accentHue < 0 || accentHue > 359)) {
             toast("Accent hue must be between 0 and 359");
             if (els.accent) {
@@ -741,15 +761,22 @@
                     title: name,
                     description: description,
                     accentHue: accentHue,
+                    categories: [{ name: catName, color: catColor }],
                 }),
             });
             closeCreateGraphModal();
             if (els.name) {
                 els.name.value = "";
             }
-            if (els.description) {
-                els.description.value = "";
-            }
+        if (els.description) {
+            els.description.value = "";
+        }
+        if (els.catName) {
+            els.catName.value = "";
+        }
+        if (els.catColor) {
+            els.catColor.value = "#64748b";
+        }
             if (els.accent) {
                 els.accent.value = "";
             }
@@ -782,7 +809,11 @@
             return;
         }
         try {
-            var payload = JSON.parse(dsaGetMindMapHierarchyJsonString());
+            var payload = JSON.parse(
+                typeof dsaGetMindMapHierarchyMergedJsonString === "function"
+                    ? dsaGetMindMapHierarchyMergedJsonString()
+                    : dsaGetMindMapHierarchyJsonString(),
+            );
             await fetchJson("api/graph-library/mine-detail?id=" + encodeURIComponent(ctx.copyId), {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },

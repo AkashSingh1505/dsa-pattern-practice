@@ -2,16 +2,25 @@ import { json } from "../../_lib/admin-api.js";
 import { newGraphId, requirePracticeUser } from "../../_lib/practice-auth-request.js";
 import { graphPayloadStatsFromJson } from "../../_lib/graph-payload-stats.js";
 import { ensureUserGraphVisibilityColumn } from "../../_lib/user-graph-visibility.js";
+import { normalizeGraphCategoriesBody } from "../../_lib/graph-catalog-categories.js";
+import { validateMindMapGraphInvariant } from "../../_lib/graph-catalog-category-rows.js";
+import { ensureUserGraphCategoriesJsonColumn, stringifyUserGraphCategories } from "../../_lib/user-graph-categories-json.js";
 
-function defaultPayload(title) {
+function defaultPayload(title, firstCategoryId) {
     const safe = String(title || "My graph").slice(0, 80);
-    return JSON.stringify([
-        {
-            id: "ug-root-" + Math.random().toString(36).slice(2, 9),
-            name: safe,
-            tree: [{ name: "Start here", problems: [] }],
-        },
-    ]);
+    const cid = String(firstCategoryId || "").trim();
+    const treeStub = cid
+        ? [{ name: "Start here", problems: [], children: [], graphCategoryId: cid }]
+        : [{ name: "Start here", problems: [], children: [] }];
+    const root = {
+        id: "ug-root-" + Math.random().toString(36).slice(2, 9),
+        name: safe,
+        tree: treeStub,
+    };
+    if (cid) {
+        root.graphCategoryId = cid;
+    }
+    return JSON.stringify([root]);
 }
 
 export async function onRequestGet(context) {
@@ -111,26 +120,46 @@ export async function onRequestPost(context) {
         accentHue = Math.round(n);
     }
     const { db, userId } = gate;
+    await ensureUserGraphCategoriesJsonColumn(db);
     const hasVisibility = await ensureUserGraphVisibilityColumn(db);
     const now = Math.floor(Date.now() / 1000);
     const id = newGraphId();
-    const payload = defaultPayload(title);
+    const catNorm = normalizeGraphCategoriesBody(Array.isArray(body.categories) ? body.categories : []);
+    if (!catNorm.ok) {
+        return json({ error: catNorm.error }, 400);
+    }
+    if (!catNorm.categories.length) {
+        return json({ error: "at least one category { name, color } is required", code: "GRAPH_CATEGORIES_REQUIRED" }, 400);
+    }
+    const firstCatId = catNorm.categories[0].id;
+    const payload = defaultPayload(title, firstCatId);
+    const categoriesJson = stringifyUserGraphCategories(catNorm.categories);
+    let payloadParsed;
+    try {
+        payloadParsed = JSON.parse(payload);
+    } catch {
+        return json({ error: "invalid default payload" }, 500);
+    }
+    const inv = validateMindMapGraphInvariant(payloadParsed, catNorm.categories);
+    if (!inv.ok) {
+        return json({ error: inv.error, code: inv.code || "GRAPH_INVALID" }, 400);
+    }
     try {
         if (hasVisibility) {
             await db
                 .prepare(
-                    `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, visibility, shared_from_user_id, created_at, updated_at, deleted_at)
-                     VALUES (?, ?, NULL, 'created', ?, ?, ?, ?, 'private', NULL, ?, ?, NULL)`,
+                    `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, categories_json, visibility, shared_from_user_id, created_at, updated_at, deleted_at)
+                     VALUES (?, ?, NULL, 'created', ?, ?, ?, ?, ?, 'private', NULL, ?, ?, NULL)`,
                 )
-                .bind(id, userId, title, description || null, payload, accentHue, now, now)
+                .bind(id, userId, title, description || null, payload, accentHue, categoriesJson, now, now)
                 .run();
         } else {
             await db
                 .prepare(
-                    `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, shared_from_user_id, created_at, updated_at, deleted_at)
-                     VALUES (?, ?, NULL, 'created', ?, ?, ?, ?, NULL, ?, ?, NULL)`,
+                    `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, categories_json, shared_from_user_id, created_at, updated_at, deleted_at)
+                     VALUES (?, ?, NULL, 'created', ?, ?, ?, ?, ?, NULL, ?, ?, NULL)`,
                 )
-                .bind(id, userId, title, description || null, payload, accentHue, now, now)
+                .bind(id, userId, title, description || null, payload, accentHue, categoriesJson, now, now)
                 .run();
         }
     } catch (e) {

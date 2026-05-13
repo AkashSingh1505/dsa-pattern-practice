@@ -1,6 +1,12 @@
 import { json } from "../../_lib/admin-api.js";
 import { newGraphId, requirePracticeUser } from "../../_lib/practice-auth-request.js";
 import { ensureUserGraphVisibilityColumn } from "../../_lib/user-graph-visibility.js";
+import { remapGraphCategoryIdsInPayload, validateMindMapGraphInvariant } from "../../_lib/graph-catalog-category-rows.js";
+import {
+    ensureUserGraphCategoriesJsonColumn,
+    listCategoriesFromUserGraphRow,
+    stringifyUserGraphCategories,
+} from "../../_lib/user-graph-categories-json.js";
 
 export async function onRequestPost(context) {
     const { request, env } = context;
@@ -22,6 +28,7 @@ export async function onRequestPost(context) {
         return json({ error: "copyId and recipientEmail required" }, 400);
     }
     const { db, userId, email: senderEmail } = gate;
+    await ensureUserGraphCategoriesJsonColumn(db);
     const hasVisibility = await ensureUserGraphVisibilityColumn(db);
     if (recipientEmail === String(senderEmail || "").toLowerCase()) {
         return json({ error: "cannot share with yourself" }, 400);
@@ -30,7 +37,7 @@ export async function onRequestPost(context) {
     try {
         src = await db
             .prepare(
-                `SELECT id, title, description, payload_json, accent_hue FROM user_graphs
+                `SELECT id, title, description, payload_json, accent_hue, categories_json FROM user_graphs
                  WHERE id = ? AND owner_user_id = ? AND deleted_at IS NULL`,
             )
             .bind(copyId, userId)
@@ -57,14 +64,34 @@ export async function onRequestPost(context) {
         return json({ error: "cannot share with yourself" }, 400);
     }
     let payloadStr = src.payload_json;
+    let parsedPayloadForShare;
     try {
-        const p = JSON.parse(payloadStr);
-        if (!Array.isArray(p)) {
+        parsedPayloadForShare = JSON.parse(payloadStr);
+        if (!Array.isArray(parsedPayloadForShare)) {
             return json({ error: "invalid graph" }, 500);
         }
     } catch {
         return json({ error: "invalid graph" }, 500);
     }
+
+    const srcCats = listCategoriesFromUserGraphRow(src);
+    const invShare = validateMindMapGraphInvariant(parsedPayloadForShare, srcCats);
+    if (!invShare.ok) {
+        return json({ error: invShare.error, code: invShare.code || "GRAPH_INVALID" }, 422);
+    }
+
+    const idMap = new Map();
+    const newCats = srcCats.map((c) => {
+        const nid = newGraphId();
+        idMap.set(c.id, nid);
+        return { id: nid, name: c.name, color: c.color };
+    });
+    const categoriesJson = stringifyUserGraphCategories(newCats);
+    if (idMap.size > 0) {
+        remapGraphCategoryIdsInPayload(parsedPayloadForShare, idMap);
+        payloadStr = JSON.stringify(parsedPayloadForShare);
+    }
+
     const now = Math.floor(Date.now() / 1000);
     const newId = newGraphId();
     const title = String(src.title || "Shared graph") + " (shared)";
@@ -72,10 +99,10 @@ export async function onRequestPost(context) {
         await db
             .prepare(
                 hasVisibility
-                    ? `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, visibility, shared_from_user_id, created_at, updated_at, deleted_at)
-                       VALUES (?, ?, NULL, 'shared', ?, ?, ?, ?, 'private', ?, ?, ?, NULL)`
-                    : `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, shared_from_user_id, created_at, updated_at, deleted_at)
-                       VALUES (?, ?, NULL, 'shared', ?, ?, ?, ?, ?, ?, ?, NULL)`,
+                    ? `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, categories_json, visibility, shared_from_user_id, created_at, updated_at, deleted_at)
+                       VALUES (?, ?, NULL, 'shared', ?, ?, ?, ?, ?, 'private', ?, ?, ?, NULL)`
+                    : `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, categories_json, shared_from_user_id, created_at, updated_at, deleted_at)
+                       VALUES (?, ?, NULL, 'shared', ?, ?, ?, ?, ?, ?, ?, ?, NULL)`,
             )
             .bind(
                 newId,
@@ -84,6 +111,7 @@ export async function onRequestPost(context) {
                 src.description ? String(src.description) : "",
                 payloadStr,
                 src.accent_hue != null ? src.accent_hue : null,
+                categoriesJson,
                 userId,
                 now,
                 now,

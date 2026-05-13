@@ -2,6 +2,7 @@ import { json } from "../../_lib/admin-api.js";
 import { requirePracticeUser } from "../../_lib/practice-auth-request.js";
 import { graphPayloadStatsFromJson } from "../../_lib/graph-payload-stats.js";
 import { parseGraphCategoriesJson } from "../../_lib/graph-catalog-categories.js";
+import { listCatalogCategoriesByCatalogIds } from "../../_lib/graph-catalog-category-rows.js";
 
 function creatorLabel(row) {
     const dn = row.creator_display_name && String(row.creator_display_name).trim();
@@ -49,8 +50,25 @@ export async function onRequestGet(context) {
     for (const r of uniq.results || []) {
         uniqMap.set(r.catalog_id, r.n);
     }
-    const graphs = (rows.results || []).map((r) => {
+    const resultRows = rows.results || [];
+    const catalogIds = resultRows.map((r) => r.id);
+    let byCatalogId;
+    try {
+        byCatalogId = await listCatalogCategoriesByCatalogIds(db, catalogIds);
+    } catch (e) {
+        console.error("graph-library public categories", e);
+        byCatalogId = new Map();
+    }
+    const graphs = resultRows.map((r) => {
         const stats = graphPayloadStatsFromJson(r.payload_json);
+        let categories = byCatalogId.get(r.id);
+        if (!categories || !categories.length) {
+            categories = parseGraphCategoriesJson(r.categories_json).map((c) => ({
+                id: c.id != null && String(c.id).trim() ? String(c.id).trim() : "",
+                name: c.name,
+                color: c.color || "#6b7280",
+            }));
+        }
         return {
             id: r.id,
             slug: r.slug,
@@ -58,7 +76,7 @@ export async function onRequestGet(context) {
             description: r.description || "",
             accentHue: r.accent_hue,
             tags: safeJsonArray(r.tags_json),
-            categories: parseGraphCategoriesJson(r.categories_json),
+            categories,
             difficulty: r.difficulty || null,
             estimatedMinutes: r.estimated_minutes,
             downloadCount: Number(r.download_count || 0) || 0,

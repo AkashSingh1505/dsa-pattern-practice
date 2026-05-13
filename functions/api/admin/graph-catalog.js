@@ -1,7 +1,12 @@
 import { json } from "../../_lib/admin-api.js";
 import { verifyPracticeToken } from "../../_lib/practice-jwt.js";
 import { newGraphId, requireGraphCatalogWriter } from "../../_lib/practice-auth-request.js";
-import { normalizeGraphCategoriesBody, parseGraphCategoriesJson } from "../../_lib/graph-catalog-categories.js";
+import { normalizeGraphCategoriesBody } from "../../_lib/graph-catalog-categories.js";
+import {
+    getResolvedCatalogCategories,
+    replaceCatalogCategoriesForCatalog,
+    validateMindMapGraphInvariant,
+} from "../../_lib/graph-catalog-category-rows.js";
 
 function slugify(s) {
     return String(s || "")
@@ -78,6 +83,14 @@ export async function onRequestGet(context) {
         if (!Array.isArray(payload)) {
             return json({ error: "invalid payload in database" }, 500);
         }
+        const nowSec = Math.floor(Date.now() / 1000);
+        let categories;
+        try {
+            categories = await getResolvedCatalogCategories(db, row.id, row.categories_json, nowSec, { migrateLegacy: true });
+        } catch (e) {
+            console.error("admin graph-catalog categories", e);
+            return json({ error: "server error" }, 500);
+        }
         return json({
             ok: true,
             graph: {
@@ -90,7 +103,7 @@ export async function onRequestGet(context) {
                 creatorEmail: row.creator_email || null,
                 accentHue: row.accent_hue,
                 tags: parseTagsJson(row.tags_json),
-                categories: parseGraphCategoriesJson(row.categories_json),
+                categories,
                 difficulty: row.difficulty || null,
                 estimatedMinutes: row.estimated_minutes,
                 downloadCount: row.download_count || 0,
@@ -165,6 +178,13 @@ export async function onRequestPost(context) {
     if (!catNorm.ok) {
         return json({ error: catNorm.error }, 400);
     }
+    if (!catNorm.categories.length) {
+        return json({ error: "at least one category is required", code: "GRAPH_CATEGORIES_REQUIRED" }, 400);
+    }
+    const invPost = validateMindMapGraphInvariant(payload, catNorm.categories);
+    if (!invPost.ok) {
+        return json({ error: invPost.error, code: invPost.code || "GRAPH_INVALID" }, 400);
+    }
     const slugIn = String(body.slug || "").trim();
     const base = slugify(slugIn || title);
 
@@ -207,7 +227,7 @@ export async function onRequestPost(context) {
                 payloadJson,
                 accentHue,
                 tags,
-                catNorm.json,
+                null,
                 difficulty,
                 estimatedMinutes,
                 now,
@@ -216,6 +236,12 @@ export async function onRequestPost(context) {
             .run();
     } catch (e) {
         console.error("admin graph-catalog insert", e);
+        return json({ error: "server error" }, 500);
+    }
+    try {
+        await replaceCatalogCategoriesForCatalog(db, id, catNorm.categories, now);
+    } catch (e) {
+        console.error("admin graph-catalog insert categories", e);
         return json({ error: "server error" }, 500);
     }
     return json({ ok: true, id, slug });
@@ -238,10 +264,72 @@ export async function onRequestPatch(context) {
         return json({ error: "id required" }, 400);
     }
     const { db } = gate;
-    const row = await db.prepare("SELECT id FROM graph_catalog WHERE id = ? AND deleted_at IS NULL").bind(id).first();
-    if (!row) {
+    const fullRow = await db
+        .prepare(`SELECT id, payload_json, categories_json FROM graph_catalog WHERE id = ? AND deleted_at IS NULL`)
+        .bind(id)
+        .first();
+    if (!fullRow) {
         return json({ error: "not found" }, 404);
     }
+    const now = Math.floor(Date.now() / 1000);
+
+    let payloadForCatValidation = null;
+    if (body.payload != null) {
+        if (!Array.isArray(body.payload)) {
+            return json({ error: "payload must be array" }, 400);
+        }
+        payloadForCatValidation = body.payload;
+    } else if (body.categories !== undefined) {
+        let parsed;
+        try {
+            parsed = JSON.parse(fullRow.payload_json);
+        } catch {
+            return json({ error: "invalid stored payload" }, 500);
+        }
+        if (!Array.isArray(parsed)) {
+            return json({ error: "invalid stored payload" }, 500);
+        }
+        payloadForCatValidation = parsed;
+    }
+
+    let didCategoryReplace = false;
+    if (body.categories !== undefined) {
+        const catNorm = normalizeGraphCategoriesBody(body.categories);
+        if (!catNorm.ok) {
+            return json({ error: catNorm.error }, 400);
+        }
+        if (!catNorm.categories.length) {
+            return json({ error: "at least one category is required", code: "GRAPH_CATEGORIES_REQUIRED" }, 400);
+        }
+        if (payloadForCatValidation != null) {
+            const invPatchCats = validateMindMapGraphInvariant(payloadForCatValidation, catNorm.categories);
+            if (!invPatchCats.ok) {
+                return json({ error: invPatchCats.error, code: invPatchCats.code || "GRAPH_INVALID" }, 400);
+            }
+        }
+        try {
+            await replaceCatalogCategoriesForCatalog(db, id, catNorm.categories, now);
+        } catch (e) {
+            console.error("admin graph-catalog patch categories", e);
+            return json({ error: "server error" }, 500);
+        }
+        didCategoryReplace = true;
+    }
+
+    if (body.payload != null && body.categories === undefined) {
+        let cats;
+        try {
+            cats = await getResolvedCatalogCategories(db, id, fullRow.categories_json, now, { migrateLegacy: true });
+        } catch (e) {
+            console.error("admin graph-catalog patch load categories", e);
+            return json({ error: "server error" }, 500);
+        }
+        const invPatchPayload = validateMindMapGraphInvariant(body.payload, cats);
+        if (!invPatchPayload.ok) {
+            return json({ error: invPatchPayload.error, code: invPatchPayload.code || "GRAPH_INVALID" }, 400);
+        }
+    }
+
     const updates = [];
     const binds = [];
     if (typeof body.title === "string" && body.title.trim()) {
@@ -257,9 +345,6 @@ export async function onRequestPatch(context) {
         binds.push(String(body.visibility));
     }
     if (body.payload != null) {
-        if (!Array.isArray(body.payload)) {
-            return json({ error: "payload must be array" }, 400);
-        }
         try {
             updates.push("payload_json = ?");
             binds.push(JSON.stringify(body.payload));
@@ -270,14 +355,6 @@ export async function onRequestPatch(context) {
     if (Array.isArray(body.tags)) {
         updates.push("tags_json = ?");
         binds.push(JSON.stringify(body.tags.map((x) => String(x))));
-    }
-    if (body.categories !== undefined) {
-        const catNorm = normalizeGraphCategoriesBody(body.categories);
-        if (!catNorm.ok) {
-            return json({ error: catNorm.error }, 400);
-        }
-        updates.push("categories_json = ?");
-        binds.push(catNorm.json);
     }
     if (body.difficulty != null) {
         updates.push("difficulty = ?");
@@ -291,10 +368,9 @@ export async function onRequestPatch(context) {
         updates.push("accent_hue = ?");
         binds.push(Math.floor(body.accentHue) % 360);
     }
-    if (!updates.length) {
+    if (!updates.length && !didCategoryReplace) {
         return json({ error: "nothing to update" }, 400);
     }
-    const now = Math.floor(Date.now() / 1000);
     updates.push("updated_at = ?");
     binds.push(now);
     binds.push(id);

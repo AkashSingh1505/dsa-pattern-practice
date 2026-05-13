@@ -1,6 +1,13 @@
 import { json } from "../../_lib/admin-api.js";
 import { requirePracticeUser } from "../../_lib/practice-auth-request.js";
 import { ensureUserGraphVisibilityColumn } from "../../_lib/user-graph-visibility.js";
+import { normalizeGraphCategoriesBody } from "../../_lib/graph-catalog-categories.js";
+import { validateMindMapGraphInvariant } from "../../_lib/graph-catalog-category-rows.js";
+import {
+    ensureUserGraphCategoriesJsonColumn,
+    listCategoriesFromUserGraphRow,
+    stringifyUserGraphCategories,
+} from "../../_lib/user-graph-categories-json.js";
 
 export async function onRequestGet(context) {
     const { request, env } = context;
@@ -14,12 +21,13 @@ export async function onRequestGet(context) {
         return json({ error: "id required" }, 400);
     }
     const { db, userId } = gate;
+    await ensureUserGraphCategoriesJsonColumn(db);
     const hasVisibility = await ensureUserGraphVisibilityColumn(db);
     let row;
     try {
         row = await db
             .prepare(
-                `SELECT id, source_catalog_id, kind, title, description, payload_json, accent_hue, ${
+                `SELECT id, source_catalog_id, kind, title, description, payload_json, accent_hue, categories_json, ${
                     hasVisibility ? "visibility" : "'private'"
                 } AS visibility, shared_from_user_id, created_at, updated_at
                  FROM user_graphs WHERE id = ? AND owner_user_id = ? AND deleted_at IS NULL`,
@@ -42,6 +50,11 @@ export async function onRequestGet(context) {
     if (!Array.isArray(payload)) {
         return json({ error: "invalid graph data" }, 500);
     }
+    let categories = listCategoriesFromUserGraphRow(row);
+    const inv = validateMindMapGraphInvariant(payload, categories);
+    if (!inv.ok) {
+        return json({ error: inv.error, code: inv.code || "GRAPH_INVALID" }, 422);
+    }
     return json({
         ok: true,
         graph: {
@@ -55,6 +68,7 @@ export async function onRequestGet(context) {
             sharedFromUserId: row.shared_from_user_id,
             createdAt: row.created_at,
             updatedAt: row.updated_at,
+            categories,
             payload,
         },
     });
@@ -78,20 +92,70 @@ export async function onRequestPut(context) {
         return json({ error: "invalid JSON" }, 400);
     }
     const { db, userId } = gate;
+    await ensureUserGraphCategoriesJsonColumn(db);
     const hasVisibility = await ensureUserGraphVisibilityColumn(db);
-    let row;
+    let fullRow;
     try {
-        row = await db
-            .prepare(`SELECT id FROM user_graphs WHERE id = ? AND owner_user_id = ? AND deleted_at IS NULL`)
+        fullRow = await db
+            .prepare(
+                `SELECT id, payload_json, categories_json FROM user_graphs WHERE id = ? AND owner_user_id = ? AND deleted_at IS NULL`,
+            )
             .bind(id, userId)
             .first();
     } catch (e) {
         console.error("mine-detail put lookup", e);
         return json({ error: "server error" }, 500);
     }
-    if (!row) {
+    if (!fullRow) {
         return json({ error: "not found" }, 404);
     }
+    const now = Math.floor(Date.now() / 1000);
+
+    let payloadForCatValidation = null;
+    if (body.payload != null) {
+        if (!Array.isArray(body.payload)) {
+            return json({ error: "payload must be array" }, 400);
+        }
+        payloadForCatValidation = body.payload;
+    } else if (body.categories !== undefined) {
+        let parsed;
+        try {
+            parsed = JSON.parse(fullRow.payload_json);
+        } catch {
+            return json({ error: "invalid stored graph" }, 500);
+        }
+        if (!Array.isArray(parsed)) {
+            return json({ error: "invalid stored graph" }, 500);
+        }
+        payloadForCatValidation = parsed;
+    }
+
+    let categoriesJsonReplace = null;
+    if (body.categories !== undefined) {
+        const catNorm = normalizeGraphCategoriesBody(body.categories);
+        if (!catNorm.ok) {
+            return json({ error: catNorm.error }, 400);
+        }
+        if (!catNorm.categories.length) {
+            return json({ error: "at least one category is required", code: "GRAPH_CATEGORIES_REQUIRED" }, 400);
+        }
+        if (payloadForCatValidation != null) {
+            const inv = validateMindMapGraphInvariant(payloadForCatValidation, catNorm.categories);
+            if (!inv.ok) {
+                return json({ error: inv.error, code: inv.code || "GRAPH_INVALID" }, 400);
+            }
+        }
+        categoriesJsonReplace = stringifyUserGraphCategories(catNorm.categories);
+    }
+
+    if (body.payload != null && body.categories === undefined) {
+        const cats = listCategoriesFromUserGraphRow(fullRow);
+        const inv = validateMindMapGraphInvariant(body.payload, cats);
+        if (!inv.ok) {
+            return json({ error: inv.error, code: inv.code || "GRAPH_INVALID" }, 400);
+        }
+    }
+
     const updates = [];
     const binds = [];
     if (typeof body.title === "string") {
@@ -131,10 +195,13 @@ export async function onRequestPut(context) {
         updates.push("payload_json = ?");
         binds.push(text);
     }
+    if (categoriesJsonReplace != null) {
+        updates.push("categories_json = ?");
+        binds.push(categoriesJsonReplace);
+    }
     if (!updates.length) {
         return json({ error: "nothing to update" }, 400);
     }
-    const now = Math.floor(Date.now() / 1000);
     updates.push("updated_at = ?");
     binds.push(now);
     binds.push(id, userId);

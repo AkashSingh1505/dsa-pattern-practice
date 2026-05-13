@@ -155,6 +155,17 @@
         });
     }
 
+    function glibNewCategoryId() {
+        try {
+            if (typeof crypto !== "undefined" && crypto.randomUUID) {
+                return crypto.randomUUID();
+            }
+        } catch (e) {
+            /* ignore */
+        }
+        return "gcc-" + Math.random().toString(36).slice(2, 11) + "-" + Math.random().toString(36).slice(2, 11);
+    }
+
     function glibSyncCatColorWrapsDisabled() {
         const rand = document.getElementById("adm-glib-cat-random");
         const on = rand && rand.checked;
@@ -167,7 +178,7 @@
         });
     }
 
-    function glibMakeCategoryRow(name, color) {
+    function glibMakeCategoryRow(name, color, catId) {
         const listEl = document.getElementById("adm-glib-categories-list");
         if (!listEl) {
             return null;
@@ -176,6 +187,8 @@
         const row = document.createElement("div");
         row.className = "adm-glib-cat-row";
         row.setAttribute("role", "listitem");
+        const cid = catId != null && String(catId).trim() ? String(catId).trim() : glibNewCategoryId();
+        row.setAttribute("data-gcc-id", cid);
         const inp = document.createElement("input");
         inp.type = "text";
         inp.className = "adm-glib-cat-name";
@@ -204,7 +217,7 @@
         rm.addEventListener("click", function () {
             row.remove();
             if (!listEl.children.length) {
-                glibMakeCategoryRow("", "");
+                glibMakeCategoryRow("", "", "");
             }
             refreshGlibSaveAndWorkspaceUi();
         });
@@ -224,7 +237,7 @@
         const list = document.getElementById("adm-glib-categories-list");
         if (list) {
             list.innerHTML = "";
-            glibMakeCategoryRow("", "");
+            glibMakeCategoryRow("", "", "");
         } else {
             glibSyncCatColorWrapsDisabled();
         }
@@ -240,9 +253,9 @@
             return;
         }
         list.innerHTML = "";
-        const arr = Array.isArray(categories) && categories.length ? categories : [{ name: "", color: "" }];
+        const arr = Array.isArray(categories) && categories.length ? categories : [{ name: "", color: "", id: "" }];
         arr.forEach(function (c) {
-            glibMakeCategoryRow((c && c.name) || "", (c && c.color) || "");
+            glibMakeCategoryRow((c && c.name) || "", (c && c.color) || "", (c && c.id) || "");
         });
         glibSyncCatColorWrapsDisabled();
     }
@@ -257,6 +270,7 @@
                 const nameEl = r.querySelector(".adm-glib-cat-name");
                 const colEl = r.querySelector(".adm-glib-cat-color");
                 rows.push({
+                    id: r.getAttribute("data-gcc-id") || "",
                     name: nameEl ? String(nameEl.value || "").trim() : "",
                     color: colEl ? String(colEl.value || "") : "",
                 });
@@ -278,7 +292,11 @@
             const name = nameEl ? String(nameEl.value || "").trim() : "";
             const color = colEl ? String(colEl.value || "").trim() : "#6b7280";
             if (name.length) {
-                cats.push({ name: name, color: color });
+                cats.push({
+                    id: r.getAttribute("data-gcc-id") || "",
+                    name: name,
+                    color: color,
+                });
             }
         });
         if (rand && rand.checked && cats.length) {
@@ -287,13 +305,13 @@
                 c.color = picked[i];
             });
         }
-        const names = cats.map(function (c) {
-            return c.name.toLowerCase();
-        });
-        for (let i = 0; i < names.length; i++) {
-            if (names.indexOf(names[i]) !== i) {
-                return { ok: false, err: 'Duplicate category name: "' + cats[i].name + '"' };
+        const seenNames = new Set();
+        for (let i = 0; i < cats.length; i++) {
+            const n = cats[i].name;
+            if (seenNames.has(n)) {
+                return { ok: false, err: 'Duplicate category name: "' + n + '"' };
             }
+            seenNames.add(n);
         }
         return { ok: true, categories: cats };
     }
@@ -319,12 +337,12 @@
         if (addBtn && addBtn.dataset.admGlibCatBound !== "1") {
             addBtn.dataset.admGlibCatBound = "1";
             addBtn.addEventListener("click", function () {
-                glibMakeCategoryRow("", "");
+                glibMakeCategoryRow("", "", "");
                 refreshGlibSaveAndWorkspaceUi();
             });
         }
         if (!list.children.length) {
-            glibMakeCategoryRow("", "");
+            glibMakeCategoryRow("", "", "");
         }
     }
 
@@ -1402,6 +1420,10 @@
             return;
         }
         const categories = catRes.categories;
+        if (!categories.length) {
+            setGlibStatus("Add at least one node category (name + color) before saving.", "err");
+            return;
+        }
 
         setGlibStatus("Saving…", "");
         try {
@@ -1776,7 +1798,11 @@
                 return;
             }
             try {
-                payload = JSON.parse(dsaGetMindMapHierarchyJsonString());
+                payload = JSON.parse(
+                    typeof dsaGetMindMapHierarchyMergedJsonString === "function"
+                        ? dsaGetMindMapHierarchyMergedJsonString()
+                        : dsaGetMindMapHierarchyJsonString(),
+                );
             } catch (e) {
                 wsSetMsg(e.message || "Invalid graph JSON", "err");
                 return;

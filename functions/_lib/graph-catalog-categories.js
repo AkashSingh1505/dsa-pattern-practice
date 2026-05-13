@@ -1,6 +1,19 @@
 /**
- * Catalog graph categories (name + display color), stored as JSON on `graph_catalog.categories_json`.
+ * Category payloads for mind maps: `{ id, name, color }[]`.
+ * Community catalog: canonical storage is `graph_catalog.categories_json` (plus optional `graph_catalog_category` rows for stable ids — see catalog APIs).
+ * Personal graphs: `user_graphs.categories_json` only (see user-graph-categories-json.js).
  */
+
+import { newGraphId } from "./practice-auth-request.js";
+
+/** @param {unknown} s */
+function validCategoryId(s) {
+    const t = String(s || "").trim();
+    if (t.length < 1 || t.length > 80) {
+        return false;
+    }
+    return /^[a-zA-Z0-9_-]+$/.test(t);
+}
 
 export function parseGraphCategoriesJson(s) {
     if (!s || typeof s !== "string") {
@@ -21,7 +34,9 @@ export function parseGraphCategoriesJson(s) {
                 continue;
             }
             const color = String(item.color || "").trim() || "#6b7280";
-            out.push({ name, color });
+            const idRaw = item.id != null ? String(item.id).trim() : "";
+            const id = idRaw && validCategoryId(idRaw) ? idRaw : null;
+            out.push(id ? { id, name, color } : { name, color });
         }
         return out;
     } catch {
@@ -31,17 +46,18 @@ export function parseGraphCategoriesJson(s) {
 
 /**
  * @param {unknown} input
- * @returns {{ ok: true, json: string, categories: { name: string, color: string }[] } | { ok: false, error: string }}
+ * @returns {{ ok: true, categories: { id: string, name: string, color: string }[] } | { ok: false, error: string }}
  */
 export function normalizeGraphCategoriesBody(input) {
     if (input == null) {
-        return { ok: true, json: "[]", categories: [] };
+        return { ok: true, categories: [] };
     }
     if (!Array.isArray(input)) {
         return { ok: false, error: "categories must be an array" };
     }
     const out = [];
-    const seen = new Set();
+    const seenName = new Set();
+    const seenId = new Set();
     for (const raw of input) {
         if (!raw || typeof raw !== "object") {
             continue;
@@ -50,13 +66,23 @@ export function normalizeGraphCategoriesBody(input) {
         if (!name) {
             continue;
         }
-        const key = name.toLowerCase();
-        if (seen.has(key)) {
+        if (seenName.has(name)) {
             return { ok: false, error: 'duplicate category name: "' + name + '"' };
         }
-        seen.add(key);
+        seenName.add(name);
+        let id = String(raw.id != null ? raw.id : "").trim();
+        if (id && !validCategoryId(id)) {
+            return { ok: false, error: "invalid category id" };
+        }
+        if (!id) {
+            id = newGraphId();
+        }
+        if (seenId.has(id)) {
+            return { ok: false, error: 'duplicate category id: "' + id + '"' };
+        }
+        seenId.add(id);
         const color = String(raw.color || "").trim() || "#6b7280";
-        out.push({ name, color });
+        out.push({ id, name, color });
     }
-    return { ok: true, json: JSON.stringify(out), categories: out };
+    return { ok: true, categories: out };
 }

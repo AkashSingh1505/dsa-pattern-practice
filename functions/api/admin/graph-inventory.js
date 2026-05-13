@@ -1,5 +1,5 @@
 import { json, requireAdmin } from "../../_lib/admin-api.js";
-import { parseGraphCategoriesJson } from "../../_lib/graph-catalog-categories.js";
+import { getResolvedCatalogCategories } from "../../_lib/graph-catalog-category-rows.js";
 
 function parseTagsJson(s) {
     if (!s || typeof s !== "string") {
@@ -83,6 +83,14 @@ export async function onRequestGet(context) {
         if (!Array.isArray(payload)) {
             return json({ error: "invalid payload" }, 500);
         }
+        const nowSec = Math.floor(Date.now() / 1000);
+        let categories;
+        try {
+            categories = await getResolvedCatalogCategories(db, row.id, row.categories_json, nowSec, { migrateLegacy: true });
+        } catch (e) {
+            console.error("graph-inventory catalog categories", e);
+            return json({ error: "server error" }, 500);
+        }
         return json({
             ok: true,
             recordType: "catalog",
@@ -96,7 +104,7 @@ export async function onRequestGet(context) {
                 creatorEmail: row.creator_email || null,
                 accentHue: row.accent_hue,
                 tags: parseTagsJson(row.tags_json),
-                categories: parseGraphCategoriesJson(row.categories_json),
+                categories,
                 difficulty: row.difficulty || null,
                 estimatedMinutes: row.estimated_minutes,
                 downloadCount: row.download_count || 0,

@@ -33,7 +33,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev" />
     <title>Site admin — DSA Pattern Practice</title>
-    <link rel="stylesheet" href="./auth/portal-shell.css?v=20" />
+    <link rel="stylesheet" href="./auth/portal-shell.css?v=21" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -261,39 +261,45 @@
                                 </div>
                             </div>
                         </div>
-                        <div data-adm-panel="site-ui">
-                            <p class="helper" style="margin-top:0">Remote key/value config in <code>app_kv</code>. Values are strings (often JSON). <b>Save</b> writes one key; <b>Delete key</b> removes it from D1. JSON tab can bulk-apply many rows.</p>
-                            <div class="adm-subcard adm-site-features-card">
-                                <div class="adm-site-features-card__head">
-                                    <div class="adm-site-features-card__head-text">
-                                        <h4>User-facing features</h4>
-                                        <p class="adm-site-features-card__lede">
-                                            Control <b>capability</b> (enabled) vs <b>discoverability</b> (visibility) for the public site and member hub. Persisted in <code>app_kv</code> as <code>site_user_features</code>.
-                                        </p>
-                                    </div>
-                                    <div class="adm-site-features-card__head-actions">
-                                        <button type="button" class="btn btn-sm" id="adm-site-features-save">Save</button>
-                                        <button type="button" class="btn ghost btn-sm" id="adm-site-features-reload">Reload</button>
-                                        <button type="button" class="btn ghost btn-sm" id="adm-site-features-reset">Defaults</button>
-                                    </div>
+                        <div data-adm-panel="site-ui" class="adm-site-console">
+                            <p class="helper adm-site-console__intro">
+                                <b>Site</b> reads/writes the content database <code>app_kv</code> (string values, often JSON). Use <b>UI</b> below for flags, marketing copy, and the key list — or switch to <b>JSON</b> in the header for bulk rows.
+                            </p>
+
+                            <section class="adm-site-block" aria-labelledby="adm-site-sec-features">
+                                <div class="adm-site-block__head">
+                                    <h4 id="adm-site-sec-features" class="adm-site-block__title">Feature flags</h4>
+                                    <p class="adm-site-block__meta"><code>site_user_features</code> · Enabled vs Visibility columns</p>
                                 </div>
-                                <details class="adm-site-features-card__details">
-                                    <summary class="adm-site-features-card__summary">Matrix guide</summary>
-                                    <p class="helper adm-site-features-card__help-body">
-                                        <b>Enabled</b> = the feature works when someone reaches it. <b>Visibility</b> = it appears in navigation and other UI. They can differ (e.g. visible but disabled shows faded in the nav).
-                                        <b>Save</b> writes to D1; <b>Reload</b> drops unsaved edits and refetches from the server.
+                                <div class="adm-site-block__toolbar">
+                                    <button type="button" class="btn btn-sm" id="adm-site-features-save">Save flags</button>
+                                    <button type="button" class="btn ghost btn-sm" id="adm-site-features-reload">Revert to server</button>
+                                    <button type="button" class="btn ghost btn-sm" id="adm-site-features-reset">Defaults</button>
+                                </div>
+                                <details class="adm-site-block__details">
+                                    <summary class="adm-site-block__summary">What Enabled and Visibility mean</summary>
+                                    <p class="helper adm-site-block__help">
+                                        <b>Enabled</b> = the feature works when reached. <b>Visibility</b> = it appears in navigation / chrome. They can differ (visible + disabled = faded in nav). <b>Revert</b> reloads from the server and drops unsaved toggles.
                                     </p>
                                 </details>
                                 <div id="adm-site-features-matrix" class="adm-site-features-matrix" aria-live="polite"></div>
-                                <p id="adm-site-features-msg" class="status adm-site-features-card__status" aria-live="polite"></p>
-                            </div>
+                                <p id="adm-site-features-msg" class="status adm-site-block__status" aria-live="polite"></p>
+                            </section>
+
                             <div id="adm-site-marketing-host" class="adm-site-marketing-host"></div>
-                            <div class="adm-toolbar-row">
-                                <button type="button" class="btn ghost btn-sm" id="adm-kv-add">Add row</button>
-                                <button type="button" class="btn btn-sm" id="adm-kv-reload">Reload from server</button>
-                            </div>
-                            <div id="adm-kv-list"></div>
-                            <p id="adm-kv-msg" class="status" aria-live="polite"></p>
+
+                            <section class="adm-site-block" aria-labelledby="adm-site-sec-kv">
+                                <div class="adm-site-block__head">
+                                    <h4 id="adm-site-sec-kv" class="adm-site-block__title">All keys</h4>
+                                    <p class="adm-site-block__meta">Browse and edit rows; JSON tab for batch apply</p>
+                                </div>
+                                <div class="adm-site-block__toolbar">
+                                    <button type="button" class="btn ghost btn-sm" id="adm-kv-add">Add row</button>
+                                    <button type="button" class="btn btn-sm" id="adm-kv-reload">Refresh list</button>
+                                </div>
+                                <div id="adm-kv-list"></div>
+                                <p id="adm-kv-msg" class="status adm-site-block__status" aria-live="polite"></p>
+                            </section>
                         </div>
                         <div data-adm-panel="site-json" class="adm-hidden">
                             <p class="helper" style="margin-top:0">Array of <code>{ "k", "v", "meta" }</code>. Apply runs PUT per row.</p>

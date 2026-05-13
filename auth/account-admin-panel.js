@@ -2553,7 +2553,7 @@
                 row.appendChild(visPart.cell);
                 host.appendChild(row);
             });
-            setStatus("adm-site-features-msg", "Loaded from server. Save writes to app_kv; Reload discards unsaved edits.", "ok");
+            setStatus("adm-site-features-msg", "Loaded from server. Save flags writes app_kv; Revert drops unsaved toggles.", "ok");
         } finally {
             siteFeaturesMatrixLoading = false;
             setSiteFeaturesMatrixLoadingUi(host, false);

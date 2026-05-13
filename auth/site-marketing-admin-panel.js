@@ -247,6 +247,16 @@
         }
         host.innerHTML = html;
         bindPanelInputs();
+        syncMkTabActive();
+    }
+
+    function syncMkTabActive() {
+        var root = document.getElementById("adm-site-marketing-host");
+        if (!root) return;
+        root.querySelectorAll("[data-mk-tab]").forEach(function (b) {
+            var tab = b.getAttribute("data-mk-tab");
+            b.classList.toggle("active", tab === currentTab);
+        });
     }
 
     function syncSpecialFieldsFromModel() {
@@ -421,31 +431,30 @@
         if (!root || root.getAttribute("data-mk-mounted") === "1") return;
         root.setAttribute("data-mk-mounted", "1");
         root.innerHTML =
-            '<div class="adm-subcard adm-site-features-card adm-site-features-card--marketing">' +
-            '<div class="adm-site-features-card__head">' +
-            '<div class="adm-site-features-card__head-text">' +
-            "<h4>Marketing pages</h4>" +
-            '<p class="adm-site-features-card__lede">Public copy for <b>index</b>, <b>premium</b>, and <b>content.html</b>. Stored in <code>app_kv</code> as <code>' +
+            '<section class="adm-site-block" aria-labelledby="adm-site-sec-mk">' +
+            '<div class="adm-site-block__head">' +
+            '<h4 id="adm-site-sec-mk" class="adm-site-block__title">Marketing copy</h4>' +
+            '<p class="adm-site-block__meta">Pick a page below · <code>' +
             MK_KEY +
-            "</code>; read via <code>GET /api/site-marketing</code>.</p>" +
+            "</code> · merged via <code>GET /api/site-marketing</code></p>" +
             "</div>" +
-            '<div class="adm-site-features-card__head-actions adm-site-marketing-tabs">' +
-            '<button type="button" class="btn ghost btn-sm" data-mk-tab="index">Index</button>' +
-            '<button type="button" class="btn ghost btn-sm" data-mk-tab="premium">Premium</button>' +
-            '<button type="button" class="btn ghost btn-sm" data-mk-tab="contentPage">Content</button>' +
-            "</div></div>" +
-            '<details class="adm-site-features-card__details">' +
-            '<summary class="adm-site-features-card__summary">Editing scope</summary>' +
-            '<p class="helper adm-site-features-card__help-body">Use the tabs for each surface. Nav links support add/remove. Premium and Content include FAQ rows (question + answer HTML). Footer blocks are edited as JSON. <b>Save</b> writes the full document; <b>Reload</b> refetches merged defaults + server; <b>Reset</b> deletes the KV key.</p>' +
+            '<div class="adm-seg adm-site-mk-seg" role="tablist" aria-label="Marketing page">' +
+            '<button type="button" class="active" data-mk-tab="index">Index</button>' +
+            '<button type="button" data-mk-tab="premium">Premium</button>' +
+            '<button type="button" data-mk-tab="contentPage">Content</button>' +
+            "</div>" +
+            '<details class="adm-site-block__details">' +
+            '<summary class="adm-site-block__summary">What you can edit here</summary>' +
+            '<p class="helper adm-site-block__help">Nav links (add/remove), hero and FAQ fields, footer JSON. <b>Save copy</b> writes the whole document. <b>Refresh merged</b> reloads defaults + server (drops unsaved edits). <b>Clear D1 key</b> removes custom marketing and restores built-ins.</p>' +
             "</details>" +
-            '<div id="adm-site-marketing-panel" style="padding:0 14px 12px"></div>' +
-            '<div class="adm-site-features-card__head-actions" style="padding:0 14px 12px;justify-content:flex-start;border-top:1px solid rgba(15,23,32,0.06)">' +
-            '<button type="button" class="btn btn-sm" id="adm-site-marketing-save">Save</button>' +
-            '<button type="button" class="btn ghost btn-sm" id="adm-site-marketing-reload">Reload</button>' +
-            '<button type="button" class="btn ghost btn-sm" id="adm-site-marketing-reset">Reset defaults</button>' +
+            '<div id="adm-site-marketing-panel" class="adm-site-block__panel"></div>' +
+            '<div class="adm-site-block__toolbar">' +
+            '<button type="button" class="btn btn-sm" id="adm-site-marketing-save">Save copy</button>' +
+            '<button type="button" class="btn ghost btn-sm" id="adm-site-marketing-reload">Refresh merged</button>' +
+            '<button type="button" class="btn ghost btn-sm" id="adm-site-marketing-reset">Clear D1 key</button>' +
             "</div>" +
-            '<p id="adm-site-marketing-msg" class="status adm-site-features-card__status" aria-live="polite"></p>' +
-            "</div>";
+            '<p id="adm-site-marketing-msg" class="status adm-site-block__status" aria-live="polite"></p>' +
+            "</section>";
 
         root.querySelectorAll("[data-mk-tab]").forEach(function (b) {
             b.addEventListener("click", function () {
@@ -454,6 +463,7 @@
                 renderTab();
             });
         });
+        syncMkTabActive();
         document.getElementById("adm-site-marketing-save").addEventListener("click", function () {
             saveMarketing().catch(function (e) {
                 var st = document.getElementById("adm-site-marketing-msg");

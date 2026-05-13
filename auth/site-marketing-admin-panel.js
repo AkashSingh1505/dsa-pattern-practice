@@ -66,10 +66,60 @@
         if (/Json$/i.test(p) || /TrustJson$/i.test(p)) {
             return " adm-code-surface adm-code-surface--json";
         }
-        if (/Html$/i.test(p) || /bodyHtml/i.test(p)) {
+        if (/Html$/i.test(p) || /bodyHtml/i.test(p) || /leadHtml/i.test(p)) {
             return " adm-code-surface adm-code-surface--html";
         }
         return "";
+    }
+
+    function htmlSyntaxHighlight(raw) {
+        var esc = String(raw == null ? "" : raw)
+            .replace(/&/g, "&amp;")
+            .replace(/\u003c/g, "&lt;")
+            .replace(/>/g, "&gt;");
+        esc = esc.replace(/&lt;(\/?)([\w:-]+)/g, function (_, slash, tag) {
+            return (
+                '<span class="adm-html-br">&lt;</span>' +
+                (slash ? '<span class="adm-html-sl">/</span>' : "") +
+                '<span class="adm-html-tag">' +
+                tag +
+                "</span>"
+            );
+        });
+        esc = esc.replace(/&gt;/g, '<span class="adm-html-br">&gt;</span>');
+        return '<code class="adm-html-editor-highlight-inner">' + esc + "</code>";
+    }
+
+    function syncHtmlEditorLayer(wrap) {
+        var ta = wrap.querySelector(".adm-html-editor-ta");
+        var hl = wrap.querySelector(".adm-html-editor-highlight");
+        if (!ta || !hl) {
+            return;
+        }
+        hl.innerHTML = htmlSyntaxHighlight(ta.value) + "\n";
+        var inner = hl.querySelector(".adm-html-editor-highlight-inner");
+        if (inner) {
+            inner.style.transform = "translate(" + -ta.scrollLeft + "px," + -ta.scrollTop + "px)";
+        }
+    }
+
+    function initHtmlEditorLayers(panel) {
+        if (!panel) {
+            return;
+        }
+        panel.querySelectorAll(".adm-html-editor-wrap").forEach(function (wrap) {
+            var ta = wrap.querySelector(".adm-html-editor-ta");
+            if (!ta || ta.getAttribute("data-html-hl") === "1") {
+                return;
+            }
+            ta.setAttribute("data-html-hl", "1");
+            function onScrollOrInput() {
+                syncHtmlEditorLayer(wrap);
+            }
+            ta.addEventListener("input", onScrollOrInput);
+            ta.addEventListener("scroll", onScrollOrInput);
+            syncHtmlEditorLayer(wrap);
+        });
     }
 
     function field(label, path, type, rows) {
@@ -77,26 +127,48 @@
         if (v == null) v = "";
         var id = "mk-" + path.replace(/\./g, "-");
         var extra = editorExtraClasses(path, type);
-        var ta =
-            type === "textarea"
-                ? '<textarea class="adm-json-input' +
-                  extra +
-                  '" style="min-height:' +
-                  (rows || 3) +
-                  'px;width:100%" id="' +
-                  id +
-                  '" data-path="' +
-                  path +
-                  '">' +
-                  escapeHtml(String(v)) +
-                  "</textarea>"
-                : '<input type="text" id="' +
-                  id +
-                  '" data-path="' +
-                  path +
-                  '" value="' +
-                  escapeAttr(String(v)) +
-                  '" style="width:100%;max-width:520px" />';
+        var r = rows || 3;
+        var ta;
+        if (type === "textarea") {
+            if (extra.indexOf("adm-code-surface--html") !== -1) {
+                ta =
+                    '<div class="adm-html-editor-wrap adm-json-input adm-code-surface adm-code-surface--html" style="min-height:' +
+                    r +
+                    'px">' +
+                    '<pre class="adm-html-editor-highlight" spellcheck="false" aria-hidden="true"></pre>' +
+                    '<textarea class="adm-json-input adm-html-editor-ta" spellcheck="false" style="min-height:' +
+                    r +
+                    'px;width:100%" id="' +
+                    id +
+                    '" data-path="' +
+                    path +
+                    '">' +
+                    escapeHtml(String(v)) +
+                    "</textarea></div>";
+            } else {
+                ta =
+                    '<textarea class="adm-json-input' +
+                    extra +
+                    '" style="min-height:' +
+                    r +
+                    'px;width:100%" id="' +
+                    id +
+                    '" data-path="' +
+                    path +
+                    '">' +
+                    escapeHtml(String(v)) +
+                    "</textarea>";
+            }
+        } else {
+            ta =
+                '<input type="text" id="' +
+                id +
+                '" data-path="' +
+                path +
+                '" value="' +
+                escapeAttr(String(v)) +
+                '" style="width:100%;max-width:520px" />';
+        }
         return (
             '<div class="adm-field" style="margin-bottom:12px"><label for="' +
             id +
@@ -172,27 +244,29 @@
                     '" value="' +
                     escapeAttr(it.question || "") +
                     '" style="width:100%"/></div>' +
-                    '<div class="adm-field"><label>Answer HTML</label><textarea class="adm-json-input" data-faq-a="' +
+                    '<div class="adm-field"><label>Answer HTML</label><div class="adm-html-editor-wrap adm-json-input adm-code-surface adm-code-surface--html" style="min-height:120px">' +
+                    '<pre class="adm-html-editor-highlight" spellcheck="false" aria-hidden="true"></pre>' +
+                    '<textarea class="adm-json-input adm-html-editor-ta" data-faq-a="' +
                     pageKey +
                     '" data-i="' +
                     idx +
-                    '" style="min-height:120px;width:100%">' +
+                    '" spellcheck="false" style="min-height:120px;width:100%">' +
                     escapeHtml(it.answerHtml || "") +
-                    "</textarea></div>" +
-                    '<button type="button" class="btn ghost btn-sm" data-faq-del="' +
+                    "</textarea></div></div>" +
+                    '<button type="button" class="btn ghost btn-sm adm-btn-with-ico" data-faq-del="' +
                     pageKey +
-                    '" data-i="' +
+                    "\" data-i=\"" +
                     idx +
-                    '">Remove FAQ</button></div>'
+                    "\" title=\"Remove FAQ\"><svg class=\"adm-ico\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><polyline points=\"3 6 5 6 21 6\"/><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"/></svg><span>Remove</span></button></div>"
                 );
             })
             .join("");
         return (
             '<div style="margin-top:16px"><h4>FAQ items</h4><p class="helper" style="margin-top:4px">Add, remove, reorder. Answer fields allow a small subset of HTML (same as shipped pages).</p>' +
             blocks +
-            '<button type="button" class="btn ghost btn-sm" data-faq-add="' +
+            '<button type="button" class="btn ghost btn-sm adm-btn-with-ico" data-faq-add="' +
             pageKey +
-            '">Add FAQ item</button></div>'
+            '" title="Add FAQ item"><svg class="adm-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>Add FAQ</span></button></div>'
         );
     }
 
@@ -267,12 +341,36 @@
         syncMkTabActive();
     }
 
+    function positionMkSegThumb() {
+        var root = document.getElementById("adm-site-marketing-host");
+        if (!root) {
+            return;
+        }
+        var track = root.querySelector("[data-mk-site-seg]");
+        var thumb = track && track.querySelector("[data-adm-seg-thumb]");
+        var active = root.querySelector("[data-mk-tab].active");
+        if (!track || !thumb || !active) {
+            return;
+        }
+        var tr = track.getBoundingClientRect();
+        var br = active.getBoundingClientRect();
+        if (br.width < 8) {
+            return;
+        }
+        thumb.style.width = br.width + "px";
+        thumb.style.transform = "translateX(" + (br.left - tr.left) + "px)";
+    }
+
     function syncMkTabActive() {
         var root = document.getElementById("adm-site-marketing-host");
         if (!root) return;
         root.querySelectorAll("[data-mk-tab]").forEach(function (b) {
             var tab = b.getAttribute("data-mk-tab");
             b.classList.toggle("active", tab === currentTab);
+        });
+        requestAnimationFrame(function () {
+            positionMkSegThumb();
+            requestAnimationFrame(positionMkSegThumb);
         });
     }
 
@@ -405,6 +503,7 @@
                 }
             });
         });
+        initHtmlEditorLayers(panel);
     }
 
     async function loadMarketing() {
@@ -452,11 +551,18 @@
             '<p class="helper adm-site-tab__hint">Public copy for Index, Premium, and Content · <code>' +
             MK_KEY +
             '</code>. Use the header <b>Reload</b> to refetch merged defaults + server.</p>' +
-            '<div class="adm-site-tabs-rail">' +
-            '<div class="adm-seg adm-site-mk-seg" role="tablist" aria-label="Marketing page">' +
-            '<button type="button" class="active" data-mk-tab="index">Index</button>' +
-            '<button type="button" data-mk-tab="premium">Premium</button>' +
-            '<button type="button" data-mk-tab="contentPage">Content</button>' +
+            '<div class="adm-site-tabs-rail adm-site-tabs-rail--sticky adm-site-tabs-rail--mk">' +
+            '<div class="adm-site-seg adm-seg adm-site-mk-seg" data-mk-site-seg role="tablist" aria-label="Marketing page">' +
+            '<span class="adm-site-seg__thumb" data-adm-seg-thumb aria-hidden="true"></span>' +
+            '<button type="button" class="adm-site-seg__btn active" data-mk-tab="index">' +
+            '<svg class="adm-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>' +
+            "<span>Index</span></button>" +
+            '<button type="button" class="adm-site-seg__btn" data-mk-tab="premium">' +
+            '<svg class="adm-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' +
+            "<span>Premium</span></button>" +
+            '<button type="button" class="adm-site-seg__btn" data-mk-tab="contentPage">' +
+            '<svg class="adm-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' +
+            "<span>Content</span></button>" +
             "</div></div>" +
             '<details class="adm-site-tab__details">' +
             '<summary class="adm-site-tab__summary">Editing tips</summary>' +
@@ -473,6 +579,15 @@
             "</div>" +
             '<p id="adm-site-marketing-msg" class="status adm-site-tab__status" aria-live="polite"></p>' +
             "</div>";
+
+        var mkResizeT = null;
+        if (root.getAttribute("data-mk-resize") !== "1") {
+            root.setAttribute("data-mk-resize", "1");
+            window.addEventListener("resize", function () {
+                if (mkResizeT) window.clearTimeout(mkResizeT);
+                mkResizeT = window.setTimeout(positionMkSegThumb, 90);
+            });
+        }
 
         root.querySelectorAll("[data-mk-tab]").forEach(function (b) {
             b.addEventListener("click", function () {

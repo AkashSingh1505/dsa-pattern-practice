@@ -718,7 +718,8 @@
             color: var(--ink-2);
             font-family: inherit;
         }
-        .adm-seg button.active {
+        /* Do not style .adm-site-seg tabs here — they use a sliding thumb; a white pill hides the thumb */
+        .adm-seg:not(.adm-site-seg) button.active {
             background: #fff;
             color: var(--ink);
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
@@ -904,15 +905,74 @@
             background: rgba(56, 139, 253, 0.35);
             color: #fff;
         }
-        .adm-code-surface--html {
-            border-left: 3px solid #3fb950 !important;
-            border-color: rgba(63, 185, 80, 0.45) !important;
+        /* HTML fields: tag colors are drawn in the highlight layer (site-marketing-admin-panel.js), not via border accent */
+        .adm-html-editor-wrap.adm-code-surface {
+            position: relative;
+            display: block;
+            padding: 0;
+            overflow: visible;
+            min-height: 4.5rem;
+            box-sizing: border-box;
         }
-        .adm-code-surface--html:focus {
-            border-color: rgba(63, 185, 80, 0.85) !important;
+        .adm-html-editor-wrap.adm-code-surface:focus-within {
+            outline: none;
+            border-color: rgba(88, 166, 255, 0.75) !important;
             box-shadow:
-                0 0 0 3px rgba(63, 185, 80, 0.18),
+                0 0 0 3px rgba(56, 139, 253, 0.2),
                 inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        }
+        .adm-html-editor-highlight {
+            position: absolute;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            margin: 0;
+            padding: 12px 14px;
+            border: 0;
+            overflow: hidden;
+            pointer-events: none;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: inherit;
+            line-height: inherit;
+            tab-size: inherit;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #e6edf3;
+            background: transparent;
+        }
+        .adm-html-editor-highlight-inner {
+            display: block;
+            will-change: transform;
+        }
+        .adm-html-editor-wrap .adm-html-editor-ta {
+            position: relative;
+            z-index: 1;
+            display: block;
+            width: 100%;
+            margin: 0;
+            border: 0 !important;
+            box-shadow: none !important;
+            background: transparent !important;
+            color: transparent !important;
+            caret-color: #58a6ff;
+            resize: vertical;
+            box-sizing: border-box;
+            padding: 12px 14px;
+        }
+        .adm-html-editor-wrap .adm-html-editor-ta::selection {
+            background: rgba(56, 139, 253, 0.35);
+            color: transparent;
+        }
+        .adm-html-br {
+            color: #8b949e;
+        }
+        .adm-html-tag {
+            color: #7ee787;
+        }
+        .adm-html-sl {
+            color: #79c0ff;
         }
         .adm-code-surface--json {
             border-left: 3px solid #58a6ff !important;
@@ -970,14 +1030,17 @@
             height: calc(100% - 6px);
             width: 2.5rem;
             border-radius: 8px;
-            background: #0f172a;
+            background: linear-gradient(180deg, #2563eb 0%, #1e3a8a 100%);
             transform: translateX(3px);
             transition:
                 transform 0.32s cubic-bezier(0.33, 1, 0.68, 1),
                 width 0.32s cubic-bezier(0.33, 1, 0.68, 1);
             z-index: 0;
             pointer-events: none;
-            box-shadow: 0 2px 8px rgba(15, 23, 32, 0.22);
+            box-shadow:
+                0 0 0 1px rgba(255, 255, 255, 0.12) inset,
+                0 2px 10px rgba(15, 23, 32, 0.28);
+            will-change: transform, width;
         }
         .adm-site-seg__btn {
             position: relative;
@@ -1003,7 +1066,8 @@
             background: rgba(255, 255, 255, 0.35) !important;
         }
         .adm-site-seg__btn.active {
-            color: #f8fafc !important;
+            color: #fff !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
         }
         .adm-site-seg__btn.active:hover {
             color: #fff !important;
@@ -1301,6 +1365,12 @@
             color: var(--ink);
             resize: vertical;
             box-sizing: border-box;
+        }
+        .adm-json-input.adm-code-surface {
+            min-height: 4.5rem;
+            background: linear-gradient(165deg, #161b22 0%, #0d1117 100%);
+            color: #e6edf3;
+            border-radius: 10px !important;
         }
         .adm-form-grid {
             display: grid;
@@ -2022,6 +2092,10 @@
             background: rgba(12, 14, 18, 0.65);
             border-color: rgba(255, 255, 255, 0.12);
             color: var(--ink);
+        }
+        html[data-admin-theme="dark"] .adm-json-input.adm-code-surface {
+            background: linear-gradient(165deg, #0c1118 0%, #070b10 100%);
+            color: #e6edf3;
         }
         html[data-admin-theme="dark"] .adm-user-danger-zone {
             background: rgba(127, 29, 29, 0.2);

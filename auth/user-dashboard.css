@@ -1548,11 +1548,13 @@ html.dsa-udash-html,
         color 0.18s ease,
         opacity 0.18s ease;
 }
-.dsa-glib-card-menu svg {
-    width: 18px;
-    height: 18px;
+.dsa-glib-card-menu-dots {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1;
     display: block;
-    margin: 0 auto;
+    transform: translateY(-1px);
 }
 .dsa-glib-card-menu:hover,
 .dsa-glib-card-menu-wrap[open] .dsa-glib-card-menu {
@@ -1634,12 +1636,6 @@ html.dsa-udash-html,
     display: inline-flex;
     align-items: center;
     gap: 6px;
-}
-.dsa-glib-stat svg {
-    width: 14px;
-    height: 14px;
-    color: #71717a;
-    flex-shrink: 0;
 }
 .dsa-glib-stat-sep {
     width: 4px;
@@ -1737,6 +1733,12 @@ html.dsa-udash-html,
     display: flex;
     align-items: center;
     justify-content: center;
+}
+.dsa-glib-card-create-glyph {
+    font-size: 30px;
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: 0;
 }
 .dsa-glib-card-create-title {
     margin: 0;

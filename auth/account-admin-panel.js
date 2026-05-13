@@ -300,6 +300,9 @@
         document.querySelectorAll('[data-adm-dual="' + section + '"]').forEach(function (btn) {
             const on = btn.getAttribute("data-adm-mode") === mode;
             btn.classList.toggle("active", on);
+            if (btn.hasAttribute("aria-pressed")) {
+                btn.setAttribute("aria-pressed", on ? "true" : "false");
+            }
         });
         const ui = document.querySelector('[data-adm-panel="' + section + '-ui"]');
         const json = document.querySelector('[data-adm-panel="' + section + '-json"]');

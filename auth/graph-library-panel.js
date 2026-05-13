@@ -150,17 +150,17 @@
     function statsMarkup(downloadCount, uniqueDownloaders) {
         return (
             '<div class="dsa-glib-stats-row">' +
-            '<span class="dsa-glib-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v11"></path><path d="M7 10l5 5 5-5"></path><path d="M5 21h14"></path></svg>' +
+            '<span class="dsa-glib-stat">' +
             escapeHtml(String(downloadCount || 0)) +
             ' downloads</span><span class="dsa-glib-stat-sep" aria-hidden="true"></span>' +
-            '<span class="dsa-glib-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>' +
+            '<span class="dsa-glib-stat">' +
             escapeHtml(String(uniqueDownloaders || 0)) +
             " members</span></div>"
         );
     }
 
     function menuButtonMarkup() {
-        return '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg>';
+        return '<span class="dsa-glib-card-menu-dots" aria-hidden="true">···</span>';
     }
 
     function readSession() {
@@ -316,12 +316,12 @@
                 '<div class="dsa-glib-card-footer"><span class="dsa-glib-card-updated">' +
                 escapeHtml(updatedLabel(g.updatedAt)) +
                 '</span><div class="dsa-glib-card-actions">' +
-                '<button type="button" class="dsa-glib-action dsa-glib-action--ghost dsa-glib-action--icon dsa-glib-btn-sharelink" data-id="' +
+                '<button type="button" class="dsa-glib-action dsa-glib-action--ghost dsa-glib-btn-sharelink" data-id="' +
                 escapeHtml(g.id) +
-                '" aria-label="Share graph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"></path></svg></button>' +
+                '" aria-label="Share graph">Share link</button>' +
                 '<button type="button" class="dsa-glib-action dsa-glib-action--primary dsa-glib-btn-dl" data-id="' +
                 escapeHtml(g.id) +
-                '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v11"></path><path d="M7 10l5 5 5-5"></path><path d="M5 21h14"></path></svg>Download</button>' +
+                '">Download</button>' +
                 "</div></div></div>";
             host.appendChild(card);
         });
@@ -438,7 +438,7 @@
                 '">Share</button>' +
                 '<button type="button" class="dsa-glib-action dsa-glib-action--primary dsa-glib-btn-open" data-id="' +
                 escapeHtml(g.id) +
-                '">Open<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button>' +
+                '">Open</button>' +
                 "</div></div></div>";
             host.appendChild(card);
         });
@@ -447,7 +447,7 @@
         createCard.className = "dsa-glib-card dsa-glib-card--create dsa-glib-btn-create-card";
         createCard.innerHTML =
             '<div class="dsa-glib-card-create-inner">' +
-            '<div class="dsa-glib-card-create-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"></path></svg></div>' +
+            '<div class="dsa-glib-card-create-icon" aria-hidden="true"><span class="dsa-glib-card-create-glyph">+</span></div>' +
             '<h3 class="dsa-glib-card-create-title">Create a new graph</h3>' +
             '<p class="dsa-glib-card-create-text">Start blank or use a template from the community library.</p>' +
             "</div>";

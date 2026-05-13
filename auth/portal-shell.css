@@ -920,6 +920,120 @@
             margin-top: 12px;
             align-self: flex-start;
         }
+        .adm-mk-manager .adm-mk-form {
+            margin-bottom: 14px;
+        }
+        .adm-mk-form__actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-top: 4px;
+        }
+        .adm-mk-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .adm-mk-row {
+            border-radius: 12px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.55);
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.55) inset;
+            overflow: hidden;
+            border-left: 4px solid rgba(34, 197, 94, 0.55);
+        }
+        .adm-mk-manager--nav .adm-mk-row {
+            border-left-color: rgba(14, 165, 233, 0.55);
+        }
+        .adm-mk-row__head {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            margin: 0;
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+            text-align: left;
+            font: inherit;
+            color: var(--ink);
+        }
+        .adm-mk-row__head:hover {
+            background: rgba(15, 23, 32, 0.04);
+        }
+        .adm-mk-row__title {
+            font-weight: 600;
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+        .adm-mk-row__hint {
+            font-size: 11px;
+            color: var(--muted);
+            max-width: 42%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .adm-mk-manager--faq .adm-mk-row__hint {
+            display: none;
+        }
+        .adm-mk-row__chev {
+            flex-shrink: 0;
+            font-size: 10px;
+            color: var(--muted);
+            transition: transform 0.25s ease;
+        }
+        .adm-mk-row.open .adm-mk-row__chev {
+            transform: rotate(180deg);
+        }
+        .adm-mk-row__body {
+            display: none;
+            padding: 0 14px 14px;
+            border-top: 1px solid var(--line);
+        }
+        .adm-mk-row.open .adm-mk-row__body {
+            display: block;
+        }
+        .adm-mk-row__peek {
+            margin: 10px 0 8px;
+            font-size: 12px;
+        }
+        .adm-mk-row__mono {
+            margin: 0;
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: rgba(15, 23, 32, 0.04);
+            border: 1px solid var(--line);
+            font-size: 12px;
+            line-height: 1.45;
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 220px;
+            overflow: auto;
+            color: var(--ink-2);
+        }
+        .adm-mk-row__mono--html {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 12px;
+        }
+        .adm-mk-row__actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .adm-mk-empty {
+            margin: 0;
+            padding: 18px 12px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--muted);
+            border: 1px dashed var(--line);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.35);
+        }
         /* Site pane — portal default .btn is full-width; restore compact controls */
         .dsa-portal-page--admin .adm-pane[data-admin-pane="site"] .btn {
             width: auto;
@@ -942,13 +1056,36 @@
         .dsa-portal-page--admin .adm-pane[data-admin-pane="site"] .adm-kv-row-actions .btn {
             flex: 0 0 auto;
         }
-        /* IDE-style surfaces for HTML / JSON in Site */
-        .adm-code-surface {
+        /* Code / HTML surfaces — admin only; light vs dark theme */
+        .dsa-portal-page--admin .adm-code-surface {
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
             font-size: 13px;
             line-height: 1.55;
             tab-size: 2;
             border-radius: 10px !important;
+        }
+        html:not([data-admin-theme="dark"]) .dsa-portal-page--admin .adm-code-surface {
+            color: var(--ink);
+            background: linear-gradient(165deg, #ffffff 0%, #f1f5f9 100%);
+            border: 1px solid rgba(15, 23, 32, 0.12) !important;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 1px 2px rgba(15, 23, 32, 0.06);
+            caret-color: #0369a1;
+        }
+        html:not([data-admin-theme="dark"]) .dsa-portal-page--admin .adm-code-surface::placeholder {
+            color: rgba(71, 85, 105, 0.75);
+        }
+        html:not([data-admin-theme="dark"]) .dsa-portal-page--admin .adm-code-surface:focus {
+            outline: none;
+            border-color: rgba(2, 132, 199, 0.55) !important;
+            box-shadow:
+                0 0 0 3px rgba(14, 165, 233, 0.18),
+                inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        }
+        html:not([data-admin-theme="dark"]) .dsa-portal-page--admin .adm-code-surface::selection {
+            background: rgba(14, 165, 233, 0.25);
+            color: var(--ink);
+        }
+        html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-code-surface {
             color: #e6edf3;
             background: linear-gradient(165deg, #161b22 0%, #0d1117 100%);
             border: 1px solid rgba(56, 139, 253, 0.35) !important;
@@ -957,21 +1094,20 @@
                 0 0 0 1px rgba(0, 0, 0, 0.35);
             caret-color: #58a6ff;
         }
-        .adm-code-surface::placeholder {
+        html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-code-surface::placeholder {
             color: rgba(139, 148, 158, 0.75);
         }
-        .adm-code-surface:focus {
+        html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-code-surface:focus {
             outline: none;
             border-color: rgba(88, 166, 255, 0.75) !important;
             box-shadow:
                 0 0 0 3px rgba(56, 139, 253, 0.2),
                 inset 0 1px 0 rgba(255, 255, 255, 0.06);
         }
-        .adm-code-surface::selection {
+        html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-code-surface::selection {
             background: rgba(56, 139, 253, 0.35);
             color: #fff;
         }
-        /* HTML fields: tag colors are drawn in the highlight layer (site-marketing-admin-panel.js), not via border accent */
         .adm-html-editor-wrap.adm-code-surface {
             position: relative;
             display: block;
@@ -980,12 +1116,25 @@
             min-height: 4.5rem;
             box-sizing: border-box;
         }
-        .adm-html-editor-wrap.adm-code-surface:focus-within {
+        html:not([data-admin-theme="dark"]) .dsa-portal-page--admin .adm-html-editor-wrap.adm-code-surface:focus-within {
+            outline: none;
+            border-color: rgba(2, 132, 199, 0.55) !important;
+            box-shadow:
+                0 0 0 3px rgba(14, 165, 233, 0.18),
+                inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        }
+        html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-html-editor-wrap.adm-code-surface:focus-within {
             outline: none;
             border-color: rgba(88, 166, 255, 0.75) !important;
             box-shadow:
                 0 0 0 3px rgba(56, 139, 253, 0.2),
                 inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        }
+        html:not([data-admin-theme="dark"]) .dsa-portal-page--admin .adm-html-editor-highlight {
+            color: #0f172a;
+        }
+        html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-html-editor-highlight {
+            color: #e6edf3;
         }
         .adm-html-editor-highlight {
             position: absolute;
@@ -1005,7 +1154,6 @@
             tab-size: inherit;
             white-space: pre-wrap;
             word-wrap: break-word;
-            color: #e6edf3;
             background: transparent;
         }
         .adm-html-editor-highlight-inner {
@@ -1022,28 +1170,54 @@
             box-shadow: none !important;
             background: transparent !important;
             color: transparent !important;
-            caret-color: #58a6ff;
             resize: vertical;
             box-sizing: border-box;
             padding: 12px 14px;
         }
-        .adm-html-editor-wrap .adm-html-editor-ta::selection {
+        html:not([data-admin-theme="dark"]) .dsa-portal-page--admin .adm-html-editor-wrap .adm-html-editor-ta {
+            caret-color: #0369a1;
+        }
+        html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-html-editor-wrap .adm-html-editor-ta {
+            caret-color: #58a6ff;
+        }
+        html:not([data-admin-theme="dark"]) .dsa-portal-page--admin .adm-html-editor-wrap .adm-html-editor-ta::selection {
+            background: rgba(14, 165, 233, 0.28);
+            color: transparent;
+        }
+        html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-html-editor-wrap .adm-html-editor-ta::selection {
             background: rgba(56, 139, 253, 0.35);
             color: transparent;
         }
-        .adm-html-br {
+        html:not([data-admin-theme="dark"]) .dsa-portal-page--admin .adm-html-br {
+            color: #64748b;
+        }
+        html:not([data-admin-theme="dark"]) .dsa-portal-page--admin .adm-html-tag {
+            color: #047857;
+        }
+        html:not([data-admin-theme="dark"]) .dsa-portal-page--admin .adm-html-sl {
+            color: #0369a1;
+        }
+        html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-html-br {
             color: #8b949e;
         }
-        .adm-html-tag {
+        html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-html-tag {
             color: #7ee787;
         }
-        .adm-html-sl {
+        html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-html-sl {
             color: #79c0ff;
         }
-        .adm-code-surface--json {
+        html:not([data-admin-theme="dark"]) .dsa-portal-page--admin .adm-code-surface--json {
+            border-left: 3px solid #0284c7 !important;
+        }
+        html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-code-surface--json {
             border-left: 3px solid #58a6ff !important;
         }
-        .adm-code-surface--meta {
+        html:not([data-admin-theme="dark"]) .dsa-portal-page--admin .adm-code-surface--meta {
+            border-left: 3px solid #7c3aed !important;
+            border-color: rgba(124, 58, 237, 0.28) !important;
+            font-size: 12px;
+        }
+        html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-code-surface--meta {
             border-left: 3px solid #d2a8ff !important;
             border-color: rgba(210, 168, 255, 0.35) !important;
             font-size: 12px;
@@ -1432,11 +1606,17 @@
             resize: vertical;
             box-sizing: border-box;
         }
-        .adm-json-input.adm-code-surface {
+        .dsa-portal-page--admin .adm-json-input.adm-code-surface {
             min-height: 4.5rem;
-            background: linear-gradient(165deg, #161b22 0%, #0d1117 100%);
-            color: #e6edf3;
             border-radius: 10px !important;
+        }
+        html:not([data-admin-theme="dark"]) .dsa-portal-page--admin .adm-json-input.adm-code-surface {
+            background: linear-gradient(165deg, #ffffff 0%, #f1f5f9 100%);
+            color: var(--ink);
+        }
+        html[data-admin-theme="dark"] .dsa-portal-page--admin .adm-json-input.adm-code-surface {
+            background: linear-gradient(165deg, #0c1118 0%, #070b10 100%);
+            color: #e6edf3;
         }
         .adm-form-grid {
             display: grid;
@@ -2087,11 +2267,6 @@
         html[data-admin-theme="dark"] .adm-site-seg__btn:hover:not(.active) {
             background: rgba(255, 255, 255, 0.08) !important;
         }
-        html[data-admin-theme="dark"] .adm-code-surface {
-            background: linear-gradient(165deg, #0c1118 0%, #070b10 100%);
-            border-color: rgba(88, 166, 255, 0.28) !important;
-            color: #e6edf3;
-        }
         html[data-admin-theme="dark"] .adm-mk-item-card {
             background: rgba(255, 255, 255, 0.04);
             border-color: var(--line);
@@ -2101,6 +2276,20 @@
             background: rgba(255, 255, 255, 0.06);
             border-color: var(--line);
             color: var(--muted);
+        }
+        html[data-admin-theme="dark"] .adm-mk-row {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--line);
+            box-shadow: none;
+        }
+        html[data-admin-theme="dark"] .adm-mk-row__head:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+        html[data-admin-theme="dark"] .adm-mk-row__mono {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        html[data-admin-theme="dark"] .adm-mk-empty {
+            background: rgba(255, 255, 255, 0.04);
         }
         html[data-admin-theme="dark"] .adm-subcard,
         html[data-admin-theme="dark"] .adm-kv-row,
@@ -2169,10 +2358,6 @@
             background: rgba(12, 14, 18, 0.65);
             border-color: rgba(255, 255, 255, 0.12);
             color: var(--ink);
-        }
-        html[data-admin-theme="dark"] .adm-json-input.adm-code-surface {
-            background: linear-gradient(165deg, #0c1118 0%, #070b10 100%);
-            color: #e6edf3;
         }
         html[data-admin-theme="dark"] .adm-user-danger-zone {
             background: rgba(127, 29, 29, 0.2);

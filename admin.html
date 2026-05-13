@@ -256,14 +256,8 @@
                                     <span>Reload</span>
                                 </button>
                                 <div class="adm-seg" data-adm-dual-wrap="site">
-                                    <button type="button" class="btn btn-sm active adm-btn-with-ico" data-adm-dual="site" data-adm-mode="ui" aria-pressed="true">
-                                        <svg class="adm-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
-                                        <span>UI</span>
-                                    </button>
-                                    <button type="button" class="btn btn-sm adm-btn-with-ico" data-adm-dual="site" data-adm-mode="json" aria-pressed="false">
-                                        <svg class="adm-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
-                                        <span>JSON</span>
-                                    </button>
+                                    <button type="button" class="active" data-adm-dual="site" data-adm-mode="ui" aria-pressed="true">UI</button>
+                                    <button type="button" data-adm-dual="site" data-adm-mode="json" aria-pressed="false">JSON</button>
                                 </div>
                             </div>
                         </div>
@@ -595,6 +589,7 @@
                                         <span>Graph library</span>
                                     </button>.
                                     Recent opens on the left (last <span id="adm-ws-recents-cap-num">8</span>). Member copies are <strong>view-only</strong>.
+                                    <a href="./workspace.html" target="_blank" rel="noopener noreferrer" class="dsa-udash-text-btn adm-tab-jump adm-tab-jump--compact" style="margin-left: 4px">Workspace sandbox</a> (same UI in a new tab for testing).
                                 </p>
                             </div>
                             <div class="adm-pane-head-controls adm-ws-pane-head-controls">
@@ -629,6 +624,22 @@
                                         <path d="M6.8 7.3l4.4 9M17.2 7.3l-4.4 9"></path>
                                     </svg>
                                 </button>
+                                <a
+                                    class="adm-section-reload-btn"
+                                    href="./workspace.html"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title="Open standalone workspace sandbox (JSON + UI; new tab)"
+                                    aria-label="Open workspace sandbox in new tab"
+                                    style="text-decoration: none; color: inherit"
+                                >
+                                    <svg class="adm-section-reload-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                                        <polyline points="15 3 21 3 21 9" />
+                                        <line x1="10" y1="14" x2="21" y2="3" />
+                                    </svg>
+                                    <span>Sandbox</span>
+                                </a>
                                 <div class="adm-glib-segmented" role="tablist" aria-label="Workspace view">
                                     <button type="button" class="active" data-adm-dual="workspace" data-adm-mode="ui">UI</button>
                                     <button type="button" data-adm-dual="workspace" data-adm-mode="json">JSON</button>

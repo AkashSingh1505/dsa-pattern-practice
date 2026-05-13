@@ -6,6 +6,8 @@
     var MK_KEY = "site_marketing_v1";
     var gMarketing = null;
     var currentTab = "index";
+    var faqEditIdx = null;
+    var navEditIdx = null;
 
     function apiAdmin(seg) {
         return new URL("api/admin/" + seg, document.baseURI).href;
@@ -194,104 +196,166 @@
         return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/"/g, "&quot;");
     }
 
+    function truncateLine(s, max) {
+        var t = String(s == null ? "" : s)
+            .replace(new RegExp("\\s+", "g"), " ")
+            .trim();
+        if (t.length <= max) {
+            return t;
+        }
+        return t.slice(0, max - 1) + "\u2026";
+    }
+
+    function navDraftValues(pageKey) {
+        if (navEditIdx != null && gMarketing[pageKey] && gMarketing[pageKey].navLinks && gMarketing[pageKey].navLinks[navEditIdx]) {
+            var r = gMarketing[pageKey].navLinks[navEditIdx];
+            return { label: r.label || "", href: r.href || "" };
+        }
+        return { label: "", href: "" };
+    }
+
+    function faqDraftValues(pageKey) {
+        if (faqEditIdx != null && gMarketing[pageKey] && gMarketing[pageKey].faqItems && gMarketing[pageKey].faqItems[faqEditIdx]) {
+            var it = gMarketing[pageKey].faqItems[faqEditIdx];
+            return { q: it.question || "", a: it.answerHtml || "" };
+        }
+        return { q: "", a: "" };
+    }
+
     function renderNavTable(pageKey) {
         var arr = (gMarketing[pageKey] && gMarketing[pageKey].navLinks) || [];
+        var draft = navDraftValues(pageKey);
         var rows = arr
             .map(function (row, idx) {
+                var hrefEsc = escapeHtml(row.href || "");
+                var labelEsc = escapeHtml(row.label || "Untitled");
                 return (
-                    '<div class="adm-mk-item-card" data-mk-nav-card="' +
+                    '<div class="adm-mk-row" data-mk-nav-row="' +
                     pageKey +
                     '" data-i="' +
                     idx +
                     '">' +
-                    '<div class="adm-mk-item-card__head"><span class="adm-mk-item-card__badge">Link ' +
-                    (idx + 1) +
-                    "</span></div>" +
-                    '<div class="adm-mk-item-card__grid">' +
-                    '<div class="adm-field adm-field--compact"><label>Label</label><input type="text" data-nav="' +
-                    pageKey +
-                    "\" data-i=\"" +
+                    '<button type="button" class="adm-mk-row__head" data-mk-nav-toggle aria-expanded="false">' +
+                    '<span class="adm-mk-row__title">' +
+                    labelEsc +
+                    '</span><span class="adm-mk-row__hint">' +
+                    escapeHtml(truncateLine(row.href || "\u2014", 56)) +
+                    '</span><span class="adm-mk-row__chev" aria-hidden="true">\u25bc</span></button>' +
+                    '<div class="adm-mk-row__body">' +
+                    '<pre class="adm-mk-row__mono" spellcheck="false">' +
+                    hrefEsc +
+                    "</pre>" +
+                    '<div class="adm-mk-row__actions">' +
+                    '<button type="button" class="btn ghost btn-sm" data-mk-nav-edit data-i="' +
                     idx +
-                    "\" data-k=\"label\" value=\"" +
-                    escapeAttr(row.label) +
-                    '" /></div>' +
-                    '<div class="adm-field adm-field--compact"><label>URL</label><input type="text" data-nav="' +
-                    pageKey +
-                    "\" data-i=\"" +
+                    '">Edit</button>' +
+                    '<button type="button" class="btn ghost btn-sm" data-mk-nav-del data-i="' +
                     idx +
-                    "\" data-k=\"href\" value=\"" +
-                    escapeAttr(row.href) +
-                    '" /></div></div>' +
-                    '<button type="button" class="btn ghost btn-sm adm-mk-item-card__foot" data-nav-del="' +
-                    pageKey +
-                    "\" data-i=\"" +
-                    idx +
-                    '" title="Remove this link">Remove link</button></div>'
+                    '">Delete</button>' +
+                    "</div></div></div>"
                 );
             })
             .join("");
+        var listHtml = rows || '<p class="adm-mk-empty">No toolbar links yet. Add one in the form above.</p>';
+        var commitLabel = navEditIdx == null ? "Add link" : "Update link";
+        var cancelHidden = navEditIdx == null ? " hidden" : "";
         return (
-            '<div class="adm-mk-collection adm-subcard" style="margin-top:14px">' +
-            '<div class="adm-mk-collection__head">' +
-            "<h4>Toolbar links</h4>" +
-            '<p class="helper adm-mk-collection__lede">Center navigation — each link is its own block. Save writes the full marketing document.</p></div>' +
-            '<div class="adm-mk-item-list">' +
-            rows +
-            "</div>" +
-            '<button type="button" class="btn ghost btn-sm adm-mk-collection__add" data-nav-add="' +
+            '<div class="adm-mk-collection adm-subcard adm-mk-manager adm-mk-manager--nav" data-mk-page="' +
             pageKey +
-            '" title="Add another nav link">Add link</button></div>'
+            '" style="margin-top:14px">' +
+            '<div class="adm-mk-collection__head">' +
+            "<h4>Toolbar link manager</h4>" +
+            '<p class="helper adm-mk-collection__lede">Compose a label and URL, then add to the list. Click a row to expand the full URL. Edit loads the row into the form; nothing is stored in D1 until you press <b>Save</b>.</p></div>' +
+            '<div class="adm-mk-form adm-subcard">' +
+            '<div class="adm-field adm-field--compact"><label for="mk-nav-draft-label">Label</label><input type="text" id="mk-nav-draft-label" placeholder="e.g. Pricing" value="' +
+            escapeAttr(draft.label) +
+            '" autocomplete="off" /></div>' +
+            '<div class="adm-field adm-field--compact"><label for="mk-nav-draft-href">URL</label><input type="text" id="mk-nav-draft-href" placeholder="https://\u2026 or /path" value="' +
+            escapeAttr(draft.href) +
+            '" autocomplete="off" /></div>' +
+            '<div class="adm-mk-form__actions">' +
+            '<button type="button" class="btn btn-sm" data-mk-nav-commit>' +
+            commitLabel +
+            "</button>" +
+            '<button type="button" class="btn ghost btn-sm" data-mk-nav-cancel' +
+            cancelHidden +
+            ">Cancel</button></div></div>" +
+            '<div class="adm-mk-list">' +
+            listHtml +
+            "</div></div>"
         );
     }
 
     function renderFaqEditor(pageKey) {
         var arr = (gMarketing[pageKey] && gMarketing[pageKey].faqItems) || [];
-        var blocks = arr
+        var draft = faqDraftValues(pageKey);
+        var rows = arr
             .map(function (it, idx) {
+                var qEsc = escapeHtml(it.question || "");
+                var qHead = qEsc || escapeHtml("(No question)");
+                var prev = truncateLine(
+                    String(it.answerHtml || "")
+                        .replace(new RegExp("\\s+", "g"), " ")
+                        .trim(),
+                    140
+                );
                 return (
-                    '<div class="adm-mk-item-card adm-mk-item-card--faq" data-faq-card="' +
+                    '<div class="adm-mk-row" data-mk-faq-row="' +
                     pageKey +
                     '" data-i="' +
                     idx +
                     '">' +
-                    '<div class="adm-mk-item-card__head"><span class="adm-mk-item-card__badge">FAQ ' +
-                    (idx + 1) +
-                    "</span></div>" +
-                    '<div class="adm-field adm-field--compact"><label>Question</label><input type="text" data-faq-q="' +
-                    pageKey +
-                    '" data-i="' +
-                    idx +
-                    '" value="' +
-                    escapeAttr(it.question || "") +
-                    '" style="width:100%"/></div>' +
-                    '<div class="adm-field adm-field--compact"><label>Answer HTML</label><div class="adm-html-editor-wrap adm-json-input adm-code-surface adm-code-surface--html" style="min-height:120px">' +
-                    '<pre class="adm-html-editor-highlight" spellcheck="false" aria-hidden="true"></pre>' +
-                    '<textarea class="adm-json-input adm-html-editor-ta" data-faq-a="' +
-                    pageKey +
-                    '" data-i="' +
-                    idx +
-                    '" spellcheck="false" style="min-height:120px;width:100%">' +
+                    '<button type="button" class="adm-mk-row__head" data-mk-faq-toggle aria-expanded="false">' +
+                    '<span class="adm-mk-row__title">' +
+                    qHead +
+                    '</span><span class="adm-mk-row__chev" aria-hidden="true">\u25bc</span></button>' +
+                    '<div class="adm-mk-row__body">' +
+                    '<p class="helper adm-mk-row__peek">' +
+                    escapeHtml(prev) +
+                    "</p>" +
+                    '<pre class="adm-mk-row__mono adm-mk-row__mono--html" spellcheck="false">' +
                     escapeHtml(it.answerHtml || "") +
-                    "</textarea></div></div>" +
-                    '<button type="button" class="btn ghost btn-sm adm-mk-item-card__foot" data-faq-del="' +
-                    pageKey +
-                    "\" data-i=\"" +
+                    "</pre>" +
+                    '<div class="adm-mk-row__actions">' +
+                    '<button type="button" class="btn ghost btn-sm" data-mk-faq-edit data-i="' +
                     idx +
-                    '" title=\"Remove this FAQ\">Remove FAQ</button></div>'
+                    '">Edit</button>' +
+                    '<button type="button" class="btn ghost btn-sm" data-mk-faq-del data-i="' +
+                    idx +
+                    '">Delete</button>' +
+                    "</div></div></div>"
                 );
             })
             .join("");
+        var listHtml = rows || '<p class="adm-mk-empty">No FAQ items yet. Add one in the form above.</p>';
+        var commitLabel = faqEditIdx == null ? "Add FAQ" : "Update FAQ";
+        var cancelHidden = faqEditIdx == null ? " hidden" : "";
         return (
-            '<div class="adm-mk-collection adm-subcard" style="margin-top:16px">' +
-            '<div class="adm-mk-collection__head">' +
-            "<h4>FAQ items</h4>" +
-            '<p class="helper adm-mk-collection__lede">Each FAQ is its own block — question, HTML answer, and remove. Same HTML subset as live pages.</p></div>' +
-            '<div class="adm-mk-item-list">' +
-            blocks +
-            "</div>" +
-            '<button type="button" class="btn ghost btn-sm adm-mk-collection__add" data-faq-add="' +
+            '<div class="adm-mk-collection adm-subcard adm-mk-manager adm-mk-manager--faq" data-mk-page="' +
             pageKey +
-            '" title="Add another FAQ">Add FAQ</button></div>'
+            '" style="margin-top:16px">' +
+            '<div class="adm-mk-collection__head">' +
+            "<h4>FAQ manager</h4>" +
+            '<p class="helper adm-mk-collection__lede">Enter a question and HTML answer, then add to the list. Click the question to expand the full answer. Edit loads into the form; <b>Save</b> writes marketing to the server.</p></div>' +
+            '<div class="adm-mk-form adm-subcard">' +
+            '<div class="adm-field adm-field--compact"><label for="mk-faq-draft-q">Question</label><input type="text" id="mk-faq-draft-q" placeholder="Enter question\u2026" value="' +
+            escapeAttr(draft.q) +
+            '" autocomplete="off" /></div>' +
+            '<div class="adm-field adm-field--compact"><label for="mk-faq-draft-html">Answer (HTML)</label><div class="adm-html-editor-wrap adm-json-input adm-code-surface adm-code-surface--html" style="min-height:100px">' +
+            '<pre class="adm-html-editor-highlight" spellcheck="false" aria-hidden="true"></pre>' +
+            '<textarea class="adm-json-input adm-html-editor-ta" id="mk-faq-draft-html" spellcheck="false" style="min-height:100px;width:100%">' +
+            escapeHtml(draft.a) +
+            "</textarea></div></div>" +
+            '<div class="adm-mk-form__actions">' +
+            '<button type="button" class="btn btn-sm" data-mk-faq-commit>' +
+            commitLabel +
+            "</button>" +
+            '<button type="button" class="btn ghost btn-sm" data-mk-faq-cancel' +
+            cancelHidden +
+            ">Cancel</button></div></div>" +
+            '<div class="adm-mk-list">' +
+            listHtml +
+            "</div></div>"
         );
     }
 
@@ -453,79 +517,150 @@
         if (gMarketing.index && gMarketing.index.finalCta) delete gMarketing.index.finalCta.trustLinesText;
     }
 
+    function onMkMarketingManagerClick(ev) {
+        var t = ev.target;
+        if (!t || typeof t.closest !== "function") return;
+        var mgr = t.closest(".adm-mk-manager");
+        if (!mgr || !gMarketing) return;
+        var pageKey = mgr.getAttribute("data-mk-page");
+        if (!pageKey) return;
+        var row = t.closest(".adm-mk-row");
+
+        if (t.closest("[data-mk-nav-toggle]")) {
+            ev.preventDefault();
+            if (row && row.getAttribute("data-mk-nav-row") === pageKey) {
+                row.classList.toggle("open");
+            }
+            return;
+        }
+        if (t.closest("[data-mk-faq-toggle]")) {
+            ev.preventDefault();
+            if (row && row.getAttribute("data-mk-faq-row") === pageKey) {
+                row.classList.toggle("open");
+            }
+            return;
+        }
+
+        var editNav = t.closest("[data-mk-nav-edit]");
+        if (editNav) {
+            ev.preventDefault();
+            navEditIdx = parseInt(editNav.getAttribute("data-i"), 10);
+            faqEditIdx = null;
+            renderTab();
+            return;
+        }
+        var delNav = t.closest("[data-mk-nav-del]");
+        if (delNav) {
+            ev.preventDefault();
+            if (!window.confirm("Remove this toolbar link?")) return;
+            var ni = parseInt(delNav.getAttribute("data-i"), 10);
+            if (gMarketing[pageKey] && gMarketing[pageKey].navLinks) {
+                gMarketing[pageKey].navLinks.splice(ni, 1);
+            }
+            if (navEditIdx === ni) navEditIdx = null;
+            else if (navEditIdx != null && navEditIdx > ni) navEditIdx -= 1;
+            syncSpecialFieldsFromModel();
+            renderTab();
+            return;
+        }
+        if (t.closest("[data-mk-nav-commit]")) {
+            ev.preventDefault();
+            var labEl = document.getElementById("mk-nav-draft-label");
+            var hrefEl = document.getElementById("mk-nav-draft-href");
+            var lab = labEl ? String(labEl.value).trim() : "";
+            var href = hrefEl ? String(hrefEl.value).trim() : "";
+            if (!lab || !href) {
+                window.alert("Enter both label and URL.");
+                return;
+            }
+            if (!gMarketing[pageKey]) gMarketing[pageKey] = {};
+            if (!Array.isArray(gMarketing[pageKey].navLinks)) gMarketing[pageKey].navLinks = [];
+            if (navEditIdx == null) {
+                gMarketing[pageKey].navLinks.push({ label: lab, href: href });
+            } else if (gMarketing[pageKey].navLinks[navEditIdx]) {
+                gMarketing[pageKey].navLinks[navEditIdx].label = lab;
+                gMarketing[pageKey].navLinks[navEditIdx].href = href;
+            }
+            navEditIdx = null;
+            syncSpecialFieldsFromModel();
+            renderTab();
+            return;
+        }
+        if (t.closest("[data-mk-nav-cancel]")) {
+            ev.preventDefault();
+            navEditIdx = null;
+            renderTab();
+            return;
+        }
+
+        var editFaq = t.closest("[data-mk-faq-edit]");
+        if (editFaq) {
+            ev.preventDefault();
+            faqEditIdx = parseInt(editFaq.getAttribute("data-i"), 10);
+            navEditIdx = null;
+            renderTab();
+            return;
+        }
+        var delFaq = t.closest("[data-mk-faq-del]");
+        if (delFaq) {
+            ev.preventDefault();
+            if (!window.confirm("Remove this FAQ?")) return;
+            var fi = parseInt(delFaq.getAttribute("data-i"), 10);
+            if (gMarketing[pageKey] && gMarketing[pageKey].faqItems) {
+                gMarketing[pageKey].faqItems.splice(fi, 1);
+            }
+            if (faqEditIdx === fi) faqEditIdx = null;
+            else if (faqEditIdx != null && faqEditIdx > fi) faqEditIdx -= 1;
+            syncSpecialFieldsFromModel();
+            renderTab();
+            return;
+        }
+        if (t.closest("[data-mk-faq-commit]")) {
+            ev.preventDefault();
+            var qEl = document.getElementById("mk-faq-draft-q");
+            var aEl = document.getElementById("mk-faq-draft-html");
+            var q = qEl ? String(qEl.value).trim() : "";
+            var a = aEl ? String(aEl.value).trim() : "";
+            if (!q || !a) {
+                window.alert("Enter both question and HTML answer.");
+                return;
+            }
+            if (!gMarketing[pageKey]) gMarketing[pageKey] = {};
+            if (!Array.isArray(gMarketing[pageKey].faqItems)) gMarketing[pageKey].faqItems = [];
+            if (faqEditIdx == null) {
+                gMarketing[pageKey].faqItems.push({ question: q, answerHtml: a });
+            } else if (gMarketing[pageKey].faqItems[faqEditIdx]) {
+                gMarketing[pageKey].faqItems[faqEditIdx].question = q;
+                gMarketing[pageKey].faqItems[faqEditIdx].answerHtml = a;
+            }
+            faqEditIdx = null;
+            syncSpecialFieldsFromModel();
+            renderTab();
+            return;
+        }
+        if (t.closest("[data-mk-faq-cancel]")) {
+            ev.preventDefault();
+            faqEditIdx = null;
+            renderTab();
+            return;
+        }
+    }
+
+    function ensureMkMarketingManagerDelegation() {
+        var panel = document.getElementById("adm-site-marketing-panel");
+        if (!panel || panel.getAttribute("data-mk-mgr-delegation") === "1") return;
+        panel.setAttribute("data-mk-mgr-delegation", "1");
+        panel.addEventListener("click", onMkMarketingManagerClick);
+    }
+
     function bindPanelInputs() {
         var panel = document.getElementById("adm-site-marketing-panel");
         if (!panel) return;
+        ensureMkMarketingManagerDelegation();
         panel.querySelectorAll("[data-path]").forEach(function (el) {
             el.addEventListener("input", function () {
                 var path = el.getAttribute("data-path");
                 setPath(gMarketing, path, el.value);
-            });
-        });
-        panel.querySelectorAll("[data-nav-add]").forEach(function (btn) {
-            btn.addEventListener("click", function () {
-                var pk = btn.getAttribute("data-nav-add");
-                if (!gMarketing[pk]) gMarketing[pk] = {};
-                if (!Array.isArray(gMarketing[pk].navLinks)) gMarketing[pk].navLinks = [];
-                gMarketing[pk].navLinks.push({ label: "New", href: "#" });
-                syncSpecialFieldsFromModel();
-                renderTab();
-            });
-        });
-        panel.querySelectorAll("[data-nav-del]").forEach(function (btn) {
-            btn.addEventListener("click", function () {
-                var pk = btn.getAttribute("data-nav-del");
-                var i = parseInt(btn.getAttribute("data-i"), 10);
-                if (gMarketing[pk] && gMarketing[pk].navLinks) gMarketing[pk].navLinks.splice(i, 1);
-                syncSpecialFieldsFromModel();
-                renderTab();
-            });
-        });
-        panel.querySelectorAll("input[data-nav]").forEach(function (inp) {
-            inp.addEventListener("input", function () {
-                var pk = inp.getAttribute("data-nav");
-                var i = parseInt(inp.getAttribute("data-i"), 10);
-                var k = inp.getAttribute("data-k");
-                if (gMarketing[pk] && gMarketing[pk].navLinks && gMarketing[pk].navLinks[i]) {
-                    gMarketing[pk].navLinks[i][k] = inp.value;
-                }
-            });
-        });
-        panel.querySelectorAll("[data-faq-add]").forEach(function (btn) {
-            btn.addEventListener("click", function () {
-                var pk = btn.getAttribute("data-faq-add");
-                if (!gMarketing[pk]) gMarketing[pk] = {};
-                if (!Array.isArray(gMarketing[pk].faqItems)) gMarketing[pk].faqItems = [];
-                gMarketing[pk].faqItems.push({ question: "New question", answerHtml: "<p>Answer</p>" });
-                syncSpecialFieldsFromModel();
-                renderTab();
-            });
-        });
-        panel.querySelectorAll("[data-faq-del]").forEach(function (btn) {
-            btn.addEventListener("click", function () {
-                var pk = btn.getAttribute("data-faq-del");
-                var i = parseInt(btn.getAttribute("data-i"), 10);
-                if (gMarketing[pk] && gMarketing[pk].faqItems) gMarketing[pk].faqItems.splice(i, 1);
-                syncSpecialFieldsFromModel();
-                renderTab();
-            });
-        });
-        panel.querySelectorAll("[data-faq-q]").forEach(function (inp) {
-            inp.addEventListener("input", function () {
-                var pk = inp.getAttribute("data-faq-q");
-                var i = parseInt(inp.getAttribute("data-i"), 10);
-                if (gMarketing[pk] && gMarketing[pk].faqItems && gMarketing[pk].faqItems[i]) {
-                    gMarketing[pk].faqItems[i].question = inp.value;
-                }
-            });
-        });
-        panel.querySelectorAll("[data-faq-a]").forEach(function (ta) {
-            ta.addEventListener("input", function () {
-                var pk = ta.getAttribute("data-faq-a");
-                var i = parseInt(ta.getAttribute("data-i"), 10);
-                if (gMarketing[pk] && gMarketing[pk].faqItems && gMarketing[pk].faqItems[i]) {
-                    gMarketing[pk].faqItems[i].answerHtml = ta.value;
-                }
             });
         });
         initHtmlEditorLayers(panel);
@@ -588,7 +723,7 @@
             "</div></div>" +
             '<details class="adm-site-tab__details">' +
             '<summary class="adm-site-tab__summary">Editing tips</summary>' +
-            '<p class="helper adm-site-tab__help">Nav links (add/remove), hero and FAQ fields, footer JSON. <b>Save</b> writes the full document. <b>Clear key</b> removes custom marketing from D1 (confirm).</p>' +
+            '<p class="helper adm-site-tab__help">Use <b>Toolbar link manager</b> and <b>FAQ manager</b> (form + expandable list) for repeating items. Other fields edit in place. <b>Save</b> writes the full document to D1. <b>Clear key</b> removes custom marketing (confirm).</p>' +
             "</details>" +
             '<div id="adm-site-marketing-panel" class="adm-site-marketing-panel"></div>' +
             '<div class="adm-site-actions-row">' +
@@ -612,6 +747,8 @@
         root.querySelectorAll("[data-mk-tab]").forEach(function (b) {
             b.addEventListener("click", function () {
                 currentTab = b.getAttribute("data-mk-tab") || "index";
+                faqEditIdx = null;
+                navEditIdx = null;
                 syncSpecialFieldsFromModel();
                 renderTab();
             });

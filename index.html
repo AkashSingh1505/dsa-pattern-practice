@@ -54,6 +54,7 @@
   }
   .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px}
   .brand{display:flex;align-items:center;gap:12px}
+  a.brand{text-decoration:none;color:inherit;cursor:pointer}
   .logo{
     width:34px;height:34px;border-radius:10px;
     background:linear-gradient(135deg,#334155 0%,#1e293b 100%);
@@ -399,49 +400,6 @@
   .flow-step h4{font-size:17px;font-weight:600;letter-spacing:-0.01em;margin-bottom:8px;color:var(--text)}
   .flow-step p{color:var(--muted);font-size:14px}
 
-  /* PREMIUM TEASER */
-  .premium-box{
-    border-radius:30px;
-    padding:60px;
-    background:
-      radial-gradient(800px 400px at 0% 100%, rgba(188,212,240,0.6), transparent 60%),
-      radial-gradient(600px 300px at 100% 0%, rgba(255,214,194,0.55), transparent 60%),
-      radial-gradient(500px 300px at 50% 50%, rgba(214,206,240,0.4), transparent 60%),
-      rgba(255,255,255,0.65);
-    backdrop-filter:blur(24px) saturate(180%);
-    -webkit-backdrop-filter:blur(24px) saturate(180%);
-    border:1px solid rgba(255,255,255,0.8);
-    position:relative;overflow:hidden;
-    display:grid;grid-template-columns:1.2fr 0.8fr;gap:60px;align-items:center;
-    box-shadow:0 30px 70px rgba(30,41,59,0.12), 0 1px 0 rgba(255,255,255,0.9) inset;
-  }
-  .premium-box h2{font-size:42px;font-weight:600;letter-spacing:-0.03em;line-height:1.1;margin-bottom:18px;color:var(--text)}
-  .premium-box p{color:var(--muted);font-size:16px;margin-bottom:32px;max-width:480px}
-  .premium-list{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:36px}
-  .premium-list .it{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--text-2);font-weight:500}
-  .premium-list .it svg{width:16px;height:16px;stroke:var(--mint-ink)}
-  .premium-pill{
-    display:flex;align-items:center;gap:8px;
-    padding:8px 14px;border-radius:99px;
-    background:rgba(255,255,255,0.7);
-    border:1px solid rgba(79,107,237,0.2);
-    font-size:12px;color:var(--accent);font-family:'JetBrains Mono',monospace;font-weight:600;
-    width:fit-content;margin-bottom:20px;
-    box-shadow:0 4px 12px rgba(79,107,237,0.1);
-  }
-  .plan-mini{
-    border:1px solid rgba(255,255,255,0.85);
-    border-radius:20px;padding:24px;
-    background:rgba(255,255,255,0.8);
-    backdrop-filter:blur(20px);
-    box-shadow:0 18px 40px rgba(30,41,59,0.1);
-  }
-  .plan-mini .row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px;color:var(--text-2)}
-  .plan-mini .row:last-child{border-bottom:none}
-  .plan-mini .row span{color:var(--muted)}
-  .plan-mini .row b{font-weight:600;color:var(--text)}
-  .plan-mini h5{font-size:13px;color:var(--muted);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px;font-weight:600}
-
   /* FINAL CTA */
   .final{
     text-align:center;padding:120px 32px;
@@ -478,7 +436,6 @@
     .pv-side,.pv-right{display:none}
     .pv-canvas{min-height:400px}
     .flow{grid-template-columns:1fr 1fr}
-    .premium-box{grid-template-columns:1fr;padding:36px}
     .foot-grid{grid-template-columns:1fr 1fr;gap:32px}
     section{padding:80px 0}
   }
@@ -486,7 +443,6 @@
     .container{padding:0 20px}
     .stats{grid-template-columns:1fr;padding:28px}
     .flow{grid-template-columns:1fr}
-    .premium-list{grid-template-columns:1fr}
     .foot-grid{grid-template-columns:1fr}
     .hero-trust{gap:20px;flex-wrap:wrap}
   }
@@ -530,7 +486,7 @@
 <!-- NAVBAR -->
 <nav>
   <div class="container nav-inner">
-    <div class="brand">
+    <a href="./index.html" class="brand" id="dsa-brand-home" aria-label="DSA Pattern Practice home">
       <div class="logo">
         <svg viewBox="0 0 24 24" fill="none">
           <circle cx="6" cy="6" r="2.5" fill="#fff"/>
@@ -543,12 +499,12 @@
         <b>DSA Pattern Practice</b>
         <span>Visual study studio</span>
       </div>
-    </div>
+    </a>
     <div class="nav-links">
       <a href="#studio">Studio</a>
       <a href="#why">Why it works</a>
       <a href="#preview">Live graph</a>
-      <a href="#premium">Premium</a>
+      <a href="./premium.html">Premium</a>
     </div>
     <div class="nav-cta">
       <button class="btn btn-ghost">Sign in</button>
@@ -1133,71 +1089,6 @@
   }
   .calm-studio .pv-mini-stat b{color:var(--c-ink);font-weight:600;font-family:'JetBrains Mono',monospace}
 
-  /* ---------- PREMIUM TEASER ---------- */
-  .calm-studio .premium-box{
-    border-radius:28px;padding:60px;
-    background:
-      linear-gradient(135deg, rgba(255,255,255,0.78), rgba(255,255,255,0.5)),
-      radial-gradient(600px 300px at 0% 100%, rgba(124,92,255,0.18), transparent 60%),
-      radial-gradient(500px 300px at 100% 0%, rgba(224,138,91,0.15), transparent 60%);
-    -webkit-backdrop-filter:blur(28px) saturate(180%);
-    backdrop-filter:blur(28px) saturate(180%);
-    border:1px solid rgba(255,255,255,0.7);
-    box-shadow:
-      0 1px 0 rgba(255,255,255,0.9) inset,
-      0 40px 100px -30px rgba(30,40,70,0.25);
-    display:grid;grid-template-columns:1.2fr 0.8fr;gap:60px;align-items:center;
-    position:relative;overflow:hidden;
-  }
-  .calm-studio .premium-pill{
-    display:inline-flex;align-items:center;gap:8px;
-    padding:8px 14px;border-radius:99px;
-    background:rgba(124,92,255,0.1);
-    border:1px solid rgba(124,92,255,0.25);
-    font-size:11.5px;color:#5d44e0;
-    font-family:'JetBrains Mono',monospace;font-weight:600;letter-spacing:0.06em;
-    width:fit-content;margin-bottom:20px;
-  }
-  .calm-studio .premium-box h2{
-    font-size:42px;font-weight:600;letter-spacing:-0.03em;line-height:1.1;
-    margin-bottom:18px;color:var(--c-ink);
-  }
-  .calm-studio .premium-box > div > p{
-    color:var(--c-mute);font-size:16px;margin-bottom:32px;max-width:480px;line-height:1.6;
-  }
-  .calm-studio .premium-list{
-    display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:36px;
-  }
-  .calm-studio .premium-list .it{
-    display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--c-ink-2);
-  }
-  .calm-studio .premium-list .it svg{width:16px;height:16px;stroke:var(--c-mint);flex-shrink:0}
-  .calm-studio .plan-mini{
-    border:1px solid rgba(255,255,255,0.7);
-    border-radius:20px;padding:26px;
-    background:rgba(255,255,255,0.78);
-    backdrop-filter:blur(20px);
-    box-shadow:0 20px 50px -20px rgba(30,40,70,0.2);
-  }
-  .calm-studio .plan-mini h5{
-    font-size:11.5px;color:var(--c-dim);
-    font-family:'JetBrains Mono',monospace;
-    text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;font-weight:600;
-  }
-  .calm-studio .plan-mini .price{
-    font-size:36px;font-weight:600;letter-spacing:-0.02em;color:var(--c-ink);margin-bottom:4px;
-  }
-  .calm-studio .plan-mini .price span{font-size:14px;color:var(--c-mute);font-weight:400}
-  .calm-studio .plan-mini .desc{font-size:12.5px;color:var(--c-mute);margin-bottom:18px}
-  .calm-studio .plan-mini .row{
-    display:flex;justify-content:space-between;
-    padding:11px 0;border-bottom:1px solid var(--c-line);
-    font-size:12.5px;
-  }
-  .calm-studio .plan-mini .row:last-child{border-bottom:none}
-  .calm-studio .plan-mini .row span{color:var(--c-mute)}
-  .calm-studio .plan-mini .row b{font-weight:600;color:var(--c-ink)}
-
   /* ---------- FINAL CTA ---------- */
   .calm-studio .final{
     text-align:center;padding:140px 32px;
@@ -1297,16 +1188,12 @@
     .calm-studio .pv-body{grid-template-columns:1fr;min-height:auto}
     .calm-studio .pv-side,.calm-studio .pv-right{display:none}
     .calm-studio .pv-canvas{min-height:420px}
-    .calm-studio .premium-box{grid-template-columns:1fr;padding:40px;gap:36px}
     .calm-studio .foot-grid{grid-template-columns:1fr 1fr;gap:32px}
   }
   @media (max-width:540px){
     .calm-studio .container{padding:0 20px}
     .calm-studio .flow{grid-template-columns:1fr}
     .calm-studio .stats{grid-template-columns:1fr;padding:32px;gap:28px}
-    .calm-studio .premium-box{padding:32px}
-    .calm-studio .premium-list{grid-template-columns:1fr}
-    .calm-studio .premium-box h2{font-size:32px}
     .calm-studio .foot-grid{grid-template-columns:1fr}
     .calm-studio .pv-head{flex-wrap:wrap;gap:10px}
   }
@@ -1553,48 +1440,6 @@
   </div>
 </section>
 
-<!-- PREMIUM TEASER -->
-<section id="premium">
-  <div class="container">
-    <div class="premium-box">
-      <div>
-        <div class="premium-pill">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 2L15 8.5L22 9.5L17 14.5L18.5 22L12 18L5.5 22L7 14.5L2 9.5L9 8.5L12 2Z"/></svg>
-          STUDIO PREMIUM
-        </div>
-        <h2>Go beyond practice — get the full studio.</h2>
-        <p>Unlock unlimited graphs, advanced focus mode, spaced revision and personal pattern collections. Built for learners who're serious about interviews.</p>
-        <div class="premium-list">
-          <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Unlimited personal graphs</div>
-          <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Advanced focus mode</div>
-          <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Smart spaced revision</div>
-          <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Quiz history & analytics</div>
-          <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Export & share graphs</div>
-          <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Priority support</div>
-        </div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap">
-          <button class="btn btn-primary btn-lg">Upgrade to Premium
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-          <button class="btn btn-secondary btn-lg">See all features</button>
-        </div>
-      </div>
-
-      <div class="plan-mini">
-        <h5>// premium plan</h5>
-        <div class="price">$9<span>/month</span></div>
-        <div class="desc">Billed monthly · cancel anytime</div>
-        <div class="row"><span>Personal graphs</span><b>Unlimited</b></div>
-        <div class="row"><span>Pattern library</span><b>180+ nodes</b></div>
-        <div class="row"><span>Focus mode</span><b>Advanced</b></div>
-        <div class="row"><span>Revision reminders</span><b>Smart</b></div>
-        <div class="row"><span>Analytics</span><b>Included</b></div>
-        <div class="row"><span>Community graphs</span><b>Full access</b></div>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- FINAL CTA -->
 <section>
   <div class="container">
@@ -1683,12 +1528,38 @@
       window.location.href = url;
     }
 
+    function isPracticeUserSignedIn() {
+      try {
+        var t = localStorage.getItem("dsaPracticeUserJwtV1") || sessionStorage.getItem("dsaPracticeUserJwtV1") || "";
+        if (!t) return false;
+        var parts = t.split(".");
+        if (parts.length !== 3) return false;
+        var p = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+        var pad = p.length % 4;
+        if (pad) p += "====".slice(0, 4 - pad);
+        var payload = JSON.parse(atob(p));
+        return !!(
+          payload &&
+          payload.typ === "practice" &&
+          payload.iss === "dsa-pattern-practice" &&
+          !(typeof payload.exp === "number" && payload.exp < Math.floor(Date.now() / 1000))
+        );
+      } catch (e) {
+        return false;
+      }
+    }
+
+    var brandHome = document.getElementById("dsa-brand-home");
+    if (brandHome) {
+      brandHome.addEventListener("click", function (e) {
+        if (isPracticeUserSignedIn()) e.preventDefault();
+      });
+    }
+
     var navSignIn = document.querySelector("nav .btn-ghost");
     var navPremium = document.querySelector("nav .btn-premium");
     var heroPrimary = document.querySelector(".hero-ctas .btn-primary");
     var heroSecondary = document.querySelector(".hero-ctas .btn-ghost");
-    var premiumPrimary = document.querySelector("#premium .btn-primary");
-    var premiumSecondary = document.querySelector("#premium .btn-secondary");
     var finalPrimary = document.querySelector(".final-ctas .btn-primary");
     var finalSecondary = document.querySelector(".final-ctas .btn-secondary");
 
@@ -1696,8 +1567,6 @@
     if (navPremium) navPremium.addEventListener("click", function () { go("./premium.html"); });
     if (heroPrimary) heroPrimary.addEventListener("click", function () { go("./account.html"); });
     if (heroSecondary) heroSecondary.addEventListener("click", function () { go("./premium.html"); });
-    if (premiumPrimary) premiumPrimary.addEventListener("click", function () { go("./premium.html"); });
-    if (premiumSecondary) premiumSecondary.addEventListener("click", function () { go("./premium.html"); });
     if (finalPrimary) finalPrimary.addEventListener("click", function () { go("./account.html"); });
     if (finalSecondary) finalSecondary.addEventListener("click", function () { go("#preview"); });
   })();

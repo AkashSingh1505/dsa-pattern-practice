@@ -1,225 +1,690 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev">
-    <title>Premium Plans — DSA Pattern Practice</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./styles.css?v=14">
-    <link rel="stylesheet" href="./dsa-index-shell.css?v=21">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev">
+<title>Premium plans — DSA Pattern Practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f4f6fb;
+    --line:rgba(20,30,55,0.08);
+    --line-2:rgba(20,30,55,0.14);
+    --text:#1b2238;
+    --muted:#5f6781;
+    --accent:#4f6bed;
+    --mint-ink:#2d9b75;
+  }
+  html,body{background:var(--bg);color:var(--text);font-family:'Inter','SF Pro Display',-apple-system,BlinkMacSystemFont,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  body{
+    background:
+      radial-gradient(900px 600px at 85% -10%, rgba(188,212,240,0.55), transparent 60%),
+      radial-gradient(700px 500px at 0% 30%, rgba(255,214,194,0.45), transparent 60%),
+      radial-gradient(800px 600px at 50% 110%, rgba(184,232,212,0.45), transparent 60%),
+      var(--bg);
+  }
+  a{color:inherit}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  .container{max-width:1280px;margin:0 auto;padding:0 32px}
+
+  nav{
+    position:fixed;top:0;left:0;right:0;z-index:50;
+    backdrop-filter:saturate(180%) blur(20px);
+    -webkit-backdrop-filter:saturate(180%) blur(20px);
+    background:rgba(255,255,255,0.6);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px}
+  .brand{display:flex;align-items:center;gap:12px}
+  a.brand{text-decoration:none;color:inherit;cursor:pointer}
+  .logo{
+    width:34px;height:34px;border-radius:10px;
+    background:linear-gradient(135deg,#334155 0%,#1e293b 100%);
+    display:grid;place-items:center;
+    box-shadow:0 8px 20px rgba(30,41,59,0.25), inset 0 1px 0 rgba(255,255,255,0.15);
+  }
+  .logo svg{width:18px;height:18px}
+  .brand-text{display:flex;flex-direction:column;line-height:1.1}
+  .brand-text b{font-size:14px;font-weight:600;letter-spacing:-0.01em;color:var(--text)}
+  .brand-text span{font-size:11px;color:var(--muted);letter-spacing:0.02em}
+  .nav-links{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+  .nav-links a{font-size:13.5px;color:var(--muted);padding:8px 14px;border-radius:9px;transition:.2s;text-decoration:none}
+  .nav-links a:hover{color:var(--text);background:rgba(255,255,255,0.7)}
+  .nav-links .nav-here{font-size:13.5px;color:var(--text);font-weight:600;padding:8px 14px}
+  .nav-cta{display:flex;align-items:center;gap:10px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:11px;font-size:13.5px;font-weight:500;transition:.25s;border:1px solid transparent;white-space:nowrap;text-decoration:none}
+  .btn-ghost{
+    color:var(--text);
+    background:rgba(255,255,255,0.7);
+    border-color:var(--line-2);
+    backdrop-filter:blur(10px);
+  }
+  .btn-ghost:hover{background:rgba(255,255,255,0.9);transform:translateY(-1px)}
+  .btn-outline{
+    color:var(--text);
+    background:rgba(255,255,255,0.55);
+    border:1px solid var(--line-2);
+  }
+  .btn-outline:hover{background:rgba(255,255,255,0.9);transform:translateY(-1px)}
+
+  @media (max-width:720px){
+    .nav-links{display:none}
+  }
+</style>
 </head>
-<body class="dsa-page dsa-index-ref pricing-page">
-    <header class="nav">
-        <div class="nav-inner">
-            <a href="./index.html" class="brand dsa-app-title" aria-label="DSA Pattern Practice home">
-                <span class="brand-mark">DS</span>
-                <span class="brand-copy">
-                    <strong>DSA Pattern Practice</strong>
-                    <small>Visual study studio for patterns</small>
-                </span>
-            </a>
-            <nav class="nav-links" aria-label="Site sections">
-                <a href="./index.html">Studio</a>
-                <a href="./index.html#why">Why it works</a>
-                <a href="./user-dashboard.html" id="nav-link-dashboard">Dashboard</a>
-            </nav>
-            <div class="nav-auth">
-                <a href="./premium.html" class="nav-premium-entry nav-premium-entry--active" aria-current="page">Premium</a>
-                <a id="nav-admin-entry" class="nav-admin-entry" href="./account.html">Sign in</a>
-                <button type="button" id="nav-admin-signout" class="signout nav-signout-btn" hidden>Sign out</button>
-            </div>
+<body>
+
+<nav>
+  <div class="container nav-inner">
+    <a href="./index.html" class="brand" id="dsa-brand-home" aria-label="DSA Pattern Practice home">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="6" r="2.5" fill="#fff"/>
+          <circle cx="18" cy="6" r="2.5" fill="#fff"/>
+          <circle cx="12" cy="18" r="2.5" fill="#fff"/>
+          <path d="M6 6L12 18M18 6L12 18M6 6H18" stroke="#fff" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <b>DSA Pattern Practice</b>
+        <span>Visual study studio</span>
+      </div>
+    </a>
+    <div class="nav-links">
+      <a href="./index.html#studio">Studio</a>
+      <a href="./index.html#why">Why it works</a>
+      <a href="./index.html#preview">Live graph</a>
+      <span class="nav-here" aria-current="page">Premium</span>
+    </div>
+    <div class="nav-cta">
+      <button type="button" class="btn btn-ghost" id="nav-sign-in">Sign in</button>
+      <a class="btn btn-outline" href="./index.html">Back to studio</a>
+    </div>
+  </div>
+</nav>
+
+<div class="calm-studio">
+
+<style>
+  .calm-studio{
+    --c-bg-1:#eef3fb;
+    --c-ink:#1b2230;
+    --c-ink-2:#2a3142;
+    --c-mute:#64708a;
+    --c-dim:#8a93a6;
+    --c-line:rgba(20,30,55,0.08);
+    --c-glass:rgba(255,255,255,0.62);
+    --c-accent:#3a5bd9;
+    --c-mint:#1aa37a;
+    --c-peach:#e08a5b;
+
+    position:relative;
+    color:var(--c-ink);
+    font-family:'Inter','SF Pro Display',-apple-system,BlinkMacSystemFont,sans-serif;
+    background:
+      radial-gradient(900px 600px at 12% 8%, #d8e6fb 0%, transparent 55%),
+      radial-gradient(800px 600px at 90% 18%, #fbe2d2 0%, transparent 55%),
+      radial-gradient(900px 700px at 80% 88%, #d8efe1 0%, transparent 55%),
+      linear-gradient(180deg,#f3f5fa,#eef1f7);
+    overflow:hidden;
+  }
+  .calm-studio::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:radial-gradient(rgba(30,40,70,0.05) 1px, transparent 1px);
+    background-size:28px 28px;
+    mask-image:radial-gradient(ellipse at center, #000 30%, transparent 80%);
+    opacity:.5;
+  }
+  .calm-studio .container{max-width:1280px;margin:0 auto;padding:0 32px;position:relative}
+  .calm-studio section{padding:100px 0;position:relative}
+
+  .calm-studio .sec-head{max-width:720px;margin-bottom:48px}
+  .calm-studio .sec-tag{
+    display:inline-block;
+    font-size:11.5px;letter-spacing:0.14em;text-transform:uppercase;
+    color:var(--c-accent);font-weight:600;
+    font-family:'JetBrains Mono','SF Mono',ui-monospace,monospace;
+    padding:6px 12px;border-radius:99px;
+    background:rgba(58,91,217,0.08);
+    border:1px solid rgba(58,91,217,0.18);
+    margin-bottom:18px;
+  }
+  .calm-studio .sec-title{
+    font-size:clamp(30px,3.8vw,48px);
+    font-weight:600;letter-spacing:-0.03em;line-height:1.1;color:var(--c-ink);
+  }
+  .calm-studio .sec-title em{font-style:normal;color:var(--c-mute)}
+  .calm-studio .sec-sub{
+    margin-top:16px;font-size:17px;color:var(--c-mute);line-height:1.6;max-width:640px;
+  }
+
+  .calm-studio .glass{
+    background:var(--c-glass);
+    -webkit-backdrop-filter:blur(22px) saturate(160%);
+    backdrop-filter:blur(22px) saturate(160%);
+    border:1px solid rgba(255,255,255,0.65);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.9) inset,
+      0 20px 50px -20px rgba(30,40,70,0.18);
+    border-radius:20px;
+    transition:transform .3s cubic-bezier(.2,.7,.2,1), box-shadow .3s;
+  }
+  .calm-studio .glass:hover{
+    transform:translateY(-3px);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.9) inset,
+      0 28px 60px -22px rgba(30,40,70,0.22);
+  }
+
+  .calm-studio .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:12px 20px;border-radius:12px;font-size:13.5px;font-weight:500;
+    transition:.25s cubic-bezier(.2,.7,.2,1);border:1px solid transparent;white-space:nowrap;
+    font-family:inherit;cursor:pointer;text-decoration:none;
+  }
+  .calm-studio .btn-lg{padding:14px 24px;font-size:14.5px;border-radius:13px}
+  .calm-studio .btn-primary{
+    background:linear-gradient(180deg,#2a3142,#1b2230);
+    color:#fff;font-weight:600;
+    box-shadow:0 10px 24px -8px rgba(27,34,48,0.5), inset 0 1px 0 rgba(255,255,255,0.12);
+  }
+  .calm-studio .btn-primary:hover{transform:translateY(-1px)}
+  .calm-studio .btn-secondary{
+    background:rgba(255,255,255,0.7);
+    color:var(--c-ink);
+    border:1px solid rgba(20,30,55,0.12);
+    backdrop-filter:blur(10px);
+  }
+  .calm-studio .btn-secondary:hover{background:rgba(255,255,255,0.92);transform:translateY(-1px)}
+
+  .calm-studio .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:7px 14px;border-radius:99px;
+    border:1px solid var(--c-line);
+    background:rgba(255,255,255,0.55);
+    font-size:11.5px;color:var(--c-dim);
+    letter-spacing:0.1em;text-transform:uppercase;
+    font-family:'JetBrains Mono',monospace;font-weight:600;
+  }
+
+  .calm-studio .pricing-hero{padding-top:140px;padding-bottom:40px}
+  .calm-studio .pricing-hero h1{
+    font-size:clamp(34px,4.2vw,52px);
+    font-weight:600;letter-spacing:-0.03em;line-height:1.08;
+    margin:22px 0 18px;color:var(--c-ink);
+  }
+  .calm-studio .pricing-hero .lead{font-size:17px;color:var(--c-mute);max-width:560px;line-height:1.65}
+  .calm-studio .hero-actions{display:flex;gap:12px;margin-top:28px;flex-wrap:wrap}
+
+  .calm-studio .proof-strip{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:44px;
+  }
+  .calm-studio .proof-card{
+    padding:22px 24px;border-radius:18px;
+    border:1px solid rgba(255,255,255,0.7);
+    background:rgba(255,255,255,0.72);
+    backdrop-filter:blur(18px);
+  }
+  .calm-studio .proof-card strong{
+    display:block;font-size:28px;font-weight:600;letter-spacing:-0.02em;color:var(--c-ink);margin-bottom:6px;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .calm-studio .proof-card span{font-size:13px;color:var(--c-mute);line-height:1.45}
+
+  /* Premium spotlight box */
+  .calm-studio .premium-box{
+    border-radius:28px;padding:56px;
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.78), rgba(255,255,255,0.5)),
+      radial-gradient(600px 300px at 0% 100%, rgba(124,92,255,0.18), transparent 60%),
+      radial-gradient(500px 300px at 100% 0%, rgba(224,138,91,0.15), transparent 60%);
+    -webkit-backdrop-filter:blur(28px) saturate(180%);
+    backdrop-filter:blur(28px) saturate(180%);
+    border:1px solid rgba(255,255,255,0.7);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.9) inset,
+      0 40px 100px -30px rgba(30,40,70,0.25);
+    display:grid;grid-template-columns:1.2fr 0.8fr;gap:52px;align-items:center;
+    position:relative;overflow:hidden;
+  }
+  .calm-studio .premium-pill{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:8px 14px;border-radius:99px;
+    background:rgba(124,92,255,0.1);
+    border:1px solid rgba(124,92,255,0.25);
+    font-size:11.5px;color:#5d44e0;
+    font-family:'JetBrains Mono',monospace;font-weight:600;letter-spacing:0.06em;
+    width:fit-content;margin-bottom:18px;
+  }
+  .calm-studio .premium-box h2{
+    font-size:clamp(28px,3.2vw,40px);font-weight:600;letter-spacing:-0.03em;line-height:1.12;
+    margin-bottom:16px;color:var(--c-ink);
+  }
+  .calm-studio .premium-box > div > p{
+    color:var(--c-mute);font-size:16px;margin-bottom:28px;max-width:480px;line-height:1.6;
+  }
+  .calm-studio .premium-list{
+    display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:32px;
+  }
+  .calm-studio .premium-list .it{
+    display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--c-ink-2);
+  }
+  .calm-studio .premium-list .it svg{width:16px;height:16px;stroke:var(--c-mint);flex-shrink:0}
+  .calm-studio .plan-mini{
+    border:1px solid rgba(255,255,255,0.7);
+    border-radius:20px;padding:26px;
+    background:rgba(255,255,255,0.78);
+    backdrop-filter:blur(20px);
+    box-shadow:0 20px 50px -20px rgba(30,40,70,0.2);
+  }
+  .calm-studio .plan-mini h5{
+    font-size:11.5px;color:var(--c-dim);
+    font-family:'JetBrains Mono',monospace;
+    text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;font-weight:600;
+  }
+  .calm-studio .plan-mini .price{
+    font-size:36px;font-weight:600;letter-spacing:-0.02em;color:var(--c-ink);margin-bottom:4px;
+  }
+  .calm-studio .plan-mini .price span{font-size:14px;color:var(--c-mute);font-weight:400}
+  .calm-studio .plan-mini .desc{font-size:12.5px;color:var(--c-mute);margin-bottom:18px}
+  .calm-studio .plan-mini .row{
+    display:flex;justify-content:space-between;
+    padding:11px 0;border-bottom:1px solid var(--c-line);
+    font-size:12.5px;
+  }
+  .calm-studio .plan-mini .row:last-child{border-bottom:none}
+  .calm-studio .plan-mini .row span{color:var(--c-mute)}
+  .calm-studio .plan-mini .row b{font-weight:600;color:var(--c-ink)}
+
+  .calm-studio .plan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .calm-studio .plan-card{
+    padding:28px;border-radius:22px;
+    border:1px solid rgba(255,255,255,0.75);
+    background:rgba(255,255,255,0.65);
+    backdrop-filter:blur(20px) saturate(160%);
+    display:flex;flex-direction:column;min-height:100%;
+  }
+  .calm-studio .plan-card--featured{
+    border-color:rgba(58,91,217,0.35);
+    background:linear-gradient(165deg, rgba(255,255,255,0.88), rgba(255,255,255,0.62));
+    box-shadow:0 24px 60px -28px rgba(58,91,217,0.35);
+  }
+  .calm-studio .plan-tier{
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;
+    color:var(--c-accent);font-weight:600;margin-bottom:10px;
+  }
+  .calm-studio .plan-card h3{font-size:20px;font-weight:600;margin-bottom:10px;color:var(--c-ink);letter-spacing:-0.02em}
+  .calm-studio .plan-card .blurb{font-size:14px;color:var(--c-mute);line-height:1.55;margin-bottom:18px;flex:1}
+  .calm-studio .plan-card ul{list-style:none;padding:0;margin:0 0 22px}
+  .calm-studio .plan-card li{
+    font-size:13.5px;color:var(--c-ink-2);padding:8px 0;border-top:1px solid var(--c-line);
+    display:flex;gap:10px;align-items:flex-start;
+  }
+  .calm-studio .plan-card li::before{
+    content:"";width:6px;height:6px;border-radius:50%;margin-top:6px;flex-shrink:0;background:var(--c-mint);
+  }
+
+  .calm-studio .compare-wrap{
+    overflow-x:auto;border-radius:22px;
+    border:1px solid rgba(255,255,255,0.75);
+    background:rgba(255,255,255,0.55);
+    backdrop-filter:blur(22px);
+    box-shadow:0 16px 40px -24px rgba(30,40,70,0.2);
+  }
+  .calm-studio .compare-table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px}
+  .calm-studio .compare-table th,.calm-studio .compare-table td{
+    padding:14px 18px;border-bottom:1px solid var(--c-line);vertical-align:middle;
+  }
+  .calm-studio .compare-table thead th{
+    text-align:center;font-weight:600;color:var(--c-ink);
+    background:rgba(255,255,255,0.55);
+  }
+  .calm-studio .compare-table thead th:first-child{text-align:left;width:34%}
+  .calm-studio .compare-table tbody th{
+    text-align:left;font-weight:500;color:var(--c-ink-2);max-width:320px;background:rgba(255,255,255,0.35);
+  }
+  .calm-studio .compare-table td{text-align:center;color:var(--c-mute)}
+  .calm-studio .compare-table td.on{color:var(--c-mint);font-weight:600}
+
+  .calm-studio .final{
+    text-align:center;padding:100px 32px 120px;
+    border-top:1px solid var(--c-line);
+    position:relative;
+  }
+  .calm-studio .final h2{
+    font-size:clamp(32px,4vw,52px);font-weight:600;
+    letter-spacing:-0.03em;line-height:1.08;margin-bottom:18px;color:var(--c-ink);
+  }
+  .calm-studio .final h2 em{
+    font-style:normal;
+    background:linear-gradient(110deg,var(--c-accent),var(--c-mint));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .calm-studio .final p{color:var(--c-mute);font-size:17px;max-width:520px;margin:0 auto 28px;line-height:1.6}
+  .calm-studio .final-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+  .calm-studio footer{
+    padding:72px 0 40px;color:var(--c-mute);font-size:13.5px;
+    background:rgba(255,255,255,0.4);
+    backdrop-filter:blur(20px);
+    border-top:1px solid var(--c-line);
+  }
+  .calm-studio .foot-grid{
+    display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px;
+  }
+  .calm-studio .foot-brand{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .calm-studio .foot-logo{
+    width:36px;height:36px;border-radius:10px;
+    background:linear-gradient(135deg,#3a5bd9,#1aa37a);
+    display:grid;place-items:center;
+    box-shadow:0 6px 16px -4px rgba(58,91,217,0.35), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+  .calm-studio .foot-logo svg{width:18px;height:18px}
+  .calm-studio .foot-brand b{font-size:15px;color:var(--c-ink);font-weight:600}
+  .calm-studio .foot-grid p{font-size:13.5px;line-height:1.6;max-width:280px}
+  .calm-studio .foot-grid h6{
+    font-size:11.5px;text-transform:uppercase;letter-spacing:0.12em;color:var(--c-ink);
+    margin-bottom:16px;font-family:'JetBrains Mono',monospace;font-weight:600;
+  }
+  .calm-studio .foot-grid a{display:block;padding:6px 0;color:var(--c-mute);text-decoration:none;transition:.15s}
+  .calm-studio .foot-grid a:hover{color:var(--c-ink)}
+  .calm-studio .foot-bottom{
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;
+    padding-top:28px;border-top:1px solid var(--c-line);font-size:12.5px;color:var(--c-dim);
+  }
+
+  @media (max-width:980px){
+    .calm-studio section{padding:72px 0}
+    .calm-studio .premium-box{grid-template-columns:1fr;padding:40px;gap:32px}
+    .calm-studio .plan-grid{grid-template-columns:1fr}
+    .calm-studio .proof-strip{grid-template-columns:1fr}
+    .calm-studio .foot-grid{grid-template-columns:1fr 1fr}
+  }
+  @media (max-width:540px){
+    .calm-studio .container{padding:0 20px}
+    .calm-studio .premium-list{grid-template-columns:1fr}
+    .calm-studio .foot-grid{grid-template-columns:1fr}
+  }
+</style>
+
+<section class="pricing-hero">
+  <div class="container">
+    <div class="eyebrow">Plans &amp; pricing</div>
+    <h1>Choose how deeply you want to use the studio.</h1>
+    <p class="lead">Start free on the public graph, then move to Pro when you want personal graphs, smarter revision, and the full premium workflow. Lifetime is for learners who want long-horizon access in one step.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary btn-lg" href="./account.html" data-marketing-primary-cta>Start free</a>
+      <a class="btn btn-secondary btn-lg" href="./index.html#preview">Preview the live map</a>
+    </div>
+
+    <div class="proof-strip">
+      <article class="proof-card">
+        <strong data-public-stat="subscribers">—</strong>
+        <span>Subscribers already using the studio</span>
+      </article>
+      <article class="proof-card">
+        <strong data-plan-count="pro">—</strong>
+        <span>Pro plans in the current member base</span>
+      </article>
+      <article class="proof-card">
+        <strong data-plan-count="lifetime">—</strong>
+        <span>Lifetime members in the plan mix</span>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="premium-spotlight-heading">
+  <div class="container">
+    <div class="premium-box">
+      <div>
+        <div class="premium-pill">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 2L15 8.5L22 9.5L17 14.5L18.5 22L12 18L5.5 22L7 14.5L2 9.5L9 8.5L12 2Z"/></svg>
+          STUDIO PREMIUM
         </div>
-    </header>
-
-    <main class="page pricing-page-shell">
-        <section class="pricing-hero">
-            <div class="pricing-hero-copy">
-                <div class="eyebrow">Plans and features</div>
-                <h1>Choose the plan that matches how deeply you want to use the studio.</h1>
-                <p>
-                    Start free to explore the graph and core member experience. Upgrade when you want personal graph workflows,
-                    deeper study tools, collaboration-oriented features, and a stronger long-term practice setup.
-                </p>
-                <div class="landing-hero-actions">
-                    <a href="./account.html" class="landing-btn landing-btn--primary" data-marketing-primary-cta>Start free</a>
-                    <a href="./index.html#studio" class="landing-btn landing-btn--secondary">Preview the live graph</a>
-                </div>
-            </div>
-            <div class="pricing-hero-proof">
-                <div class="landing-proof-strip">
-                    <article class="landing-proof-card">
-                        <strong data-public-stat="subscribers">--</strong>
-                        <span>subscribers already using the studio</span>
-                    </article>
-                    <article class="landing-proof-card">
-                        <strong data-plan-count="pro">--</strong>
-                        <span>pro plans in the current member base</span>
-                    </article>
-                    <article class="landing-proof-card">
-                        <strong data-plan-count="team">--</strong>
-                        <span>team plans tracked for collaborative setups</span>
-                    </article>
-                    <article class="landing-proof-card">
-                        <strong data-plan-count="lifetime">--</strong>
-                        <span>lifetime members in the current plan mix</span>
-                    </article>
-                </div>
-            </div>
-        </section>
-
-        <section class="pricing-grid" aria-label="Plans">
-            <article class="pricing-card">
-                <span class="pricing-tier">Free</span>
-                <h2>Start with the studio basics</h2>
-                <p class="pricing-card-copy">For students who want to explore the graph and begin practice without a paid upgrade.</p>
-                <ul class="pricing-feature-list">
-                    <li>Full DSA map and one-topic browsing</li>
-                    <li>Practice account access</li>
-                    <li>Core dashboard areas enabled by site settings</li>
-                    <li>Public graph browsing and basic study flow</li>
-                </ul>
-            </article>
-
-            <article class="pricing-card pricing-card--featured">
-                <span class="pricing-tier">Pro</span>
-                <h2>Best for serious individual prep</h2>
-                <p class="pricing-card-copy">Unlock the premium study workflow when you want more than browsing and basic review.</p>
-                <ul class="pricing-feature-list">
-                    <li>Personal graph library and saved graph workflows</li>
-                    <li>Shared inbox, collaboration, and quiz-lab style tools</li>
-                    <li>Digest preferences and premium dashboard utilities</li>
-                    <li>More power for interview-focused revision</li>
-                </ul>
-            </article>
-
-            <article class="pricing-card">
-                <span class="pricing-tier">Team</span>
-                <h2>For cohorts, mentors, and study groups</h2>
-                <p class="pricing-card-copy">Use the premium feature base with room for broader collaboration-oriented rollout.</p>
-                <ul class="pricing-feature-list">
-                    <li>Everything in Pro</li>
-                    <li>Shared workflows for guided study groups</li>
-                    <li>Better fit for team coordination and mentoring</li>
-                    <li>Plan structure ready for expanded team packaging</li>
-                </ul>
-            </article>
-
-            <article class="pricing-card">
-                <span class="pricing-tier">Lifetime</span>
-                <h2>For long-term learners</h2>
-                <p class="pricing-card-copy">A one-time style access path for people who want the studio as a long-lived resource.</p>
-                <ul class="pricing-feature-list">
-                    <li>Everything in Pro</li>
-                    <li>Long-horizon access for extended learning</li>
-                    <li>Strong fit for self-paced deep study</li>
-                    <li>Useful if you want studio access beyond short prep cycles</li>
-                </ul>
-            </article>
-        </section>
-
-        <section class="pricing-matrix-wrap">
-            <div class="landing-section-head">
-                <div class="eyebrow">Feature comparison</div>
-                <h2>What changes from one plan to the next</h2>
-                <p>The table below explains the current story of the product tiers and the study workflows they are built to support.</p>
-            </div>
-            <div class="pricing-table-shell">
-                <table class="pricing-table">
-                    <thead>
-                        <tr>
-                            <th scope="col">Feature</th>
-                            <th scope="col">Free</th>
-                            <th scope="col">Pro</th>
-                            <th scope="col">Team</th>
-                            <th scope="col">Lifetime</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <th scope="row">Full DSA graph and one-topic mode</th>
-                            <td>Included</td>
-                            <td>Included</td>
-                            <td>Included</td>
-                            <td>Included</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Practice account and member dashboard</th>
-                            <td>Included</td>
-                            <td>Included</td>
-                            <td>Included</td>
-                            <td>Included</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Community graph library</th>
-                            <td>Included</td>
-                            <td>Included</td>
-                            <td>Included</td>
-                            <td>Included</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Personal graphs and advanced graph workflow</th>
-                            <td>Upgrade</td>
-                            <td>Included</td>
-                            <td>Included</td>
-                            <td>Included</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Shared inbox, collaboration, and premium study tools</th>
-                            <td>Upgrade</td>
-                            <td>Included</td>
-                            <td>Included</td>
-                            <td>Included</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Group-oriented plan fit</th>
-                            <td>No</td>
-                            <td>Limited</td>
-                            <td>Best fit</td>
-                            <td>No</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Long-term one-time access positioning</th>
-                            <td>No</td>
-                            <td>No</td>
-                            <td>No</td>
-                            <td>Best fit</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <section class="landing-plan-cta">
-            <div>
-                <div class="eyebrow">Next step</div>
-                <h2>Try the studio now, then upgrade when your workflow needs more power.</h2>
-                <p>Explore the public graph today, create your account, and move into the plan that matches your study depth.</p>
-            </div>
-            <div class="landing-plan-actions">
-                <a href="./index.html" class="landing-btn landing-btn--secondary">Back to studio</a>
-                <a href="./account.html" class="landing-btn landing-btn--primary" data-marketing-primary-cta>Start free</a>
-            </div>
-        </section>
-    </main>
-
-    <footer class="footer dsa-index-site-footer">
-        <div class="footer-bottom">
-            <div class="footer-copyright">
-                <p>DSA Pattern Practice — from graph discovery to premium study workflows.</p>
-            </div>
+        <h2 id="premium-spotlight-heading">Go beyond practice — get the full studio.</h2>
+        <p>Unlock unlimited graphs, advanced focus mode, spaced revision and personal pattern collections. Built for learners who are serious about interviews.</p>
+        <div class="premium-list">
+          <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Unlimited personal graphs</div>
+          <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Advanced focus mode</div>
+          <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Smart spaced revision</div>
+          <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Quiz history &amp; analytics</div>
+          <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Export &amp; share graphs</div>
+          <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Priority support</div>
         </div>
-    </footer>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <a class="btn btn-primary btn-lg" href="./account.html">Upgrade to Pro</a>
+          <a class="btn btn-secondary btn-lg" href="#compare">Compare plans below</a>
+        </div>
+      </div>
 
-    <script src="./auth/dsa-admin-auth.js?v=5"></script>
-    <script src="./auth/dsa-member-roles.js?v=1"></script>
-    <script src="./auth/dsa-user-auth.js?v=3"></script>
-    <script src="./auth/site-features.js?v=6"></script>
-    <script src="./cms-bootstrap.js?v=3"></script>
-    <script src="./dsa-sketch-native.js?v=3"></script>
-    <script src="./script.js?v=36"></script>
-    <script src="./marketing-pages.js?v=1"></script>
+      <div class="plan-mini">
+        <h5>// Pro plan</h5>
+        <div class="price">$9<span>/month</span></div>
+        <div class="desc">Billed monthly · cancel anytime</div>
+        <div class="row"><span>Personal graphs</span><b>Unlimited</b></div>
+        <div class="row"><span>Pattern library</span><b>180+ nodes</b></div>
+        <div class="row"><span>Focus mode</span><b>Advanced</b></div>
+        <div class="row"><span>Revision reminders</span><b>Smart</b></div>
+        <div class="row"><span>Analytics</span><b>Included</b></div>
+        <div class="row"><span>Community graphs</span><b>Full access</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="plans" aria-labelledby="plans-heading">
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-tag">// three tiers</div>
+      <h2 class="sec-title" id="plans-heading">Free, Pro, or <em>Lifetime.</em></h2>
+      <p class="sec-sub">No team plan — every feature path is built for individual learners and your own graph workspace.</p>
+    </div>
+
+    <div class="plan-grid">
+      <article class="plan-card glass">
+        <div class="plan-tier">Free</div>
+        <h3>Explore the studio</h3>
+        <p class="blurb">Map browsing, core practice flow, and account basics — ideal before you commit to a paid tier.</p>
+        <ul>
+          <li>Full DSA map &amp; one-topic browsing</li>
+          <li>Practice account &amp; core dashboard</li>
+          <li>Public graph library access</li>
+          <li>Community browsing &amp; basic study flow</li>
+        </ul>
+        <a class="btn btn-secondary btn-lg" href="./account.html" style="align-self:flex-start">Start free</a>
+      </article>
+
+      <article class="plan-card plan-card--featured">
+        <div class="plan-tier">Pro</div>
+        <h3>Serious interview prep</h3>
+        <p class="blurb">The full premium workflow — personal graphs, advanced focus, revision, analytics, and exports.</p>
+        <ul>
+          <li>Unlimited personal graphs &amp; saved workflows</li>
+          <li>Advanced focus mode &amp; pattern collections</li>
+          <li>Smart spaced revision &amp; reminders</li>
+          <li>Quiz lab, analytics &amp; export tools</li>
+        </ul>
+        <a class="btn btn-primary btn-lg" href="./account.html" style="align-self:flex-start">Get Pro</a>
+      </article>
+
+      <article class="plan-card glass">
+        <div class="plan-tier">Lifetime</div>
+        <h3>Long-horizon access</h3>
+        <p class="blurb">Everything in Pro with a one-time style path for learners who want the studio as a lasting resource.</p>
+        <ul>
+          <li>Same feature surface as Pro</li>
+          <li>One-time purchase positioning</li>
+          <li>Best for multi-year self-paced depth</li>
+          <li>Stable access beyond short prep cycles</li>
+        </ul>
+        <a class="btn btn-secondary btn-lg" href="./account.html" style="align-self:flex-start">Ask about Lifetime</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="compare" aria-labelledby="compare-heading">
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-tag">// feature comparison</div>
+      <h2 class="sec-title" id="compare-heading">What changes <em>between tiers</em></h2>
+      <p class="sec-sub">A concise view of how Free, Pro, and Lifetime line up for the workflows we ship today.</p>
+    </div>
+    <div class="compare-wrap">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th scope="col">Feature</th>
+            <th scope="col">Free</th>
+            <th scope="col">Pro</th>
+            <th scope="col">Lifetime</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Full DSA graph &amp; one-topic mode</th>
+            <td class="on">Included</td>
+            <td class="on">Included</td>
+            <td class="on">Included</td>
+          </tr>
+          <tr>
+            <th scope="row">Practice account &amp; member dashboard</th>
+            <td class="on">Included</td>
+            <td class="on">Included</td>
+            <td class="on">Included</td>
+          </tr>
+          <tr>
+            <th scope="row">Community graph library</th>
+            <td class="on">Included</td>
+            <td class="on">Included</td>
+            <td class="on">Included</td>
+          </tr>
+          <tr>
+            <th scope="row">Personal graphs &amp; advanced graph workflow</th>
+            <td>Upgrade</td>
+            <td class="on">Included</td>
+            <td class="on">Included</td>
+          </tr>
+          <tr>
+            <th scope="row">Premium study tools (revision, analytics, exports)</th>
+            <td>Upgrade</td>
+            <td class="on">Included</td>
+            <td class="on">Included</td>
+          </tr>
+          <tr>
+            <th scope="row">Long-term one-time access positioning</th>
+            <td>—</td>
+            <td>—</td>
+            <td class="on">Best fit</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="final">
+      <h2>Try the studio now, <em>upgrade when you need more.</em></h2>
+      <p>Open the public graph, create your account, and move into the tier that matches how you study.</p>
+      <div class="final-ctas">
+        <a class="btn btn-primary btn-lg" href="./account.html" data-marketing-primary-cta>Start free</a>
+        <a class="btn btn-secondary btn-lg" href="./index.html">Back to studio home</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div>
+        <div class="foot-brand">
+          <div class="foot-logo">
+            <svg viewBox="0 0 24 24" fill="none">
+              <circle cx="6" cy="6" r="2.5" fill="#fff"/>
+              <circle cx="18" cy="6" r="2.5" fill="#fff"/>
+              <circle cx="12" cy="18" r="2.5" fill="#fff"/>
+              <path d="M6 6L12 18M18 6L12 18M6 6H18" stroke="#fff" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <b>DSA Pattern Practice</b>
+        </div>
+        <p>A visual study studio where every data structure, algorithm and interview pattern lives on one connected map.</p>
+      </div>
+      <div>
+        <h6>Studio</h6>
+        <a href="./index.html#studio">Product tour</a>
+        <a href="./index.html#preview">Live graph preview</a>
+        <a href="./premium.html">Pricing</a>
+      </div>
+      <div>
+        <h6>Account</h6>
+        <a href="./account.html">Sign in</a>
+        <a href="./user-dashboard.html">Member area</a>
+      </div>
+      <div>
+        <h6>Company</h6>
+        <a href="./index.html">Home</a>
+        <a href="./account.html">Contact via account</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <div>© 2026 DSA Pattern Practice Studio</div>
+      <div>Pricing · Free / Pro / Lifetime</div>
+    </div>
+  </div>
+</footer>
+
+</div>
+
+<script src="./auth/dsa-admin-auth.js?v=5"></script>
+<script src="./auth/dsa-user-auth.js?v=3"></script>
+<script src="./marketing-pages.js?v=1"></script>
+<script>
+  (function () {
+    function go(url) {
+      window.location.href = url;
+    }
+
+    function isPracticeUserSignedIn() {
+      try {
+        if (typeof dsaIsPracticeUser === "function") return dsaIsPracticeUser();
+        var t = localStorage.getItem("dsaPracticeUserJwtV1") || sessionStorage.getItem("dsaPracticeUserJwtV1") || "";
+        if (!t) return false;
+        var parts = t.split(".");
+        if (parts.length !== 3) return false;
+        var p = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+        var pad = p.length % 4;
+        if (pad) p += "====".slice(0, 4 - pad);
+        var payload = JSON.parse(atob(p));
+        return !!(
+          payload &&
+          payload.typ === "practice" &&
+          payload.iss === "dsa-pattern-practice" &&
+          !(typeof payload.exp === "number" && payload.exp < Math.floor(Date.now() / 1000))
+        );
+      } catch (e) {
+        return false;
+      }
+    }
+
+    var brand = document.getElementById("dsa-brand-home");
+    if (brand) {
+      brand.addEventListener("click", function (e) {
+        if (isPracticeUserSignedIn()) e.preventDefault();
+      });
+    }
+
+    var signIn = document.getElementById("nav-sign-in");
+    if (signIn) signIn.addEventListener("click", function () { go("./account.html"); });
+  })();
+</script>
 </body>
 </html>

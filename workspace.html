@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <script>
+    (function () {
+        function assetBaseHref(pageStem) {
+            var u = new URL(location.href);
+            var path = u.pathname.replace(/\/$/, "");
+            var parts = path.split("/").filter(Boolean);
+            var last = parts.length ? parts[parts.length - 1] : "";
+            if (last === pageStem) {
+                parts.pop();
+                u.pathname = "/" + parts.join("/") + (parts.length ? "/" : "");
+                return u.href;
+            }
+            if (last === pageStem + ".html") {
+                u.pathname = path.slice(0, path.length - last.length);
+                return u.href;
+            }
+            return new URL(".", location.href).href;
+        }
+        var b = document.createElement("base");
+        b.href = assetBaseHref("workspace");
+        var cs = document.querySelector("meta[charset]");
+        if (cs && cs.parentNode === document.head) {
+            cs.insertAdjacentElement("afterend", b);
+        } else {
+            document.head.appendChild(b);
+        }
+    })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="dsa-admin-oauth-base" content="https://dsa-admin-oauth.akashsinghofficial15.workers.dev" />
+    <title>Graph workspace (sandbox) — DSA Pattern Practice</title>
+    <link rel="stylesheet" href="./auth/portal-shell.css?v=24" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css?v=14" />
+    <link rel="stylesheet" href="./dsa-index-shell.css?v=20" />
+    <link rel="stylesheet" href="./auth/admin-workspace.css?v=7" />
+    <link rel="stylesheet" href="./auth/admin-loader.css?v=2" />
+</head>
+<body class="dsa-admin-body">
+    <main class="dsa-portal-page dsa-portal-page--admin">
+        <section class="workspace-sandbox" style="max-width: 1400px; margin: 0 auto; padding: 16px 18px 40px">
+            <p class="helper" style="margin: 0 0 14px">
+                <strong>Sandbox copy</strong> of the admin <strong>Workspace</strong> graph studio (same DOM ids as admin so <code>script.js</code> mounts correctly).
+                <strong>JSON</strong> tab: paste mind-map array → <strong>Apply to graph</strong> → switch <strong>UI</strong> to see it. Reload / Save / Library / Recents are inert or local-only here.
+            </p>
+
+            <!-- === Copied from admin.html: Workspace pane (studio + JSON) — IDs unchanged === -->
+            <div class="adm-pane" data-admin-pane="workspace" data-workspace-sandbox="1">
+                <div class="adm-pane-head adm-ws-head adm-ws-head--split">
+                    <div class="adm-pane-head-main">
+                        <h3 class="adm-ws-pane-title">Workspace</h3>
+                        <p class="helper adm-ws-sub">
+                            <strong>Sandbox</strong> — same UI as admin. Edit in <strong>UI</strong> or <strong>JSON</strong>. This page does not persist to the catalog; use the real admin for that.
+                        </p>
+                    </div>
+                    <div class="adm-pane-head-controls adm-ws-pane-head-controls">
+                        <button type="button" class="adm-section-reload-btn adm-refresh-trigger" id="adm-ws-reload" disabled title="Disabled in sandbox (use admin to reload from server)">
+                            <svg class="adm-section-reload-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M23 4v6h-6" />
+                                <path d="M1 20v-6h6" />
+                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                            </svg>
+                            <span>Reload</span>
+                        </button>
+                        <button type="button" class="adm-section-reload-btn adm-ws-save-graph-btn adm-ws-save-catalog" id="adm-ws-save-graph" disabled title="Disabled in sandbox">
+                            Save graph
+                        </button>
+                        <button
+                            type="button"
+                            class="adm-section-reload-btn adm-ws-head-library-btn"
+                            data-admin-tab-jump="library"
+                            disabled
+                            title="Open admin → Graph library (disabled in sandbox)"
+                            aria-label="Open graph library"
+                        >
+                            <svg class="adm-glib-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="5" cy="6" r="2.25"></circle>
+                                <circle cx="19" cy="6" r="2.25"></circle>
+                                <circle cx="12" cy="18" r="2.25"></circle>
+                                <path d="M6.8 7.3l4.4 9M17.2 7.3l-4.4 9"></path>
+                            </svg>
+                        </button>
+                        <div class="adm-glib-segmented" role="tablist" aria-label="Workspace view">
+                            <button type="button" class="active" data-adm-dual="workspace" data-adm-mode="ui">UI</button>
+                            <button type="button" data-adm-dual="workspace" data-adm-mode="json">JSON</button>
+                        </div>
+                    </div>
+                </div>
+                <div data-adm-panel="workspace-ui">
+                    <div class="adm-ws-layout">
+                        <aside class="adm-ws-recents" aria-label="Recently opened graphs">
+                            <div class="adm-ws-recents-head">
+                                <span class="adm-ws-recents-title">Recent</span>
+                                <div class="adm-ws-recents-head-end">
+                                    <span class="adm-ws-recents-meta" id="adm-ws-recents-meta">Up to <span id="adm-ws-recents-cap-num">8</span> · sandbox</span>
+                                    <button type="button" class="adm-ws-recents-clear" id="adm-ws-recents-clear" disabled aria-label="Clear recent graphs list" title="Disabled in sandbox">
+                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <circle cx="12" cy="12" r="9"></circle>
+                                            <path d="M9 9l6 6M15 9l-6 6"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="adm-ws-recents-list" class="adm-ws-recents-list" role="list">
+                                <p class="helper" style="margin: 12px; font-size: 12px">Recents are disabled in this standalone page.</p>
+                            </div>
+                        </aside>
+                        <div class="adm-ws-main">
+                            <div id="adm-ws-context-banner" class="adm-ws-banner" hidden></div>
+                            <div class="adm-content-graph-wrap adm-ws-graph-wrap">
+                                <div class="dsa-graph-shell dsa-index-ref">
+                                    <main class="page adm-content-graph-studio">
+                                        <section class="head adm-ws-studio-head">
+                                            <div class="head-text adm-ws-studio-head-text">
+                                                <p class="adm-ws-studio-lede">
+                                                    Layout tabs and zoom below; same controls as admin Workspace. Paste JSON on the <strong>JSON</strong> tab and <strong>Apply to graph</strong>, then return here.
+                                                </p>
+                                            </div>
+                                            <nav class="seg dsa-view-tabs dsa-seg-track" role="tablist" id="admin-modeSeg" aria-label="Graph layout">
+                                                <span class="dsa-seg-thumb" aria-hidden="true"></span>
+                                                <button type="button" class="dsa-view-btn" role="tab" data-mode="full" aria-selected="false">Full map</button>
+                                                <button type="button" class="dsa-view-btn" role="tab" data-mode="one" aria-selected="false">One topic</button>
+                                                <button type="button" class="dsa-view-btn" role="tab" data-mode="custom" aria-selected="false">Customize</button>
+                                            </nav>
+                                        </section>
+                                        <section class="toolbar" aria-label="Graph toolbar">
+                                            <div id="admin-dsa-map-toolbar-host" class="dsa-index-toolbar-shell" data-dsa-index-toolbar-slots="1">
+                                                <div class="tools-left">
+                                                    <button type="button" class="btn dark" id="admin-dsa-map-export-json" title="Export mind map JSON">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                            <path d="M12 3v12"></path>
+                                                            <path d="M7 10l5 5 5-5"></path>
+                                                            <path d="M5 21h14"></path>
+                                                        </svg>
+                                                        Export JSON
+                                                    </button>
+                                                    <button type="button" class="btn" id="admin-dsa-map-import-json-trigger" title="Import mind map JSON">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                            <path d="M12 21V9"></path>
+                                                            <path d="M7 14l5-5 5 5"></path>
+                                                            <path d="M5 3h14"></path>
+                                                        </svg>
+                                                        Import JSON…
+                                                    </button>
+                                                    <input type="file" id="admin-dsa-map-import-file" accept="application/json,.json" hidden aria-hidden="true" />
+                                                    <span class="divider" aria-hidden="true"></span>
+                                                    <div id="admin-dsa-toolbar-expand-slot" class="dsa-toolbar-expand-slot"></div>
+                                                </div>
+                                                <div class="tools-right">
+                                                    <div id="admin-dsa-toolbar-zoom-host" class="dsa-toolbar-zoom-host"></div>
+                                                </div>
+                                            </div>
+                                        </section>
+                                        <section class="graph-card adm-graph-preview adm-ws-graph-card" id="adm-ws-graph-card">
+                                            <div id="adm-ws-empty-placeholder" class="adm-ws-empty-placeholder empty-state">
+                                                <div class="empty-icon">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <circle cx="6" cy="6" r="3"></circle>
+                                                        <circle cx="18" cy="6" r="3"></circle>
+                                                        <circle cx="12" cy="18" r="3"></circle>
+                                                        <line x1="8.5" y1="7.5" x2="11" y2="16"></line>
+                                                        <line x1="15.5" y1="7.5" x2="13" y2="16"></line>
+                                                    </svg>
+                                                </div>
+                                                <h3>Your canvas is ready</h3>
+                                                <p>Use <strong>JSON</strong> → Apply, or load public data below.</p>
+                                                <button type="button" class="btn btn-sm adm-ws-empty-open-public" id="adm-ws-empty-open-public">
+                                                    Load <code>GET /api/data?k=dsa</code> (if available)
+                                                </button>
+                                            </div>
+                                            <div class="graph-stage adm-ws-graph-stage">
+                                                <div id="admin-dsa-hierarchy-root" class="dsa-graph-viewport" aria-label="Mind map workspace"></div>
+                                            </div>
+                                        </section>
+                                    </main>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div data-adm-panel="workspace-json" class="adm-hidden">
+                    <p class="helper adm-ws-json-lede" style="margin-top: 0">
+                        Raw mind-map array (same shape as <code>/api/data?k=dsa</code>). <strong>Apply to graph</strong> updates the studio preview, then open the <strong>UI</strong> tab.
+                    </p>
+                    <label for="adm-ws-json-editor" class="adm-inline-label" style="display: block; margin-top: 10px"
+                        >Graph JSON <span class="adm-req" aria-hidden="true">*</span></label
+                    >
+                    <textarea id="adm-ws-json-editor" class="cms-editor adm-json-input" spellcheck="false" rows="26" aria-label="Graph JSON"></textarea>
+                    <div class="adm-toolbar-row" style="margin-top: 10px">
+                        <button type="button" class="btn btn-sm" id="adm-ws-json-apply">Apply to graph</button>
+                        <button type="button" class="btn ghost btn-sm" id="adm-ws-json-format">Format JSON</button>
+                    </div>
+                </div>
+
+                <p id="adm-ws-msg" class="status" aria-live="polite" style="margin-top: 12px"></p>
+            </div>
+        </section>
+    </main>
+
+    <script src="./auth/dsa-admin-auth.js?v=6"></script>
+    <script src="./auth/site-features.js?v=6"></script>
+    <script src="./auth/dsa-member-roles.js?v=1"></script>
+    <script src="./auth/dsa-user-auth.js?v=3"></script>
+    <script src="./dsa-sketch-native.js?v=3"></script>
+    <script src="./script.js?v=34"></script>
+    <script>
+        (function () {
+            var WS_MOUNT = {
+                viewportId: "admin-dsa-hierarchy-root",
+                mapToolbarHostId: "admin-dsa-map-toolbar-host",
+                shellToolbarId: null,
+            };
+
+            function wsMsg(text, cls) {
+                var el = document.getElementById("adm-ws-msg");
+                if (!el) return;
+                el.textContent = text || "";
+                el.className = "status" + (cls ? " " + cls : "");
+            }
+
+            function setDualWorkspace(mode) {
+                var ui = document.querySelector('[data-adm-panel="workspace-ui"]');
+                var json = document.querySelector('[data-adm-panel="workspace-json"]');
+                var showUi = mode === "ui";
+                document.querySelectorAll('[data-adm-dual="workspace"]').forEach(function (btn) {
+                    var on = btn.getAttribute("data-adm-mode") === mode;
+                    btn.classList.toggle("active", on);
+                });
+                if (ui) ui.classList.toggle("adm-hidden", !showUi);
+                if (json) json.classList.toggle("adm-hidden", showUi);
+                if (!showUi) {
+                    refreshJsonFromGraph();
+                }
+                try {
+                    window.dispatchEvent(new Event("resize"));
+                } catch (e) {}
+            }
+
+            function refreshJsonFromGraph() {
+                var ta = document.getElementById("adm-ws-json-editor");
+                if (!ta || typeof dsaGetMindMapHierarchyJsonString !== "function") return;
+                try {
+                    ta.value = JSON.stringify(JSON.parse(dsaGetMindMapHierarchyJsonString()), null, 2);
+                } catch (e) {
+                    ta.value = String(dsaGetMindMapHierarchyJsonString());
+                }
+            }
+
+            function setGraphCardIdle(idle) {
+                var card = document.getElementById("adm-ws-graph-card");
+                if (!card) return;
+                card.classList.toggle("adm-ws-graph-card--idle", !!idle);
+            }
+
+            function bootGraphFromHierarchy() {
+                if (typeof dsaMergeGraphMount === "function") {
+                    dsaMergeGraphMount(WS_MOUNT);
+                }
+                if (typeof loadDsaPatternsPage !== "function") {
+                    wsMsg("script.js not loaded.", "err");
+                    return;
+                }
+                loadDsaPatternsPage({ graphPreview: true, mount: WS_MOUNT });
+                setGraphCardIdle(false);
+            }
+
+            document.querySelectorAll('[data-adm-dual="workspace"]').forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    var mode = btn.getAttribute("data-adm-mode");
+                    if (mode) setDualWorkspace(mode);
+                });
+            });
+
+            var ap = document.getElementById("adm-ws-json-apply");
+            if (ap) {
+                ap.addEventListener("click", function () {
+                    var ta = document.getElementById("adm-ws-json-editor");
+                    if (!ta || typeof dsaReloadGraphFromEditorJson !== "function") return;
+                    try {
+                        JSON.parse(ta.value);
+                    } catch (e) {
+                        wsMsg("Invalid JSON: " + e.message, "err");
+                        return;
+                    }
+                    var r = dsaReloadGraphFromEditorJson(ta.value, WS_MOUNT);
+                    if (!r.ok) {
+                        wsMsg((r.error && r.error.message) || "Could not apply graph", "err");
+                        return;
+                    }
+                    setGraphCardIdle(false);
+                    wsMsg("Graph updated from JSON. Switch to UI to explore.", "ok");
+                    setDualWorkspace("ui");
+                });
+            }
+
+            var fmt = document.getElementById("adm-ws-json-format");
+            if (fmt) {
+                fmt.addEventListener("click", function () {
+                    var ta = document.getElementById("adm-ws-json-editor");
+                    if (!ta) return;
+                    try {
+                        ta.value = JSON.stringify(JSON.parse(ta.value), null, 2);
+                        wsMsg("JSON formatted.", "ok");
+                    } catch (e) {
+                        wsMsg("Invalid JSON: " + e.message, "err");
+                    }
+                });
+            }
+
+            var exp = document.getElementById("admin-dsa-map-export-json");
+            if (exp) {
+                exp.addEventListener("click", function () {
+                    if (typeof dsaExportMindMapHierarchyJson === "function") {
+                        dsaExportMindMapHierarchyJson();
+                        wsMsg("Export triggered (download).", "ok");
+                    }
+                });
+            }
+
+            var impTrig = document.getElementById("admin-dsa-map-import-json-trigger");
+            var impFile = document.getElementById("admin-dsa-map-import-file");
+            if (impTrig && impFile) {
+                impTrig.addEventListener("click", function () {
+                    impFile.click();
+                });
+                impFile.addEventListener("change", function () {
+                    var f = impFile.files && impFile.files[0];
+                    if (!f) return;
+                    var reader = new FileReader();
+                    reader.onload = function () {
+                        var ta = document.getElementById("adm-ws-json-editor");
+                        if (ta) ta.value = String(reader.result || "");
+                        setDualWorkspace("json");
+                        wsMsg("Imported file into JSON editor — click Apply to graph.", "ok");
+                    };
+                    reader.onerror = function () {
+                        wsMsg("File read failed.", "err");
+                    };
+                    reader.readAsText(f);
+                    impFile.value = "";
+                });
+            }
+
+            var pub = document.getElementById("adm-ws-empty-open-public");
+            if (pub) {
+                pub.addEventListener("click", function () {
+                    if (typeof dsaLoadHierarchyFromSources !== "function") return;
+                    dsaLoadHierarchyFromSources().then(function () {
+                        bootGraphFromHierarchy();
+                        refreshJsonFromGraph();
+                        wsMsg("Loaded hierarchy from API (or built-in placeholder).", "ok");
+                    });
+                });
+            }
+
+            /* Initial: same as index — try API, else minimal placeholder, then mount preview */
+            if (typeof dsaLoadHierarchyFromSources === "function") {
+                dsaLoadHierarchyFromSources().then(function () {
+                    bootGraphFromHierarchy();
+                    refreshJsonFromGraph();
+                    wsMsg("Sandbox ready. Edit JSON or use the map.", "ok");
+                });
+            } else {
+                bootGraphFromHierarchy();
+            }
+        })();
+    </script>
+</body>
+</html>

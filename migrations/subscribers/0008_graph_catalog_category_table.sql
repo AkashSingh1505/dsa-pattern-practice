@@ -1,5 +1,5 @@
--- Normalized catalog graph categories (stable ids for payload.catalogCategoryId on nodes).
--- Run after 0007_graph_catalog_categories.sql (or any graph_catalog with categories_json legacy data).
+-- Normalized catalog graph categories (stable ids on mind-map nodes via graphCategoryId).
+-- Run after 0003_graph_library.sql. (0007 is obsolete; legacy JSON column removed by 0011.)
 --   npx wrangler d1 execute dsa-pattern-practice-subscribers --remote --file=migrations/subscribers/0008_graph_catalog_category_table.sql
 
 CREATE TABLE IF NOT EXISTS graph_catalog_category (

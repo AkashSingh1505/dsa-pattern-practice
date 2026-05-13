@@ -1,7 +1,6 @@
 import { json } from "../../_lib/admin-api.js";
 import { requirePracticeUser } from "../../_lib/practice-auth-request.js";
 import { graphPayloadStatsFromJson } from "../../_lib/graph-payload-stats.js";
-import { parseGraphCategoriesJson } from "../../_lib/graph-catalog-categories.js";
 import { listCatalogCategoriesByCatalogIds } from "../../_lib/graph-catalog-category-rows.js";
 
 function creatorLabel(row) {
@@ -28,7 +27,7 @@ export async function onRequestGet(context) {
     try {
         rows = await db
             .prepare(
-                `SELECT c.id, c.slug, c.title, c.description, c.accent_hue, c.tags_json, c.categories_json, c.difficulty,
+                `SELECT c.id, c.slug, c.title, c.description, c.accent_hue, c.tags_json, c.difficulty,
                         c.payload_json,
                         c.estimated_minutes, c.download_count, c.created_at, c.updated_at,
                         pu.email AS creator_email, up.display_name AS creator_display_name
@@ -63,11 +62,7 @@ export async function onRequestGet(context) {
         const stats = graphPayloadStatsFromJson(r.payload_json);
         let categories = byCatalogId.get(r.id);
         if (!categories || !categories.length) {
-            categories = parseGraphCategoriesJson(r.categories_json).map((c) => ({
-                id: c.id != null && String(c.id).trim() ? String(c.id).trim() : "",
-                name: c.name,
-                color: c.color || "#6b7280",
-            }));
+            categories = [];
         }
         return {
             id: r.id,

@@ -1,7 +1,7 @@
 /**
  * Category payloads for mind maps: `{ id, name, color }[]`.
- * Community catalog: canonical storage is `graph_catalog.categories_json` (plus optional `graph_catalog_category` rows for stable ids — see catalog APIs).
- * Personal graphs: `user_graphs.categories_json` only (see user-graph-categories-json.js).
+ * Community catalog: canonical category rows live in **`graph_catalog_category`** (not JSON on `graph_catalog`).
+ * Personal graphs: **`user_graphs.categories_json`** only (see user-graph-categories-json.js).
  */
 
 import { newGraphId } from "./practice-auth-request.js";

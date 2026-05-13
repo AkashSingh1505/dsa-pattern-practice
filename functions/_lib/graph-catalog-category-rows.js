@@ -1,6 +1,3 @@
-import { newGraphId } from "./practice-auth-request.js";
-import { parseGraphCategoriesJson } from "./graph-catalog-categories.js";
-
 /** Mind-map nodes: `graphCategoryId` (preferred) or legacy `catalogCategoryId` → category row id for that graph. */
 
 /**
@@ -23,7 +20,7 @@ export async function listCatalogCategoriesForCatalog(db, catalogId) {
 }
 
 /**
- * Replace all category rows for a catalog and clear legacy `categories_json`.
+ * Replace all category rows for a catalog (`graph_catalog_category` only).
  * @param {*} db
  * @param {string} catalogId
  * @param {{ id: string, name: string, color: string }[]} categories
@@ -42,50 +39,17 @@ export async function replaceCatalogCategoriesForCatalog(db, catalogId, categori
                 .bind(c.id, catalogId, c.name, c.color, i, now, now),
         );
     }
-    stmts.push(db.prepare(`UPDATE graph_catalog SET categories_json = NULL WHERE id = ?`).bind(catalogId));
     await db.batch(stmts);
 }
 
 /**
- * If no rows exist but legacy `categories_json` has entries, migrate into `graph_catalog_category`.
+ * Resolved categories for a catalog graph (normalized table only).
+ * @param {*} db
+ * @param {string} catalogId
  * @returns {Promise<{ id: string, name: string, color: string }[]>}
  */
-export async function migrateLegacyCategoriesJsonToRowsIfNeeded(db, catalogId, categoriesJson, now) {
-    const existing = await listCatalogCategoriesForCatalog(db, catalogId);
-    if (existing.length) {
-        return existing;
-    }
-    const legacy = parseGraphCategoriesJson(categoriesJson);
-    if (!legacy.length) {
-        return [];
-    }
-    const withIds = legacy.map((c) => ({
-        id: c.id && String(c.id).trim() ? String(c.id).trim() : newGraphId(),
-        name: c.name,
-        color: c.color || "#6b7280",
-    }));
-    await replaceCatalogCategoriesForCatalog(db, catalogId, withIds, now);
-    return withIds;
-}
-
-/**
- * @param {{ migrateLegacy?: boolean }} opts migrateLegacy: persist legacy JSON into rows (admin paths).
- */
-export async function getResolvedCatalogCategories(db, catalogId, legacyJson, now, opts) {
-    const migrateLegacy = !!(opts && opts.migrateLegacy);
-    const fromTable = await listCatalogCategoriesForCatalog(db, catalogId);
-    if (fromTable.length) {
-        return fromTable;
-    }
-    if (migrateLegacy) {
-        return migrateLegacyCategoriesJsonToRowsIfNeeded(db, catalogId, legacyJson, now);
-    }
-    const parsed = parseGraphCategoriesJson(legacyJson);
-    return parsed.map((c) => ({
-        id: c.id != null && String(c.id).trim() ? String(c.id).trim() : "",
-        name: c.name,
-        color: c.color || "#6b7280",
-    }));
+export async function getResolvedCatalogCategories(db, catalogId) {
+    return listCatalogCategoriesForCatalog(db, catalogId);
 }
 
 /**
@@ -382,5 +346,7 @@ export function remapGraphCategoryIdsInPayload(payload, idMap) {
         }
         apply(root);
         (Array.isArray(root.tree) ? root.tree : []).forEach(walkNode);
+        (Array.isArray(root.patterns) ? root.patterns : []).forEach(walkNode);
+        (Array.isArray(root.problems) ? root.problems : []).forEach(walkNode);
     }
 }

@@ -58,7 +58,7 @@ export async function onRequestGet(context) {
         try {
             row = await db
                 .prepare(
-                    `SELECT c.id, c.slug, c.title, c.description, c.visibility, c.creator_user_id, c.payload_json, c.accent_hue, c.tags_json, c.categories_json, c.difficulty,
+                    `SELECT c.id, c.slug, c.title, c.description, c.visibility, c.creator_user_id, c.payload_json, c.accent_hue, c.tags_json, c.difficulty,
                             c.estimated_minutes, c.download_count, c.created_at, c.updated_at,
                             pu.email AS creator_email
                      FROM graph_catalog c
@@ -83,10 +83,9 @@ export async function onRequestGet(context) {
         if (!Array.isArray(payload)) {
             return json({ error: "invalid payload in database" }, 500);
         }
-        const nowSec = Math.floor(Date.now() / 1000);
         let categories;
         try {
-            categories = await getResolvedCatalogCategories(db, row.id, row.categories_json, nowSec, { migrateLegacy: true });
+            categories = await getResolvedCatalogCategories(db, row.id);
         } catch (e) {
             console.error("admin graph-catalog categories", e);
             return json({ error: "server error" }, 500);
@@ -118,7 +117,7 @@ export async function onRequestGet(context) {
     try {
         rows = await db
             .prepare(
-                `SELECT c.id, c.slug, c.title, c.description, c.visibility, c.accent_hue, c.tags_json, c.categories_json, c.difficulty,
+                `SELECT c.id, c.slug, c.title, c.description, c.visibility, c.accent_hue, c.tags_json, c.difficulty,
                         c.estimated_minutes, c.download_count, c.created_at, c.updated_at, c.deleted_at,
                         pu.email AS creator_email
                  FROM graph_catalog c
@@ -214,8 +213,8 @@ export async function onRequestPost(context) {
     try {
         await db
             .prepare(
-                `INSERT INTO graph_catalog (id, slug, title, description, visibility, creator_user_id, payload_json, accent_hue, tags_json, categories_json, difficulty, estimated_minutes, download_count, created_at, updated_at, deleted_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, NULL)`,
+                `INSERT INTO graph_catalog (id, slug, title, description, visibility, creator_user_id, payload_json, accent_hue, tags_json, difficulty, estimated_minutes, download_count, created_at, updated_at, deleted_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, NULL)`,
             )
             .bind(
                 id,
@@ -227,7 +226,6 @@ export async function onRequestPost(context) {
                 payloadJson,
                 accentHue,
                 tags,
-                null,
                 difficulty,
                 estimatedMinutes,
                 now,
@@ -265,7 +263,7 @@ export async function onRequestPatch(context) {
     }
     const { db } = gate;
     const fullRow = await db
-        .prepare(`SELECT id, payload_json, categories_json FROM graph_catalog WHERE id = ? AND deleted_at IS NULL`)
+        .prepare(`SELECT id, payload_json FROM graph_catalog WHERE id = ? AND deleted_at IS NULL`)
         .bind(id)
         .first();
     if (!fullRow) {
@@ -319,7 +317,7 @@ export async function onRequestPatch(context) {
     if (body.payload != null && body.categories === undefined) {
         let cats;
         try {
-            cats = await getResolvedCatalogCategories(db, id, fullRow.categories_json, now, { migrateLegacy: true });
+            cats = await getResolvedCatalogCategories(db, id);
         } catch (e) {
             console.error("admin graph-catalog patch load categories", e);
             return json({ error: "server error" }, 500);

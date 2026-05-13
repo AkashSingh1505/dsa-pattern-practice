@@ -1,7 +1,6 @@
 import { json } from "../../_lib/admin-api.js";
 import { newGraphId, requirePracticeUser } from "../../_lib/practice-auth-request.js";
 import { ensureUserGraphVisibilityColumn } from "../../_lib/user-graph-visibility.js";
-import { normalizeGraphCategoriesBody, parseGraphCategoriesJson } from "../../_lib/graph-catalog-categories.js";
 import { listCatalogCategoriesForCatalog, remapGraphCategoryIdsInPayload, validateMindMapGraphInvariant } from "../../_lib/graph-catalog-category-rows.js";
 import { ensureUserGraphCategoriesJsonColumn, stringifyUserGraphCategories } from "../../_lib/user-graph-categories-json.js";
 
@@ -28,7 +27,7 @@ export async function onRequestPost(context) {
     try {
         cat = await db
             .prepare(
-                `SELECT id, title, description, payload_json, accent_hue, visibility, categories_json FROM graph_catalog
+                `SELECT id, title, description, payload_json, accent_hue, visibility FROM graph_catalog
                  WHERE id = ? AND deleted_at IS NULL`,
             )
             .bind(catalogId)
@@ -55,13 +54,6 @@ export async function onRequestPost(context) {
         catRows = await listCatalogCategoriesForCatalog(db, catalogId);
     } catch {
         catRows = [];
-    }
-    if (!catRows.length && cat.categories_json) {
-        const parsed = parseGraphCategoriesJson(cat.categories_json);
-        const n = normalizeGraphCategoriesBody(parsed);
-        if (n.ok) {
-            catRows = n.categories;
-        }
     }
     if (!catRows.length) {
         return json({ error: "source graph has no categories declared", code: "GRAPH_CATEGORIES_REQUIRED" }, 422);

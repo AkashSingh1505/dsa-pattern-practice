@@ -1,6 +1,5 @@
 import { json } from "../../_lib/admin-api.js";
 import { requirePracticeUser } from "../../_lib/practice-auth-request.js";
-import { parseGraphCategoriesJson } from "../../_lib/graph-catalog-categories.js";
 import { getResolvedCatalogCategories, validateMindMapGraphInvariant } from "../../_lib/graph-catalog-category-rows.js";
 
 export async function onRequestGet(context) {
@@ -19,7 +18,7 @@ export async function onRequestGet(context) {
     try {
         row = await db
             .prepare(
-                `SELECT c.id, c.slug, c.title, c.description, c.visibility, c.payload_json, c.accent_hue, c.tags_json, c.categories_json,
+                `SELECT c.id, c.slug, c.title, c.description, c.visibility, c.payload_json, c.accent_hue, c.tags_json,
                         c.difficulty, c.estimated_minutes, c.download_count, c.created_at, c.updated_at,
                         pu.email AS creator_email, up.display_name AS creator_display_name
                  FROM graph_catalog c
@@ -49,17 +48,12 @@ export async function onRequestGet(context) {
     const dn = row.creator_display_name && String(row.creator_display_name).trim();
     const em = row.creator_email && String(row.creator_email).trim();
     const creatorLabel = dn || em || "Admin";
-    const nowSec = Math.floor(Date.now() / 1000);
     let categories;
     try {
-        categories = await getResolvedCatalogCategories(db, row.id, row.categories_json, nowSec, { migrateLegacy: true });
+        categories = await getResolvedCatalogCategories(db, row.id);
     } catch (e) {
         console.error("catalog-detail categories", e);
-        categories = parseGraphCategoriesJson(row.categories_json).map((c) => ({
-            id: c.id != null && String(c.id).trim() ? String(c.id).trim() : "",
-            name: c.name,
-            color: c.color || "#6b7280",
-        }));
+        categories = [];
     }
     const inv = validateMindMapGraphInvariant(payload, categories);
     if (!inv.ok) {

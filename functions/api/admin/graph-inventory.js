@@ -58,7 +58,7 @@ export async function onRequestGet(context) {
         try {
             row = await db
                 .prepare(
-                    `SELECT c.id, c.slug, c.title, c.description, c.visibility, c.creator_user_id, c.payload_json, c.accent_hue, c.tags_json, c.categories_json, c.difficulty,
+                    `SELECT c.id, c.slug, c.title, c.description, c.visibility, c.creator_user_id, c.payload_json, c.accent_hue, c.tags_json, c.difficulty,
                             c.estimated_minutes, c.download_count, c.created_at, c.updated_at,
                             pu.email AS creator_email
                      FROM graph_catalog c
@@ -83,10 +83,9 @@ export async function onRequestGet(context) {
         if (!Array.isArray(payload)) {
             return json({ error: "invalid payload" }, 500);
         }
-        const nowSec = Math.floor(Date.now() / 1000);
         let categories;
         try {
-            categories = await getResolvedCatalogCategories(db, row.id, row.categories_json, nowSec, { migrateLegacy: true });
+            categories = await getResolvedCatalogCategories(db, row.id);
         } catch (e) {
             console.error("graph-inventory catalog categories", e);
             return json({ error: "server error" }, 500);

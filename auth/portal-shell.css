@@ -1497,28 +1497,6 @@
             background: #fff;
             color: var(--ink);
         }
-        .account-nav-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            align-self: flex-start;
-            margin-bottom: 4px;
-            padding: 8px 14px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--ink-2);
-            text-decoration: none;
-            border-radius: 10px;
-            border: 1px solid var(--line);
-            background: rgba(255, 255, 255, 0.55);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            transition: background 0.2s ease, color 0.2s ease;
-        }
-        .account-nav-back:hover {
-            background: #fff;
-            color: var(--ink);
-        }
 
         /* Theme toggle (admin header) */
         .admin-theme-toggle {

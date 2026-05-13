@@ -69,6 +69,13 @@
     border:1px solid var(--line-2);
   }
   .btn-outline:hover{background:rgba(255,255,255,0.9);transform:translateY(-1px)}
+  .btn-premium{
+    background:linear-gradient(135deg,#475569,#1e293b);
+    color:#fff;font-weight:600;
+    box-shadow:0 8px 22px rgba(30,41,59,0.28), inset 0 1px 0 rgba(255,255,255,0.12);
+  }
+  .btn-premium:hover{transform:translateY(-1px);box-shadow:0 12px 30px rgba(30,41,59,0.4)}
+  .btn-premium[aria-current="page"]{cursor:default;opacity:0.95}
 
   @media (max-width:720px){
     .nav-links{display:none}
@@ -99,8 +106,8 @@
       <a href="./index.html#preview">Live graph</a>
     </div>
     <div class="nav-cta">
-      <button type="button" class="btn btn-ghost" id="nav-sign-in">Sign in</button>
-      <a class="btn btn-outline" href="./index.html">Back to studio</a>
+      <a class="btn btn-ghost" href="./account.html">Sign in</a>
+      <span class="btn btn-premium" aria-current="page">Premium</span>
     </div>
   </div>
 </nav>
@@ -784,10 +791,6 @@
 <script src="./marketing-pages.js?v=1"></script>
 <script>
   (function () {
-    function go(url) {
-      window.location.href = url;
-    }
-
     function isPracticeUserSignedIn() {
       try {
         if (typeof dsaIsPracticeUser === "function") return dsaIsPracticeUser();
@@ -816,9 +819,6 @@
         if (isPracticeUserSignedIn()) e.preventDefault();
       });
     }
-
-    var signIn = document.getElementById("nav-sign-in");
-    if (signIn) signIn.addEventListener("click", function () { go("./account.html"); });
   })();
 </script>
 </body>

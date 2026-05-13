@@ -160,6 +160,8 @@ nav.dsa-site-nav .btn-ghost[aria-current="page"]:hover {
 nav.dsa-site-nav .btn-premium {
   background: linear-gradient(135deg, #475569, #1e293b);
   color: #fff;
+  /* Match ghost’s 1px border so both buttons share the same border-box height */
+  border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 8px 22px rgba(30, 41, 59, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 nav.dsa-site-nav .btn-premium:hover {
@@ -187,13 +189,37 @@ nav.dsa-site-nav a.btn-premium[aria-current="page"]:hover {
 }
 
 /* Body offset when the marketing toolbar sits above portal-style pages (e.g. account). */
+/*
+ * Do NOT use padding-top on body: that band uses the default body background (white)
+ * while <main> has the portal gradient — looks like a “gap”. Put clearance on <main>
+ * so the same background paints under the fixed nav.
+ */
 body.has-dsa-site-nav-offset {
-  /* .nav-inner is 68px; nav has 1px border-bottom — match total so <main> sits flush under the bar */
-  padding-top: calc(68px + 1px);
+  margin: 0;
+  padding-top: 0;
 }
 body.has-dsa-site-nav-offset .dsa-portal-page {
-  min-height: calc(100vh - 69px);
-  /* portal default padding-top would show as a strip under the fixed nav */
-  padding-top: 0;
+  /* .nav-inner 68px + nav 1px border-bottom */
+  --dsa-site-nav-clearance: calc(68px + 1px);
   margin-top: 0;
+  padding-top: var(--dsa-site-nav-clearance);
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 48px;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* Account: align toolbar with centered portal column (.shell max-width 460px). */
+body.dsa-account-site nav.dsa-site-nav .container {
+  max-width: 460px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+@media (min-width: 981px) {
+  body.dsa-account-site nav.dsa-site-nav .container {
+    max-width: min(920px, calc(100vw - 32px));
+  }
 }

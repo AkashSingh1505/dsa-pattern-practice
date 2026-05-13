@@ -218,6 +218,9 @@
   .calm-studio .pricing-hero .lead{font-size:17px;color:var(--c-mute);max-width:560px;line-height:1.65}
   .calm-studio .hero-actions{display:flex;gap:12px;margin-top:28px;flex-wrap:wrap}
 
+  .calm-studio .proof-strip{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:44px;
+  }
   .calm-studio .proof-card{
     padding:22px 24px;border-radius:18px;
     border:1px solid rgba(255,255,255,0.7);
@@ -229,6 +232,70 @@
     font-family:'JetBrains Mono',monospace;
   }
   .calm-studio .proof-card span{font-size:13px;color:var(--c-mute);line-height:1.45}
+
+  .calm-studio .premium-box{
+    border-radius:28px;padding:56px;
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.78), rgba(255,255,255,0.5)),
+      radial-gradient(600px 300px at 0% 100%, rgba(124,92,255,0.18), transparent 60%),
+      radial-gradient(500px 300px at 100% 0%, rgba(224,138,91,0.15), transparent 60%);
+    -webkit-backdrop-filter:blur(28px) saturate(180%);
+    backdrop-filter:blur(28px) saturate(180%);
+    border:1px solid rgba(255,255,255,0.7);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.9) inset,
+      0 40px 100px -30px rgba(30,40,70,0.25);
+    display:grid;grid-template-columns:1.2fr 0.8fr;gap:52px;align-items:center;
+    position:relative;overflow:hidden;
+  }
+  .calm-studio .premium-pill{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:8px 14px;border-radius:99px;
+    background:rgba(124,92,255,0.1);
+    border:1px solid rgba(124,92,255,0.25);
+    font-size:11.5px;color:#5d44e0;
+    font-family:'JetBrains Mono',monospace;font-weight:600;letter-spacing:0.06em;
+    width:fit-content;margin-bottom:18px;
+  }
+  .calm-studio .premium-box h2{
+    font-size:clamp(28px,3.2vw,40px);font-weight:600;letter-spacing:-0.03em;line-height:1.12;
+    margin-bottom:16px;color:var(--c-ink);
+  }
+  .calm-studio .premium-box > div > p{
+    color:var(--c-mute);font-size:16px;margin-bottom:28px;max-width:480px;line-height:1.6;
+  }
+  .calm-studio .premium-list{
+    display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:32px;
+  }
+  .calm-studio .premium-list .it{
+    display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--c-ink-2);
+  }
+  .calm-studio .premium-list .it svg{width:16px;height:16px;stroke:var(--c-mint);flex-shrink:0}
+  .calm-studio .plan-mini{
+    border:1px solid rgba(255,255,255,0.7);
+    border-radius:20px;padding:26px;
+    background:rgba(255,255,255,0.78);
+    backdrop-filter:blur(20px);
+    box-shadow:0 20px 50px -20px rgba(30,40,70,0.2);
+  }
+  .calm-studio .plan-mini h5{
+    font-size:11.5px;color:var(--c-dim);
+    font-family:'JetBrains Mono',monospace;
+    text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;font-weight:600;
+  }
+  .calm-studio .plan-mini .price{
+    font-size:36px;font-weight:600;letter-spacing:-0.02em;color:var(--c-ink);margin-bottom:4px;
+  }
+  .calm-studio .plan-mini .price span{font-size:14px;color:var(--c-mute);font-weight:400}
+  .calm-studio .plan-mini .desc{font-size:12.5px;color:var(--c-mute);margin-bottom:18px}
+  .calm-studio .plan-mini .row{
+    display:flex;justify-content:space-between;
+    padding:11px 0;border-bottom:1px solid var(--c-line);
+    font-size:12.5px;
+  }
+  .calm-studio .plan-mini .row:last-child{border-bottom:none}
+  .calm-studio .plan-mini .row span{color:var(--c-mute)}
+  .calm-studio .plan-mini .row b{font-weight:600;color:var(--c-ink)}
 
   .calm-studio .plan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
   .calm-studio .plan-card{
@@ -247,16 +314,16 @@
     font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;
     color:var(--c-accent);font-weight:600;margin-bottom:10px;
   }
-  .calm-studio .plan-card h3{font-size:17px;font-weight:600;margin-bottom:0;color:var(--c-ink);letter-spacing:-0.02em}
-  .calm-studio .plan-card .plan-cta-wrap{margin-top:auto;padding-top:20px}
-
-  .calm-studio .plan-price{
-    font-size:clamp(2.1rem,4vw,2.75rem);font-weight:700;letter-spacing:-0.04em;
-    color:var(--c-ink);line-height:1.1;margin-bottom:6px;
-    font-family:'JetBrains Mono',monospace;
+  .calm-studio .plan-card h3{font-size:20px;font-weight:600;margin-bottom:10px;color:var(--c-ink);letter-spacing:-0.02em}
+  .calm-studio .plan-card .blurb{font-size:14px;color:var(--c-mute);line-height:1.55;margin-bottom:18px;flex:1}
+  .calm-studio .plan-card ul{list-style:none;padding:0;margin:0 0 22px}
+  .calm-studio .plan-card li{
+    font-size:13.5px;color:var(--c-ink-2);padding:8px 0;border-top:1px solid var(--c-line);
+    display:flex;gap:10px;align-items:flex-start;
   }
-  .calm-studio .plan-price small{font-size:15px;font-weight:500;color:var(--c-mute)}
-  .calm-studio .plan-billing{font-size:13px;color:var(--c-mute);margin-bottom:16px;line-height:1.45}
+  .calm-studio .plan-card li::before{
+    content:"";width:6px;height:6px;border-radius:50%;margin-top:6px;flex-shrink:0;background:var(--c-mint);
+  }
 
   .calm-studio .faq-section{padding-top:40px;padding-bottom:100px}
   .calm-studio .faq-list{max-width:760px;margin:0 auto}
@@ -368,11 +435,14 @@
 
   @media (max-width:980px){
     .calm-studio section{padding:72px 0}
+    .calm-studio .premium-box{grid-template-columns:1fr;padding:40px;gap:32px}
     .calm-studio .plan-grid{grid-template-columns:1fr}
+    .calm-studio .proof-strip{grid-template-columns:1fr}
     .calm-studio .foot-grid{grid-template-columns:1fr 1fr}
   }
   @media (max-width:540px){
     .calm-studio .container{padding:0 20px}
+    .calm-studio .premium-list{grid-template-columns:1fr}
     .calm-studio .foot-grid{grid-template-columns:1fr}
   }
 </style>
@@ -380,51 +450,176 @@
 <section class="pricing-hero">
   <div class="container">
     <div class="eyebrow">Plans &amp; pricing</div>
-    <h1>Simple pricing for the graph studio.</h1>
-    <p class="lead">Three tiers — prices above, everything else below. Open a question to read the answer.</p>
+    <h1>Choose how deeply you want to use the studio.</h1>
+    <p class="lead">Start free on the public graph, then move to Pro when you want personal graphs, smarter revision, and the full premium workflow. Lifetime is for learners who want long-horizon access in one step.</p>
     <div class="hero-actions">
       <a class="btn btn-primary btn-lg" href="./account.html" data-marketing-primary-cta>Start free</a>
       <a class="btn btn-secondary btn-lg" href="./index.html#preview">Preview the live map</a>
+    </div>
+
+    <div class="proof-strip">
+      <article class="proof-card">
+        <strong data-public-stat="subscribers">—</strong>
+        <span>Subscribers already using the studio</span>
+      </article>
+      <article class="proof-card">
+        <strong data-plan-count="pro">—</strong>
+        <span>Pro plans in the current member base</span>
+      </article>
+      <article class="proof-card">
+        <strong data-plan-count="lifetime">—</strong>
+        <span>Lifetime members in the plan mix</span>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="premium-spotlight-heading">
+  <div class="container">
+    <div class="premium-box">
+      <div>
+        <div class="premium-pill">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 2L15 8.5L22 9.5L17 14.5L18.5 22L12 18L5.5 22L7 14.5L2 9.5L9 8.5L12 2Z"/></svg>
+          STUDIO PREMIUM
+        </div>
+        <h2 id="premium-spotlight-heading">Go beyond practice — get the full studio.</h2>
+        <p>Unlock unlimited graphs, advanced focus mode, spaced revision and personal pattern collections. Built for learners who are serious about interviews.</p>
+        <div class="premium-list">
+          <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Unlimited personal graphs</div>
+          <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Advanced focus mode</div>
+          <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Smart spaced revision</div>
+          <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Quiz history &amp; analytics</div>
+          <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Export &amp; share graphs</div>
+          <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12L10 17L19 7"/></svg> Priority support</div>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <a class="btn btn-primary btn-lg" href="./account.html">Upgrade to Pro</a>
+          <a class="btn btn-secondary btn-lg" href="#compare">See feature comparison</a>
+        </div>
+      </div>
+
+      <div class="plan-mini">
+        <h5>// Pro plan</h5>
+        <div class="price">$9<span>/month</span></div>
+        <div class="desc">Billed monthly · cancel anytime</div>
+        <div class="row"><span>Personal graphs</span><b>Unlimited</b></div>
+        <div class="row"><span>Pattern library</span><b>180+ nodes</b></div>
+        <div class="row"><span>Focus mode</span><b>Advanced</b></div>
+        <div class="row"><span>Revision reminders</span><b>Smart</b></div>
+        <div class="row"><span>Analytics</span><b>Included</b></div>
+        <div class="row"><span>Community graphs</span><b>Full access</b></div>
+      </div>
     </div>
   </div>
 </section>
 
 <section id="plans" aria-labelledby="plans-heading">
   <div class="container">
-    <div class="sec-head" style="margin-bottom:36px">
-      <h2 class="sec-title" id="plans-heading" style="font-size:clamp(26px,3vw,38px)">Pick your tier</h2>
+    <div class="sec-head">
+      <div class="sec-tag">// three tiers</div>
+      <h2 class="sec-title" id="plans-heading">Free, Pro, or <em>Lifetime.</em></h2>
+      <p class="sec-sub">No team plan — every feature path is built for individual learners and your own graph workspace.</p>
     </div>
 
     <div class="plan-grid">
       <article class="plan-card glass">
         <div class="plan-tier">Free</div>
-        <div class="plan-price">$0</div>
-        <div class="plan-billing">Forever · no card required to explore the map</div>
-        <h3>Explore</h3>
-        <div class="plan-cta-wrap">
-          <a class="btn btn-secondary btn-lg" href="./account.html">Start free</a>
-        </div>
+        <h3>Explore the studio</h3>
+        <p class="blurb">For students who want to explore the graph and begin practice without a paid upgrade.</p>
+        <ul>
+          <li>Full DSA map &amp; one-topic browsing</li>
+          <li>Practice account &amp; core dashboard</li>
+          <li>Public graph library access</li>
+          <li>Community browsing &amp; basic study flow</li>
+        </ul>
+        <a class="btn btn-secondary btn-lg" href="./account.html" style="align-self:flex-start">Start free</a>
       </article>
 
       <article class="plan-card plan-card--featured">
         <div class="plan-tier">Pro</div>
-        <div class="plan-price">$9<small>/mo</small></div>
-        <div class="plan-billing">Billed monthly · cancel anytime</div>
-        <h3>Full studio</h3>
-        <div class="plan-cta-wrap">
-          <a class="btn btn-primary btn-lg" href="./account.html">Get Pro</a>
-        </div>
+        <h3>Serious interview prep</h3>
+        <p class="blurb">Unlock the premium study workflow when you want more than browsing and basic review — <strong>$9/mo</strong>, cancel anytime.</p>
+        <ul>
+          <li>Unlimited personal graphs &amp; saved workflows</li>
+          <li>Advanced focus mode &amp; pattern collections</li>
+          <li>Smart spaced revision &amp; reminders</li>
+          <li>Quiz lab, analytics &amp; export tools</li>
+        </ul>
+        <a class="btn btn-primary btn-lg" href="./account.html" style="align-self:flex-start">Get Pro</a>
       </article>
 
       <article class="plan-card glass">
         <div class="plan-tier">Lifetime</div>
-        <div class="plan-price">Once</div>
-        <div class="plan-billing">One-time · same feature set as Pro, long-horizon access</div>
-        <h3>Long-term</h3>
-        <div class="plan-cta-wrap">
-          <a class="btn btn-secondary btn-lg" href="./account.html">Ask about Lifetime</a>
-        </div>
+        <h3>Long-horizon access</h3>
+        <p class="blurb">Everything in Pro with a one-time purchase path for learners who want the studio as a long-lived resource.</p>
+        <ul>
+          <li>Same feature surface as Pro</li>
+          <li>One-time purchase positioning</li>
+          <li>Best for multi-year self-paced depth</li>
+          <li>Stable access beyond short prep cycles</li>
+        </ul>
+        <a class="btn btn-secondary btn-lg" href="./account.html" style="align-self:flex-start">Ask about Lifetime</a>
       </article>
+    </div>
+  </div>
+</section>
+
+<section id="compare" aria-labelledby="compare-heading">
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-tag">// feature comparison</div>
+      <h2 class="sec-title" id="compare-heading">What changes <em>between tiers</em></h2>
+      <p class="sec-sub">A concise view of how Free, Pro, and Lifetime line up for the workflows we ship today.</p>
+    </div>
+    <div class="compare-wrap">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th scope="col">Feature</th>
+            <th scope="col">Free</th>
+            <th scope="col">Pro</th>
+            <th scope="col">Lifetime</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Full DSA graph &amp; one-topic mode</th>
+            <td class="on">Included</td>
+            <td class="on">Included</td>
+            <td class="on">Included</td>
+          </tr>
+          <tr>
+            <th scope="row">Practice account &amp; member dashboard</th>
+            <td class="on">Included</td>
+            <td class="on">Included</td>
+            <td class="on">Included</td>
+          </tr>
+          <tr>
+            <th scope="row">Community graph library</th>
+            <td class="on">Included</td>
+            <td class="on">Included</td>
+            <td class="on">Included</td>
+          </tr>
+          <tr>
+            <th scope="row">Personal graphs &amp; advanced graph workflow</th>
+            <td>Upgrade</td>
+            <td class="on">Included</td>
+            <td class="on">Included</td>
+          </tr>
+          <tr>
+            <th scope="row">Premium study tools (revision, analytics, exports)</th>
+            <td>Upgrade</td>
+            <td class="on">Included</td>
+            <td class="on">Included</td>
+          </tr>
+          <tr>
+            <th scope="row">Long-term one-time access positioning</th>
+            <td>—</td>
+            <td>—</td>
+            <td class="on">Best fit</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </section>
@@ -434,7 +629,7 @@
     <div class="sec-head" style="text-align:center;margin-left:auto;margin-right:auto;margin-bottom:40px">
       <div class="sec-tag">// frequently asked</div>
       <h2 class="sec-title" id="faq-heading">Questions <em>answered</em></h2>
-      <p class="sec-sub" style="margin-left:auto;margin-right:auto;text-align:center">Click a row to expand. Feature lists and comparisons live here so the cards stay focused on price.</p>
+      <p class="sec-sub" style="margin-left:auto;margin-right:auto;text-align:center">Tap a question to expand the answer. The full comparison table is <a href="#compare" style="color:var(--c-accent);font-weight:600">above</a> — these entries go deeper on common questions.</p>
     </div>
 
     <div class="faq-list">
@@ -476,58 +671,9 @@
       </details>
 
       <details class="faq-item">
-        <summary>Full feature comparison (Free vs Pro vs Lifetime)</summary>
+        <summary>Where is the full feature comparison table?</summary>
         <div class="faq-panel">
-          <div class="compare-wrap" style="margin-top:8px">
-            <table class="compare-table">
-              <thead>
-                <tr>
-                  <th scope="col">Feature</th>
-                  <th scope="col">Free</th>
-                  <th scope="col">Pro</th>
-                  <th scope="col">Lifetime</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <th scope="row">Full DSA graph &amp; one-topic mode</th>
-                  <td class="on">Included</td>
-                  <td class="on">Included</td>
-                  <td class="on">Included</td>
-                </tr>
-                <tr>
-                  <th scope="row">Practice account &amp; member dashboard</th>
-                  <td class="on">Included</td>
-                  <td class="on">Included</td>
-                  <td class="on">Included</td>
-                </tr>
-                <tr>
-                  <th scope="row">Community graph library</th>
-                  <td class="on">Included</td>
-                  <td class="on">Included</td>
-                  <td class="on">Included</td>
-                </tr>
-                <tr>
-                  <th scope="row">Personal graphs &amp; advanced graph workflow</th>
-                  <td>Upgrade</td>
-                  <td class="on">Included</td>
-                  <td class="on">Included</td>
-                </tr>
-                <tr>
-                  <th scope="row">Premium study tools (revision, analytics, exports)</th>
-                  <td>Upgrade</td>
-                  <td class="on">Included</td>
-                  <td class="on">Included</td>
-                </tr>
-                <tr>
-                  <th scope="row">Long-term one-time access</th>
-                  <td>—</td>
-                  <td>—</td>
-                  <td class="on">Best fit</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <p>The same comparison you see in marketing lives in the <strong>Feature comparison</strong> section on this page. Jump to <a href="#compare" style="color:var(--c-accent);font-weight:600">#compare</a> or scroll up to the table titled “What changes between tiers.”</p>
         </div>
       </details>
 
@@ -580,8 +726,8 @@
 <section>
   <div class="container">
     <div class="final">
-      <h2>Ready when <em>you</em> are.</h2>
-      <p>Create an account to start free, or read the <a href="#faq" style="color:var(--c-accent);font-weight:600">FAQ above</a> for feature detail.</p>
+      <h2>Try the studio now, <em>upgrade when you need more.</em></h2>
+      <p>Open the public graph, create your account, and move into the tier that matches how you study. Questions? See the <a href="#faq" style="color:var(--c-accent);font-weight:600">FAQ</a> on this page.</p>
       <div class="final-ctas">
         <a class="btn btn-primary btn-lg" href="./account.html" data-marketing-primary-cta>Start free</a>
         <a class="btn btn-secondary btn-lg" href="./index.html">Back to studio home</a>

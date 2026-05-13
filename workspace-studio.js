@@ -89,6 +89,15 @@
     function clamp(v, lo, hi) {
         return Math.max(lo, Math.min(hi, v));
     }
+    /** Stable pseudo-random for layout jitter from id string. */
+    function hashStr(s) {
+        s = String(s || "");
+        var h = 0;
+        for (var i = 0; i < s.length; i++) {
+            h = (h * 31 + s.charCodeAt(i)) | 0;
+        }
+        return Math.abs(h);
+    }
 
     function childIds(id) {
         return S.edges
@@ -197,8 +206,16 @@
                 n.y = VB.cy;
                 n.r = SIZES[0];
             } else {
-                var mid = (a0 + a1) / 2,
-                    r = RINGS[Math.min(depth, RINGS.length - 1)];
+                var depthIdx = Math.min(depth, RINGS.length - 1);
+                var baseR = RINGS[depthIdx];
+                var fan = childIds(id).length;
+                // Fewer children → tighter orbit; more children → pushed outward (scattered ring).
+                var radialScale = 0.84 + Math.min(fan, 28) * 0.034;
+                var r = baseR * radialScale;
+                var span = Math.max(a1 - a0, 1e-4);
+                var mid = (a0 + a1) / 2;
+                var jitterA = ((hashStr(id) % 1000) / 1000 - 0.5) * Math.min(span, 0.55) * 0.42;
+                mid = clamp(mid + jitterA, a0 + span * 0.06, a1 - span * 0.06);
                 n.x = VB.cx + Math.cos(mid) * r;
                 n.y = VB.cy + Math.sin(mid) * r;
                 n.r = SIZES[Math.min(depth, SIZES.length - 1)];
@@ -672,12 +689,36 @@
             }
         });
         var isolate = id !== "core" && S.nodes[id];
-        document.querySelectorAll("#svg .pv-node").forEach(function (n) {
-            n.classList.toggle("dim", isolate && !rel[n.dataset.id]);
+        document.querySelectorAll("#svg .pv-node").forEach(function (el) {
+            var nid = el.dataset.id;
+            var inRel = !!rel[nid];
+            if (!isolate) {
+                el.classList.remove("dim", "vnbr");
+                return;
+            }
+            if (nid === id) {
+                el.classList.remove("dim", "vnbr");
+            } else if (inRel) {
+                el.classList.add("dim", "vnbr");
+            } else {
+                el.classList.add("dim");
+                el.classList.remove("vnbr");
+            }
         });
         document.querySelectorAll("#svg .pv-edge").forEach(function (e) {
-            var inv = rel[e.getAttribute("data-from")] && rel[e.getAttribute("data-to")];
-            e.classList.toggle("dim", isolate && !inv);
+            var nf = e.getAttribute("data-from"),
+                nt = e.getAttribute("data-to");
+            var inv = rel[nf] && rel[nt];
+            if (!isolate) {
+                e.classList.remove("dim", "sel-ring");
+                return;
+            }
+            if (inv) {
+                e.classList.add("dim", "sel-ring");
+            } else {
+                e.classList.add("dim");
+                e.classList.remove("sel-ring");
+            }
         });
     }
 
@@ -1070,11 +1111,14 @@
 
     var drag = null;
     function startDrag(e, n) {
-        if (S.mode !== "customize" || e.button !== 0) {
+        if (e.button !== 0) {
             return;
         }
         e.stopPropagation();
         select(n.id);
+        if (S.mode !== "customize") {
+            return;
+        }
         var pt = svgPt(e);
         drag = { n: n, ox: pt.x - n.x, oy: pt.y - n.y };
         var gn = ng.querySelector('.pv-node[data-id="' + n.id + '"]');

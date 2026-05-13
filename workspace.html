@@ -83,7 +83,10 @@
       <span id="hint-text" style="margin-left:auto">drag bg · scroll zoom · 2× click focus</span>
     </div>
     <svg class="pv-svg" id="svg" viewBox="0 0 600 580" preserveAspectRatio="xMidYMid meet">
-      <defs><linearGradient id="cEdgeGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a5bd9"/><stop offset="1" stop-color="#1aa37a"/></linearGradient></defs>
+      <defs>
+        <linearGradient id="cEdgeGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a5bd9"/><stop offset="1" stop-color="#1aa37a"/></linearGradient>
+        <linearGradient id="mintEdge" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1aa37a"/><stop offset="1" stop-color="#e08658"/></linearGradient>
+      </defs>
       <g id="edges-g"></g><g id="nodes-g"></g>
     </svg>
     <div class="minimap" id="minimap"><svg viewBox="0 0 600 580" preserveAspectRatio="xMidYMid meet" id="mm-svg"><g id="mm-nodes"></g><rect class="vp" id="mm-vp" x="0" y="0" width="600" height="580"/></svg></div>
@@ -149,7 +152,7 @@
 <script src="./auth/dsa-user-auth.js?v=3"></script>
 <script src="./dsa-sketch-native.js?v=3"></script>
 <script src="./script.js?v=34"></script>
-<script src="./workspace-studio.js?v=3"></script>
+<script src="./workspace-studio.js?v=4"></script>
 <script>
 (function(){
 window.dsaHasCustomizeGraphAccess=function(){return true;};

@@ -221,6 +221,30 @@
             });
         }
         place(root, 0, -Math.PI / 2, (Math.PI * 3) / 2);
+        Object.keys(S.nodes).forEach(function (nid) {
+            var nn = S.nodes[nid];
+            if (nn) {
+                nn._lr = nn.r;
+            }
+        });
+        recalcNodeRadii();
+    }
+
+    /** After layout, grow each non-core radius slightly by outbound child count. */
+    function recalcNodeRadii() {
+        Object.keys(S.nodes).forEach(function (nid) {
+            var nn = S.nodes[nid];
+            if (!nn || nn._lr == null) {
+                return;
+            }
+            if (nn.isCore) {
+                nn.r = nn._lr;
+                return;
+            }
+            var ch = childIds(nid).length;
+            var scale = 0.82 + Math.min(ch, 40) * 0.026;
+            nn.r = clamp(nn._lr * scale, 11, 58);
+        });
     }
 
     function autoCollapseDeep(maxDepth) {
@@ -382,32 +406,17 @@
         return "M" + x1 + "," + y1 + " Q" + mx + "," + my + " " + x2 + "," + y2;
     }
 
-    function catBadge(n) {
-        if (n.r < 18 || n.isCore) {
-            return null;
-        }
-        var cat = n.category || "pattern";
-        var ang = -Math.PI / 4,
-            d = n.r * 0.78,
-            x = Math.cos(ang) * d,
-            y = Math.sin(ang) * d,
-            br = clamp(n.r * 0.3, 5, 8),
-            ir = br * 0.55;
-        var grp = E("g", { "pointer-events": "none" });
-        grp.appendChild(E("circle", { class: "cat-bg", cx: x, cy: y, r: br }));
-        if (cat === "ds") {
-            grp.appendChild(E("circle", { cx: x, cy: y, r: ir, fill: CAT_COLORS.ds }));
-        } else if (cat === "pattern") {
-            grp.appendChild(E("rect", { x: x - ir, y: y - ir, width: ir * 2, height: ir * 2, rx: 0.5, fill: CAT_COLORS.pattern }));
-        } else {
-            var pts = [];
-            for (var i = 0; i < 6; i++) {
-                var a = (Math.PI / 3) * i - Math.PI / 2;
-                pts.push((x + Math.cos(a) * ir).toFixed(1) + "," + (y + Math.sin(a) * ir).toFixed(1));
-            }
-            grp.appendChild(E("polygon", { points: pts.join(" "), fill: CAT_COLORS.problem }));
-        }
-        return grp;
+    /** Short “channel” label under the node — no icon shapes. */
+    function getCategoryLaneText(cat, r) {
+        var longForm = {
+            ds: "· struct lattice ·",
+            pattern: "· rule shell ·",
+            problem: "· case orbit ·",
+        };
+        var shortForm = { ds: "lattice", pattern: "shell", problem: "orbit" };
+        var useShort = r < 22;
+        var m = useShort ? shortForm : longForm;
+        return m[cat] || (useShort ? "shell" : longForm.pattern);
     }
 
     function buildNode(n) {
@@ -419,7 +428,19 @@
         var r = n.r,
             circ = 2 * Math.PI * r,
             pct = (Math.max(0, Math.min(100, n.mastery || 0)) / 100);
-        g.appendChild(E("circle", { class: "ring", cx: 0, cy: 0, r: r }));
+        var cat = n.category || "pattern";
+        var ringStroke = n.isCore ? "rgba(0,0,0,.16)" : CAT_COLORS[cat] || CAT_COLORS.pattern;
+        var ringSw = n.isCore ? 1.15 : 1.5;
+        g.appendChild(
+            E("circle", {
+                class: "ring",
+                cx: 0,
+                cy: 0,
+                r: r,
+                stroke: ringStroke,
+                "stroke-width": ringSw,
+            }),
+        );
         g.appendChild(E("circle", { class: "prog-track", cx: 0, cy: 0, r: r }));
         if (pct > 0) {
             g.appendChild(
@@ -436,7 +457,7 @@
         }
         var sub = n.isCore ? "core" : n.count != null ? n.count + " items" : "";
         var showSub = sub && r >= 24;
-        var t = E("text", { x: 0, y: showSub ? -5 : 0 });
+        var t = E("text", { class: "node-title", x: 0, y: showSub ? -5 : 0 });
         t.textContent = n.name;
         if (r <= 18) {
             t.setAttribute("style", "font-size:9.5px");
@@ -449,9 +470,12 @@
             ss.textContent = sub;
             g.appendChild(ss);
         }
-        var bg = catBadge(n);
-        if (bg) {
-            g.appendChild(bg);
+        if (!n.isCore && r >= 14) {
+            var laneY = showSub ? 22 : clamp(r * 0.62, 12, 18);
+            var lane = E("text", { class: "cat-lane", x: 0, y: laneY });
+            lane.textContent = getCategoryLaneText(cat, r);
+            lane.setAttribute("fill", CAT_COLORS[cat] || CAT_COLORS.pattern);
+            g.appendChild(lane);
         }
         if (S.collapsed.has(n.id)) {
             var hc = hiddenCount(n.id);
@@ -472,6 +496,9 @@
         var z = S.zoom;
         document.querySelectorAll("#svg .pv-node text.sub").forEach(function (t) {
             t.style.opacity = z >= 0.75 ? 1 : 0;
+        });
+        document.querySelectorAll("#svg .pv-node text.cat-lane").forEach(function (t) {
+            t.style.opacity = z >= 0.78 ? 1 : 0;
         });
     }
 
@@ -604,11 +631,10 @@
             var it = document.createElement("div");
             it.className = "item" + (S.selected === id ? " active" : "");
             it.dataset.id = id;
+            var tone = CAT_COLORS[n.category || "pattern"] || CAT_COLORS.pattern;
             it.innerHTML =
-                '<span class="d ' +
-                (n.category || "pattern") +
-                '" style="color:' +
-                (CM[n.color] || CM.accent) +
+                '<span class="orb-row-tone" style="border-left:3px solid ' +
+                tone +
                 '"></span> ' +
                 n.name +
                 ' <span class="count">' +
@@ -645,13 +671,13 @@
                 rel[f] = true;
             }
         });
-        var fm = S.mode === "topic";
+        var isolate = id !== "core" && S.nodes[id];
         document.querySelectorAll("#svg .pv-node").forEach(function (n) {
-            n.classList.toggle("dim", fm && !rel[n.dataset.id]);
+            n.classList.toggle("dim", isolate && !rel[n.dataset.id]);
         });
         document.querySelectorAll("#svg .pv-edge").forEach(function (e) {
             var inv = rel[e.getAttribute("data-from")] && rel[e.getAttribute("data-to")];
-            e.classList.toggle("dim", fm && !inv);
+            e.classList.toggle("dim", isolate && !inv);
         });
     }
 
@@ -698,14 +724,16 @@
                 '</b></label><div class="seg" id="f-cat">' +
                 Object.keys(CATS)
                     .map(function (k) {
+                        var on = cat === k;
                         return (
                             '<button type="button" data-c="' +
                             k +
                             '" class="cat-' +
                             k +
-                            " " +
-                            (cat === k ? "on" : "") +
-                            '"><i></i>' +
+                            (on ? " on" : "") +
+                            '" style="border-bottom:2px solid ' +
+                            (on ? CAT_COLORS[k] : "transparent") +
+                            '">' +
                             CATS[k] +
                             "</button>"
                         );
@@ -761,10 +789,12 @@
                 '<h6>// inspector</h6><div class="pv-detail">' +
                 '<div class="name">' +
                 esc(n.name) +
-                ' <span class="cat-badge ' +
-                cat +
-                '"><i></i>' +
-                CATS[cat] +
+                ' <span class="orb-cat-pill" style="border-left:3px solid ' +
+                (CAT_COLORS[cat] || CAT_COLORS.pattern) +
+                ";color:" +
+                (CAT_COLORS[cat] || CAT_COLORS.pattern) +
+                '">' +
+                esc(CATS[cat]) +
                 "</span></div>" +
                 '<div class="meta">' +
                 (n.isCore ? "Root" : CATS[cat]) +
@@ -803,7 +833,7 @@
                 n.name = e.target.value || "Untitled";
                 var g = ng.querySelector('.pv-node[data-id="' + n.id + '"]');
                 if (g) {
-                    var t = g.querySelector("text:not(.sub):not(.hbadge)");
+                    var t = g.querySelector("text.node-title");
                     if (t) {
                         t.textContent = n.name;
                     }

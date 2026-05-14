@@ -5516,20 +5516,24 @@ function attachDsaMindCanvas(panel, buildTreeFragment, scheduleRedraw, mindOpts)
 
 
 /**
- * DSA problem sketch — native 2D canvas. Load dsa-sketch-native.js before script.js.
+ * DSA problem sketch — Sketch Studio UI (dsa-sketch-studio.js) or native fallback (dsa-sketch-native.js). Load before script.js.
  * @param {HTMLElement} editorRoot
  * @param {() => void} onChange
  * @param {{ afterClear?: () => void; admin?: boolean }} [sketchOpts]
  */
 function dsaWireSketchEditor(editorRoot, onChange, sketchOpts) {
+    if (typeof dsaWireSketchEditorStudio === "function") {
+        return dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts);
+    }
     if (typeof dsaWireSketchEditorNative !== "function") {
-        console.error("DSA: Native sketch not loaded. Include dsa-sketch-native.js before script.js.");
+        console.error("DSA: Sketch not loaded. Include dsa-sketch-studio.js or dsa-sketch-native.js before script.js.");
         const err = document.createElement("div");
         err.className = "dsa-sketch-missing-fabric";
         err.setAttribute("role", "alert");
         err.style.cssText =
             "padding:10px 12px;border:1px solid #fca5a5;border-radius:8px;background:#fef2f2;color:#991b1b;font-size:0.85rem;margin-bottom:8px;";
-        err.textContent = "Sketch unavailable: add dsa-sketch-native.js before script.js on this page.";
+        err.textContent =
+            "Sketch unavailable: add dsa-sketch-studio.js (or dsa-sketch-native.js) before script.js on this page.";
         editorRoot.appendChild(err);
         const hooks = sketchOpts || {};
         return {
@@ -6290,7 +6294,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     hintFieldGroup.appendChild(noteCard);
 
     const sketchEditorRoot = document.createElement("div");
-    sketchEditorRoot.className = "dsa-sketch-editor-host";
+    sketchEditorRoot.className = "dsa-sketch-studio-host";
 
     const drawRow = document.createElement("div");
     drawRow.className = "dsa-q-draw-row dsa-q-sketch-zoom-row zoom-row";
@@ -7510,7 +7514,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         btnUploadImage.disabled = ro;
         companiesCsvIn.disabled = ro;
         noteDel.disabled = ro;
-        sketchEditorRoot.classList.toggle("dsa-sketch-editor-host--ro", ro || !isEditProblem);
+        sketchEditorRoot.classList.toggle("dsa-sketch-studio-host--ro", ro || !isEditProblem);
         btnZoomOut.disabled = ro || !isEditProblem;
         btnZoomIn.disabled = ro || !isEditProblem;
         imagePasteHint.classList.toggle("dsa-q-image-paste-hint--disabled", ro);

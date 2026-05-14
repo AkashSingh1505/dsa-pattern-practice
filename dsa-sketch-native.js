@@ -318,7 +318,10 @@ function dsaWireSketchEditorNative(editorRoot, onChange, sketchOpts) {
     let lastY = 0;
 
     function onPointerDown(ev) {
-        if (editorRoot.classList.contains("dsa-sketch-editor-host--ro")) {
+        if (
+            editorRoot.classList.contains("dsa-sketch-editor-host--ro") ||
+            editorRoot.classList.contains("dsa-sketch-studio-host--ro")
+        ) {
             return;
         }
         ev.preventDefault();
@@ -341,7 +344,11 @@ function dsaWireSketchEditorNative(editorRoot, onChange, sketchOpts) {
     }
 
     function onPointerMove(ev) {
-        if (!drawing || editorRoot.classList.contains("dsa-sketch-editor-host--ro")) {
+        if (
+            !drawing ||
+            editorRoot.classList.contains("dsa-sketch-editor-host--ro") ||
+            editorRoot.classList.contains("dsa-sketch-studio-host--ro")
+        ) {
             return;
         }
         ev.preventDefault();

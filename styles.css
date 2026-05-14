@@ -2042,7 +2042,7 @@ body.nav-mobile-menu-open {
     cursor: default;
 }
 
-.dsa-sketch-editor-host--ro {
+.dsa-sketch-studio-host--ro {
     opacity: 0.96;
     pointer-events: none;
 }

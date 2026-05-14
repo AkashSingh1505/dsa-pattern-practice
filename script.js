@@ -5980,6 +5980,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         });
         const mk = dlg.querySelector('input[name="graphMindKind"]:checked');
         fillNodeTypeInfoFromCatalog(mk ? mk.value : "TOPIC");
+        syncNodeCategoryNameLabel();
     }
 
     function refreshAddChildChrome() {
@@ -5987,6 +5988,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             subtitleEl.hidden = true;
             btnInfo.hidden = true;
             dlg.classList.remove("expanded");
+            syncNodeCategoryNameLabel();
             return;
         }
         subtitleEl.hidden = false;
@@ -6000,6 +6002,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             ? "Capture problem details, difficulty and resources"
             : "Add a new item beneath the current node";
         title.textContent = isProb ? "Add problem" : "Add child node";
+        syncNodeCategoryNameLabel();
     }
 
     function syncGraphBodyCategoryFieldset() {
@@ -6020,14 +6023,17 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     nodeLabelRow.className = "field-label";
     const nodeLabEl = document.createElement("label");
     nodeLabEl.setAttribute("for", "dsa-node-only");
-    nodeLabEl.appendChild(document.createTextNode("Node name"));
+    const nodeLabelText = document.createElement("span");
+    nodeLabelText.id = "dsa-node-category-name-label";
+    nodeLabelText.textContent = "Topic Name";
     const nodeReqStar = document.createElement("span");
     nodeReqStar.className = "dsa-req";
     nodeReqStar.setAttribute("aria-hidden", "true");
     nodeReqStar.textContent = "*";
+    nodeLabEl.appendChild(nodeLabelText);
     nodeLabEl.appendChild(nodeReqStar);
     const nodeCharSpan = document.createElement("span");
-    nodeCharSpan.className = "opt";
+    nodeCharSpan.className = "opt field-char-limit";
     nodeCharSpan.textContent = "0";
     nodeLabelRow.appendChild(nodeLabEl);
     nodeLabelRow.appendChild(nodeCharSpan);
@@ -6054,6 +6060,23 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         nodeBlock.appendChild(metaNote);
     }
 
+    function syncNodeCategoryNameLabel() {
+        if (!nodeLabelText) {
+            return;
+        }
+        if (isRenameNode) {
+            nodeLabelText.textContent = "Name";
+            return;
+        }
+        let slug = "TOPIC";
+        if (useMindTypePicker2 && mindTypeFs && !mindTypeFs.hidden) {
+            const mk = dlg.querySelector('input[name="graphMindKind"]:checked');
+            slug = mk ? String(mk.value).toUpperCase() : "TOPIC";
+        }
+        const cat = graphNodeCategoryLabelForSlug(slug, mindCatsPre);
+        nodeLabelText.textContent = `${cat} Name`;
+    }
+
     const qBlock = document.createElement("div");
     qBlock.className = "dsa-u-question";
     const problemOuter = document.createElement("div");
@@ -6067,7 +6090,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     nameLabEl.setAttribute("for", "nodeName");
     const nameLabelSpan = document.createElement("span");
     nameLabelSpan.id = "nameLabel";
-    nameLabelSpan.appendChild(document.createTextNode("Problem label"));
+    nameLabelSpan.appendChild(document.createTextNode("Problem Name"));
     const nameReqStar = document.createElement("span");
     nameReqStar.className = "dsa-req";
     nameReqStar.setAttribute("aria-hidden", "true");
@@ -6075,7 +6098,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     nameLabelSpan.appendChild(nameReqStar);
     nameLabEl.appendChild(nameLabelSpan);
     const nameCountWrap = document.createElement("span");
-    nameCountWrap.className = "opt";
+    nameCountWrap.className = "opt field-char-limit";
     const nameCharSpan = document.createElement("span");
     nameCharSpan.id = "charCount";
     nameCharSpan.textContent = "0";
@@ -6296,8 +6319,8 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const imagePreview = document.createElement("div");
     imagePreview.className = "dsa-q-image-preview";
 
-    const imageActions = document.createElement("div");
-    imageActions.className = "image-actions dsa-q-image-actions";
+    const imageToolbarRow = document.createElement("div");
+    imageToolbarRow.className = "image-actions dsa-q-image-actions dsa-q-image-toolbar";
 
     const btnPickImage = document.createElement("button");
     btnPickImage.type = "button";
@@ -6780,9 +6803,9 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const btnAddSolutionLink = document.createElement("button");
     btnAddSolutionLink.type = "button";
     btnAddSolutionLink.className = "res-add-btn";
-    btnAddSolutionLink.setAttribute("aria-label", "Add solution link");
+    btnAddSolutionLink.setAttribute("aria-label", "Add solutions or code snippet");
     btnAddSolutionLink.innerHTML =
-        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add solution link';
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add solutions / Code snippet';
     btnAddSolutionLink.addEventListener("click", () => openSolutionSheet(null));
     solutionsResGroup.appendChild(solResLab);
     solutionsResGroup.appendChild(btnAddSolutionLink);
@@ -6875,9 +6898,9 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     });
     imageResGroup.appendChild(imageResLab);
     imageResGroup.appendChild(btnUploadImage);
-    imageActions.appendChild(btnPickImage);
-    imageActions.appendChild(btnPasteImage);
-    imageResGroup.appendChild(imageActions);
+    imageToolbarRow.appendChild(btnPickImage);
+    imageToolbarRow.appendChild(btnPasteImage);
+    imageResGroup.appendChild(imageToolbarRow);
     imageResGroup.appendChild(fileIn);
     imageResGroup.appendChild(imagePreview);
 

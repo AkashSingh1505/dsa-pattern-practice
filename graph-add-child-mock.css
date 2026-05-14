@@ -329,8 +329,22 @@
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--muted);
-    margin-bottom: 8px;
+    margin-top: 12px;
+    margin-bottom: 4px;
     padding: 0 2px;
+}
+
+.graph-add-child-mock .field-label .field-char-limit {
+    margin-top: 2px;
+    align-self: flex-start;
+}
+
+.graph-add-child-mock .dsa-fieldset.dsa-u-mind-kind {
+    border: none;
+    background: transparent;
+    padding: 0;
+    margin: 0 0 12px;
+    box-shadow: none;
 }
 
 .graph-add-child-mock .field-label .req {
@@ -348,6 +362,14 @@
 
 .graph-add-child-mock .field-group {
     margin-bottom: 14px;
+}
+
+.graph-add-child-mock .dsa-u-node > .field-label:first-of-type {
+    margin-top: 4px;
+}
+
+.graph-add-child-mock .dsa-q-field.q-field-mock {
+    gap: 2px;
 }
 
 .graph-add-child-mock .input-wrap {
@@ -669,7 +691,7 @@
 
 .graph-add-child-mock .star-row {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
     padding: 12px 14px;
     background: #fff;
@@ -701,6 +723,8 @@
     transition: all 0.25s;
     pointer-events: none;
     flex-shrink: 0;
+    order: 0;
+    margin-top: 1px;
 }
 
 .graph-add-child-mock .star-row.active .star-icon {
@@ -712,6 +736,12 @@
 .graph-add-child-mock .star-text {
     flex: 1;
     pointer-events: none;
+    order: 1;
+    min-width: 0;
+}
+
+.graph-add-child-mock .star-row .switch {
+    order: 2;
 }
 
 .graph-add-child-mock .star-title {
@@ -903,9 +933,12 @@
     color: #c7c7cc;
 }
 
-.graph-add-child-mock .res-section .dsa-q-image-actions {
-    margin-top: 8px;
+.graph-add-child-mock .dsa-q-image-toolbar {
+    display: flex;
     justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
 }
 
 .graph-add-child-mock .section-card {
@@ -1380,7 +1413,8 @@
 
 .graph-add-child-mock .q-field-mock > .field-label,
 .graph-add-child-mock .q-field-mock > .q-field-label-mock {
-    margin-bottom: 8px;
+    margin-top: 0;
+    margin-bottom: 4px;
 }
 
 .graph-add-child-mock .q-diff-field-mock .difficulty-pills {

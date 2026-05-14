@@ -4994,10 +4994,26 @@ function dsaUnifiedMetaRootDisplayName(merged) {
     return "DSA Patterns";
 }
 
+/** One top-level mind-map row with `nodeCategorySlug` ROOT (member / catalog graph shape). */
+function dsaMindMapIsSingleRootPayload(merged) {
+    return (
+        Array.isArray(merged) &&
+        merged.length === 1 &&
+        merged[0] &&
+        typeof merged[0] === "object" &&
+        String(merged[0].nodeCategorySlug || "").trim().toUpperCase() === "ROOT"
+    );
+}
+
 /** All data structures under one “DSA Patterns” root (full map). */
 function buildUnifiedMindmapTree(panel, scheduleRedraw, customizeCtx, graphRefreshForView) {
     const merged = getDsaHierarchyMerged();
-    const metaRootLabel = dsaUnifiedMetaRootDisplayName(merged);
+    const soloRoot = dsaMindMapIsSingleRootPayload(merged);
+    const dsSolo = soloRoot ? merged[0] : null;
+    const metaRootLabel =
+        soloRoot && dsSolo && String(dsSolo.name || "").trim()
+            ? String(dsSolo.name).trim()
+            : dsaUnifiedMetaRootDisplayName(merged);
     const wrap = document.createElement("div");
     wrap.className = "dsa-h-tree";
     const rootBranch = document.createElement("div");
@@ -5014,36 +5030,53 @@ function buildUnifiedMindmapTree(panel, scheduleRedraw, customizeCtx, graphRefre
     rootTitle.className = "dsa-h-label dsa-h-label--root";
     rootTitle.textContent = metaRootLabel;
 
-    const topicNodes = merged.map((ds) => ({
-        name: ds.name,
-        children: getDsTree(ds),
-        problems: Array.isArray(ds.problems) ? ds.problems : [],
-    }));
-
-    const topicThemes = merged.map((ds) => dsaStableThemeForKey(ds.id));
+    const soloTree = soloRoot && dsSolo ? getDsTree(dsSolo) : null;
+    let topicNodes;
+    let topicThemes;
+    let topicPathKeys;
+    if (soloRoot && dsSolo && soloTree) {
+        topicNodes = soloTree.map((n) => ({
+            name: n != null && n.name != null ? String(n.name).trim() : "",
+            children: Array.isArray(n && n.children) ? n.children : [],
+            problems: Array.isArray(n && n.problems) ? n.problems : [],
+        }));
+        topicThemes = soloTree.map((n, i) =>
+            dsaStableThemeForKey(`${String(dsSolo.id)}::${String((n && n.name) || "").trim() || i}`),
+        );
+        topicPathKeys = soloTree.map((n) => `${String(dsSolo.id)}::${String((n && n.name) || "").trim()}`);
+    } else {
+        topicNodes = merged.map((ds) => ({
+            name: ds.name,
+            children: getDsTree(ds),
+            problems: Array.isArray(ds.problems) ? ds.problems : [],
+        }));
+        topicThemes = merged.map((ds) => dsaStableThemeForKey(ds.id));
+        topicPathKeys = merged.map((ds) => String(ds.id));
+    }
 
     const kids = document.createElement("div");
     kids.className = "dsa-h-children";
     kids.dataset.dsaPath = "__DSA_META__";
     topicNodes.forEach((node, i) => {
-        const ds = merged[i];
+        const pathKey = topicPathKeys[i];
         const ctx = customizeCtx
             ? {
                   customize: true,
-                  pathKey: ds.id,
+                  pathKey,
                   refresh: customizeCtx.refresh,
-                  isDsRoot: true,
+                  isDsRoot: !soloRoot,
                   isAdmin: customizeCtx.isAdmin,
               }
             : {
                   viewExtras: true,
-                  pathKey: ds.id,
+                  pathKey,
                   refresh: graphRefreshForView,
+                  isDsRoot: !soloRoot,
               };
         kids.appendChild(buildTreeNode(node, 1, panel, scheduleRedraw, topicThemes[i], ctx));
     });
 
-    const rootCount = topicNodes.length;
+    const rootCount = soloRoot && dsSolo ? soloTree.length : topicNodes.length;
     let metaAddModalParentKey = "__DSA_META__";
     if (merged.length === 1 && merged[0] && merged[0].id != null) {
         metaAddModalParentKey = String(merged[0].id);

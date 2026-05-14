@@ -1,6 +1,8 @@
 /**
- * New graph mind-map body: **one** top-level object with `nodeCategorySlug: "ROOT"`, same shape
- * for member graphs (`POST /api/graph-library/mine`) and catalog drafts (`graph-catalog`).
+ * New graph mind-map body: **one** top-level object with `nodeCategorySlug: "ROOT"` and `name` = graph title.
+ * **`tree` starts empty** so the UI shows a single hub until topics are added under `tree`.
+ *
+ * Same shape for member graphs (`POST /api/graph-library/mine`) and catalog drafts (`graph-catalog`).
  *
  * Topics live under `tree` (each may use `children` for nesting). `patterns` / `problems` on
  * the root are usually empty for a fresh graph.

@@ -559,9 +559,18 @@
             if (!ds || typeof ds !== "object") {
                 return;
             }
+            var soloRoot =
+                arr.length === 1 && String(ds.nodeCategorySlug || "").trim().toUpperCase() === "ROOT";
+            var tree = getDsTreeForOrb(ds);
+            var emptyBranches =
+                !tree.length &&
+                !(ds.patterns && ds.patterns.length) &&
+                !(ds.problems && ds.problems.length);
+            if (soloRoot && emptyBranches) {
+                return;
+            }
             var dsKey = nextId();
             var dsName = String(ds.name != null ? ds.name : "Root " + (i + 1)).slice(0, 22);
-            var tree = getDsTreeForOrb(ds);
             var col = colors[i % colors.length];
             var hexDs = hexForMindCategory(pickMindGc(ds));
             nodes[dsKey] = {

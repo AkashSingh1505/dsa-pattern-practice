@@ -1,4 +1,4 @@
-@import url("./graph-add-child-mock.css?v=5");
+@import url("./graph-add-child-mock.css?v=6");
 
 /* Global reset for margins and paddings */
 * {
@@ -6909,14 +6909,14 @@ body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
    Panel is mounted on document.body; selectors must beat earlier .dsa-q-sheet-* rules.
    ------------------------------------------------------------------------- */
 
-.dsa-q-sheet-backdrop.graph-ac-solution-sheet {
+.dsa-q-sheet-backdrop.graph-ac-solution-sheet.sheet-overlay {
     background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
 }
 
-.dsa-q-sheet-panel.graph-ac-solution-sheet-panel {
-    max-width: 540px;
+.dsa-q-sheet-panel.graph-ac-solution-sheet-panel.sheet {
+    max-width: 580px;
     margin: 0 auto;
     padding: 12px 24px calc(20px + env(safe-area-inset-bottom, 0));
     border-radius: 24px 24px 0 0;
@@ -7050,17 +7050,19 @@ body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
 
 .graph-ac-solution-sheet-panel .dsa-q-code--sheet.code-editor,
 .graph-ac-solution-sheet-panel .graph-ac-sheet-code.dsa-q-code--sheet {
-    min-height: 160px;
+    min-height: 180px;
     resize: vertical;
-    font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, monospace;
+    font-family: "SF Mono", Menlo, ui-monospace, Monaco, Consolas, monospace;
     font-size: 13px;
-    line-height: 1.6;
+    line-height: 1.55;
     tab-size: 2;
     background: #0d1226;
     color: #e8eaf6;
     border: 1px solid #1a2042;
     border-radius: 12px;
-    padding: 14px 16px;
+    padding: 12px 14px 48px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .graph-ac-solution-sheet-panel .dsa-q-code--sheet:focus {
@@ -7118,6 +7120,59 @@ body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
 
 .graph-ac-solution-sheet-panel .graph-ac-sheet-actions .dsa-dialog-btn--primary:disabled {
     background: #c7c7cc;
+    color: #fff;
     cursor: not-allowed;
     box-shadow: none;
+}
+
+.graph-ac-solution-sheet-panel .field-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #86868b;
+    margin-bottom: 8px;
+    padding: 0 2px;
+}
+
+.graph-ac-solution-sheet-panel .field-label .req {
+    color: #ff3b30;
+    margin-left: 3px;
+}
+
+.graph-ac-solution-sheet-panel .code-wrap {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
+.graph-ac-solution-sheet-panel .code-paste {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #0071e3;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 4px 10px rgba(0, 113, 227, 0.4);
+    transition: transform 0.2s, opacity 0.2s;
+    z-index: 2;
+}
+
+.graph-ac-solution-sheet-panel .code-paste:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.graph-ac-solution-sheet-panel .code-paste:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
 }

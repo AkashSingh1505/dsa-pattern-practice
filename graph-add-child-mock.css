@@ -1236,3 +1236,45 @@
     outline-offset: 2px;
     border-radius: 10px;
 }
+
+/* Resources: image row + sketch zoom (mock tool-btn / zoom-row) */
+.graph-add-child-mock .image-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.graph-add-child-mock .zoom-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.graph-add-child-mock .tool-btn.dsa-q-sketch-zoom {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    padding: 0;
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 8px;
+    color: #515154;
+    box-shadow: none;
+    font-size: 0;
+    line-height: 0;
+}
+
+.graph-add-child-mock .tool-btn.dsa-q-sketch-zoom:hover:not(:disabled) {
+    background: #f5f5f7;
+}
+
+.graph-add-child-mock .btn-outline.dsa-q-pick-image-btn {
+    gap: 6px;
+}
+
+.graph-add-child-mock .btn-outline.icon {
+    padding: 10px;
+}

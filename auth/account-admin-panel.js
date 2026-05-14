@@ -2245,43 +2245,101 @@
             return;
         }
         el.textContent = text || "";
-        el.className = "status adm-glib-status" + (cls === "ok" ? " ok" : cls === "err" ? " err" : "");
+        el.className = "footer-note" + (cls === "ok" ? " adm-gt-msg--ok" : cls === "err" ? " adm-gt-msg--err" : "");
+    }
+
+    function gtDisplaySlug(slug) {
+        return String(slug || "")
+            .toLowerCase()
+            .replace(/_/g, "-");
+    }
+
+    function gtIconClass(slug) {
+        const u = String(slug || "").toUpperCase();
+        if (u === "DSA") {
+            return "icon-dsa";
+        }
+        if (u === "GENERIC") {
+            return "icon-generic";
+        }
+        return "icon-custom";
+    }
+
+    function gtIconInitials(slug, label) {
+        const u = String(slug || "").toUpperCase();
+        if (u === "DSA") {
+            return "DS";
+        }
+        if (u === "GENERIC") {
+            return "GN";
+        }
+        const s = u.replace(/[^A-Z0-9]/g, "");
+        if (s.length >= 2) {
+            return s.slice(0, 2);
+        }
+        const L = String(label || "").trim();
+        if (L.length >= 2) {
+            return L.slice(0, 2).toUpperCase();
+        }
+        return (s.slice(0, 1) || "?").toUpperCase();
     }
 
     function renderAdminGraphTypesPanel() {
         const host = document.getElementById("adm-glib-gt-list");
+        const meta = document.getElementById("adm-glib-gt-meta-count");
+        if (meta) {
+            const n = adminGraphTypesCache.length;
+            meta.textContent = n === 0 ? "" : n + " type" + (n === 1 ? "" : "s");
+        }
         if (!host) {
             return;
         }
         if (!adminGraphTypesCache.length) {
-            host.innerHTML = '<p class="helper" style="margin:0">No types loaded yet.</p>';
+            host.innerHTML = '<li class="type-item adm-gt-empty-msg">No types loaded yet.</li>';
             return;
         }
-        host.innerHTML =
-            '<ul style="list-style:none;margin:0;padding:0;display:grid;gap:6px">' +
-            adminGraphTypesCache
-                .map(function (t) {
-                    const sys = t.isSystem ? ' <span style="color:#9ca3af">(system)</span>' : "";
-                    const del = !t.isSystem
-                        ? '<button type="button" class="btn btn-sm ghost adm-glib-gt-del" data-slug="' +
-                          escapeHtml(String(t.slug)) +
-                          '" style="margin-left:8px">Remove</button>'
-                        : "";
-                    return (
-                        '<li style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;border:1px solid #e5e7eb;border-radius:6px;padding:6px 10px;background:#fafafa">' +
-                        "<span><strong>" +
-                        escapeHtml(String(t.label)) +
-                        "</strong> <code>" +
-                        escapeHtml(String(t.slug)) +
-                        "</code>" +
-                        sys +
-                        "</span>" +
-                        del +
-                        "</li>"
-                    );
-                })
-                .join("") +
-            "</ul>";
+        host.innerHTML = adminGraphTypesCache
+            .map(function (t) {
+                const slug = String(t.slug || "");
+                const label = String(t.label || "");
+                const iconClass = gtIconClass(slug);
+                const initials = escapeHtml(gtIconInitials(slug, label));
+                const del = !t.isSystem
+                    ? '<button type="button" class="delete-btn adm-glib-gt-del" data-slug="' +
+                      escapeHtml(slug) +
+                      '" aria-label="Delete type">' +
+                      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+                      '<path d="M3 6h18"/>' +
+                      '<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>' +
+                      '<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>' +
+                      "</svg></button>"
+                    : "";
+                const badge = t.isSystem
+                    ? '<span class="badge badge-system">System</span>'
+                    : '<span class="badge badge-custom">Custom</span>';
+                return (
+                    '<li class="type-item">' +
+                    '<div class="type-info">' +
+                    '<div class="type-icon ' +
+                    iconClass +
+                    '">' +
+                    initials +
+                    "</div>" +
+                    '<div class="type-text">' +
+                    '<span class="type-label">' +
+                    escapeHtml(label) +
+                    "</span>" +
+                    '<span class="type-slug">' +
+                    escapeHtml(gtDisplaySlug(slug)) +
+                    "</span>" +
+                    "</div></div>" +
+                    '<div class="type-actions">' +
+                    badge +
+                    del +
+                    "</div></li>"
+                );
+            })
+            .join("");
     }
 
     async function loadAdminGraphTypeSelectOptions() {
@@ -3647,69 +3705,113 @@
             });
         }
 
-        const gtList = document.getElementById("adm-glib-gt-list");
-        if (gtList && gtList.dataset.admGlibGtBound !== "1") {
-            gtList.dataset.admGlibGtBound = "1";
-            gtList.addEventListener("click", function (ev) {
-                const b = ev.target && ev.target.closest && ev.target.closest(".adm-glib-gt-del");
-                if (!b) {
-                    return;
-                }
-                const slug = b.getAttribute("data-slug");
-                if (!slug) {
-                    return;
-                }
-                void (async function () {
-                    const ok = await adminConfirm("Remove graph type?", "Only succeeds when no catalog or member graphs use this slug.");
-                    if (!ok) {
+        const gtPanel = document.getElementById("adm-glib-graph-types-panel");
+        if (gtPanel && gtPanel.dataset.admGtPageBound !== "1") {
+            gtPanel.dataset.admGtPageBound = "1";
+            const slugState = { edited: false };
+            const gtList = document.getElementById("adm-glib-gt-list");
+            if (gtList) {
+                gtList.addEventListener("click", function (ev) {
+                    const b = ev.target && ev.target.closest && ev.target.closest(".adm-glib-gt-del");
+                    if (!b) {
                         return;
                     }
-                    try {
-                        await fetchJson(apiAdmin("graph-types") + "?slug=" + encodeURIComponent(slug), { method: "DELETE" });
-                        setGlibGtPanelMsg("Removed type " + slug + ".", "ok");
-                        await loadAdminGraphTypeSelectOptions();
-                        snapshotGlibFormBaseline();
-                    } catch (e) {
-                        setGlibGtPanelMsg(e.message || "Delete failed", "err");
+                    const slug = b.getAttribute("data-slug");
+                    if (!slug) {
+                        return;
                     }
-                })();
-            });
+                    void (async function () {
+                        const ok = await adminConfirm("Remove graph type?", "Only succeeds when no catalog or member graphs use this slug.");
+                        if (!ok) {
+                            return;
+                        }
+                        try {
+                            await fetchJson(apiAdmin("graph-types") + "?slug=" + encodeURIComponent(slug), { method: "DELETE" });
+                            setGlibGtPanelMsg("Removed type " + slug + ".", "ok");
+                            await loadAdminGraphTypeSelectOptions();
+                            snapshotGlibFormBaseline();
+                        } catch (e) {
+                            setGlibGtPanelMsg(e.message || "Delete failed", "err");
+                        }
+                    })();
+                });
+            }
+            const gtRefresh = document.getElementById("adm-glib-gt-refresh");
+            if (gtRefresh) {
+                gtRefresh.addEventListener("click", function (e) {
+                    const svg = e.currentTarget.querySelector("svg");
+                    if (svg) {
+                        svg.style.transform = "rotate(360deg)";
+                        setTimeout(function () {
+                            svg.style.transform = "";
+                        }, 500);
+                    }
+                    void loadAdminGraphTypeSelectOptions();
+                });
+            }
+            const labIn = document.getElementById("adm-glib-gt-new-label");
+            const slugIn = document.getElementById("adm-glib-gt-new-slug");
+            if (slugIn) {
+                slugIn.addEventListener("input", function () {
+                    slugState.edited = true;
+                });
+            }
+            if (labIn && slugIn) {
+                labIn.addEventListener("input", function () {
+                    if (!slugState.edited) {
+                        slugIn.value = String(labIn.value || "")
+                            .toLowerCase()
+                            .trim()
+                            .replace(/[^a-z0-9\s-]/g, "")
+                            .replace(/\s+/g, "-")
+                            .replace(/-+/g, "-");
+                    }
+                });
+            }
+            const gtForm = document.getElementById("adm-glib-gt-add-form");
+            if (gtForm) {
+                gtForm.addEventListener("submit", function (ev) {
+                    ev.preventDefault();
+                    void (async function () {
+                        const labEl = document.getElementById("adm-glib-gt-new-label");
+                        const slugEl = document.getElementById("adm-glib-gt-new-slug");
+                        const label = labEl ? String(labEl.value || "").trim() : "";
+                        if (!label) {
+                            setGlibGtPanelMsg("Label is required.", "err");
+                            return;
+                        }
+                        const slugHint = slugEl ? String(slugEl.value || "").trim() : "";
+                        const addBtn = document.getElementById("adm-glib-gt-add");
+                        if (addBtn) {
+                            addBtn.disabled = true;
+                        }
+                        try {
+                            await fetchJson(apiAdmin("graph-types"), {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify(slugHint ? { label: label, slug: slugHint } : { label: label }),
+                            });
+                            setGlibGtPanelMsg("Graph type added.", "ok");
+                            if (labEl) {
+                                labEl.value = "";
+                            }
+                            if (slugEl) {
+                                slugEl.value = "";
+                            }
+                            slugState.edited = false;
+                            await loadAdminGraphTypeSelectOptions();
+                            snapshotGlibFormBaseline();
+                        } catch (e) {
+                            setGlibGtPanelMsg(e.message || "Add failed", "err");
+                        } finally {
+                            if (addBtn) {
+                                addBtn.disabled = false;
+                            }
+                        }
+                    })();
+                });
+            }
         }
-        document.getElementById("adm-glib-gt-refresh") &&
-            document.getElementById("adm-glib-gt-refresh").addEventListener("click", function () {
-                void loadAdminGraphTypeSelectOptions();
-            });
-        document.getElementById("adm-glib-gt-add") &&
-            document.getElementById("adm-glib-gt-add").addEventListener("click", function () {
-                void (async function () {
-                    const labEl = document.getElementById("adm-glib-gt-new-label");
-                    const slugEl = document.getElementById("adm-glib-gt-new-slug");
-                    const label = labEl ? String(labEl.value || "").trim() : "";
-                    if (!label) {
-                        setGlibGtPanelMsg("Label is required.", "err");
-                        return;
-                    }
-                    const slugHint = slugEl ? String(slugEl.value || "").trim() : "";
-                    try {
-                        await fetchJson(apiAdmin("graph-types"), {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify(slugHint ? { label: label, slug: slugHint } : { label: label }),
-                        });
-                        setGlibGtPanelMsg("Graph type added.", "ok");
-                        if (labEl) {
-                            labEl.value = "";
-                        }
-                        if (slugEl) {
-                            slugEl.value = "";
-                        }
-                        await loadAdminGraphTypeSelectOptions();
-                        snapshotGlibFormBaseline();
-                    } catch (e) {
-                        setGlibGtPanelMsg(e.message || "Add failed", "err");
-                    }
-                })();
-            });
         void loadAdminGraphTypeSelectOptions();
 
         refreshGlibSaveAndWorkspaceUi();

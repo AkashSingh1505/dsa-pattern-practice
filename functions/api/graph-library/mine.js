@@ -2,25 +2,18 @@ import { json } from "../../_lib/admin-api.js";
 import { newGraphId, requirePracticeUser } from "../../_lib/practice-auth-request.js";
 import { graphPayloadStatsFromJson } from "../../_lib/graph-payload-stats.js";
 import { ensureUserGraphVisibilityColumn } from "../../_lib/user-graph-visibility.js";
-import { normalizeGraphCategoriesBody } from "../../_lib/graph-catalog-categories.js";
-import { validateMindMapGraphInvariant } from "../../_lib/graph-catalog-category-rows.js";
-import { ensureUserGraphCategoriesJsonColumn, stringifyUserGraphCategories } from "../../_lib/user-graph-categories-json.js";
-import { touchUserSavedCategories } from "../../_lib/user-saved-graph-categories.js";
+import { validateMindMapNodeCategoriesWithDb } from "../../_lib/graph-node-category.js";
 
-function defaultPayload(title, firstCategoryId) {
+function defaultPayload(title) {
     const safe = String(title || "My graph").slice(0, 80);
-    const cid = String(firstCategoryId || "").trim();
-    const treeStub = cid
-        ? [{ name: "Start here", problems: [], children: [], graphCategoryId: cid }]
-        : [{ name: "Start here", problems: [], children: [] }];
     const root = {
         id: "ug-root-" + Math.random().toString(36).slice(2, 9),
         name: safe,
-        tree: treeStub,
+        nodeCategorySlug: "TOPIC",
+        tree: [],
+        patterns: [],
+        problems: [],
     };
-    if (cid) {
-        root.graphCategoryId = cid;
-    }
     return JSON.stringify([root]);
 }
 
@@ -121,27 +114,17 @@ export async function onRequestPost(context) {
         accentHue = Math.round(n);
     }
     const { db, userId } = gate;
-    await ensureUserGraphCategoriesJsonColumn(db);
     const hasVisibility = await ensureUserGraphVisibilityColumn(db);
     const now = Math.floor(Date.now() / 1000);
     const id = newGraphId();
-    const catNorm = normalizeGraphCategoriesBody(Array.isArray(body.categories) ? body.categories : []);
-    if (!catNorm.ok) {
-        return json({ error: catNorm.error }, 400);
-    }
-    if (!catNorm.categories.length) {
-        return json({ error: "at least one category { name, color } is required", code: "GRAPH_CATEGORIES_REQUIRED" }, 400);
-    }
-    const firstCatId = catNorm.categories[0].id;
-    const payload = defaultPayload(title, firstCatId);
-    const categoriesJson = stringifyUserGraphCategories(catNorm.categories);
+    const payload = defaultPayload(title);
     let payloadParsed;
     try {
         payloadParsed = JSON.parse(payload);
     } catch {
         return json({ error: "invalid default payload" }, 500);
     }
-    const inv = validateMindMapGraphInvariant(payloadParsed, catNorm.categories);
+    const inv = await validateMindMapNodeCategoriesWithDb(db, payloadParsed);
     if (!inv.ok) {
         return json({ error: inv.error, code: inv.code || "GRAPH_INVALID" }, 400);
     }
@@ -149,28 +132,23 @@ export async function onRequestPost(context) {
         if (hasVisibility) {
             await db
                 .prepare(
-                    `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, categories_json, visibility, shared_from_user_id, created_at, updated_at, deleted_at)
-                     VALUES (?, ?, NULL, 'created', ?, ?, ?, ?, ?, 'private', NULL, ?, ?, NULL)`,
+                    `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, visibility, shared_from_user_id, created_at, updated_at, deleted_at)
+                     VALUES (?, ?, NULL, 'created', ?, ?, ?, ?, 'private', NULL, ?, ?, NULL)`,
                 )
-                .bind(id, userId, title, description || null, payload, accentHue, categoriesJson, now, now)
+                .bind(id, userId, title, description || null, payload, accentHue, now, now)
                 .run();
         } else {
             await db
                 .prepare(
-                    `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, categories_json, shared_from_user_id, created_at, updated_at, deleted_at)
-                     VALUES (?, ?, NULL, 'created', ?, ?, ?, ?, ?, NULL, ?, ?, NULL)`,
+                    `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, shared_from_user_id, created_at, updated_at, deleted_at)
+                     VALUES (?, ?, NULL, 'created', ?, ?, ?, ?, NULL, ?, ?, NULL)`,
                 )
-                .bind(id, userId, title, description || null, payload, accentHue, categoriesJson, now, now)
+                .bind(id, userId, title, description || null, payload, accentHue, now, now)
                 .run();
         }
     } catch (e) {
         console.error("graph create", e);
         return json({ error: "server error" }, 500);
-    }
-    try {
-        await touchUserSavedCategories(db, userId, catNorm.categories);
-    } catch (e) {
-        console.error("graph create palette", e);
     }
     return json({
         ok: true,

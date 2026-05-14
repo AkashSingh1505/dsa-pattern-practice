@@ -1,13 +1,7 @@
 import { json } from "../../_lib/admin-api.js";
 import { verifyPracticeToken } from "../../_lib/practice-jwt.js";
 import { newGraphId, requireGraphCatalogWriter } from "../../_lib/practice-auth-request.js";
-import { normalizeGraphCategoriesBody } from "../../_lib/graph-catalog-categories.js";
-import {
-    ensureGraphCatalogCategoriesJsonColumn,
-    getResolvedCatalogCategories,
-    replaceCatalogCategoriesForCatalog,
-    validateMindMapGraphInvariant,
-} from "../../_lib/graph-catalog-category-rows.js";
+import { listGraphNodeCategories, validateMindMapNodeCategoriesWithDb } from "../../_lib/graph-node-category.js";
 
 function slugify(s) {
     return String(s || "")
@@ -84,11 +78,11 @@ export async function onRequestGet(context) {
         if (!Array.isArray(payload)) {
             return json({ error: "invalid payload in database" }, 500);
         }
-        let categories;
+        let nodeCategories;
         try {
-            categories = await getResolvedCatalogCategories(db, row.id);
+            nodeCategories = await listGraphNodeCategories(db);
         } catch (e) {
-            console.error("admin graph-catalog categories", e);
+            console.error("admin graph-catalog node categories", e);
             return json({ error: "server error" }, 500);
         }
         return json({
@@ -103,7 +97,7 @@ export async function onRequestGet(context) {
                 creatorEmail: row.creator_email || null,
                 accentHue: row.accent_hue,
                 tags: parseTagsJson(row.tags_json),
-                categories,
+                nodeCategories,
                 difficulty: row.difficulty || null,
                 estimatedMinutes: row.estimated_minutes,
                 downloadCount: row.download_count || 0,
@@ -174,18 +168,10 @@ export async function onRequestPost(context) {
         typeof body.accentHue === "number" && Number.isFinite(body.accentHue)
             ? Math.floor(body.accentHue) % 360
             : null;
-    const catNorm = normalizeGraphCategoriesBody(body.categories == null ? [] : body.categories);
-    if (!catNorm.ok) {
-        return json({ error: catNorm.error }, 400);
-    }
-    if (!catNorm.categories.length) {
-        return json({ error: "at least one category is required", code: "GRAPH_CATEGORIES_REQUIRED" }, 400);
-    }
-    const invPost = validateMindMapGraphInvariant(payload, catNorm.categories);
+    const invPost = await validateMindMapNodeCategoriesWithDb(gate.db, payload);
     if (!invPost.ok) {
         return json({ error: invPost.error, code: invPost.code || "GRAPH_INVALID" }, 400);
     }
-    const categoriesJson = JSON.stringify(catNorm.categories);
     const slugIn = String(body.slug || "").trim();
     const base = slugify(slugIn || title);
 
@@ -193,12 +179,6 @@ export async function onRequestPost(context) {
     const slug = await uniqueSlug(db, base);
     const id = newGraphId();
     const now = Math.floor(Date.now() / 1000);
-
-    try {
-        await ensureGraphCatalogCategoriesJsonColumn(db);
-    } catch (e) {
-        console.error("admin graph-catalog ensure categories column", e);
-    }
 
     let creatorUserId = null;
     if (gate.via === "practice_admin") {
@@ -221,8 +201,8 @@ export async function onRequestPost(context) {
     try {
         await db
             .prepare(
-                `INSERT INTO graph_catalog (id, slug, title, description, visibility, creator_user_id, payload_json, accent_hue, tags_json, difficulty, estimated_minutes, download_count, categories_json, created_at, updated_at, deleted_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, NULL)`,
+                `INSERT INTO graph_catalog (id, slug, title, description, visibility, creator_user_id, payload_json, accent_hue, tags_json, difficulty, estimated_minutes, download_count, created_at, updated_at, deleted_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, NULL)`,
             )
             .bind(
                 id,
@@ -236,7 +216,6 @@ export async function onRequestPost(context) {
                 tags,
                 difficulty,
                 estimatedMinutes,
-                categoriesJson,
                 now,
                 now,
             )
@@ -265,11 +244,6 @@ export async function onRequestPatch(context) {
         return json({ error: "id required" }, 400);
     }
     const { db } = gate;
-    try {
-        await ensureGraphCatalogCategoriesJsonColumn(db);
-    } catch (e) {
-        console.error("admin graph-catalog patch ensure categories column", e);
-    }
     const fullRow = await db
         .prepare(`SELECT id, payload_json FROM graph_catalog WHERE id = ? AND deleted_at IS NULL`)
         .bind(id)
@@ -279,58 +253,11 @@ export async function onRequestPatch(context) {
     }
     const now = Math.floor(Date.now() / 1000);
 
-    let payloadForCatValidation = null;
     if (body.payload != null) {
         if (!Array.isArray(body.payload)) {
             return json({ error: "payload must be array" }, 400);
         }
-        payloadForCatValidation = body.payload;
-    } else if (body.categories !== undefined) {
-        let parsed;
-        try {
-            parsed = JSON.parse(fullRow.payload_json);
-        } catch {
-            return json({ error: "invalid stored payload" }, 500);
-        }
-        if (!Array.isArray(parsed)) {
-            return json({ error: "invalid stored payload" }, 500);
-        }
-        payloadForCatValidation = parsed;
-    }
-
-    let didCategoryReplace = false;
-    if (body.categories !== undefined) {
-        const catNorm = normalizeGraphCategoriesBody(body.categories);
-        if (!catNorm.ok) {
-            return json({ error: catNorm.error }, 400);
-        }
-        if (!catNorm.categories.length) {
-            return json({ error: "at least one category is required", code: "GRAPH_CATEGORIES_REQUIRED" }, 400);
-        }
-        if (payloadForCatValidation != null) {
-            const invPatchCats = validateMindMapGraphInvariant(payloadForCatValidation, catNorm.categories);
-            if (!invPatchCats.ok) {
-                return json({ error: invPatchCats.error, code: invPatchCats.code || "GRAPH_INVALID" }, 400);
-            }
-        }
-        try {
-            await replaceCatalogCategoriesForCatalog(db, id, catNorm.categories, now);
-        } catch (e) {
-            console.error("admin graph-catalog patch categories", e);
-            return json({ error: "server error" }, 500);
-        }
-        didCategoryReplace = true;
-    }
-
-    if (body.payload != null && body.categories === undefined) {
-        let cats;
-        try {
-            cats = await getResolvedCatalogCategories(db, id);
-        } catch (e) {
-            console.error("admin graph-catalog patch load categories", e);
-            return json({ error: "server error" }, 500);
-        }
-        const invPatchPayload = validateMindMapGraphInvariant(body.payload, cats);
+        const invPatchPayload = await validateMindMapNodeCategoriesWithDb(db, body.payload);
         if (!invPatchPayload.ok) {
             return json({ error: invPatchPayload.error, code: invPatchPayload.code || "GRAPH_INVALID" }, 400);
         }
@@ -374,7 +301,7 @@ export async function onRequestPatch(context) {
         updates.push("accent_hue = ?");
         binds.push(Math.floor(body.accentHue) % 360);
     }
-    if (!updates.length && !didCategoryReplace) {
+    if (!updates.length) {
         return json({ error: "nothing to update" }, 400);
     }
     updates.push("updated_at = ?");

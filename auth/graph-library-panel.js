@@ -39,6 +39,25 @@
         return d.innerHTML;
     }
 
+    /** Map API graph_node_category rows to workspace palette entries (id = slug for ring colors). */
+    function mapNodeCategoriesToPalette(list) {
+        if (!Array.isArray(list)) {
+            return [];
+        }
+        return list
+            .map(function (c) {
+                if (!c || !c.slug) {
+                    return null;
+                }
+                return {
+                    id: String(c.slug).toUpperCase(),
+                    name: String(c.label || c.slug || ""),
+                    color: String(c.color || "#6b7280").trim(),
+                };
+            })
+            .filter(Boolean);
+    }
+
     function formatDateLabel(ts) {
         if (typeof ts !== "number" || !ts) {
             return "Updated recently";
@@ -246,6 +265,8 @@
 
     var state = {
         public: [],
+        /** @type {{ id: string, name: string, color: string }[]} */
+        publicNodeCategories: [],
         mine: [],
         filter: "all",
         activeTab: "personal",
@@ -449,6 +470,7 @@
 
     async function refreshPublic() {
         var j = await fetchJson("api/graph-library/public", { method: "GET" });
+        state.publicNodeCategories = mapNodeCategoriesToPalette(j.nodeCategories || []);
         state.public = j.graphs || [];
         if (state.activeTab === "community") {
             renderActiveGrid();
@@ -593,7 +615,7 @@
             dsaImportMindMapHierarchyFromText(JSON.stringify(payload));
             writeSession(null);
             if (typeof window !== "undefined") {
-                window.__dsaGraphBodyCategories = Array.isArray(j.graph && j.graph.categories) ? j.graph.categories : [];
+                window.__dsaGraphBodyCategories = mapNodeCategoriesToPalette((j.graph && j.graph.nodeCategories) || []);
             }
             toast("Preview loaded — not saved to your library");
             if (typeof window.__dsaUdashNavigatePanel === "function") {
@@ -612,7 +634,7 @@
                 throw new Error("Could not open graph");
             }
             if (typeof window !== "undefined") {
-                window.__dsaGraphBodyCategories = Array.isArray(g.categories) ? g.categories : [];
+                window.__dsaGraphBodyCategories = mapNodeCategoriesToPalette(g.nodeCategories || []);
             }
             dsaImportMindMapHierarchyFromText(JSON.stringify(g.payload));
             writeSession({ copyId: g.id, title: g.title || title || "Graph", kind: g.kind || kind || "created" });

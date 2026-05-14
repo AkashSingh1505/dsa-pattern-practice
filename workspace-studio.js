@@ -70,6 +70,10 @@
         if (!obj || typeof obj !== "object") {
             return "";
         }
+        var slug = obj.nodeCategorySlug != null ? String(obj.nodeCategorySlug).trim().toUpperCase() : "";
+        if (slug) {
+            return slug;
+        }
         var a = obj.graphCategoryId != null ? String(obj.graphCategoryId).trim() : "";
         var b = obj.catalogCategoryId != null ? String(obj.catalogCategoryId).trim() : "";
         return a || b;

@@ -1,7 +1,7 @@
 import { json } from "../../_lib/admin-api.js";
 import { requirePracticeUser } from "../../_lib/practice-auth-request.js";
 import { graphPayloadStatsFromJson } from "../../_lib/graph-payload-stats.js";
-import { listCatalogCategoriesByCatalogIds } from "../../_lib/graph-catalog-category-rows.js";
+import { listGraphNodeCategories } from "../../_lib/graph-node-category.js";
 
 function creatorLabel(row) {
     const dn = row.creator_display_name && String(row.creator_display_name).trim();
@@ -22,6 +22,13 @@ export async function onRequestGet(context) {
         return gate.response;
     }
     const { db } = gate;
+    let nodeCategoryList;
+    try {
+        nodeCategoryList = await listGraphNodeCategories(db);
+    } catch (e) {
+        console.error("graph-library public node categories", e);
+        nodeCategoryList = [];
+    }
     let rows;
     let uniq;
     try {
@@ -50,20 +57,8 @@ export async function onRequestGet(context) {
         uniqMap.set(r.catalog_id, r.n);
     }
     const resultRows = rows.results || [];
-    const catalogIds = resultRows.map((r) => r.id);
-    let byCatalogId;
-    try {
-        byCatalogId = await listCatalogCategoriesByCatalogIds(db, catalogIds);
-    } catch (e) {
-        console.error("graph-library public categories", e);
-        byCatalogId = new Map();
-    }
     const graphs = resultRows.map((r) => {
         const stats = graphPayloadStatsFromJson(r.payload_json);
-        let categories = byCatalogId.get(r.id);
-        if (!categories || !categories.length) {
-            categories = [];
-        }
         return {
             id: r.id,
             slug: r.slug,
@@ -71,7 +66,6 @@ export async function onRequestGet(context) {
             description: r.description || "",
             accentHue: r.accent_hue,
             tags: safeJsonArray(r.tags_json),
-            categories,
             difficulty: r.difficulty || null,
             estimatedMinutes: r.estimated_minutes,
             downloadCount: Number(r.download_count || 0) || 0,
@@ -83,7 +77,7 @@ export async function onRequestGet(context) {
             creatorLabel: creatorLabel(r),
         };
     });
-    return json({ ok: true, graphs });
+    return json({ ok: true, nodeCategories: nodeCategoryList, graphs });
 }
 
 function safeJsonArray(s) {

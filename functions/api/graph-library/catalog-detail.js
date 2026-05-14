@@ -1,6 +1,6 @@
 import { json } from "../../_lib/admin-api.js";
 import { requirePracticeUser } from "../../_lib/practice-auth-request.js";
-import { getResolvedCatalogCategories, validateMindMapGraphInvariant } from "../../_lib/graph-catalog-category-rows.js";
+import { listGraphNodeCategories, validateMindMapNodeCategoriesWithDb } from "../../_lib/graph-node-category.js";
 
 export async function onRequestGet(context) {
     const { request, env } = context;
@@ -48,14 +48,14 @@ export async function onRequestGet(context) {
     const dn = row.creator_display_name && String(row.creator_display_name).trim();
     const em = row.creator_email && String(row.creator_email).trim();
     const creatorLabel = dn || em || "Admin";
-    let categories;
+    let nodeCategories;
     try {
-        categories = await getResolvedCatalogCategories(db, row.id);
+        nodeCategories = await listGraphNodeCategories(db);
     } catch (e) {
-        console.error("catalog-detail categories", e);
-        categories = [];
+        console.error("catalog-detail nodeCategories", e);
+        nodeCategories = [];
     }
-    const inv = validateMindMapGraphInvariant(payload, categories);
+    const inv = await validateMindMapNodeCategoriesWithDb(db, payload);
     if (!inv.ok) {
         return json({ error: inv.error, code: inv.code || "GRAPH_INVALID" }, 422);
     }
@@ -69,7 +69,7 @@ export async function onRequestGet(context) {
             visibility: vis,
             accentHue: row.accent_hue,
             tags: safeJsonArray(row.tags_json),
-            categories,
+            nodeCategories,
             difficulty: row.difficulty || null,
             estimatedMinutes: row.estimated_minutes,
             downloadCount: row.download_count || 0,

@@ -1,5 +1,5 @@
 import { json, requireAdmin } from "../../_lib/admin-api.js";
-import { getResolvedCatalogCategories } from "../../_lib/graph-catalog-category-rows.js";
+import { listGraphNodeCategories, validateMindMapNodeCategoriesWithDb } from "../../_lib/graph-node-category.js";
 
 function parseTagsJson(s) {
     if (!s || typeof s !== "string") {
@@ -83,12 +83,16 @@ export async function onRequestGet(context) {
         if (!Array.isArray(payload)) {
             return json({ error: "invalid payload" }, 500);
         }
-        let categories;
+        let nodeCategories;
         try {
-            categories = await getResolvedCatalogCategories(db, row.id);
+            nodeCategories = await listGraphNodeCategories(db);
         } catch (e) {
-            console.error("graph-inventory catalog categories", e);
+            console.error("graph-inventory node categories", e);
             return json({ error: "server error" }, 500);
+        }
+        const inv = await validateMindMapNodeCategoriesWithDb(db, payload);
+        if (!inv.ok) {
+            return json({ error: inv.error, code: inv.code || "GRAPH_INVALID" }, 422);
         }
         return json({
             ok: true,
@@ -103,7 +107,7 @@ export async function onRequestGet(context) {
                 creatorEmail: row.creator_email || null,
                 accentHue: row.accent_hue,
                 tags: parseTagsJson(row.tags_json),
-                categories,
+                nodeCategories,
                 difficulty: row.difficulty || null,
                 estimatedMinutes: row.estimated_minutes,
                 downloadCount: row.download_count || 0,
@@ -143,6 +147,13 @@ export async function onRequestGet(context) {
         if (!Array.isArray(payload)) {
             return json({ error: "invalid payload" }, 500);
         }
+        let nodeCategories;
+        try {
+            nodeCategories = await listGraphNodeCategories(db);
+        } catch (e) {
+            console.error("graph-inventory user node categories", e);
+            nodeCategories = [];
+        }
         return json({
             ok: true,
             recordType: "user_graph",
@@ -157,6 +168,7 @@ export async function onRequestGet(context) {
                 accentHue: row.accent_hue,
                 createdAt: row.created_at,
                 updatedAt: row.updated_at,
+                nodeCategories,
                 payload,
                 locked: true,
             },

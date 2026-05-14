@@ -584,12 +584,71 @@
         }
     }
 
-    function admGlibNtFormatChildrenMeta(c) {
-        const arr = c.allowedChildSlugs || [];
-        if (!arr.length) {
-            return "Leaf node (no children)";
+    const ADM_GLIB_NT_ROOT = "TOPIC";
+
+    function admGlibNtSlugUpper(s) {
+        return String(s || "")
+            .toUpperCase()
+            .trim();
+    }
+
+    function admGlibNtLabelForSlug(slug) {
+        const su = admGlibNtSlugUpper(slug);
+        const c = admGlibNodeTypesCache.find(function (x) { return admGlibNtSlugUpper(x.slug) === su; });
+        return c ? String(c.label || c.slug) : su;
+    }
+
+    function admGlibNtParentsOfSlug(graph, childSlug) {
+        const ch = admGlibNtSlugUpper(childSlug);
+        const out = [];
+        (graph || []).forEach(function (c) {
+            const p = admGlibNtSlugUpper(c.slug);
+            if (p === ch) {
+                return;
+            }
+            if ((c.allowedChildSlugs || []).some(function (k) { return admGlibNtSlugUpper(k) === ch; })) {
+                out.push(String(c.slug || ""));
+            }
+        });
+        return out;
+    }
+
+    function admGlibNtAncestorsUpsweep(graph, seeds) {
+        const out = new Set();
+        const q = (seeds || []).map(admGlibNtSlugUpper).filter(Boolean);
+        while (q.length) {
+            const s = q.shift();
+            if (out.has(s)) {
+                continue;
+            }
+            out.add(s);
+            (graph || []).forEach(function (c) {
+                const p = admGlibNtSlugUpper(c.slug);
+                if (p === s) {
+                    return;
+                }
+                if ((c.allowedChildSlugs || []).some(function (k) { return admGlibNtSlugUpper(k) === s; })) {
+                    q.push(p);
+                }
+            });
         }
-        return "→ " + arr.join(", ");
+        return out;
+    }
+
+    function admGlibNtFormatTileMetaLine(slug, rec) {
+        const graph = admGlibNtGraphFromCache();
+        const parents = admGlibNtParentsOfSlug(graph, slug);
+        const parentsStr =
+            admGlibNtSlugUpper(slug) === ADM_GLIB_NT_ROOT
+                ? "Top of hierarchy"
+                : parents.length
+                  ? parents
+                        .map(function (s) { return admGlibNtLabelForSlug(s); })
+                        .join(", ")
+                  : "—";
+        const ch = rec.allowedChildSlugs || [];
+        const childrenStr = !ch.length ? "Leaf" : ch.map(function (s) { return admGlibNtLabelForSlug(s); }).join(", ");
+        return { parentsStr: parentsStr, childrenStr: childrenStr };
     }
 
     function admGlibNtRenderTiles() {
@@ -607,7 +666,8 @@
                 const slug = String(c.slug || "");
                 const btn = document.createElement("button");
                 btn.type = "button";
-                btn.className = "adm-nt-tile";
+                const isRootTile = admGlibNtSlugUpper(slug) === ADM_GLIB_NT_ROOT;
+                btn.className = "adm-nt-tile" + (isRootTile ? " adm-nt-tile-root" : "");
                 btn.setAttribute("data-slug", slug);
                 const dot = document.createElement("span");
                 dot.className = "adm-nt-tile-dot";
@@ -617,6 +677,12 @@
                 const nameRow = document.createElement("div");
                 nameRow.className = "adm-nt-tile-name";
                 nameRow.appendChild(document.createTextNode(String(c.label || slug)));
+                if (isRootTile) {
+                    const br = document.createElement("span");
+                    br.className = "adm-nt-badge-root";
+                    br.textContent = "Root";
+                    nameRow.appendChild(br);
+                }
                 if (c.isSystem) {
                     const lock = document.createElement("span");
                     lock.className = "adm-nt-lock-ico";
@@ -627,7 +693,13 @@
                 }
                 const meta = document.createElement("div");
                 meta.className = "adm-nt-tile-meta";
-                meta.textContent = admGlibNtFormatChildrenMeta(c);
+                const metaBits = admGlibNtFormatTileMetaLine(slug, c);
+                meta.appendChild(document.createTextNode(metaBits.parentsStr));
+                const arr = document.createElement("span");
+                arr.className = "adm-nt-meta-arrow";
+                arr.textContent = "↓";
+                meta.appendChild(arr);
+                meta.appendChild(document.createTextNode(metaBits.childrenStr));
                 info.appendChild(nameRow);
                 info.appendChild(meta);
                 const edit = document.createElement("span");
@@ -669,52 +741,6 @@
         }
         const t = admGlibNtSlugFromLabelRaw(label);
         return t || "TYPE";
-    }
-
-    function admGlibNtForbiddenChildSlugsLocal(categories, editingSlug) {
-        const target = String(editingSlug || "")
-            .toUpperCase()
-            .trim();
-        const out = new Set();
-        if (!target) {
-            return out;
-        }
-        const childToParents = new Map();
-        (categories || []).forEach(function (c) {
-            const p = String(c.slug || "")
-                .toUpperCase()
-                .trim();
-            if (!p) {
-                return;
-            }
-            (c.allowedChildSlugs || []).forEach(function (ch) {
-                const cs = String(ch || "")
-                    .toUpperCase()
-                    .trim();
-                if (!cs) {
-                    return;
-                }
-                if (!childToParents.has(cs)) {
-                    childToParents.set(cs, new Set());
-                }
-                childToParents.get(cs).add(p);
-            });
-        });
-        const stack = [...(childToParents.get(target) || [])];
-        while (stack.length) {
-            const p = String(stack.pop() || "")
-                .toUpperCase()
-                .trim();
-            if (!p || out.has(p)) {
-                continue;
-            }
-            out.add(p);
-            (childToParents.get(p) || []).forEach(function (gp) {
-                stack.push(gp);
-            });
-        }
-        out.add(target);
-        return out;
     }
 
     function admGlibNtGraphFromCache() {
@@ -777,9 +803,9 @@
         return admGlibNtResolvedNewSlug(fLabel && fLabel.value, fSlug && fSlug.value);
     }
 
-    function admGlibNtCaptureChipAllowed() {
+    function admGlibNtCaptureParentAllowedSet() {
         const o = {};
-        document.querySelectorAll("#adm-glib-nt-chip-group .adm-nt-chip input").forEach(function (inp) {
+        document.querySelectorAll("#adm-glib-nt-parent-chips .adm-nt-chip input").forEach(function (inp) {
             const s = inp.getAttribute("data-slug");
             if (s && inp.checked && !inp.disabled) {
                 o[s] = true;
@@ -788,18 +814,262 @@
         return o;
     }
 
-    function admGlibNtValidateChildrenClient(editingSlug, allowedList, graphForAncestors) {
-        const ed = String(editingSlug || "").toUpperCase().trim();
+    function admGlibNtCaptureChildAllowedSet() {
+        const o = {};
+        document.querySelectorAll("#adm-glib-nt-child-chips .adm-nt-chip input").forEach(function (inp) {
+            const s = inp.getAttribute("data-slug");
+            if (s && inp.checked && !inp.disabled) {
+                o[s] = true;
+            }
+        });
+        return o;
+    }
+
+    function admGlibNtParentArrayFromChips() {
+        const allowed = [];
+        document.querySelectorAll("#adm-glib-nt-parent-chips .adm-nt-chip input:checked:not(:disabled)").forEach(function (cb) {
+            const s = cb.getAttribute("data-slug");
+            if (s) {
+                allowed.push(s);
+            }
+        });
+        return allowed;
+    }
+
+    function admGlibNtChildArrayFromChips() {
+        const allowed = [];
+        document.querySelectorAll("#adm-glib-nt-child-chips .adm-nt-chip input:checked:not(:disabled)").forEach(function (cb) {
+            const s = cb.getAttribute("data-slug");
+            if (s) {
+                allowed.push(s);
+            }
+        });
+        return allowed;
+    }
+
+    function admGlibNtMergeGraphClient(targetSlug, childArr, parentArr) {
+        const tu = admGlibNtSlugUpper(targetSlug);
+        const parents = new Set((parentArr || []).map(admGlibNtSlugUpper).filter(Boolean));
+        parents.delete(tu);
+        return admGlibNtGraphFromCache().map(function (c) {
+            const cs = admGlibNtSlugUpper(c.slug);
+            if (cs === tu) {
+                return { slug: c.slug, allowedChildSlugs: (childArr || []).map(admGlibNtSlugUpper).filter(Boolean) };
+            }
+            let kids = (c.allowedChildSlugs || []).map(admGlibNtSlugUpper).filter(Boolean);
+            kids = kids.filter(function (k) { return k !== tu; });
+            if (parents.has(cs)) {
+                kids.push(tu);
+            }
+            return { slug: c.slug, allowedChildSlugs: [...new Set(kids)] };
+        });
+    }
+
+    function admGlibNtMergeGraphClientNew(newSlug, childArr, parentArr) {
+        const tu = admGlibNtSlugUpper(newSlug);
+        const parents = new Set((parentArr || []).map(admGlibNtSlugUpper).filter(Boolean));
+        parents.delete(tu);
+        const rows = admGlibNtGraphFromCache().map(function (c) {
+            const cs = admGlibNtSlugUpper(c.slug);
+            let kids = (c.allowedChildSlugs || []).map(admGlibNtSlugUpper).filter(Boolean);
+            kids = kids.filter(function (k) { return k !== tu; });
+            if (parents.has(cs)) {
+                kids.push(tu);
+            }
+            return { slug: c.slug, allowedChildSlugs: [...new Set(kids)] };
+        });
+        rows.push({ slug: tu, allowedChildSlugs: (childArr || []).map(admGlibNtSlugUpper).filter(Boolean) });
+        return rows;
+    }
+
+    function admGlibNtRebuildParentChips(allowedSet) {
+        const group = document.getElementById("adm-glib-nt-parent-chips");
+        if (!group) {
+            return;
+        }
+        group.innerHTML = "";
+        const editing = admGlibNtGetEditingSlugUpper();
+        admGlibNodeTypesCache.forEach(function (c) {
+            const slug = String(c.slug || "");
+            const lab = document.createElement("label");
+            lab.className = "adm-nt-chip";
+            const isSelf = admGlibNtSlugUpper(slug) === editing && editing !== "";
+            if (isSelf) {
+                lab.classList.add("disabled");
+            }
+            const inp = document.createElement("input");
+            inp.type = "checkbox";
+            inp.setAttribute("data-slug", slug);
+            if (isSelf) {
+                inp.disabled = true;
+                inp.checked = false;
+            } else {
+                inp.checked = !!(allowedSet && allowedSet[slug]);
+                if (inp.checked) {
+                    lab.classList.add("checked");
+                }
+            }
+            const chipDot = document.createElement("span");
+            chipDot.className = "adm-nt-chip-dot";
+            chipDot.style.color = String(c.color || "#6b7280").trim();
+            lab.appendChild(inp);
+            lab.appendChild(chipDot);
+            const noteSelf = isSelf ? " (self)" : "";
+            lab.appendChild(document.createTextNode(String(c.label || slug) + " · " + slug + noteSelf));
+            if (!isSelf) {
+                inp.addEventListener("change", function () {
+                    lab.classList.toggle("checked", inp.checked);
+                    admGlibNtRebuildChildChips(admGlibNtCaptureChildAllowedSet());
+                    admGlibNtValidateMapping();
+                });
+            }
+            group.appendChild(lab);
+        });
+    }
+
+    function admGlibNtRebuildChildChips(allowedSet) {
+        const group = document.getElementById("adm-glib-nt-child-chips");
+        const childBlock = document.getElementById("adm-glib-nt-child-block");
+        const disMsg = document.getElementById("adm-glib-nt-child-disabled-msg");
+        if (!group || !childBlock) {
+            return;
+        }
+        const graph = admGlibNtGraphFromCache();
+        const editing = admGlibNtGetEditingSlugUpper();
+        const isNew = admGlibNtModalState.mode === "new";
+        const parr = admGlibNtParentArrayFromChips();
+        if (isNew && parr.length === 0) {
+            childBlock.classList.add("disabled");
+            if (disMsg) {
+                disMsg.classList.add("is-visible");
+            }
+            group.innerHTML = "";
+            admGlibNtValidateMapping();
+            return;
+        }
+        childBlock.classList.remove("disabled");
+        if (disMsg) {
+            disMsg.classList.remove("is-visible");
+        }
+        const forbidden = admGlibNtAncestorsUpsweep(graph, parr);
+        forbidden.add(editing);
+        group.innerHTML = "";
+        admGlibNodeTypesCache.forEach(function (c) {
+            const slug = String(c.slug || "");
+            const su = admGlibNtSlugUpper(slug);
+            const lab = document.createElement("label");
+            lab.className = "adm-nt-chip";
+            const dis = forbidden.has(su);
+            if (dis) {
+                lab.classList.add("disabled");
+            }
+            const inp = document.createElement("input");
+            inp.type = "checkbox";
+            inp.setAttribute("data-slug", slug);
+            if (dis) {
+                inp.disabled = true;
+                inp.checked = false;
+            } else {
+                inp.checked = !!(allowedSet && allowedSet[slug]);
+                if (inp.checked) {
+                    lab.classList.add("checked");
+                }
+            }
+            const chipDot = document.createElement("span");
+            chipDot.className = "adm-nt-chip-dot";
+            chipDot.style.color = String(c.color || "#6b7280").trim();
+            lab.appendChild(inp);
+            lab.appendChild(chipDot);
+            let suffix = "";
+            if (dis) {
+                suffix = " (ancestor)";
+            }
+            lab.appendChild(document.createTextNode(String(c.label || slug) + " · " + slug + suffix));
+            if (!dis) {
+                inp.addEventListener("change", function () {
+                    lab.classList.toggle("checked", inp.checked);
+                    admGlibNtValidateMapping();
+                });
+            }
+            group.appendChild(lab);
+        });
+    }
+
+    function admGlibNtSetMappingLocked(locked) {
+        ["adm-glib-nt-parent-block", "adm-glib-nt-child-block"].forEach(function (bid) {
+            const el = document.getElementById(bid);
+            if (el) {
+                el.classList.toggle("locked", locked);
+            }
+        });
+        ["adm-glib-nt-parent-chips", "adm-glib-nt-child-chips"].forEach(function (cid) {
+            const el = document.getElementById(cid);
+            if (el) {
+                el.classList.toggle("locked", locked);
+            }
+        });
+        ["adm-glib-nt-parent-actions", "adm-glib-nt-child-actions"].forEach(function (aid) {
+            const el = document.getElementById(aid);
+            if (el) {
+                el.classList.toggle("disabled", locked);
+            }
+        });
+        const pl = document.getElementById("adm-glib-nt-parent-lock");
+        const cl = document.getElementById("adm-glib-nt-child-lock");
+        if (pl) {
+            pl.style.display = locked ? "inline" : "none";
+        }
+        if (cl) {
+            cl.style.display = locked ? "inline" : "none";
+        }
+    }
+
+    function admGlibNtUpdateStepper() {
+        const stepper = document.getElementById("adm-glib-nt-stepper");
+        const s1 = document.getElementById("adm-glib-nt-step-1");
+        const s2 = document.getElementById("adm-glib-nt-step-2");
+        if (!stepper || !s1 || !s2) {
+            return;
+        }
+        if (admGlibNtModalState.mode !== "new") {
+            return;
+        }
+        const hasParent = admGlibNtParentArrayFromChips().length > 0;
+        s1.classList.toggle("done", hasParent);
+        s1.classList.toggle("active", !hasParent);
+        s2.classList.toggle("active", hasParent);
+        s2.classList.remove("done");
+    }
+
+    function admGlibNtRefreshMappingIfModalOpen() {
+        if (admGlibNtModalState.mode === "idle") {
+            return;
+        }
+        const pb = document.getElementById("adm-glib-nt-parent-block");
+        if (pb && pb.classList.contains("locked")) {
+            return;
+        }
+        admGlibNtRebuildParentChips(admGlibNtCaptureParentAllowedSet());
+        admGlibNtRebuildChildChips(admGlibNtCaptureChildAllowedSet());
+        admGlibNtValidateMapping();
+    }
+
+    function admGlibNtValidateChildrenAgainstParentDraft(editingSlug, childArr, parentArr, graph) {
+        const ed = admGlibNtSlugUpper(editingSlug);
         if (!ed) {
             return { ok: true };
         }
-        const forbidden = admGlibNtForbiddenChildSlugsLocal(graphForAncestors, ed);
-        for (let i = 0; i < (allowedList || []).length; i++) {
-            const c = String(allowedList[i] || "").toUpperCase().trim();
-            if (forbidden.has(c)) {
+        const forb = admGlibNtAncestorsUpsweep(graph, parentArr || []);
+        forb.add(ed);
+        for (let i = 0; i < (childArr || []).length; i++) {
+            const c = admGlibNtSlugUpper(childArr[i]);
+            if (forb.has(c)) {
                 return {
                     ok: false,
-                    msg: 'Cannot allow "' + c + '" under "' + ed + '": not this type itself or any ancestor of it.',
+                    msg:
+                        'Cannot allow "' +
+                        c +
+                        '" as a child: it matches this type, a selected parent, or an ancestor of a parent.',
                 };
             }
         }
@@ -850,112 +1120,6 @@
             }
             return { slug: c.slug, allowedChildSlugs: (allowedList || []).slice() };
         });
-    }
-
-    function admGlibNtGraphWithNewRow(newSlugUpper, allowedList) {
-        const su = String(newSlugUpper || "").toUpperCase().trim();
-        const base = admGlibNtGraphFromCache();
-        return base.concat([{ slug: su, allowedChildSlugs: (allowedList || []).slice() }]);
-    }
-
-    function admGlibNtAllowedArrayFromChips() {
-        const allowed = [];
-        document.querySelectorAll("#adm-glib-nt-chip-group .adm-nt-chip input:checked:not(:disabled)").forEach(function (cb) {
-            const s = cb.getAttribute("data-slug");
-            if (s) {
-                allowed.push(s);
-            }
-        });
-        return allowed;
-    }
-
-    function admGlibNtRebuildChipsBasic(allowedSet) {
-        const group = document.getElementById("adm-glib-nt-chip-group");
-        if (!group) {
-            return;
-        }
-        group.innerHTML = "";
-        admGlibNodeTypesCache.forEach(function (c) {
-            const slug = String(c.slug || "");
-            const lab = document.createElement("label");
-            lab.className = "adm-nt-chip";
-            const inp = document.createElement("input");
-            inp.type = "checkbox";
-            inp.setAttribute("data-slug", slug);
-            const on = !!(allowedSet && allowedSet[slug]);
-            inp.checked = on;
-            if (on) {
-                lab.classList.add("checked");
-            }
-            const chipDot = document.createElement("span");
-            chipDot.className = "adm-nt-chip-dot";
-            chipDot.style.color = String(c.color || "#6b7280").trim();
-            lab.appendChild(inp);
-            lab.appendChild(chipDot);
-            lab.appendChild(document.createTextNode(String(c.label || slug) + " · " + slug));
-            inp.addEventListener("change", function () {
-                lab.classList.toggle("checked", inp.checked);
-                admGlibNtValidateMapping();
-            });
-            group.appendChild(lab);
-        });
-    }
-
-    function admGlibNtRebuildChipsInteractive(allowedSet) {
-        const graph = admGlibNtGraphFromCache();
-        const editing = admGlibNtGetEditingSlugUpper();
-        const forbidden = admGlibNtForbiddenChildSlugsLocal(graph, editing);
-        const group = document.getElementById("adm-glib-nt-chip-group");
-        if (!group) {
-            return;
-        }
-        group.innerHTML = "";
-        admGlibNodeTypesCache.forEach(function (c) {
-            const slug = String(c.slug || "");
-            const lab = document.createElement("label");
-            lab.className = "adm-nt-chip";
-            const dis = forbidden.has(slug);
-            if (dis) {
-                lab.classList.add("disabled");
-            }
-            const inp = document.createElement("input");
-            inp.type = "checkbox";
-            inp.setAttribute("data-slug", slug);
-            if (dis) {
-                inp.disabled = true;
-                inp.checked = false;
-            } else {
-                inp.checked = !!(allowedSet && allowedSet[slug]);
-                if (inp.checked) {
-                    lab.classList.add("checked");
-                }
-            }
-            const chipDot = document.createElement("span");
-            chipDot.className = "adm-nt-chip-dot";
-            chipDot.style.color = String(c.color || "#6b7280").trim();
-            lab.appendChild(inp);
-            lab.appendChild(chipDot);
-            lab.appendChild(document.createTextNode(String(c.label || slug) + " · " + slug));
-            if (!dis) {
-                inp.addEventListener("change", function () {
-                    lab.classList.toggle("checked", inp.checked);
-                    admGlibNtValidateMapping();
-                });
-            }
-            group.appendChild(lab);
-        });
-    }
-
-    function admGlibNtRefreshChipsIfModalOpen() {
-        if (admGlibNtModalState.mode === "idle") {
-            return;
-        }
-        const mapBlock = document.getElementById("adm-glib-nt-map-block");
-        if (mapBlock && mapBlock.classList.contains("locked")) {
-            return;
-        }
-        admGlibNtRebuildChipsInteractive(admGlibNtCaptureChipAllowed());
-        admGlibNtValidateMapping();
     }
 
     function admGlibNtOpenEditor(mode, slug) {
@@ -1011,62 +1175,79 @@
             fOrder.disabled = !!(isSys && !isNew);
         }
 
-        const mapBlock = document.getElementById("adm-glib-nt-map-block");
-        const chipGroup = document.getElementById("adm-glib-nt-chip-group");
-        const mini = document.getElementById("adm-glib-nt-mini-actions");
-        const mapHelp = document.getElementById("adm-glib-nt-map-help");
-        const reqStar = document.getElementById("adm-glib-nt-req-star");
+        const stepper = document.getElementById("adm-glib-nt-stepper");
+        if (stepper) {
+            stepper.classList.toggle("is-visible", isNew);
+            stepper.setAttribute("aria-hidden", isNew ? "false" : "true");
+        }
+
+        const parentBlock = document.getElementById("adm-glib-nt-parent-block");
+        const childBlock = document.getElementById("adm-glib-nt-child-block");
+        const parentHelp = document.getElementById("adm-glib-nt-parent-help");
+        const childHelp = document.getElementById("adm-glib-nt-child-help");
+        const graph0 = admGlibNtGraphFromCache();
+        const isTopicRoot = !isNew && admGlibNtSlugUpper(slug) === ADM_GLIB_NT_ROOT;
+
+        if (parentBlock) {
+            parentBlock.hidden = isTopicRoot;
+            parentBlock.classList.remove("error");
+        }
+        if (childBlock) {
+            childBlock.classList.remove("error");
+        }
 
         if (isSys && !isNew) {
-            if (mapBlock) {
-                mapBlock.classList.add("locked");
-                mapBlock.classList.remove("error");
+            admGlibNtSetMappingLocked(true);
+            if (parentHelp) {
+                parentHelp.classList.add("locked");
+                parentHelp.innerHTML =
+                    '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> Mapping is fixed for system categories.';
             }
-            if (chipGroup) {
-                chipGroup.classList.add("locked");
+            if (childHelp) {
+                childHelp.classList.add("locked");
+                childHelp.textContent = "System mapping is read-only.";
             }
-            if (mini) {
-                mini.classList.add("disabled");
-            }
-            if (mapHelp) {
-                mapHelp.classList.add("locked");
-                mapHelp.innerHTML =
-                    '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> Mapping is fixed for system categories and cannot be changed.';
-            }
-            if (reqStar) {
-                reqStar.style.display = "none";
-            }
-            const allowed = {};
-            (rec.allowedChildSlugs || []).forEach(function (s) {
-                allowed[String(s)] = true;
-            });
-            admGlibNtRebuildChipsBasic(allowed);
-        } else {
-            if (mapBlock) {
-                mapBlock.classList.remove("locked");
-                mapBlock.classList.remove("error");
-            }
-            if (chipGroup) {
-                chipGroup.classList.remove("locked");
-            }
-            if (mini) {
-                mini.classList.remove("disabled");
-            }
-            if (mapHelp) {
-                mapHelp.classList.remove("locked");
-                mapHelp.textContent =
-                    "Pick which types may appear as children of this one (at least one). A type cannot be its own child or an ancestor’s. Every type except TOPIC must also be listed as a child on some other type (new types can be fixed after save).";
-            }
-            if (reqStar) {
-                reqStar.style.display = "";
-            }
-            const allowed = {};
-            if (rec) {
-                (rec.allowedChildSlugs || []).forEach(function (s) {
-                    allowed[String(s)] = true;
+            const pset = {};
+            if (!isTopicRoot && rec) {
+                admGlibNtParentsOfSlug(graph0, slug).forEach(function (s) {
+                    pset[String(s)] = true;
                 });
             }
-            admGlibNtRebuildChipsInteractive(allowed);
+            const cset = {};
+            if (rec) {
+                (rec.allowedChildSlugs || []).forEach(function (s) {
+                    cset[String(s)] = true;
+                });
+            }
+            admGlibNtRebuildParentChips(pset);
+            admGlibNtRebuildChildChips(cset);
+        } else {
+            admGlibNtSetMappingLocked(false);
+            if (parentHelp) {
+                parentHelp.classList.remove("locked");
+                parentHelp.textContent =
+                    "Which types may list this one as an allowed child? Pick at least one (except for TOPIC—the root has no parent).";
+            }
+            if (childHelp) {
+                childHelp.classList.remove("locked");
+                childHelp.textContent = isTopicRoot
+                    ? "These types may appear as direct children under TOPIC in a mind map."
+                    : "Leave empty for a leaf. You cannot allow a parent or any of its ancestors as a child.";
+            }
+            const pset = {};
+            if (!isNew && !isTopicRoot && rec) {
+                admGlibNtParentsOfSlug(graph0, slug).forEach(function (s) {
+                    pset[String(s)] = true;
+                });
+            }
+            const cset = {};
+            if (rec) {
+                (rec.allowedChildSlugs || []).forEach(function (s) {
+                    cset[String(s)] = true;
+                });
+            }
+            admGlibNtRebuildParentChips(pset);
+            admGlibNtRebuildChildChips(cset);
         }
 
         const delBtn = document.getElementById("adm-glib-nt-del-btn");
@@ -1089,57 +1270,94 @@
     }
 
     function admGlibNtValidateMapping() {
-        const mapBlock = document.getElementById("adm-glib-nt-map-block");
         const saveBtn = document.getElementById("adm-glib-nt-save-btn");
-        const errMsgEl = document.getElementById("adm-glib-nt-map-err-msg");
-        if (!mapBlock || !saveBtn) {
+        const parentBlock = document.getElementById("adm-glib-nt-parent-block");
+        const childBlock = document.getElementById("adm-glib-nt-child-block");
+        const pem = document.getElementById("adm-glib-nt-parent-err-msg");
+        const cem = document.getElementById("adm-glib-nt-child-err-msg");
+        if (!saveBtn) {
             return;
         }
-        const locked = mapBlock.classList.contains("locked");
-        if (locked) {
-            saveBtn.disabled = false;
-            if (errMsgEl) {
-                errMsgEl.textContent = "Select at least one allowed child type.";
-            }
-            mapBlock.classList.remove("error");
-            return;
+        if (parentBlock) {
+            parentBlock.classList.remove("error");
         }
-        const any = !!document.querySelector("#adm-glib-nt-chip-group .adm-nt-chip input:checked:not(:disabled)");
-        if (!any) {
-            if (errMsgEl) {
-                errMsgEl.textContent = "Select at least one allowed child type (only selectable types count).";
-            }
-            mapBlock.classList.add("error");
-            saveBtn.disabled = true;
-            return;
+        if (childBlock) {
+            childBlock.classList.remove("error");
         }
-        const allowedArr = admGlibNtAllowedArrayFromChips();
-        const slugEditing = admGlibNtGetEditingSlugUpper();
+        if (pem) {
+            pem.textContent = "Select at least one allowed parent.";
+        }
+        if (cem) {
+            cem.textContent = "Invalid child selection.";
+        }
+
         const isNew = admGlibNtModalState.mode === "new";
-        const childRes = admGlibNtValidateChildrenClient(slugEditing, allowedArr, admGlibNtGraphFromCache());
-        if (!childRes.ok) {
-            if (errMsgEl) {
-                errMsgEl.textContent = childRes.msg;
-            }
-            mapBlock.classList.add("error");
-            saveBtn.disabled = true;
+        const isSys = admGlibNtModalState.isSystem && !isNew;
+        const slugEditing = admGlibNtGetEditingSlugUpper();
+        const isTopicRoot = !isNew && admGlibNtSlugUpper(admGlibNtModalState.slug) === ADM_GLIB_NT_ROOT;
+
+        if (isSys) {
+            saveBtn.disabled = false;
+            admGlibNtUpdateStepper();
             return;
         }
-        const nextGraph = isNew ? admGlibNtGraphWithNewRow(slugEditing, allowedArr) : admGlibNtMergePatchGraph(admGlibNtModalState.slug, allowedArr);
+
+        const parr = admGlibNtParentArrayFromChips();
+        const parentHidden = !parentBlock || parentBlock.hidden;
+        if (!parentHidden && parr.length === 0) {
+            parentBlock.classList.add("error");
+            if (pem) {
+                pem.textContent = "Select at least one allowed parent.";
+            }
+            saveBtn.disabled = true;
+            admGlibNtUpdateStepper();
+            return;
+        }
+
+        const childDisabled =
+            childBlock && (childBlock.classList.contains("disabled") || childBlock.classList.contains("locked"));
+        const carr = childDisabled ? [] : admGlibNtChildArrayFromChips();
+        const graph = admGlibNtGraphFromCache();
+
+        if (!childDisabled) {
+            const cres = admGlibNtValidateChildrenAgainstParentDraft(slugEditing, carr, parr, graph);
+            if (!cres.ok) {
+                childBlock.classList.add("error");
+                if (cem) {
+                    cem.textContent = cres.msg;
+                }
+                saveBtn.disabled = true;
+                admGlibNtUpdateStepper();
+                return;
+            }
+        }
+
+        let nextGraph;
+        if (isNew) {
+            nextGraph = admGlibNtMergeGraphClientNew(slugEditing, carr, parr);
+        } else if (isTopicRoot) {
+            nextGraph = admGlibNtMergePatchGraph(admGlibNtModalState.slug, carr);
+        } else {
+            nextGraph = admGlibNtMergeGraphClient(admGlibNtModalState.slug, carr, parr);
+        }
+
         const parRes = admGlibNtValidateParentsClient(nextGraph, isNew ? [slugEditing] : []);
         if (!parRes.ok) {
-            if (errMsgEl) {
-                errMsgEl.textContent = parRes.msg;
+            if (!parentHidden && parentBlock) {
+                parentBlock.classList.add("error");
+            } else if (childBlock) {
+                childBlock.classList.add("error");
             }
-            mapBlock.classList.add("error");
+            if (pem) {
+                pem.textContent = parRes.msg;
+            }
             saveBtn.disabled = true;
+            admGlibNtUpdateStepper();
             return;
         }
-        if (errMsgEl) {
-            errMsgEl.textContent = "Select at least one allowed child type.";
-        }
-        mapBlock.classList.remove("error");
+
         saveBtn.disabled = false;
+        admGlibNtUpdateStepper();
     }
 
     async function admGlibNtSaveModal() {
@@ -1162,19 +1380,20 @@
 
         try {
             if (isNew) {
-                const allowed = admGlibNtAllowedArrayFromChips();
+                const carr = admGlibNtChildArrayFromChips();
+                const parr = admGlibNtParentArrayFromChips();
                 const slugNew = admGlibNtGetEditingSlugUpper();
-                const c0 = admGlibNtValidateChildrenClient(slugNew, allowed, admGlibNtGraphFromCache());
+                const c0 = admGlibNtValidateChildrenAgainstParentDraft(slugNew, carr, parr, admGlibNtGraphFromCache());
                 if (!c0.ok) {
                     admGlibNtShowToast(c0.msg, true);
                     return;
                 }
-                const p0 = admGlibNtValidateParentsClient(admGlibNtGraphWithNewRow(slugNew, allowed), [slugNew]);
+                const p0 = admGlibNtValidateParentsClient(admGlibNtMergeGraphClientNew(slugNew, carr, parr), [slugNew]);
                 if (!p0.ok) {
                     admGlibNtShowToast(p0.msg, true);
                     return;
                 }
-                const body = { label: label, allowedChildSlugs: allowed };
+                const body = { label: label, allowedChildSlugs: carr, allowedParentSlugs: parr };
                 const slugHint = fSlug && fSlug.value.trim();
                 if (slugHint) {
                     body.slug = slugHint.toUpperCase();
@@ -1201,18 +1420,24 @@
                     body.color = colorRaw.trim();
                 }
                 if (!isSys) {
-                    const allowed = admGlibNtAllowedArrayFromChips();
-                    const c1 = admGlibNtValidateChildrenClient(slug, allowed, admGlibNtGraphFromCache());
+                    const carr = admGlibNtChildArrayFromChips();
+                    const parr = admGlibNtParentArrayFromChips();
+                    const isTopicRootEdit = admGlibNtSlugUpper(slug) === ADM_GLIB_NT_ROOT;
+                    const c1 = admGlibNtValidateChildrenAgainstParentDraft(slug, carr, parr, admGlibNtGraphFromCache());
                     if (!c1.ok) {
                         admGlibNtShowToast(c1.msg, true);
                         return;
                     }
-                    const p1 = admGlibNtValidateParentsClient(admGlibNtMergePatchGraph(slug, allowed), []);
+                    const nextG = isTopicRootEdit ? admGlibNtMergePatchGraph(slug, carr) : admGlibNtMergeGraphClient(slug, carr, parr);
+                    const p1 = admGlibNtValidateParentsClient(nextG, []);
                     if (!p1.ok) {
                         admGlibNtShowToast(p1.msg, true);
                         return;
                     }
-                    body.allowedChildSlugs = allowed;
+                    body.allowedChildSlugs = carr;
+                    if (!isTopicRootEdit) {
+                        body.allowedParentSlugs = parr;
+                    }
                     if (fOrder && fOrder.value !== "") {
                         const n = Number(fOrder.value);
                         if (Number.isFinite(n)) {
@@ -1268,8 +1493,36 @@
         const saveBtn = document.getElementById("adm-glib-nt-save-btn");
         const delBtn = document.getElementById("adm-glib-nt-del-btn");
         const fColor = document.getElementById("adm-glib-nt-f-color");
-        const selAll = document.getElementById("adm-glib-nt-sel-all");
-        const selNone = document.getElementById("adm-glib-nt-sel-none");
+        function selAllInGroup(groupId) {
+            const cg = document.getElementById(groupId);
+            if (!cg || cg.classList.contains("locked")) {
+                return;
+            }
+            cg.querySelectorAll(".adm-nt-chip").forEach(function (lab) {
+                const cb = lab.querySelector("input");
+                if (cb && !cb.disabled) {
+                    cb.checked = true;
+                    lab.classList.add("checked");
+                }
+            });
+        }
+        function selNoneInGroup(groupId) {
+            const cg = document.getElementById(groupId);
+            if (!cg || cg.classList.contains("locked")) {
+                return;
+            }
+            cg.querySelectorAll(".adm-nt-chip").forEach(function (lab) {
+                const cb = lab.querySelector("input");
+                if (cb && !cb.disabled) {
+                    cb.checked = false;
+                    lab.classList.remove("checked");
+                }
+            });
+        }
+        const parSelAll = document.getElementById("adm-glib-nt-parent-sel-all");
+        const parSelNone = document.getElementById("adm-glib-nt-parent-sel-none");
+        const chSelAll = document.getElementById("adm-glib-nt-child-sel-all");
+        const chSelNone = document.getElementById("adm-glib-nt-child-sel-none");
         function onClose() {
             admGlibNtCloseEditor();
         }
@@ -1310,35 +1563,29 @@
                 }
             });
         }
-        if (selAll) {
-            selAll.addEventListener("click", function () {
-                const cg = document.getElementById("adm-glib-nt-chip-group");
-                if (!cg || cg.classList.contains("locked")) {
-                    return;
-                }
-                cg.querySelectorAll(".adm-nt-chip").forEach(function (lab) {
-                    const cb = lab.querySelector("input");
-                    if (cb && !cb.disabled) {
-                        cb.checked = true;
-                        lab.classList.add("checked");
-                    }
-                });
+        if (parSelAll) {
+            parSelAll.addEventListener("click", function () {
+                selAllInGroup("adm-glib-nt-parent-chips");
+                admGlibNtRebuildChildChips(admGlibNtCaptureChildAllowedSet());
                 admGlibNtValidateMapping();
             });
         }
-        if (selNone) {
-            selNone.addEventListener("click", function () {
-                const cg = document.getElementById("adm-glib-nt-chip-group");
-                if (!cg || cg.classList.contains("locked")) {
-                    return;
-                }
-                cg.querySelectorAll(".adm-nt-chip").forEach(function (lab) {
-                    const cb = lab.querySelector("input");
-                    if (cb && !cb.disabled) {
-                        cb.checked = false;
-                        lab.classList.remove("checked");
-                    }
-                });
+        if (parSelNone) {
+            parSelNone.addEventListener("click", function () {
+                selNoneInGroup("adm-glib-nt-parent-chips");
+                admGlibNtRebuildChildChips(admGlibNtCaptureChildAllowedSet());
+                admGlibNtValidateMapping();
+            });
+        }
+        if (chSelAll) {
+            chSelAll.addEventListener("click", function () {
+                selAllInGroup("adm-glib-nt-child-chips");
+                admGlibNtValidateMapping();
+            });
+        }
+        if (chSelNone) {
+            chSelNone.addEventListener("click", function () {
+                selNoneInGroup("adm-glib-nt-child-chips");
                 admGlibNtValidateMapping();
             });
         }
@@ -1348,7 +1595,7 @@
             if (admGlibNtModalState.mode !== "new") {
                 return;
             }
-            admGlibNtRefreshChipsIfModalOpen();
+            admGlibNtRefreshMappingIfModalOpen();
         }
         if (fLabelNt) {
             fLabelNt.addEventListener("input", onNewSlugOrLabelInput);

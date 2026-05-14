@@ -5,7 +5,7 @@ import {
     listGraphNodeCategories,
     parseAllowedChildSlugsJson,
     slugFromLabel,
-    validateNodeCategoryAllowedChildrenNoCycle,
+    validateAllGraphEdgesNoCycle,
     validateNodeCategoriesAllHaveParent,
     validateNodeCategoriesAllHaveParentExcept,
 } from "../../_lib/graph-node-category.js";
@@ -14,23 +14,96 @@ function isHex6(s) {
     return typeof s === "string" && /^#[0-9a-fA-F]{6}$/.test(s.trim());
 }
 
-/** @param {Awaited<ReturnType<listGraphNodeCategories>>} existingList @param {Record<string, unknown>} body */
-function mergeCategoriesForValidation(existingList, patchSlug, body) {
-    const pu = String(patchSlug || "")
+function slugU(s) {
+    return String(s || "")
         .toUpperCase()
         .trim();
-    return existingList.map((c) => {
-        const cs = String(c.slug || "")
-            .toUpperCase()
-            .trim();
-        if (cs !== pu) {
-            return { slug: cs, allowedChildSlugs: [...(c.allowedChildSlugs || [])] };
+}
+
+function normSlugList(arr) {
+    if (!Array.isArray(arr)) {
+        return null;
+    }
+    return arr.map((x) => slugU(x)).filter(Boolean);
+}
+
+/** @param {Awaited<ReturnType<listGraphNodeCategories>>} existingList */
+function cloneGraphRows(existingList) {
+    return existingList.map((c) => ({
+        slug: slugU(c.slug),
+        allowedChildSlugs: normSlugList(c.allowedChildSlugs) || [],
+    }));
+}
+
+/**
+ * @param {{ slug: string, allowedChildSlugs: string[] }[]} rows
+ * @param {string} targetSlug
+ * @param {{ allowedChildSlugs?: string[] | null, allowedParentSlugs?: string[] | null }} edits
+ */
+function mergeGraphEdits(rows, targetSlug, edits) {
+    const tu = slugU(targetSlug);
+    const idx = rows.findIndex((r) => r.slug === tu);
+    if (idx < 0) {
+        return null;
+    }
+    const out = rows.map((r) => ({ slug: r.slug, allowedChildSlugs: [...r.allowedChildSlugs] }));
+    if (edits.allowedChildSlugs != null) {
+        out[idx].allowedChildSlugs = normSlugList(edits.allowedChildSlugs) || [];
+    }
+    if (edits.allowedParentSlugs != null) {
+        const parentSet = new Set(normSlugList(edits.allowedParentSlugs) || []);
+        parentSet.delete(tu);
+        for (let i = 0; i < out.length; i++) {
+            if (i === idx) {
+                continue;
+            }
+            const r = out[i];
+            let kids = r.allowedChildSlugs.filter((k) => k !== tu);
+            if (parentSet.has(r.slug)) {
+                kids.push(tu);
+            }
+            out[i].allowedChildSlugs = [...new Set(kids)];
         }
-        const al = Array.isArray(body.allowedChildSlugs)
-            ? body.allowedChildSlugs.map((x) => String(x || "").trim().toUpperCase()).filter(Boolean)
-            : [...(c.allowedChildSlugs || [])];
-        return { slug: cs, allowedChildSlugs: al };
-    });
+    }
+    return out;
+}
+
+/** @param {Awaited<ReturnType<listGraphNodeCategories>>} existingList */
+function mergeGraphWithNewRow(existingList, newSlug, childSlugs, parentSlugs) {
+    const su = slugU(newSlug);
+    const rows = cloneGraphRows(existingList);
+    rows.push({ slug: su, allowedChildSlugs: normSlugList(childSlugs) || [] });
+    const parentSet = new Set(normSlugList(parentSlugs) || []);
+    parentSet.delete(su);
+    for (let i = 0; i < rows.length; i++) {
+        const r = rows[i];
+        if (r.slug === su) {
+            continue;
+        }
+        let kids = [...r.allowedChildSlugs];
+        if (parentSet.has(r.slug)) {
+            kids.push(su);
+            kids = [...new Set(kids)];
+        }
+        rows[i] = { slug: r.slug, allowedChildSlugs: kids };
+    }
+    return rows;
+}
+
+function assertAllChildSlugsKnown(nextRows) {
+    const all = new Set((nextRows || []).map((r) => r.slug));
+    for (const r of nextRows || []) {
+        for (const ch of r.allowedChildSlugs || []) {
+            if (!all.has(ch)) {
+                return { ok: false, error: 'allowedChildSlugs references unknown slug: "' + ch + '"' };
+            }
+        }
+    }
+    return { ok: true };
+}
+
+function sortedJsonForKids(kids) {
+    return JSON.stringify([...(kids || [])].map(slugU).sort());
 }
 
 export async function onRequestGet(context) {
@@ -58,19 +131,32 @@ export async function onRequestPost(context) {
     if (!slug || slug.length < 2) return json({ error: "invalid slug", code: "INVALID_SLUG" }, 400);
     const allowedRaw = Array.isArray(body.allowedChildSlugs) ? body.allowedChildSlugs : [];
     const allowed = allowedRaw.map((x) => String(x || "").trim().toUpperCase()).filter(Boolean);
+    const parentsRaw = Array.isArray(body.allowedParentSlugs) ? body.allowedParentSlugs : [];
+    const parentsList = parentsRaw.map((x) => String(x || "").trim().toUpperCase()).filter(Boolean);
     const existing = await listGraphNodeCategories(db);
     const existingSlugs = new Set(existing.map((c) => c.slug));
+    if (existingSlugs.has(slug)) {
+        return json({ error: "slug already exists" }, 409);
+    }
+    if (parentsList.length === 0) {
+        return json({ error: "allowedParentSlugs: pick at least one parent type (TOPIC is usually included).", code: "PARENT_REQUIRED" }, 400);
+    }
+    for (const p of parentsList) {
+        if (!existingSlugs.has(p)) {
+            return json({ error: 'allowedParentSlugs references unknown slug: "' + p + '"' }, 400);
+        }
+    }
     for (const ch of allowed) {
         if (ch !== slug && !existingSlugs.has(ch)) {
             return json({ error: 'allowedChildSlugs references unknown slug: "' + ch + '"' }, 400);
         }
     }
-    const nextRows = existing.map((c) => ({
-        slug: c.slug,
-        allowedChildSlugs: [...(c.allowedChildSlugs || [])],
-    }));
-    nextRows.push({ slug, allowedChildSlugs: allowed });
-    const vCycle = validateNodeCategoryAllowedChildrenNoCycle(nextRows, slug, allowed);
+    const nextRows = mergeGraphWithNewRow(existing, slug, allowed, parentsList);
+    const uk = assertAllChildSlugsKnown(nextRows);
+    if (!uk.ok) {
+        return json({ error: uk.error }, 400);
+    }
+    const vCycle = validateAllGraphEdgesNoCycle(nextRows);
     if (!vCycle.ok) {
         return json({ error: vCycle.error, code: vCycle.code }, 400);
     }
@@ -85,6 +171,7 @@ export async function onRequestPost(context) {
         typeof body.sortOrder === "number" && Number.isFinite(body.sortOrder)
             ? Math.floor(body.sortOrder)
             : existing.length;
+    const beforeKids = new Map(existing.map((c) => [slugU(c.slug), sortedJsonForKids(c.allowedChildSlugs)]));
     try {
         await db
             .prepare(
@@ -93,6 +180,20 @@ export async function onRequestPost(context) {
             )
             .bind(slug, label, color, JSON.stringify(allowed), sortOrder, now, now)
             .run();
+        for (const r of nextRows) {
+            if (r.slug === slug) {
+                continue;
+            }
+            const prev = beforeKids.get(r.slug);
+            const next = sortedJsonForKids(r.allowedChildSlugs);
+            if (prev === next) {
+                continue;
+            }
+            await db
+                .prepare(`UPDATE graph_node_category SET allowed_child_slugs_json = ?, updated_at = ? WHERE slug = ?`)
+                .bind(JSON.stringify(r.allowedChildSlugs), now, r.slug)
+                .run();
+        }
     } catch (e) {
         const msg = String((e && e.message) || e || "");
         if (msg.toLowerCase().includes("unique")) return json({ error: "slug or label already exists" }, 409);
@@ -124,18 +225,48 @@ export async function onRequestPatch(context) {
     }
     if (!row) return json({ error: "not found" }, 404);
     const existingList = await listGraphNodeCategories(db);
-    const nextRows = mergeCategoriesForValidation(existingList, slug, body);
-    const rowData = nextRows.find((c) => c.slug === slug);
-    if (!rowData) return json({ error: "not found" }, 404);
-    const vCycle = validateNodeCategoryAllowedChildrenNoCycle(nextRows, slug, rowData.allowedChildSlugs);
-    if (!vCycle.ok) {
-        return json({ error: vCycle.error, code: vCycle.code }, 400);
+    const rec = existingList.find((c) => slugU(c.slug) === slug);
+    if (!rec) return json({ error: "not found" }, 404);
+    const isSystem = !!rec.isSystem;
+    const hasChild = Array.isArray(body.allowedChildSlugs);
+    const hasParent = Array.isArray(body.allowedParentSlugs);
+    if (isSystem && (hasChild || hasParent)) {
+        return json({ error: "cannot change mapping for system category" }, 403);
     }
-    const vPar = validateNodeCategoriesAllHaveParent(nextRows);
-    if (!vPar.ok) {
-        return json({ error: vPar.error, code: vPar.code }, 400);
-    }
+
     const now = Math.floor(Date.now() / 1000);
+    let nextRows = null;
+    if (!isSystem && (hasChild || hasParent)) {
+        const rows = cloneGraphRows(existingList);
+        nextRows = mergeGraphEdits(rows, slug, {
+            allowedChildSlugs: hasChild ? body.allowedChildSlugs : null,
+            allowedParentSlugs: hasParent ? body.allowedParentSlugs : null,
+        });
+        if (!nextRows) {
+            return json({ error: "not found" }, 404);
+        }
+        if (hasParent) {
+            const plist = normSlugList(body.allowedParentSlugs) || [];
+            for (const p of plist) {
+                if (!nextRows.some((r) => r.slug === p)) {
+                    return json({ error: 'allowedParentSlugs references unknown slug: "' + p + '"' }, 400);
+                }
+            }
+        }
+        const uk = assertAllChildSlugsKnown(nextRows);
+        if (!uk.ok) {
+            return json({ error: uk.error }, 400);
+        }
+        const vCycle = validateAllGraphEdgesNoCycle(nextRows);
+        if (!vCycle.ok) {
+            return json({ error: vCycle.error, code: vCycle.code }, 400);
+        }
+        const vPar = validateNodeCategoriesAllHaveParent(nextRows);
+        if (!vPar.ok) {
+            return json({ error: vPar.error, code: vPar.code }, 400);
+        }
+    }
+
     const updates = [];
     const binds = [];
     if (typeof body.label === "string" && body.label.trim()) {
@@ -150,27 +281,41 @@ export async function onRequestPatch(context) {
         updates.push("sort_order = ?");
         binds.push(Math.floor(body.sortOrder));
     }
-    if (Array.isArray(body.allowedChildSlugs)) {
-        const allowed = body.allowedChildSlugs.map((x) => String(x || "").trim().toUpperCase()).filter(Boolean);
-        const existingSlugs = new Set(existingList.map((c) => c.slug));
-        for (const ch of allowed) {
-            if (ch !== slug && !existingSlugs.has(ch)) {
-                return json({ error: 'allowedChildSlugs references unknown slug: "' + ch + '"' }, 400);
+
+    if (nextRows) {
+        const beforeKids = new Map(existingList.map((c) => [slugU(c.slug), sortedJsonForKids(c.allowedChildSlugs)]));
+        try {
+            for (const r of nextRows) {
+                const prev = beforeKids.get(r.slug);
+                const next = sortedJsonForKids(r.allowedChildSlugs);
+                if (prev === next) {
+                    continue;
+                }
+                await db
+                    .prepare(`UPDATE graph_node_category SET allowed_child_slugs_json = ?, updated_at = ? WHERE slug = ?`)
+                    .bind(JSON.stringify(r.allowedChildSlugs), now, r.slug)
+                    .run();
             }
+        } catch (e) {
+            console.error("graph-node-categories PATCH graph", e);
+            return json({ error: "server error" }, 500);
         }
-        updates.push("allowed_child_slugs_json = ?");
-        binds.push(JSON.stringify(allowed));
     }
-    if (!updates.length) return json({ error: "nothing to update" }, 400);
-    updates.push("updated_at = ?");
-    binds.push(now);
-    binds.push(slug);
-    try {
-        await db.prepare(`UPDATE graph_node_category SET ${updates.join(", ")} WHERE slug = ?`).bind(...binds).run();
-    } catch (e) {
-        console.error("graph-node-categories PATCH", e);
-        return json({ error: "server error" }, 500);
+
+    if (updates.length) {
+        updates.push("updated_at = ?");
+        binds.push(now);
+        binds.push(slug);
+        try {
+            await db.prepare(`UPDATE graph_node_category SET ${updates.join(", ")} WHERE slug = ?`).bind(...binds).run();
+        } catch (e) {
+            console.error("graph-node-categories PATCH", e);
+            return json({ error: "server error" }, 500);
+        }
+    } else if (!nextRows) {
+        return json({ error: "nothing to update" }, 400);
     }
+
     return json({ ok: true, updatedAt: now });
 }
 

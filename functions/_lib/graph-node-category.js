@@ -274,6 +274,26 @@ export function validateNodeCategoryAllowedChildrenNoCycle(categories, editingSl
     return { ok: true };
 }
 
+/**
+ * Validate every row’s outgoing allowed-child list (no self / ancestor cycles).
+ * @param {{ slug: string, allowedChildSlugs: string[] }[]} categories
+ */
+export function validateAllGraphEdgesNoCycle(categories) {
+    for (const c of categories || []) {
+        const s = String(c.slug || "")
+            .toUpperCase()
+            .trim();
+        if (!s) {
+            continue;
+        }
+        const r = validateNodeCategoryAllowedChildrenNoCycle(categories, s, c.allowedChildSlugs || []);
+        if (!r.ok) {
+            return r;
+        }
+    }
+    return { ok: true };
+}
+
 const DEFAULT_ROOT_CATEGORY_SLUG = "TOPIC";
 
 /**

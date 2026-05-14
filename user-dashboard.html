@@ -735,7 +735,7 @@
         <div class="dsa-udash-modal__backdrop" aria-hidden="true"></div>
         <div class="dsa-udash-modal__box dsa-glib-create-modal__box" role="dialog" aria-modal="true" aria-labelledby="udash-glib-create-title">
             <h3 class="dsa-udash-modal__title" id="udash-glib-create-title">New graph</h3>
-            <p class="dsa-udash-modal__body">Create a personal graph with the same metadata-first flow as the admin library editor. The new graph opens in your workspace after save.</p>
+            <p class="dsa-udash-modal__body">Create a personal graph. The server seeds a valid mind-map structure; you can edit topics and problems in Graph Studio after it opens.</p>
             <div class="dsa-glib-create-form">
                 <div class="dsa-udash-field">
                     <label for="udash-glib-create-name">Title</label>
@@ -745,40 +745,6 @@
                     <label for="udash-glib-create-accent">Accent hue</label>
                     <input id="udash-glib-create-accent" class="dsa-udash-input" type="number" min="0" max="359" step="1" placeholder="e.g. 248" />
                 </div>
-                <div class="dsa-udash-field">
-                    <label for="udash-glib-create-cat-preset">Saved category</label>
-                    <select id="udash-glib-create-cat-preset" class="dsa-udash-input" aria-describedby="udash-glib-create-cat-hint">
-                        <option value="">New — enter name and color below</option>
-                    </select>
-                </div>
-                <div class="dsa-udash-field">
-                    <label for="udash-glib-create-cat-name"
-                        >Category name <span style="font-weight:600">*</span></label
-                    >
-                    <input
-                        id="udash-glib-create-cat-name"
-                        class="dsa-udash-input"
-                        type="text"
-                        maxlength="120"
-                        placeholder="e.g. Foundations, Patterns, Problems"
-                        autocomplete="off"
-                        required
-                    />
-                </div>
-                <div class="dsa-udash-field">
-                    <label for="udash-glib-create-cat-color">Category color <span style="font-weight:600">*</span></label>
-                    <input
-                        id="udash-glib-create-cat-color"
-                        class="dsa-udash-input"
-                        type="color"
-                        value="#64748b"
-                        title="Legend and node grouping color"
-                        aria-required="true"
-                    />
-                </div>
-                <p id="udash-glib-create-cat-hint" class="dsa-glib-create-cat-hint">
-                    Pick a saved category to fill name and color, or choose <strong>New</strong> and type your own.
-                </p>
                 <div class="dsa-udash-field">
                     <label for="udash-glib-create-description">Description</label>
                     <textarea id="udash-glib-create-description" class="dsa-udash-textarea" rows="4" maxlength="1000" placeholder="Short description for your graph"></textarea>
@@ -798,8 +764,8 @@
     <script src="./auth/dsa-user-auth.js?v=3"></script>
     <script src="./cms-bootstrap.js?v=3"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
-    <script src="./script.js?v=35"></script>
+    <script src="./script.js?v=36"></script>
     <script src="./auth/user-dashboard-page.js?v=18"></script>
-    <script src="./auth/graph-library-panel.js?v=11"></script>
+    <script src="./auth/graph-library-panel.js?v=12"></script>
 </body>
 </html>

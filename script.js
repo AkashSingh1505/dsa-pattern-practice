@@ -5003,13 +5003,7 @@ function buildUnifiedMindmapTree(panel, scheduleRedraw, customizeCtx, graphRefre
 
     const rootCount = topicNodes.length;
     let metaAddModalParentKey = "__DSA_META__";
-    if (
-        typeof dsaGraphPreviewMode !== "undefined" &&
-        dsaGraphPreviewMode &&
-        merged.length === 1 &&
-        merged[0] &&
-        merged[0].id != null
-    ) {
+    if (merged.length === 1 && merged[0] && merged[0].id != null) {
         metaAddModalParentKey = String(merged[0].id);
     }
     let rootBadgeEl;
@@ -5631,8 +5625,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             ? dsaMindParentCategorySlug(parentKey)
             : "";
     const mindAllowedEff =
-        typeof dsaGraphPreviewMode !== "undefined" &&
-        dsaGraphPreviewMode &&
         mindCatsPre.length > 0 &&
         mindParentSlugEff &&
         addingNewItem &&
@@ -7312,7 +7304,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
                 if (k === "PATTERN" || k === "TOPIC") {
                     nodeEntry.nodeCategorySlug = k;
                 }
-            } else if (typeof dsaGraphPreviewMode !== "undefined" && dsaGraphPreviewMode) {
+            } else if (mindCatsPre.length > 0) {
                 nodeEntry.nodeCategorySlug = "TOPIC";
             }
             dsaAddUserNode(nodeEntry);
@@ -7687,6 +7679,9 @@ function loadDsaPatternsPage(opts) {
     const siteAdmin = typeof dsaIsAdminSession === "function" && dsaIsAdminSession();
     const canCustomize =
         typeof dsaHasCustomizeGraphAccess === "function" && dsaHasCustomizeGraphAccess();
+    if (canCustomize) {
+        void dsaFetchGraphNodeCategoriesList();
+    }
     const sfOk = typeof dsaSiteFeatureUse === "function";
     const showPracticeMap = !sfOk || dsaSiteFeatureUse("practice_map");
     const showOneTopic = !sfOk || dsaSiteFeatureUse("one_topic_mode");

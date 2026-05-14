@@ -5990,7 +5990,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         fillNodeTypeInfoFromCatalog(slugU);
         subtitleEl.textContent = isProb
             ? "Capture problem details, difficulty and resources"
-            : "Create a new item beneath the current node";
+            : "Add a new item beneath the current node";
         title.textContent = isProb ? "Add problem" : "Add child node";
     }
 
@@ -6049,7 +6049,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const qBlock = document.createElement("div");
     qBlock.className = "dsa-u-question";
     const problemOuter = document.createElement("div");
-    problemOuter.className = "problem-details";
+    problemOuter.className = "problem-section";
 
     const nameField = document.createElement("div");
     nameField.className = "dsa-q-field q-field-mock";
@@ -6203,7 +6203,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     }
 
     const hintTa = document.createElement("textarea");
-    hintTa.className = "dsa-field-control dsa-q-hint plain-textarea";
+    hintTa.className = "dsa-field-control dsa-q-hint dsa-q-hint-note-ta";
     hintTa.rows = 4;
     hintTa.placeholder = "Hint / notes (admin; shown behind ? on the problem row)";
     hintTa.setAttribute("aria-label", "Hint / notes");
@@ -6341,29 +6341,49 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         );
     }
 
-    const hintSec = makeSection("Hint / notes", [
-        "M9 21h6",
-        "M12 3v1",
-        "M4.22 4.22l.7.7",
-        "M18.08 18.08l.7.7",
-        "M2 12h1",
-        "M21 12h1",
-        "M4.22 19.78l.7-.7",
-        "M18.08 5.92l.7-.7",
-    ], (headActions) => {
-        const btn = makeSectionClearIconBtn("Clear hint / notes", "Clear hint / notes");
-        btn.addEventListener("click", () => {
-            if (!isAdmin) {
-                return;
-            }
-            if (!window.confirm("Clear all text in Hint / notes?")) {
-                return;
-            }
-            hintTa.value = "";
-        });
-        headActions.appendChild(btn);
+    const hintCard = document.createElement("div");
+    hintCard.className = "note-card dsa-q-hint-note";
+    const hintNoteHead = document.createElement("div");
+    hintNoteHead.className = "note-head";
+    const hintNoteHeadIcon = document.createElement("div");
+    hintNoteHeadIcon.className = "note-head-icon";
+    hintNoteHeadIcon.innerHTML =
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>';
+    const hintNoteTitle = document.createElement("div");
+    hintNoteTitle.className = "note-title";
+    hintNoteTitle.textContent = "Hint / notes";
+    const hintNoteDel = document.createElement("button");
+    hintNoteDel.type = "button";
+    hintNoteDel.className = "note-del dsa-q-section-clear-btn";
+    hintNoteDel.setAttribute("aria-label", "Clear hint / notes");
+    hintNoteDel.title = "Clear hint / notes";
+    hintNoteDel.innerHTML =
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>';
+    hintNoteDel.addEventListener("click", () => {
+        if (!isAdmin) {
+            return;
+        }
+        if (!window.confirm("Clear all text in Hint / notes?")) {
+            return;
+        }
+        hintTa.value = "";
     });
-    hintSec.body.appendChild(hintTa);
+    hintNoteHead.appendChild(hintNoteHeadIcon);
+    hintNoteHead.appendChild(hintNoteTitle);
+    hintNoteHead.appendChild(hintNoteDel);
+    const hintNoteBody = document.createElement("div");
+    hintNoteBody.className = "note-body";
+    hintNoteBody.appendChild(hintTa);
+    hintCard.appendChild(hintNoteHead);
+    hintCard.appendChild(hintNoteBody);
+
+    const hintFieldGrp = document.createElement("div");
+    hintFieldGrp.className = "field-group";
+    const hintLabRow = document.createElement("div");
+    hintLabRow.className = "field-label";
+    hintLabRow.innerHTML = "<span>Hint / Notes <span class=\"opt\">(optional)</span></span>";
+    hintFieldGrp.appendChild(hintLabRow);
+    hintFieldGrp.appendChild(hintCard);
 
     const solutionVideoIn = document.createElement("input");
     solutionVideoIn.type = "url";
@@ -6944,12 +6964,12 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     btnTabResources.id = "dsa-q-tab-resources";
     btnTabResources.textContent = "Resources";
     const detailsPanel = document.createElement("div");
-    detailsPanel.className = "dsa-q-tab-panel tab-pane active";
+    detailsPanel.className = "dsa-q-tab-panel details-section active";
     detailsPanel.setAttribute("role", "tabpanel");
     detailsPanel.id = "dsa-q-panel-details";
     detailsPanel.setAttribute("aria-labelledby", "dsa-q-tab-details");
     const resourcesPanel = document.createElement("div");
-    resourcesPanel.className = "dsa-q-tab-panel tab-pane";
+    resourcesPanel.className = "dsa-q-tab-panel res-section";
     resourcesPanel.id = "dsa-q-panel-resources";
     resourcesPanel.setAttribute("role", "tabpanel");
     resourcesPanel.setAttribute("aria-labelledby", "dsa-q-tab-resources");
@@ -6961,7 +6981,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         btnTabResources.classList.toggle("active", !det);
         btnTabDetails.setAttribute("aria-selected", det ? "true" : "false");
         btnTabResources.setAttribute("aria-selected", !det ? "true" : "false");
-        detailsPanel.classList.toggle("active", det);
+        detailsPanel.classList.toggle("hidden", !det);
         resourcesPanel.classList.toggle("active", !det);
     }
     btnTabDetails.addEventListener("click", () => activateDsaProblemTab("details"));
@@ -7116,7 +7136,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     detailsPanel.appendChild(difficultyField);
     detailsPanel.appendChild(importantWrap);
     detailsPanel.appendChild(qHint);
-    detailsPanel.appendChild(hintSec.sec);
+    detailsPanel.appendChild(hintFieldGrp);
     detailsPanel.appendChild(companySec.sec);
     detailsPanel.appendChild(existingCard);
     resourcesPanel.appendChild(videoSec.sec);
@@ -7482,7 +7502,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     footer.className = "footer";
     const kbdHint = document.createElement("div");
     kbdHint.className = "kbd-hint";
-    kbdHint.innerHTML = "<kbd>Enter</kbd> to save · <kbd>Esc</kbd> to close";
+    kbdHint.innerHTML = "<kbd>↵</kbd> to save · <kbd>Esc</kbd> to close";
     const footerBtns = document.createElement("div");
     footerBtns.className = "btn-row";
     footerBtns.appendChild(btnFooterCancel);

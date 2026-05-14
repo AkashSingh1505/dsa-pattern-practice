@@ -1,4 +1,4 @@
-@import url("./graph-add-child-mock.css?v=11");
+@import url("./graph-add-child-mock.css?v=12");
 
 /* Global reset for margins and paddings */
 * {
@@ -1612,45 +1612,6 @@ body.nav-mobile-menu-open {
 
 .dsa-q-tab-panel[hidden] {
     display: none !important;
-}
-
-.dsa-q-important-toggle {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 10px 12px;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    background: #f8fafc;
-    cursor: pointer;
-}
-
-.dsa-q-important-input {
-    width: 16px;
-    height: 16px;
-    margin-top: 2px;
-    accent-color: #166534;
-    flex-shrink: 0;
-}
-
-.dsa-q-important-meta {
-    display: inline-flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-}
-
-.dsa-q-important-title {
-    font-size: 0.86rem;
-    font-weight: 600;
-    color: #0f172a;
-    line-height: 1.3;
-}
-
-.dsa-q-important-help {
-    font-size: 0.76rem;
-    color: #64748b;
-    line-height: 1.35;
 }
 
 .dsa-q-solution-card {

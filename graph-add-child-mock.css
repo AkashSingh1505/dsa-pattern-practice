@@ -703,130 +703,138 @@
     padding: 0 2px;
 }
 
+.graph-add-child-mock .dsa-q-star-field-group {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 480px;
+}
+
+.graph-add-child-mock .dsa-q-star-field-group * {
+    box-sizing: border-box;
+}
+
 .graph-add-child-mock .star-row {
     display: flex;
-    flex-direction: row;
     align-items: center;
-    justify-content: flex-start;
-    gap: 12px;
-    padding: 12px 14px;
-    background: #fff;
-    border: 1px solid var(--line);
+    gap: 14px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
     border-radius: 12px;
+    padding: 14px 18px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.25s ease;
     user-select: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
     position: relative;
     overflow: visible;
 }
 
 .graph-add-child-mock .star-row:hover {
-    background: #fafafc;
+    border-color: #fbbf24;
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.15);
+    transform: translateY(-1px);
 }
 
-.graph-add-child-mock .star-row.active {
-    background: rgba(255, 204, 0, 0.08);
-    border-color: rgba(255, 204, 0, 0.4);
+.graph-add-child-mock .star-row:focus {
+    outline: 2px solid #fbbf24;
+    outline-offset: 2px;
 }
 
 .graph-add-child-mock .star-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    background: rgba(0, 0, 0, 0.05);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #b0b0b5;
-    transition: all 0.25s;
-    pointer-events: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f9fafb;
+    color: #9ca3af;
     flex-shrink: 0;
-    flex-grow: 0;
-    order: 0;
-    margin: 0;
-}
-
-.graph-add-child-mock .star-icon svg {
-    display: block;
-    width: 18px;
-    height: 18px;
+    transition: all 0.3s ease;
+    pointer-events: none;
 }
 
 .graph-add-child-mock .star-row.active .star-icon {
-    background: rgba(255, 204, 0, 0.15);
-    color: #ffcc00;
-    transform: scale(1.05);
+    background: #fef3c7;
+    color: #f59e0b;
+    transform: rotate(72deg) scale(1.1);
 }
 
 .graph-add-child-mock .star-text {
     flex: 1;
-    pointer-events: none;
-    order: 1;
     min-width: 0;
-}
-
-.graph-add-child-mock .star-row .switch {
-    order: 2;
+    pointer-events: none;
 }
 
 .graph-add-child-mock .star-title {
-    font-size: 13.5px;
-    font-weight: 500;
-    letter-spacing: -0.01em;
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 2px;
 }
 
 .graph-add-child-mock .star-sub {
-    font-size: 12px;
-    font-weight: 400;
-    color: var(--muted);
-    margin-top: 1px;
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.4;
 }
 
-.graph-add-child-mock .switch {
-    width: 38px;
-    height: 22px;
-    background: #d1d1d6;
-    border-radius: 999px;
+.graph-add-child-mock .star-row .switch {
     position: relative;
-    transition: 0.25s;
+    width: 42px;
+    height: 24px;
+    background: #d1d5db;
+    border-radius: 999px;
     flex-shrink: 0;
+    transition: background 0.3s ease;
     pointer-events: none;
 }
 
-.graph-add-child-mock .switch::after {
+.graph-add-child-mock .star-row .switch::after {
     content: "";
     position: absolute;
     top: 2px;
     left: 2px;
-    width: 18px;
-    height: 18px;
-    background: #fff;
+    width: 20px;
+    height: 20px;
+    background: #ffffff;
     border-radius: 50%;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
-    transition: 0.25s var(--ease);
+    transition: transform 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .graph-add-child-mock .star-row.active .switch {
-    background: var(--green);
+    background: #f59e0b;
 }
 
 .graph-add-child-mock .star-row.active .switch::after {
-    left: 18px;
+    transform: translateX(18px);
 }
 
 .graph-add-child-mock .star-row .dsa-q-important-input {
     position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    clip-path: inset(50%);
-    white-space: nowrap;
-    border: 0;
     opacity: 0;
     pointer-events: none;
+}
+
+@media (max-width: 480px) {
+    .graph-add-child-mock .star-row {
+        padding: 12px 14px;
+        gap: 10px;
+    }
+
+    .graph-add-child-mock .star-icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    .graph-add-child-mock .star-title {
+        font-size: 14px;
+    }
+
+    .graph-add-child-mock .star-sub {
+        font-size: 12px;
+    }
 }
 
 /* Outer shell: expand/collapse entire problem editor (tabs + panels). */

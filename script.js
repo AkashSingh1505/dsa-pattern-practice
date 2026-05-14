@@ -7018,7 +7018,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         });
     }
 
-    const importantWrap = document.createElement("div");
+    const importantWrap = document.createElement("label");
     importantWrap.id = "starRow";
     importantWrap.className = "star-row";
     importantWrap.setAttribute("role", "button");
@@ -7031,7 +7031,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const starIcon = document.createElement("div");
     starIcon.className = "star-icon";
     starIcon.innerHTML =
-        '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+        '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>';
     const starText = document.createElement("div");
     starText.className = "star-text";
     const starTitle = document.createElement("div");
@@ -7052,12 +7052,14 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
 
     function syncStarVisual() {
         importantWrap.classList.toggle("active", importantInput.checked);
+        importantWrap.setAttribute("aria-pressed", importantInput.checked ? "true" : "false");
     }
 
-    importantWrap.addEventListener("click", () => {
+    importantWrap.addEventListener("click", (e) => {
         if (!isAdmin || importantInput.disabled) {
             return;
         }
+        e.preventDefault();
         importantInput.checked = !importantInput.checked;
         importantInput.dispatchEvent(new Event("change", { bubbles: true }));
         syncStarVisual();
@@ -7076,7 +7078,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     importantInput.addEventListener("change", syncStarVisual);
 
     const starFieldGroup = document.createElement("div");
-    starFieldGroup.className = "field-group";
+    starFieldGroup.className = "field-group dsa-q-star-field-group";
     starFieldGroup.appendChild(importantWrap);
 
     problemSectionInner.appendChild(urlField);

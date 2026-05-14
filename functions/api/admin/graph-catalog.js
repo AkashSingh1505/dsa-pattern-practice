@@ -1,6 +1,7 @@
 import { json } from "../../_lib/admin-api.js";
 import { verifyPracticeToken } from "../../_lib/practice-jwt.js";
 import { newGraphId, requireGraphCatalogWriter } from "../../_lib/practice-auth-request.js";
+import { defaultMindMapGraphPayloadFromTitle } from "../../_lib/graph-default-payload.js";
 import { listGraphNodeCategories, validateMindMapNodeCategoriesWithDb } from "../../_lib/graph-node-category.js";
 
 function slugify(s) {
@@ -144,7 +145,10 @@ export async function onRequestPost(context) {
     if (!title) {
         return json({ error: "title required" }, 400);
     }
-    const payload = body.payload;
+    let payload = body.payload;
+    if (payload == null || (Array.isArray(payload) && payload.length === 0)) {
+        payload = defaultMindMapGraphPayloadFromTitle(title, { idPrefix: "gc-root-" });
+    }
     if (!Array.isArray(payload)) {
         return json({ error: "payload must be array (mind map roots)" }, 400);
     }

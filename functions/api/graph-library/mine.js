@@ -2,19 +2,11 @@ import { json } from "../../_lib/admin-api.js";
 import { newGraphId, requirePracticeUser } from "../../_lib/practice-auth-request.js";
 import { graphPayloadStatsFromJson } from "../../_lib/graph-payload-stats.js";
 import { ensureUserGraphVisibilityColumn } from "../../_lib/user-graph-visibility.js";
+import { defaultMindMapGraphPayloadFromTitle } from "../../_lib/graph-default-payload.js";
 import { validateMindMapNodeCategoriesWithDb } from "../../_lib/graph-node-category.js";
 
 function defaultPayload(title) {
-    const safe = String(title || "My graph").slice(0, 80);
-    const root = {
-        id: "ug-root-" + Math.random().toString(36).slice(2, 9),
-        name: safe,
-        nodeCategorySlug: "ROOT",
-        tree: [],
-        patterns: [],
-        problems: [],
-    };
-    return JSON.stringify([root]);
+    return JSON.stringify(defaultMindMapGraphPayloadFromTitle(title, { idPrefix: "ug-root-" }));
 }
 
 export async function onRequestGet(context) {

@@ -114,7 +114,8 @@
     }
 
     function buildDefaultGraphPayloadFromTitle(title) {
-        const name = String(title || "").trim() || "Untitled graph";
+        /** Same shape as `defaultMindMapGraphPayloadFromTitle` in functions/_lib/graph-default-payload.js */
+        const name = String(title || "").trim().slice(0, 80) || "Untitled graph";
         return [
             {
                 id: glibClientRootId(),

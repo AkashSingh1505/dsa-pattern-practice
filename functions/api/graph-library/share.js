@@ -2,6 +2,7 @@ import { json } from "../../_lib/admin-api.js";
 import { newGraphId, requirePracticeUser } from "../../_lib/practice-auth-request.js";
 import { ensureUserGraphVisibilityColumn } from "../../_lib/user-graph-visibility.js";
 import { validateMindMapNodeCategoriesWithDb } from "../../_lib/graph-node-category.js";
+import { normalizeGraphTypeSlug } from "../../_lib/graph-type.js";
 
 export async function onRequestPost(context) {
     const { request, env } = context;
@@ -31,7 +32,7 @@ export async function onRequestPost(context) {
     try {
         src = await db
             .prepare(
-                `SELECT id, title, description, payload_json, accent_hue FROM user_graphs
+                `SELECT id, title, description, payload_json, accent_hue, graph_type_slug FROM user_graphs
                  WHERE id = ? AND owner_user_id = ? AND deleted_at IS NULL`,
             )
             .bind(copyId, userId)
@@ -76,14 +77,15 @@ export async function onRequestPost(context) {
     const now = Math.floor(Date.now() / 1000);
     const newId = newGraphId();
     const title = String(src.title || "Shared graph") + " (shared)";
+    const graphTypeSlug = normalizeGraphTypeSlug(src.graph_type_slug);
     try {
         await db
             .prepare(
                 hasVisibility
-                    ? `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, visibility, shared_from_user_id, created_at, updated_at, deleted_at)
-                       VALUES (?, ?, NULL, 'shared', ?, ?, ?, ?, 'private', ?, ?, ?, NULL)`
-                    : `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, shared_from_user_id, created_at, updated_at, deleted_at)
-                       VALUES (?, ?, NULL, 'shared', ?, ?, ?, ?, ?, ?, ?, NULL)`,
+                    ? `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, visibility, shared_from_user_id, created_at, updated_at, deleted_at, graph_type_slug)
+                       VALUES (?, ?, NULL, 'shared', ?, ?, ?, ?, 'private', ?, ?, ?, NULL, ?)`
+                    : `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, shared_from_user_id, created_at, updated_at, deleted_at, graph_type_slug)
+                       VALUES (?, ?, NULL, 'shared', ?, ?, ?, ?, ?, ?, ?, NULL, ?)`,
             )
             .bind(
                 newId,
@@ -95,6 +97,7 @@ export async function onRequestPost(context) {
                 userId,
                 now,
                 now,
+                graphTypeSlug,
             )
             .run();
     } catch (e) {

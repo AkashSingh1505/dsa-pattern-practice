@@ -2,6 +2,7 @@ import { json } from "../../_lib/admin-api.js";
 import { requirePracticeUser } from "../../_lib/practice-auth-request.js";
 import { graphPayloadStatsFromJson } from "../../_lib/graph-payload-stats.js";
 import { listGraphNodeCategories } from "../../_lib/graph-node-category.js";
+import { normalizeGraphTypeSlug } from "../../_lib/graph-type.js";
 
 function creatorLabel(row) {
     const dn = row.creator_display_name && String(row.creator_display_name).trim();
@@ -35,7 +36,7 @@ export async function onRequestGet(context) {
         rows = await db
             .prepare(
                 `SELECT c.id, c.slug, c.title, c.description, c.accent_hue, c.tags_json, c.difficulty,
-                        c.payload_json,
+                        c.payload_json, c.graph_type_slug,
                         c.estimated_minutes, c.download_count, c.created_at, c.updated_at,
                         pu.email AS creator_email, up.display_name AS creator_display_name
                  FROM graph_catalog c
@@ -75,6 +76,7 @@ export async function onRequestGet(context) {
             createdAt: r.created_at,
             updatedAt: r.updated_at,
             creatorLabel: creatorLabel(r),
+            graphTypeSlug: normalizeGraphTypeSlug(r.graph_type_slug),
         };
     });
     return json({ ok: true, nodeCategories: nodeCategoryList, graphs });

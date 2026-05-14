@@ -2,6 +2,7 @@ import { json } from "../../_lib/admin-api.js";
 import { requirePracticeUser } from "../../_lib/practice-auth-request.js";
 import { ensureUserGraphVisibilityColumn } from "../../_lib/user-graph-visibility.js";
 import { listGraphNodeCategories, validateMindMapNodeCategoriesWithDb } from "../../_lib/graph-node-category.js";
+import { assertGraphTypeSlug, normalizeGraphTypeSlug } from "../../_lib/graph-type.js";
 
 export async function onRequestGet(context) {
     const { request, env } = context;
@@ -20,7 +21,7 @@ export async function onRequestGet(context) {
     try {
         row = await db
             .prepare(
-                `SELECT id, source_catalog_id, kind, title, description, payload_json, accent_hue, ${
+                `SELECT id, source_catalog_id, kind, title, description, payload_json, accent_hue, graph_type_slug, ${
                     hasVisibility ? "visibility" : "'private'"
                 } AS visibility, shared_from_user_id, created_at, updated_at
                  FROM user_graphs WHERE id = ? AND owner_user_id = ? AND deleted_at IS NULL`,
@@ -61,6 +62,7 @@ export async function onRequestGet(context) {
             sharedFromUserId: row.shared_from_user_id,
             createdAt: row.created_at,
             updatedAt: row.updated_at,
+            graphTypeSlug: normalizeGraphTypeSlug(row.graph_type_slug),
             nodeCategories,
             payload,
         },
@@ -149,6 +151,14 @@ export async function onRequestPut(context) {
         }
         updates.push("payload_json = ?");
         binds.push(text);
+    }
+    if (body.graphTypeSlug != null) {
+        const tc = await assertGraphTypeSlug(db, body.graphTypeSlug);
+        if (!tc.ok) {
+            return json({ error: tc.error }, 400);
+        }
+        updates.push("graph_type_slug = ?");
+        binds.push(tc.slug);
     }
     if (!updates.length) {
         return json({ error: "nothing to update" }, 400);

@@ -1,6 +1,7 @@
 import { json } from "../../_lib/admin-api.js";
 import { requirePracticeUser } from "../../_lib/practice-auth-request.js";
 import { listGraphNodeCategories, validateMindMapNodeCategoriesWithDb } from "../../_lib/graph-node-category.js";
+import { normalizeGraphTypeSlug } from "../../_lib/graph-type.js";
 
 export async function onRequestGet(context) {
     const { request, env } = context;
@@ -19,7 +20,7 @@ export async function onRequestGet(context) {
         row = await db
             .prepare(
                 `SELECT c.id, c.slug, c.title, c.description, c.visibility, c.payload_json, c.accent_hue, c.tags_json,
-                        c.difficulty, c.estimated_minutes, c.download_count, c.created_at, c.updated_at,
+                        c.difficulty, c.estimated_minutes, c.download_count, c.graph_type_slug, c.created_at, c.updated_at,
                         pu.email AS creator_email, up.display_name AS creator_display_name
                  FROM graph_catalog c
                  LEFT JOIN practice_users pu ON pu.id = c.creator_user_id
@@ -76,6 +77,7 @@ export async function onRequestGet(context) {
             createdAt: row.created_at,
             updatedAt: row.updated_at,
             creatorLabel,
+            graphTypeSlug: normalizeGraphTypeSlug(row.graph_type_slug),
             payload,
         },
     });

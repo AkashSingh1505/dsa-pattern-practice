@@ -4,6 +4,7 @@ import { graphPayloadStatsFromJson } from "../../_lib/graph-payload-stats.js";
 import { ensureUserGraphVisibilityColumn } from "../../_lib/user-graph-visibility.js";
 import { defaultMindMapGraphPayloadFromTitle } from "../../_lib/graph-default-payload.js";
 import { validateMindMapNodeCategoriesWithDb } from "../../_lib/graph-node-category.js";
+import { assertGraphTypeSlug, normalizeGraphTypeSlug } from "../../_lib/graph-type.js";
 
 function defaultPayload(title) {
     return JSON.stringify(defaultMindMapGraphPayloadFromTitle(title));
@@ -21,7 +22,7 @@ export async function onRequestGet(context) {
     try {
         rows = await db
             .prepare(
-                `SELECT g.id, g.source_catalog_id, g.kind, g.title, g.description, g.payload_json, g.accent_hue, ${
+                `SELECT g.id, g.source_catalog_id, g.kind, g.title, g.description, g.payload_json, g.accent_hue, g.graph_type_slug, ${
                     hasVisibility ? "g.visibility" : "'private'"
                 } AS visibility, g.shared_from_user_id,
                         g.created_at, g.updated_at,
@@ -74,6 +75,7 @@ export async function onRequestGet(context) {
             createdAt: r.created_at,
             updatedAt: r.updated_at,
             sharedFromLabel,
+            graphTypeSlug: normalizeGraphTypeSlug(r.graph_type_slug),
         };
     });
     return json({ ok: true, graphs });
@@ -120,22 +122,27 @@ export async function onRequestPost(context) {
     if (!inv.ok) {
         return json({ error: inv.error, code: inv.code || "GRAPH_INVALID" }, 400);
     }
+    const typeCheck = await assertGraphTypeSlug(db, body.graphTypeSlug != null ? body.graphTypeSlug : "GENERIC");
+    if (!typeCheck.ok) {
+        return json({ error: typeCheck.error }, 400);
+    }
+    const graphTypeSlug = typeCheck.slug;
     try {
         if (hasVisibility) {
             await db
                 .prepare(
-                    `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, visibility, shared_from_user_id, created_at, updated_at, deleted_at)
-                     VALUES (?, ?, NULL, 'created', ?, ?, ?, ?, 'private', NULL, ?, ?, NULL)`,
+                    `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, visibility, shared_from_user_id, created_at, updated_at, deleted_at, graph_type_slug)
+                     VALUES (?, ?, NULL, 'created', ?, ?, ?, ?, 'private', NULL, ?, ?, NULL, ?)`,
                 )
-                .bind(id, userId, title, description || null, payload, accentHue, now, now)
+                .bind(id, userId, title, description || null, payload, accentHue, now, now, graphTypeSlug)
                 .run();
         } else {
             await db
                 .prepare(
-                    `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, shared_from_user_id, created_at, updated_at, deleted_at)
-                     VALUES (?, ?, NULL, 'created', ?, ?, ?, ?, NULL, ?, ?, NULL)`,
+                    `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, shared_from_user_id, created_at, updated_at, deleted_at, graph_type_slug)
+                     VALUES (?, ?, NULL, 'created', ?, ?, ?, ?, NULL, ?, ?, NULL, ?)`,
                 )
-                .bind(id, userId, title, description || null, payload, accentHue, now, now)
+                .bind(id, userId, title, description || null, payload, accentHue, now, now, graphTypeSlug)
                 .run();
         }
     } catch (e) {
@@ -151,6 +158,7 @@ export async function onRequestPost(context) {
             description,
             accentHue,
             visibility: "private",
+            graphTypeSlug,
             createdAt: now,
             updatedAt: now,
         },

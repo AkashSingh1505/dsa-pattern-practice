@@ -1,0 +1,1069 @@
+/**
+ * Add-child modal — scoped clone of design mock (fonts, sizes, decoration).
+ * Root: .graph-add-child-mock.modal on the dialog element.
+ */
+.graph-add-child-mock,
+.graph-add-child-mock * {
+    box-sizing: border-box;
+}
+
+.graph-add-child-mock.modal {
+    --text: #1d1d1f;
+    --muted: #86868b;
+    --line: rgba(0, 0, 0, 0.08);
+    --blue: #0071e3;
+    --blueS: rgba(0, 113, 227, 0.1);
+    --purple: #af52de;
+    --purpleS: rgba(175, 82, 222, 0.1);
+    --red: #ff3b30;
+    --redS: rgba(255, 59, 48, 0.1);
+    --green: #34c759;
+    --greenS: rgba(52, 199, 89, 0.1);
+    --orange: #ff9500;
+    --orangeS: rgba(255, 149, 0, 0.1);
+    --ease: cubic-bezier(0.2, 0.9, 0.3, 1);
+
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    color: var(--text);
+
+    width: 100%;
+    max-width: 540px;
+    background: rgba(255, 255, 255, 0.86);
+    backdrop-filter: saturate(180%) blur(40px);
+    -webkit-backdrop-filter: saturate(180%) blur(40px);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    max-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    animation: graph-ac-pop 0.4s var(--ease);
+    transition: max-width 0.4s var(--ease);
+    padding: 0;
+    margin: 0 auto;
+}
+
+.graph-add-child-mock.modal.expanded {
+    max-width: 600px;
+}
+
+@keyframes graph-ac-pop {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.graph-add-child-mock .header {
+    padding: 22px 24px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.graph-add-child-mock .header h2 {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    margin: 0;
+    color: var(--text);
+}
+
+.graph-add-child-mock .header p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 3px;
+    margin-bottom: 0;
+}
+
+.graph-add-child-mock .header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.graph-add-child-mock .icon-btn {
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.05);
+    color: #515154;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: 0.2s;
+}
+
+.graph-add-child-mock .icon-btn:hover {
+    background: rgba(0, 0, 0, 0.09);
+}
+
+.graph-add-child-mock .icon-btn.close:hover {
+    transform: rotate(90deg);
+}
+
+.graph-add-child-mock .icon-btn.active {
+    background: var(--blueS);
+    color: var(--blue);
+}
+
+.graph-add-child-mock .tabs {
+    margin: 0 24px;
+    background: rgba(120, 120, 128, 0.12);
+    border-radius: 10px;
+    padding: 3px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: 0.35s var(--ease);
+}
+
+.graph-add-child-mock .tabs.show {
+    max-height: 50px;
+    opacity: 1;
+    margin: 6px 24px 0;
+}
+
+.graph-add-child-mock .tab {
+    text-align: center;
+    line-height: 30px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 7px;
+    cursor: pointer;
+    color: #515154;
+    transition: 0.2s;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+}
+
+.graph-add-child-mock .tab.active {
+    background: #fff;
+    color: var(--text);
+    font-weight: 600;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.graph-add-child-mock .body {
+    padding: 14px 24px 6px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
+
+.graph-add-child-mock .body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.graph-add-child-mock .body::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: 3px;
+}
+
+.graph-add-child-mock .tab-pane {
+    display: none;
+}
+
+.graph-add-child-mock .tab-pane.active {
+    display: block;
+    animation: graph-ac-fade 0.3s var(--ease);
+}
+
+@keyframes graph-ac-fade {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.graph-add-child-mock .info-panel {
+    border-radius: 12px;
+    background: var(--blueS);
+    border: 1px solid rgba(0, 113, 227, 0.18);
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    margin: 0;
+    transition: 0.4s var(--ease);
+}
+
+.graph-add-child-mock .info-panel.show {
+    max-height: 240px;
+    opacity: 1;
+    margin-bottom: 14px;
+}
+
+.graph-add-child-mock .info-panel.topic {
+    background: var(--blueS);
+    border-color: rgba(0, 113, 227, 0.18);
+}
+
+.graph-add-child-mock .info-panel.pattern {
+    background: var(--purpleS);
+    border-color: rgba(175, 82, 222, 0.18);
+}
+
+.graph-add-child-mock .info-panel.problem {
+    background: var(--redS);
+    border-color: rgba(255, 59, 48, 0.18);
+}
+
+.graph-add-child-mock .info-panel.default {
+    background: rgba(120, 120, 128, 0.1);
+    border-color: rgba(0, 0, 0, 0.12);
+}
+
+.graph-add-child-mock .info-content {
+    padding: 12px 14px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.graph-add-child-mock .info-icon-sm {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.graph-add-child-mock .info-panel.topic .info-icon-sm {
+    background: rgba(0, 113, 227, 0.15);
+    color: var(--blue);
+}
+
+.graph-add-child-mock .info-panel.pattern .info-icon-sm {
+    background: rgba(175, 82, 222, 0.15);
+    color: var(--purple);
+}
+
+.graph-add-child-mock .info-panel.problem .info-icon-sm {
+    background: rgba(255, 59, 48, 0.15);
+    color: var(--red);
+}
+
+.graph-add-child-mock .info-panel.default .info-icon-sm {
+    background: rgba(0, 0, 0, 0.08);
+    color: #515154;
+}
+
+.graph-add-child-mock .info-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+
+.graph-add-child-mock .info-text {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: #515154;
+}
+
+.graph-add-child-mock .info-chips {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.graph-add-child-mock .info-chips .chip {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.7);
+    color: #515154;
+    font-weight: 500;
+}
+
+.graph-add-child-mock .info-chips .chip.muted {
+    font-style: italic;
+    opacity: 0.9;
+    border: 1px dashed rgba(0, 0, 0, 0.12);
+}
+
+.graph-add-child-mock .field-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+    padding: 0 2px;
+}
+
+.graph-add-child-mock .field-label .req {
+    color: var(--red);
+    margin-left: 3px;
+}
+
+.graph-add-child-mock .field-label .opt {
+    color: #b0b0b5;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+    font-size: 11px;
+}
+
+.graph-add-child-mock .field-group {
+    margin-bottom: 14px;
+}
+
+.graph-add-child-mock .input-wrap {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+}
+
+.graph-add-child-mock .input-wrap:focus-within {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15);
+}
+
+.graph-add-child-mock .input-wrap svg.lead {
+    color: #b0b0b5;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+.graph-add-child-mock .input-wrap:focus-within svg.lead {
+    color: var(--blue);
+}
+
+.graph-add-child-mock .field-input,
+.graph-add-child-mock .input-wrap .dsa-field-control {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 15px;
+    padding: 12px 0;
+    font-family: inherit;
+    color: var(--text);
+}
+
+.graph-add-child-mock .field-input::placeholder,
+.graph-add-child-mock .input-wrap .dsa-field-control::placeholder {
+    color: #c7c7cc;
+}
+
+.graph-add-child-mock .input-wrap:has(.dsa-field-control--error) {
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px var(--redS);
+}
+
+.graph-add-child-mock .select-wrap {
+    position: relative;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    transition: 0.2s;
+}
+
+.graph-add-child-mock .select-wrap:focus-within {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15);
+}
+
+.graph-add-child-mock .select-wrap select {
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 12px 38px 12px 14px;
+    font-size: 15px;
+    font-family: inherit;
+    color: var(--text);
+    cursor: pointer;
+}
+
+.graph-add-child-mock .select-wrap::after {
+    content: "";
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    border-right: 1.5px solid #86868b;
+    border-bottom: 1.5px solid #86868b;
+    transform: translateY(-70%) rotate(45deg);
+    pointer-events: none;
+}
+
+.graph-add-child-mock .type-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+@media (max-width: 520px) {
+    .graph-add-child-mock .type-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.graph-add-child-mock .type-card {
+    position: relative;
+    cursor: pointer;
+    padding: 14px 10px 12px;
+    border-radius: 14px;
+    background: #fff;
+    border: 1.5px solid var(--line);
+    text-align: center;
+    transition: 0.25s var(--ease);
+    user-select: none;
+}
+
+.graph-add-child-mock .type-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.graph-add-child-mock .type-card input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.graph-add-child-mock .type-icon {
+    width: 36px;
+    height: 36px;
+    margin: 0 auto 6px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    transition: 0.25s var(--ease);
+    pointer-events: none;
+}
+
+.graph-add-child-mock .type-icon.topic {
+    background: var(--blueS);
+    color: var(--blue);
+}
+
+.graph-add-child-mock .type-icon.pattern {
+    background: var(--purpleS);
+    color: var(--purple);
+}
+
+.graph-add-child-mock .type-icon.problem {
+    background: var(--redS);
+    color: var(--red);
+}
+
+.graph-add-child-mock .type-icon.default {
+    background: rgba(120, 120, 128, 0.15);
+    color: #515154;
+}
+
+.graph-add-child-mock .type-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    pointer-events: none;
+}
+
+.graph-add-child-mock .type-card.selected.topic {
+    border-color: var(--blue);
+    background: rgba(0, 113, 227, 0.04);
+}
+
+.graph-add-child-mock .type-card.selected.pattern {
+    border-color: var(--purple);
+    background: rgba(175, 82, 222, 0.04);
+}
+
+.graph-add-child-mock .type-card.selected.problem {
+    border-color: var(--red);
+    background: rgba(255, 59, 48, 0.04);
+}
+
+.graph-add-child-mock .type-card.selected.default {
+    border-color: #86868b;
+    background: rgba(120, 120, 128, 0.08);
+}
+
+.graph-add-child-mock .type-card.selected .type-icon {
+    transform: scale(1.1);
+}
+
+.graph-add-child-mock .check-mark {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: 0.3s var(--ease);
+    color: #fff;
+    pointer-events: none;
+}
+
+.graph-add-child-mock .type-card.selected .check-mark {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.graph-add-child-mock .type-card.selected.topic .check-mark {
+    background: var(--blue);
+}
+
+.graph-add-child-mock .type-card.selected.pattern .check-mark {
+    background: var(--purple);
+}
+
+.graph-add-child-mock .type-card.selected.problem .check-mark {
+    background: var(--red);
+}
+
+.graph-add-child-mock .type-card.selected.default .check-mark {
+    background: #86868b;
+}
+
+.graph-add-child-mock .difficulty-pills {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.graph-add-child-mock .diff-pill {
+    cursor: pointer;
+    padding: 11px;
+    border-radius: 11px;
+    background: #fff;
+    border: 1.5px solid var(--line);
+    text-align: center;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #515154;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    user-select: none;
+}
+
+.graph-add-child-mock .diff-pill input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.graph-add-child-mock .diff-pill .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.graph-add-child-mock .diff-pill.easy .dot {
+    background: var(--green);
+}
+
+.graph-add-child-mock .diff-pill.medium .dot {
+    background: var(--orange);
+}
+
+.graph-add-child-mock .diff-pill.hard .dot {
+    background: var(--red);
+}
+
+.graph-add-child-mock .diff-pill:hover {
+    transform: translateY(-1px);
+}
+
+.graph-add-child-mock .diff-pill.selected.easy {
+    border-color: var(--green);
+    background: var(--greenS);
+    color: var(--green);
+}
+
+.graph-add-child-mock .diff-pill.selected.medium {
+    border-color: var(--orange);
+    background: var(--orangeS);
+    color: var(--orange);
+}
+
+.graph-add-child-mock .diff-pill.selected.hard {
+    border-color: var(--red);
+    background: var(--redS);
+    color: var(--red);
+}
+
+.graph-add-child-mock .diff-pill {
+    position: relative;
+}
+
+.graph-add-child-mock .sr-diff-select {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    border: 0 !important;
+}
+
+.graph-add-child-mock .q-field-label-mock {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+    padding: 0 2px;
+}
+
+.graph-add-child-mock .star-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.25s var(--ease);
+    user-select: none;
+    position: relative;
+}
+
+.graph-add-child-mock .star-row:hover {
+    background: #fafafc;
+}
+
+.graph-add-child-mock .star-row.active {
+    background: rgba(255, 204, 0, 0.08);
+    border-color: rgba(255, 204, 0, 0.4);
+}
+
+.graph-add-child-mock .star-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: rgba(0, 0, 0, 0.05);
+    display: grid;
+    place-items: center;
+    color: #c7c7cc;
+    transition: 0.3s var(--ease);
+    pointer-events: none;
+}
+
+.graph-add-child-mock .star-row.active .star-icon {
+    background: rgba(255, 204, 0, 0.18);
+    color: #ffcc00;
+    transform: scale(1.08) rotate(8deg);
+}
+
+.graph-add-child-mock .star-text {
+    flex: 1;
+    pointer-events: none;
+}
+
+.graph-add-child-mock .star-title {
+    font-size: 13.5px;
+    font-weight: 600;
+}
+
+.graph-add-child-mock .star-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 1px;
+}
+
+.graph-add-child-mock .switch {
+    width: 38px;
+    height: 22px;
+    background: #d1d1d6;
+    border-radius: 999px;
+    position: relative;
+    transition: 0.25s;
+    flex-shrink: 0;
+    pointer-events: none;
+}
+
+.graph-add-child-mock .switch::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    transition: 0.25s var(--ease);
+}
+
+.graph-add-child-mock .star-row.active .switch {
+    background: var(--green);
+}
+
+.graph-add-child-mock .star-row.active .switch::after {
+    left: 18px;
+}
+
+.graph-add-child-mock .star-row .dsa-q-important-input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.graph-add-child-mock .problem-details {
+    display: none;
+}
+
+.graph-add-child-mock .problem-details.show {
+    display: block;
+}
+
+.graph-add-child-mock .section-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 14px;
+}
+
+.graph-add-child-mock .section-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    background: #fafafc;
+}
+
+.graph-add-child-mock .section-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: var(--purpleS);
+    color: var(--purple);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.graph-add-child-mock .section-icon.red {
+    background: var(--redS);
+    color: var(--red);
+}
+
+.graph-add-child-mock .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    flex: 1;
+}
+
+.graph-add-child-mock .section-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.graph-add-child-mock .section-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    border-radius: 7px;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: 0.2s;
+}
+
+.graph-add-child-mock .section-btn:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: var(--text);
+}
+
+.graph-add-child-mock .section-btn.add {
+    background: var(--blueS);
+    color: var(--blue);
+}
+
+.graph-add-child-mock .section-btn.add:hover {
+    background: rgba(0, 113, 227, 0.18);
+}
+
+.graph-add-child-mock .section-btn.del:hover {
+    background: var(--redS);
+    color: var(--red);
+}
+
+.graph-add-child-mock .section-body {
+    padding: 12px;
+}
+
+.graph-add-child-mock .plain-textarea {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text);
+    resize: vertical;
+    min-height: 80px;
+    outline: none;
+    transition: 0.2s;
+    background: #fff;
+    line-height: 1.5;
+}
+
+.graph-add-child-mock .plain-textarea:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15);
+}
+
+.graph-add-child-mock .plain-textarea::placeholder {
+    color: #c7c7cc;
+}
+
+.graph-add-child-mock .dsa-q-section {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 14px;
+}
+
+.graph-add-child-mock .dsa-q-section-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    background: #fafafc;
+}
+
+.graph-add-child-mock .dsa-q-section-title {
+    font-size: 14px;
+    font-weight: 600;
+    flex: 1;
+}
+
+.graph-add-child-mock .dsa-q-section-body {
+    padding: 12px;
+}
+
+.graph-add-child-mock .dsa-q-intro {
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--muted);
+    margin-bottom: 12px;
+}
+
+.graph-add-child-mock .company-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.graph-add-child-mock .c-chip {
+    background: var(--blueS);
+    color: var(--blue);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 6px 4px 10px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.graph-add-child-mock .empty-state {
+    text-align: center;
+    padding: 14px;
+    border: 1.5px dashed rgba(0, 0, 0, 0.12);
+    border-radius: 10px;
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.55;
+}
+
+.graph-add-child-mock .empty-state strong {
+    color: var(--text);
+}
+
+.graph-add-child-mock .solution-item {
+    background: #fafafc;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.graph-add-child-mock .footer {
+    padding: 14px 24px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    background: rgba(255, 255, 255, 0.6);
+    flex-shrink: 0;
+}
+
+.graph-add-child-mock .kbd-hint {
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.graph-add-child-mock .kbd-hint kbd {
+    background: rgba(0, 0, 0, 0.07);
+    border-radius: 5px;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-family: inherit;
+    font-weight: 600;
+    color: #515154;
+}
+
+.graph-add-child-mock .btn-row {
+    display: flex;
+    gap: 10px;
+}
+
+.graph-add-child-mock .btn {
+    border: none;
+    padding: 10px 22px;
+    border-radius: 980px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: 0.2s;
+}
+
+.graph-add-child-mock .btn-secondary {
+    background: rgba(0, 0, 0, 0.06);
+    color: var(--text);
+}
+
+.graph-add-child-mock .btn-secondary:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.graph-add-child-mock .btn-primary {
+    background: linear-gradient(180deg, #1a85f0, #0071e3);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(0, 113, 227, 0.35);
+}
+
+.graph-add-child-mock .btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.graph-add-child-mock .btn-primary:disabled {
+    background: #c7c7cc;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.graph-add-child-mock .btn-outline {
+    padding: 10px 16px;
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: 0.2s;
+    color: var(--text);
+}
+
+.graph-add-child-mock .btn-outline:hover {
+    background: #fafafc;
+}
+
+.graph-add-child-mock .u-cat-row-mock {
+    margin-bottom: 14px;
+}
+
+.graph-add-child-mock .u-graph-body-mock {
+    margin-bottom: 14px;
+}
+
+.graph-add-child-mock .dsa-fieldset .dsa-field-legend {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+    padding: 0 2px;
+}
+
+.graph-add-child-mock .q-field-mock {
+    margin-bottom: 14px;
+}
+
+.graph-add-child-mock .q-field-mock > .field-label,
+.graph-add-child-mock .q-field-mock > .q-field-label-mock {
+    margin-bottom: 8px;
+}
+
+.graph-add-child-mock .q-diff-field-mock .difficulty-pills {
+    margin-top: 0;
+}
+
+.graph-add-child-mock .q-field-label-mock .req {
+    color: var(--red);
+    margin-left: 3px;
+}
+
+.graph-add-child-mock .q-tab-shell-mock {
+    margin-top: 4px;
+}
+
+.graph-add-child-mock .q-existing-mock {
+    margin-bottom: 14px;
+}
+
+.graph-add-child-mock .dsa-q-field:has(#dsa-q-difficulty.dsa-field-control--error) .difficulty-pills {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+    border-radius: 10px;
+}

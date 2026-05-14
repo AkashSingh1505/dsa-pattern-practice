@@ -3,6 +3,7 @@ import { verifyPracticeToken } from "../../_lib/practice-jwt.js";
 import { newGraphId, requireGraphCatalogWriter } from "../../_lib/practice-auth-request.js";
 import { defaultMindMapGraphPayloadFromTitle } from "../../_lib/graph-default-payload.js";
 import { listGraphNodeCategories, validateMindMapNodeCategoriesWithDb } from "../../_lib/graph-node-category.js";
+import { assertGraphTypeSlug, normalizeGraphTypeSlug } from "../../_lib/graph-type.js";
 
 function slugify(s) {
     return String(s || "")
@@ -55,7 +56,7 @@ export async function onRequestGet(context) {
             row = await db
                 .prepare(
                     `SELECT c.id, c.slug, c.title, c.description, c.visibility, c.creator_user_id, c.payload_json, c.accent_hue, c.tags_json, c.difficulty,
-                            c.estimated_minutes, c.download_count, c.created_at, c.updated_at,
+                            c.estimated_minutes, c.download_count, c.graph_type_slug, c.created_at, c.updated_at,
                             pu.email AS creator_email
                      FROM graph_catalog c
                      LEFT JOIN practice_users pu ON pu.id = c.creator_user_id
@@ -102,6 +103,7 @@ export async function onRequestGet(context) {
                 difficulty: row.difficulty || null,
                 estimatedMinutes: row.estimated_minutes,
                 downloadCount: row.download_count || 0,
+                graphTypeSlug: normalizeGraphTypeSlug(row.graph_type_slug),
                 createdAt: row.created_at,
                 updatedAt: row.updated_at,
                 payload,
@@ -114,7 +116,7 @@ export async function onRequestGet(context) {
         rows = await db
             .prepare(
                 `SELECT c.id, c.slug, c.title, c.description, c.visibility, c.accent_hue, c.tags_json, c.difficulty,
-                        c.estimated_minutes, c.download_count, c.created_at, c.updated_at, c.deleted_at,
+                        c.estimated_minutes, c.download_count, c.graph_type_slug, c.created_at, c.updated_at, c.deleted_at,
                         pu.email AS creator_email
                  FROM graph_catalog c
                  LEFT JOIN practice_users pu ON pu.id = c.creator_user_id
@@ -176,6 +178,11 @@ export async function onRequestPost(context) {
     if (!invPost.ok) {
         return json({ error: invPost.error, code: invPost.code || "GRAPH_INVALID" }, 400);
     }
+    const typeCheck = await assertGraphTypeSlug(gate.db, body.graphTypeSlug != null ? body.graphTypeSlug : "GENERIC");
+    if (!typeCheck.ok) {
+        return json({ error: typeCheck.error }, 400);
+    }
+    const graphTypeSlug = typeCheck.slug;
     const slugIn = String(body.slug || "").trim();
     const base = slugify(slugIn || title);
 
@@ -205,8 +212,8 @@ export async function onRequestPost(context) {
     try {
         await db
             .prepare(
-                `INSERT INTO graph_catalog (id, slug, title, description, visibility, creator_user_id, payload_json, accent_hue, tags_json, difficulty, estimated_minutes, download_count, created_at, updated_at, deleted_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, NULL)`,
+                `INSERT INTO graph_catalog (id, slug, title, description, visibility, creator_user_id, payload_json, accent_hue, tags_json, difficulty, estimated_minutes, download_count, graph_type_slug, created_at, updated_at, deleted_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, NULL)`,
             )
             .bind(
                 id,
@@ -220,6 +227,7 @@ export async function onRequestPost(context) {
                 tags,
                 difficulty,
                 estimatedMinutes,
+                graphTypeSlug,
                 now,
                 now,
             )
@@ -304,6 +312,14 @@ export async function onRequestPatch(context) {
     if (typeof body.accentHue === "number" && Number.isFinite(body.accentHue)) {
         updates.push("accent_hue = ?");
         binds.push(Math.floor(body.accentHue) % 360);
+    }
+    if (body.graphTypeSlug != null) {
+        const tc = await assertGraphTypeSlug(db, body.graphTypeSlug);
+        if (!tc.ok) {
+            return json({ error: tc.error }, 400);
+        }
+        updates.push("graph_type_slug = ?");
+        binds.push(tc.slug);
     }
     if (!updates.length) {
         return json({ error: "nothing to update" }, 400);

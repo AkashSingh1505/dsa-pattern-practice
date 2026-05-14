@@ -2,6 +2,7 @@ import { json } from "../../_lib/admin-api.js";
 import { newGraphId, requirePracticeUser } from "../../_lib/practice-auth-request.js";
 import { ensureUserGraphVisibilityColumn } from "../../_lib/user-graph-visibility.js";
 import { validateMindMapNodeCategoriesWithDb } from "../../_lib/graph-node-category.js";
+import { normalizeGraphTypeSlug } from "../../_lib/graph-type.js";
 
 export async function onRequestPost(context) {
     const { request, env } = context;
@@ -25,7 +26,7 @@ export async function onRequestPost(context) {
     try {
         cat = await db
             .prepare(
-                `SELECT id, title, description, payload_json, accent_hue, visibility FROM graph_catalog
+                `SELECT id, title, description, payload_json, accent_hue, visibility, graph_type_slug FROM graph_catalog
                  WHERE id = ? AND deleted_at IS NULL`,
             )
             .bind(catalogId)
@@ -56,6 +57,7 @@ export async function onRequestPost(context) {
     const title = String(cat.title || "Downloaded graph");
     const desc = cat.description ? String(cat.description) : "";
     const accent = cat.accent_hue != null ? cat.accent_hue : null;
+    const graphTypeSlug = normalizeGraphTypeSlug(cat.graph_type_slug);
 
     let firstDownloadByThisUser = true;
     try {
@@ -73,16 +75,16 @@ export async function onRequestPost(context) {
             hasVisibility
                 ? db
                       .prepare(
-                          `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, visibility, shared_from_user_id, created_at, updated_at, deleted_at)
-                           VALUES (?, ?, ?, 'downloaded', ?, ?, ?, ?, 'private', NULL, ?, ?, NULL)`,
+                          `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, visibility, shared_from_user_id, created_at, updated_at, deleted_at, graph_type_slug)
+                           VALUES (?, ?, ?, 'downloaded', ?, ?, ?, ?, 'private', NULL, ?, ?, NULL, ?)`,
                       )
-                      .bind(copyId, userId, catalogId, title, desc, payloadStr, accent, now, now)
+                      .bind(copyId, userId, catalogId, title, desc, payloadStr, accent, now, now, graphTypeSlug)
                 : db
                       .prepare(
-                          `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, shared_from_user_id, created_at, updated_at, deleted_at)
-                           VALUES (?, ?, ?, 'downloaded', ?, ?, ?, ?, NULL, ?, ?, NULL)`,
+                          `INSERT INTO user_graphs (id, owner_user_id, source_catalog_id, kind, title, description, payload_json, accent_hue, shared_from_user_id, created_at, updated_at, deleted_at, graph_type_slug)
+                           VALUES (?, ?, ?, 'downloaded', ?, ?, ?, ?, NULL, ?, ?, NULL, ?)`,
                       )
-                      .bind(copyId, userId, catalogId, title, desc, payloadStr, accent, now, now),
+                      .bind(copyId, userId, catalogId, title, desc, payloadStr, accent, now, now, graphTypeSlug),
             db
                 .prepare(
                     `INSERT INTO graph_catalog_downloads (catalog_id, user_id, downloaded_at) VALUES (?, ?, ?)
@@ -120,6 +122,7 @@ export async function onRequestPost(context) {
             updatedAt: now,
             accentHue: accent,
             visibility: "private",
+            graphTypeSlug,
         },
         stats: {
             firstDownloadByThisUser,

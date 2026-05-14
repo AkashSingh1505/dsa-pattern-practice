@@ -179,6 +179,11 @@
                 sessionStorage.removeItem(SESSION_KEY);
                 if (typeof window !== "undefined") {
                     window.__dsaGraphBodyCategories = [];
+                    try {
+                        delete window.__dsaGraphTypeSlug;
+                    } catch (e2) {
+                        window.__dsaGraphTypeSlug = undefined;
+                    }
                 }
             } else {
                 sessionStorage.setItem(SESSION_KEY, JSON.stringify(ctx));
@@ -197,13 +202,27 @@
         var ctx = readSession();
         if (!ctx) {
             bar.hidden = true;
+            if (typeof window !== "undefined") {
+                try {
+                    delete window.__dsaGraphTypeSlug;
+                } catch (e3) {
+                    window.__dsaGraphTypeSlug = undefined;
+                }
+            }
             return;
         }
         bar.hidden = false;
         titleEl.textContent = ctx.title || "Cloud graph";
+        if (typeof window !== "undefined") {
+            window.__dsaGraphTypeSlug = ctx.graphTypeSlug ? String(ctx.graphTypeSlug).toUpperCase() : "GENERIC";
+        }
         var kindLabel =
             ctx.kind === "downloaded" ? "From library" : ctx.kind === "shared" ? "Shared with you" : "Your graph";
-        metaEl.textContent = kindLabel + " · save updates your personal copy";
+        var gt = ctx.graphTypeSlug ? String(ctx.graphTypeSlug).toUpperCase() : "";
+        var gtLine = gt && graphTypeLabel(gt) ? " · " + graphTypeLabel(gt) : "";
+        if (metaEl) {
+            metaEl.textContent = kindLabel + gtLine + " · save updates your personal copy";
+        }
     }
 
     function confirmDialog(title, body) {
@@ -270,7 +289,58 @@
         filter: "all",
         activeTab: "personal",
         loading: false,
+        /** @type {{ slug: string, label: string, description: string, sortOrder: number, isSystem: boolean }[]} */
+        graphTypes: [],
     };
+
+    function graphTypeLabel(slug) {
+        var u = String(slug || "")
+            .trim()
+            .toUpperCase();
+        if (!u) {
+            return "";
+        }
+        for (var i = 0; i < state.graphTypes.length; i++) {
+            if (state.graphTypes[i].slug === u) {
+                return state.graphTypes[i].label || u;
+            }
+        }
+        return u;
+    }
+
+    function fillCreateModalGraphTypeSelect() {
+        var sel = document.getElementById("udash-glib-create-type");
+        if (!sel) {
+            return;
+        }
+        var prev = String(sel.value || "");
+        sel.innerHTML = "";
+        (state.graphTypes.length ? state.graphTypes : [{ slug: "GENERIC", label: "Generic", isSystem: true }]).forEach(function (t) {
+            var o = document.createElement("option");
+            o.value = t.slug;
+            o.textContent = t.label + " (" + t.slug + ")";
+            sel.appendChild(o);
+        });
+        if (prev && [...sel.options].some(function (x) { return x.value === prev; })) {
+            sel.value = prev;
+        } else {
+            sel.value = "GENERIC";
+        }
+    }
+
+    async function ensureGraphTypesLoaded() {
+        if (state.graphTypes.length) {
+            fillCreateModalGraphTypeSelect();
+            return;
+        }
+        try {
+            var j = await fetchJson("api/graph-library/graph-types", { method: "GET" });
+            state.graphTypes = j.types || [];
+        } catch (e) {
+            state.graphTypes = [];
+        }
+        fillCreateModalGraphTypeSelect();
+    }
 
     function renderPublicGrid(host) {
         host.innerHTML = "";
@@ -284,12 +354,19 @@
             card.className = "dsa-glib-card";
             var visualIdx = visualIndex(g.accentHue, idx);
             var stats = graphStats(g, idx, false);
+            var typeSlug = g.graphTypeSlug ? String(g.graphTypeSlug).toUpperCase() : "";
+            var typeBadge =
+                typeSlug && typeSlug !== "GENERIC"
+                    ? '<span class="dsa-glib-badge dsa-glib-badge--graph-type">' + escapeHtml(graphTypeLabel(typeSlug)) + "</span>"
+                    : "";
             card.innerHTML =
                 '<div class="dsa-glib-preview ' +
                 visualVariant(g.accentHue, idx) +
                 '">' +
                 graphPreviewMarkup(visualIdx) +
-                '<div class="dsa-glib-preview-badges"><span class="dsa-glib-badge">Community</span><span class="dsa-glib-badge dsa-glib-badge--visibility">Public</span></div>' +
+                '<div class="dsa-glib-preview-badges"><span class="dsa-glib-badge">Community</span><span class="dsa-glib-badge dsa-glib-badge--visibility">Public</span>' +
+                typeBadge +
+                "</div>" +
                 '<div class="dsa-glib-preview-meta">' +
                 escapeHtml(stats.previewMeta) +
                 "</div>" +
@@ -387,6 +464,11 @@
             var visibility = visibilityLabel(g.visibility);
             var nextVisibility = visibility === "Public" ? "private" : "public";
             var publishLabel = visibility === "Public" ? "Make private" : "Publish";
+            var typeSlugM = g.graphTypeSlug ? String(g.graphTypeSlug).toUpperCase() : "";
+            var typeBadgeM =
+                typeSlugM && typeSlugM !== "GENERIC"
+                    ? '<span class="dsa-glib-badge dsa-glib-badge--graph-type">' + escapeHtml(graphTypeLabel(typeSlugM)) + "</span>"
+                    : "";
             card.innerHTML =
                 '<div class="dsa-glib-preview ' +
                 visualVariant(g.accentHue, idx + 1) +
@@ -394,6 +476,7 @@
                 graphPreviewMarkup(visualIdx) +
                 '<div class="dsa-glib-preview-badges">' +
                 pill +
+                typeBadgeM +
                 '<span class="dsa-glib-badge dsa-glib-badge--visibility">' +
                 escapeHtml(visibility) +
                 "</span></div>" +
@@ -492,6 +575,7 @@
         }
         state.loading = true;
         try {
+            await ensureGraphTypesLoaded();
             await Promise.all([refreshPublic(), refreshMine()]);
         } catch (e) {
             toast((e && e.message) || "Library load failed");
@@ -616,6 +700,7 @@
             if (typeof window !== "undefined") {
                 window.__dsaGraphBodyCategories = mapNodeCategoriesToPalette((j.graph && j.graph.nodeCategories) || []);
                 window.__dsaGraphNodeCategories = (j.graph && j.graph.nodeCategories) || [];
+                window.__dsaGraphTypeSlug = j.graph.graphTypeSlug ? String(j.graph.graphTypeSlug).toUpperCase() : "GENERIC";
             }
             toast("Preview loaded — not saved to your library");
             if (typeof window.__dsaUdashNavigatePanel === "function") {
@@ -638,7 +723,12 @@
                 window.__dsaGraphNodeCategories = g.nodeCategories || [];
             }
             dsaImportMindMapHierarchyFromText(JSON.stringify(g.payload));
-            writeSession({ copyId: g.id, title: g.title || title || "Graph", kind: g.kind || kind || "created" });
+            writeSession({
+                copyId: g.id,
+                title: g.title || title || "Graph",
+                kind: g.kind || kind || "created",
+                graphTypeSlug: g.graphTypeSlug ? String(g.graphTypeSlug).toUpperCase() : "GENERIC",
+            });
             toast("Graph opened in workspace");
             if (typeof window.__dsaUdashNavigatePanel === "function") {
                 window.__dsaUdashNavigatePanel("graph");
@@ -715,6 +805,7 @@
         return {
             wrap: document.getElementById("udash-glib-create-modal"),
             name: document.getElementById("udash-glib-create-name"),
+            type: document.getElementById("udash-glib-create-type"),
             accent: document.getElementById("udash-glib-create-accent"),
             description: document.getElementById("udash-glib-create-description"),
             cancel: document.getElementById("udash-glib-create-cancel"),
@@ -722,10 +813,14 @@
         };
     }
 
-    function openCreateGraphModal() {
+    async function openCreateGraphModal() {
         var els = createModalElements();
         if (!els.wrap) {
             return;
+        }
+        await ensureGraphTypesLoaded();
+        if (els.type) {
+            els.type.value = [...els.type.options].some(function (o) { return o.value === "GENERIC"; }) ? "GENERIC" : els.type.options[0] ? els.type.options[0].value : "";
         }
         els.wrap.hidden = false;
         if (els.name) {
@@ -750,6 +845,7 @@
         var name = els.name && els.name.value ? String(els.name.value).trim() : "";
         var description = els.description && els.description.value ? String(els.description.value).trim() : "";
         var accentHue = els.accent && els.accent.value !== "" ? Number(els.accent.value) : null;
+        var graphTypeSlug = els.type && els.type.value ? String(els.type.value).toUpperCase() : "GENERIC";
         if (!name) {
             toast("Title required");
             if (els.name) {
@@ -768,6 +864,7 @@
             els.save.disabled = true;
         }
         try {
+            await ensureGraphTypesLoaded();
             var j = await fetchJson("api/graph-library/mine", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -775,6 +872,7 @@
                     title: name,
                     description: description,
                     accentHue: accentHue,
+                    graphTypeSlug: graphTypeSlug,
                 }),
             });
             closeCreateGraphModal();
@@ -786,6 +884,9 @@
             }
             if (els.accent) {
                 els.accent.value = "";
+            }
+            if (els.type) {
+                els.type.value = [...els.type.options].some(function (o) { return o.value === "GENERIC"; }) ? "GENERIC" : els.type.options[0] ? els.type.options[0].value : "";
             }
             await refreshMine();
             if (j.graph && j.graph.id) {
@@ -883,7 +984,7 @@
                 } else if (shareBtn) {
                     shareMine(shareBtn.getAttribute("data-id"));
                 } else if (createBtn) {
-                    openCreateGraphModal();
+                    void openCreateGraphModal();
                 } else if (menuPreview) {
                     closeMenuFromNode(menuPreview);
                     previewCatalog(menuPreview.getAttribute("data-id"));
@@ -990,7 +1091,7 @@
         var createBtn = document.getElementById("udash-glib-create");
         if (createBtn) {
             createBtn.addEventListener("click", function () {
-                openCreateGraphModal();
+                void openCreateGraphModal();
             });
         }
         var saveBtn = document.getElementById("udash-cloud-graph-save");

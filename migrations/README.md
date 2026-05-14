@@ -65,6 +65,14 @@ The first library API call after deploy can migrate legacy **`user_graph_categor
 
 Members can **`GET /api/graph-library/my-categories`** for saved names (browser datalist when creating a graph).
 
+**Whole-graph types** (`DSA`, `GENERIC`, plus staff-defined slugs) live in **`graph_type`** and are stored on **`graph_catalog.graph_type_slug`** and **`user_graphs.graph_type_slug`** (default `GENERIC`). Apply after the graph library exists:
+
+```bash
+npx wrangler d1 execute dsa-pattern-practice-subscribers --remote --file=migrations/subscribers/0018_graph_type.sql
+```
+
+Members: `GET /api/graph-library/graph-types` (Bearer). Staff: `GET|POST|PATCH|DELETE /api/admin/graph-types` (RSA or practice `admin`).
+
 ### Mandatory node categories (runtime validation)
 
 Library APIs require **catalog**: **`graph_catalog.categories_json`** (and **personal graphs**: **`user_graphs.categories_json`**) with **at least one** `{ id, name, color }`, and **every** mind-map root, nested topic (`tree` / `patterns`), and embedded **problem** must set **`graphCategoryId`** (or legacy `catalogCategoryId`). Invalid graphs return **422** / **400** as documented earlier.

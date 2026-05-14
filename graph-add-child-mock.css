@@ -774,7 +774,8 @@
     pointer-events: none;
 }
 
-.graph-add-child-mock .problem-section {
+/* Outer shell: expand/collapse entire problem editor (tabs + panels). */
+.graph-add-child-mock .problem-collapsible {
     max-height: 0;
     opacity: 0;
     overflow: hidden;
@@ -783,9 +784,128 @@
         opacity 0.3s ease;
 }
 
-.graph-add-child-mock .problem-section.show {
+.graph-add-child-mock .problem-collapsible.show {
     max-height: 2000px;
     opacity: 1;
+}
+
+/* Inner mock block: link, difficulty, star, hint, companies (not the collapsible shell). */
+.graph-add-child-mock #problemSection.problem-section {
+    max-height: none;
+    opacity: 1;
+    overflow: visible;
+    margin-bottom: 0;
+}
+
+.graph-add-child-mock .res-add-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 14px;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    border: 1px dashed rgba(0, 0, 0, 0.14);
+    background: rgba(255, 255, 255, 0.65);
+    color: var(--blue);
+    font-size: 14px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s var(--ease);
+}
+
+.graph-add-child-mock .res-add-btn:hover {
+    border-color: rgba(0, 113, 227, 0.35);
+    background: var(--blueS);
+}
+
+.graph-add-child-mock .res-add-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.graph-add-child-mock .note-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.graph-add-child-mock .note-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+    background: #fafafc;
+}
+
+.graph-add-child-mock .note-head-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: rgba(255, 149, 0, 0.12);
+    color: var(--orange);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.graph-add-child-mock .note-head-icon svg {
+    display: block;
+}
+
+.graph-add-child-mock .note-title {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.graph-add-child-mock .note-del {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #86868b;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.graph-add-child-mock .note-del:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: var(--text);
+}
+
+.graph-add-child-mock .note-body {
+    padding: 10px 12px 12px;
+}
+
+.graph-add-child-mock .note-body textarea {
+    width: 100%;
+    min-height: 88px;
+    border: none;
+    outline: none;
+    resize: vertical;
+    font-size: 14px;
+    line-height: 1.45;
+    font-family: inherit;
+    color: var(--text);
+    background: transparent;
+}
+
+.graph-add-child-mock .note-body textarea::placeholder {
+    color: #c7c7cc;
+}
+
+.graph-add-child-mock .res-section .dsa-q-image-actions {
+    margin-top: 8px;
+    justify-content: flex-end;
 }
 
 .graph-add-child-mock .section-card {

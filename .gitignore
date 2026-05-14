@@ -14,3 +14,6 @@ auth/*private*.pem
 **/dsa-admin-private.pem
 *.pem
 !auth/dsa-admin-public.pem
+
+# Full DSA export (optional input for scripts/generate-dsa-hierarchy.mjs); may be large (base64 images).
+scripts/dsa-hierarchy.rich-input.json

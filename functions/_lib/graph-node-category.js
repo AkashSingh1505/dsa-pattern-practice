@@ -143,6 +143,15 @@ export function validateMindMapNodeCategoryPayload(payload, slugMap) {
                 return r;
             }
         }
+        const children = Array.isArray(n.children) ? n.children : [];
+        for (let i = 0; i < children.length; i++) {
+            const t = children[i];
+            const nm = t && t.name != null ? String(t.name).slice(0, 48) : String(i);
+            const r = checkEntity(t, slug, `child "${nm}" under ${pathLabel}`);
+            if (!r.ok) {
+                return r;
+            }
+        }
         const patterns = Array.isArray(n.patterns) ? n.patterns : [];
         for (let i = 0; i < patterns.length; i++) {
             const t = patterns[i];

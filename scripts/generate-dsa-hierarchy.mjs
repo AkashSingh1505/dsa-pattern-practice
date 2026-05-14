@@ -1,13 +1,24 @@
 /**
- * One-off generator: node scripts/generate-dsa-hierarchy.mjs
- * Writes dsa-hierarchy.sample.json next to this file (paste into admin as dataset dsa).
+ * Generator: node scripts/generate-dsa-hierarchy.mjs
+ *
+ * Writes:
+ *   - dsa-hierarchy.sample.json — flat array of topic datasets (legacy / admin paste).
+ *   - dsa-hierarchy.with-node-categories.json — single ROOT mind map + nodeCategorySlug on
+ *     every node (matches graph API / validateMindMapNodeCategoryPayload).
+ *
+ * Optional full export (keeps userNodeId, solutions, drawings, etc.):
+ *   node scripts/generate-dsa-hierarchy.mjs path/to/your-export.json
+ * Or drop JSON as scripts/dsa-hierarchy.rich-input.json (gitignored) and run with no args.
+ * Input may be a flat topic array OR a one-element array whose object has nodeCategorySlug ROOT and tree[].
  */
-import { writeFileSync } from "fs";
+import { existsSync, readFileSync, writeFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const out = join(__dirname, "dsa-hierarchy.sample.json");
+const outSample = join(__dirname, "dsa-hierarchy.sample.json");
+const outWithRoot = join(__dirname, "dsa-hierarchy.with-node-categories.json");
+const defaultRichInput = join(__dirname, "dsa-hierarchy.rich-input.json");
 
 const L = (path) => `https://leetcode.com/problems/${path}/`;
 
@@ -584,7 +595,320 @@ const hierarchy = [
       },
     ],
   },
+  {
+    id: "u-1774643502680-6ejpxpx",
+    name: "Demo",
+    tree: [],
+    problems: [
+      {
+        name: "Two Sum",
+        url: "https://leetcode.com/problems/two-sum/",
+        userNodeId: "u-1774643537801-a46me13",
+        hint: "Test hint: two-pointer style thinking",
+        difficulty: "medium",
+        starred: true,
+        companies: ["Amazon", "Google", "Apple", "NVIDIA", "Netflix", "Uber", "Microsoft"],
+        solutionVideoUrl: "https://www.youtube.com/watch?v=4pIc9UBHJtk",
+        solutions: [
+          {
+            id: "s-1774650490293-rwa1b4t",
+            approach: "optimal",
+            timeComplexity: "O(n)",
+            spaceComplexity: "O(1)",
+            code: `class Solution {
+    public int[] nextGreaterElements(int[] nums) {
+        int n = nums.length;
+        Deque<Integer> stack = new ArrayDeque<>();
+        int ans[] = new int[n];
+
+        for(int i = 2*n-1 ;i>=0;i--){
+            int realIx = i%n;
+            int num = nums[realIx];
+            while(!stack.isEmpty() && num >= stack.peek()){
+                stack.pop();
+            }
+            if(stack.isEmpty()) ans[realIx] = -1;
+            else{
+                ans[realIx] = stack.peek();
+            }
+            stack.push(num);
+        }
+        return ans;
+    }
+}`,
+          },
+          {
+            id: "s-1774651183153-8ev492b",
+            approach: "brute_force",
+            timeComplexity: "O(n^2)",
+            spaceComplexity: "O(1)",
+            code: `class Solution {
+    public String removeKdigits(String num, int k) {
+        int n = num.length();
+        if(k==n)return "0";
+        int removeCount = 0;
+
+        Deque<Integer> stack = new ArrayDeque<>();
+        for(int i = 0; i < n; i++){
+            int number =num.charAt(i)-'0';
+            while(!stack.isEmpty() && removeCount < k && number < stack.peek()){
+                stack.pop();
+                removeCount++;
+            }
+            stack.push(number);
+        }
+        while(!stack.isEmpty() && removeCount<k){
+            stack.pop();
+            removeCount++;
+        }
+
+        StringBuilder ans = new StringBuilder("");
+        while(!stack.isEmpty()){
+            ans.append(stack.pop());
+        }
+        ans.reverse();
+        int start = 0;
+        while (start < ans.length() - 1 && ans.charAt(start) == '0') {
+            start++;
+        }
+        return ans.substring(start);
+    }
+}`,
+          },
+          {
+            id: "s-1774651211463-7tfb5y9",
+            approach: "better",
+            timeComplexity: "O(n)",
+            spaceComplexity: "O(n)",
+            code: `class Solution {
+    public int[] asteroidCollision(int[] asteroids) {
+        int n = asteroids.length;
+        Deque<Integer> stack = new ArrayDeque<>();
+        outer:
+        for(int i = 0; i < n; i++){
+            while(!stack.isEmpty() && stack.peek()>0 && asteroids[i]<0){
+                if(stack.peek()< Math.abs(asteroids[i])){
+                    stack.pop();
+                }else if(stack.peek() == Math.abs(asteroids[i])){
+                    stack.pop();
+                    continue outer;
+                }else{
+                    continue outer;
+                }
+            }
+
+            stack.push(asteroids[i]);
+        }
+        int[] ans = new int[stack.size()];
+        int ix = ans.length-1;
+        while(!stack.isEmpty()){
+            ans[ix] = stack.pop();
+            ix--;
+        }
+        return ans;
+    }
+}`,
+          },
+        ],
+        code: `class Solution {
+    public int[] nextGreaterElements(int[] nums) {
+        int n = nums.length;
+        Deque<Integer> stack = new ArrayDeque<>();
+        int ans[] = new int[n];
+
+        for(int i = 2*n-1 ;i>=0;i--){
+            int realIx = i%n;
+            int num = nums[realIx];
+            while(!stack.isEmpty() && num >= stack.peek()){
+                stack.pop();
+            }
+            if(stack.isEmpty()) ans[realIx] = -1;
+            else{
+                ans[realIx] = stack.peek();
+            }
+            stack.push(num);
+        }
+        return ans;
+    }
+}`,
+      },
+      {
+        name: "Three Sum",
+        url: "https://www.geeksforgeeks.org/problems/triplet-sum-in-array-1587115621/1",
+        userNodeId: "u-1774647374460-8yglq5c",
+        difficulty: "hard",
+      },
+      {
+        name: "Searching In Array",
+        url: "https://www.geeksforgeeks.org/problems/search-an-element-in-an-array-1587115621/1",
+        userNodeId: "u-1774704784123-1xrbpfb",
+        difficulty: "easy",
+        solutions: [
+          {
+            id: "s-1774704935968-b783bqz",
+            approach: "brute_force",
+            timeComplexity: "O(n)",
+            spaceComplexity: "O(1)",
+            code: `class Main {
+    static int findElement(int arr[], int n, int key) {
+        for (int i = 0; i < n; i++)
+            if (arr[i] == key)
+                return i;
+        return -1;
+    }
+}`,
+          },
+          {
+            id: "s-1774705610613-8ehmxa3",
+            approach: "optimal",
+            timeComplexity: "O(logN)",
+            spaceComplexity: "O(1)",
+            code: `<?php
+function binarySearch($arr, $x) {
+    $low = 0;
+    $high = sizeof($arr) - 1;
+    while ($low <= $high) {
+        $mid = $low + ($high - $low) / 2;
+        if ($arr[$mid] == $x)
+            return floor($mid);
+        if ($arr[$mid] < $x)
+            $low = $mid + 1;
+        else
+            $high = $mid - 1;
+    }
+    return -1;
+}`,
+          },
+        ],
+        code: `class Main {
+    static int findElement(int arr[], int n, int key) {
+        for (int i = 0; i < n; i++)
+            if (arr[i] == key)
+                return i;
+        return -1;
+    }
+}`,
+      },
+    ],
+  },
 ];
 
-writeFileSync(out, JSON.stringify(hierarchy, null, 2), "utf8");
-console.log("Wrote", out, hierarchy.length, "root topics");
+function stripNodeCategorySlugs(n) {
+  if (!n || typeof n !== "object") {
+    return;
+  }
+  delete n.nodeCategorySlug;
+  for (const key of ["tree", "children", "patterns", "problems"]) {
+    const arr = n[key];
+    if (!Array.isArray(arr)) {
+      continue;
+    }
+    for (const ch of arr) {
+      stripNodeCategorySlugs(ch);
+    }
+  }
+}
+
+/**
+ * @param {unknown} parsed
+ * @returns {object[]}
+ */
+function extractTopicArrayFromInput(parsed) {
+  if (!Array.isArray(parsed)) {
+    throw new Error("JSON root must be an array");
+  }
+  if (parsed.length === 1) {
+    const r = parsed[0];
+    const slug = r && r.nodeCategorySlug != null ? String(r.nodeCategorySlug).toUpperCase().trim() : "";
+    if (r && slug === "ROOT" && Array.isArray(r.tree)) {
+      return JSON.parse(JSON.stringify(r.tree));
+    }
+  }
+  return JSON.parse(JSON.stringify(parsed));
+}
+
+function resolveHierarchyArray() {
+  const argPath = process.argv[2];
+  const paths = [];
+  if (argPath) {
+    paths.push(argPath);
+  }
+  if (existsSync(defaultRichInput)) {
+    paths.push(defaultRichInput);
+  }
+  for (const p of paths) {
+    if (!p || !existsSync(p)) {
+      continue;
+    }
+    const raw = readFileSync(p, "utf8");
+    const parsed = JSON.parse(raw);
+    const topics = extractTopicArrayFromInput(parsed);
+    for (const t of topics) {
+      stripNodeCategorySlugs(t);
+    }
+    console.log("Loaded hierarchy from", p, "(" + topics.length + " topic roots)");
+    return topics;
+  }
+  console.log("Using built-in hierarchy (" + hierarchy.length + " topic roots)");
+  return hierarchy;
+}
+
+function annotateProblems(arr) {
+  if (!Array.isArray(arr)) {
+    return;
+  }
+  for (const p of arr) {
+    if (p && typeof p === "object") {
+      p.nodeCategorySlug = "PROBLEM";
+    }
+  }
+}
+
+/** Branch nodes under ROOT: TOPIC */
+function annotateBranch(n) {
+  if (!n || typeof n !== "object") {
+    return;
+  }
+  n.nodeCategorySlug = "TOPIC";
+  annotateProblems(n.problems);
+  for (const key of ["tree", "children", "patterns"]) {
+    const arr = n[key];
+    if (!Array.isArray(arr)) {
+      continue;
+    }
+    for (const ch of arr) {
+      annotateBranch(ch);
+    }
+  }
+}
+
+const topicRoots = resolveHierarchyArray();
+
+writeFileSync(outSample, JSON.stringify(topicRoots, null, 2) + "\n", "utf8");
+
+const topics = topicRoots.map((ds) => {
+  const copy = JSON.parse(JSON.stringify(ds));
+  annotateBranch(copy);
+  if (!Array.isArray(copy.patterns)) {
+    copy.patterns = [];
+  }
+  if (!Array.isArray(copy.problems)) {
+    copy.problems = [];
+  }
+  return copy;
+});
+
+const withRoot = [
+  {
+    id: "dsa-pattern-practice-root",
+    name: "DSA pattern practice",
+    nodeCategorySlug: "ROOT",
+    tree: topics,
+    patterns: [],
+    problems: [],
+  },
+];
+
+writeFileSync(outWithRoot, JSON.stringify(withRoot, null, 2) + "\n", "utf8");
+console.log("Wrote", outSample, hierarchy.length, "datasets (flat)");
+console.log("Wrote", outWithRoot, "single ROOT,", topics.length, "topics in ROOT.tree");

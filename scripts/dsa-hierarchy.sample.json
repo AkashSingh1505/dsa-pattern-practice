@@ -1309,5 +1309,83 @@
         ]
       }
     ]
+  },
+  {
+    "id": "u-1774643502680-6ejpxpx",
+    "name": "Demo",
+    "tree": [],
+    "problems": [
+      {
+        "name": "Two Sum",
+        "url": "https://leetcode.com/problems/two-sum/",
+        "userNodeId": "u-1774643537801-a46me13",
+        "hint": "Test hint: two-pointer style thinking",
+        "difficulty": "medium",
+        "starred": true,
+        "companies": [
+          "Amazon",
+          "Google",
+          "Apple",
+          "NVIDIA",
+          "Netflix",
+          "Uber",
+          "Microsoft"
+        ],
+        "solutionVideoUrl": "https://www.youtube.com/watch?v=4pIc9UBHJtk",
+        "solutions": [
+          {
+            "id": "s-1774650490293-rwa1b4t",
+            "approach": "optimal",
+            "timeComplexity": "O(n)",
+            "spaceComplexity": "O(1)",
+            "code": "class Solution {\n    public int[] nextGreaterElements(int[] nums) {\n        int n = nums.length;\n        Deque<Integer> stack = new ArrayDeque<>();\n        int ans[] = new int[n];\n\n        for(int i = 2*n-1 ;i>=0;i--){\n            int realIx = i%n;\n            int num = nums[realIx];\n            while(!stack.isEmpty() && num >= stack.peek()){\n                stack.pop();\n            }\n            if(stack.isEmpty()) ans[realIx] = -1;\n            else{\n                ans[realIx] = stack.peek();\n            }\n            stack.push(num);\n        }\n        return ans;\n    }\n}"
+          },
+          {
+            "id": "s-1774651183153-8ev492b",
+            "approach": "brute_force",
+            "timeComplexity": "O(n^2)",
+            "spaceComplexity": "O(1)",
+            "code": "class Solution {\n    public String removeKdigits(String num, int k) {\n        int n = num.length();\n        if(k==n)return \"0\";\n        int removeCount = 0;\n\n        Deque<Integer> stack = new ArrayDeque<>();\n        for(int i = 0; i < n; i++){\n            int number =num.charAt(i)-'0';\n            while(!stack.isEmpty() && removeCount < k && number < stack.peek()){\n                stack.pop();\n                removeCount++;\n            }\n            stack.push(number);\n        }\n        while(!stack.isEmpty() && removeCount<k){\n            stack.pop();\n            removeCount++;\n        }\n\n        StringBuilder ans = new StringBuilder(\"\");\n        while(!stack.isEmpty()){\n            ans.append(stack.pop());\n        }\n        ans.reverse();\n        int start = 0;\n        while (start < ans.length() - 1 && ans.charAt(start) == '0') {\n            start++;\n        }\n        return ans.substring(start);\n    }\n}"
+          },
+          {
+            "id": "s-1774651211463-7tfb5y9",
+            "approach": "better",
+            "timeComplexity": "O(n)",
+            "spaceComplexity": "O(n)",
+            "code": "class Solution {\n    public int[] asteroidCollision(int[] asteroids) {\n        int n = asteroids.length;\n        Deque<Integer> stack = new ArrayDeque<>();\n        outer:\n        for(int i = 0; i < n; i++){\n            while(!stack.isEmpty() && stack.peek()>0 && asteroids[i]<0){\n                if(stack.peek()< Math.abs(asteroids[i])){\n                    stack.pop();\n                }else if(stack.peek() == Math.abs(asteroids[i])){\n                    stack.pop();\n                    continue outer;\n                }else{\n                    continue outer;\n                }\n            }\n\n            stack.push(asteroids[i]);\n        }\n        int[] ans = new int[stack.size()];\n        int ix = ans.length-1;\n        while(!stack.isEmpty()){\n            ans[ix] = stack.pop();\n            ix--;\n        }\n        return ans;\n    }\n}"
+          }
+        ],
+        "code": "class Solution {\n    public int[] nextGreaterElements(int[] nums) {\n        int n = nums.length;\n        Deque<Integer> stack = new ArrayDeque<>();\n        int ans[] = new int[n];\n\n        for(int i = 2*n-1 ;i>=0;i--){\n            int realIx = i%n;\n            int num = nums[realIx];\n            while(!stack.isEmpty() && num >= stack.peek()){\n                stack.pop();\n            }\n            if(stack.isEmpty()) ans[realIx] = -1;\n            else{\n                ans[realIx] = stack.peek();\n            }\n            stack.push(num);\n        }\n        return ans;\n    }\n}"
+      },
+      {
+        "name": "Three Sum",
+        "url": "https://www.geeksforgeeks.org/problems/triplet-sum-in-array-1587115621/1",
+        "userNodeId": "u-1774647374460-8yglq5c",
+        "difficulty": "hard"
+      },
+      {
+        "name": "Searching In Array",
+        "url": "https://www.geeksforgeeks.org/problems/search-an-element-in-an-array-1587115621/1",
+        "userNodeId": "u-1774704784123-1xrbpfb",
+        "difficulty": "easy",
+        "solutions": [
+          {
+            "id": "s-1774704935968-b783bqz",
+            "approach": "brute_force",
+            "timeComplexity": "O(n)",
+            "spaceComplexity": "O(1)",
+            "code": "class Main {\n    static int findElement(int arr[], int n, int key) {\n        for (int i = 0; i < n; i++)\n            if (arr[i] == key)\n                return i;\n        return -1;\n    }\n}"
+          },
+          {
+            "id": "s-1774705610613-8ehmxa3",
+            "approach": "optimal",
+            "timeComplexity": "O(logN)",
+            "spaceComplexity": "O(1)",
+            "code": "<?php\nfunction binarySearch($arr, $x) {\n    $low = 0;\n    $high = sizeof($arr) - 1;\n    while ($low <= $high) {\n        $mid = $low + ($high - $low) / 2;\n        if ($arr[$mid] == $x)\n            return floor($mid);\n        if ($arr[$mid] < $x)\n            $low = $mid + 1;\n        else\n            $high = $mid - 1;\n    }\n    return -1;\n}"
+          }
+        ],
+        "code": "class Main {\n    static int findElement(int arr[], int n, int key) {\n        for (int i = 0; i < n; i++)\n            if (arr[i] == key)\n                return i;\n        return -1;\n    }\n}"
+      }
+    ]
   }
 ]

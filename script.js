@@ -5645,12 +5645,14 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     backdrop.className = "dsa-dialog-backdrop dsa-dialog-backdrop--graph-ac-mock";
 
     const dlg = document.createElement("div");
+    dlg.id = "modal";
     dlg.className = "dsa-dialog dsa-dialog--question dsa-dialog--unified graph-add-child-mock modal";
     dlg.setAttribute("role", "dialog");
     dlg.setAttribute("aria-modal", "true");
     dlg.setAttribute("data-dsa-question-ui", "unified-v4");
 
     const title = document.createElement("h2");
+    title.id = "modalTitle";
     title.className = "dsa-dialog-title";
     title.textContent =
         editQuestionName || editUserNodeId
@@ -5662,13 +5664,15 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
               : "Add to graph";
 
     const subtitleEl = document.createElement("p");
+    subtitleEl.id = "modalSubtitle";
     subtitleEl.className = "";
     subtitleEl.hidden = true;
 
     const btnInfo = document.createElement("button");
     btnInfo.type = "button";
+    btnInfo.id = "infoBtn";
     btnInfo.className = "icon-btn";
-    btnInfo.setAttribute("aria-label", "Show type description");
+    btnInfo.setAttribute("aria-label", "Info");
     btnInfo.title = "Show description";
     btnInfo.hidden = true;
     btnInfo.innerHTML =
@@ -5755,16 +5759,16 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         radN.checked = false;
     }
 
-    const mindTypeFs = document.createElement("fieldset");
+    const mindTypeFs = document.createElement("div");
     mindTypeFs.className = "dsa-fieldset dsa-u-mind-kind";
     mindTypeFs.hidden = !useMindTypePicker2;
     if (useMindTypePicker2) {
         catFs.hidden = true;
         catFs.setAttribute("aria-hidden", "true");
-        const mkLeg = document.createElement("legend");
-        mkLeg.className = "dsa-field-legend";
-        mkLeg.textContent = "Node type";
-        mindTypeFs.appendChild(mkLeg);
+        const mindTypeLabelRow = document.createElement("div");
+        mindTypeLabelRow.className = "field-label";
+        mindTypeLabelRow.textContent = "Node type";
+        mindTypeFs.appendChild(mindTypeLabelRow);
         const typeGrid = document.createElement("div");
         typeGrid.className = "type-grid";
         typeGrid.setAttribute("role", "radiogroup");
@@ -5814,6 +5818,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             const id = `graphMindKind_${su}`;
             const lab = document.createElement("label");
             lab.className = slugCardClass(su);
+            lab.dataset.type = su.toLowerCase();
             lab.setAttribute("for", id);
             const inp = document.createElement("input");
             inp.type = "radio";
@@ -5891,7 +5896,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
 
     const infoPanel = document.createElement("div");
     infoPanel.className = "info-panel topic";
-    infoPanel.id = "graph-node-type-info-panel";
+    infoPanel.id = "infoPanel";
     infoPanel.setAttribute("aria-hidden", "true");
     const infoInner = document.createElement("div");
     infoInner.className = "info-content";
@@ -5902,10 +5907,13 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const infoBodyWrap = document.createElement("div");
     infoBodyWrap.className = "info-body";
     const infoTitleEl = document.createElement("div");
+    infoTitleEl.id = "infoTitle";
     infoTitleEl.className = "info-title";
     const infoTextEl = document.createElement("div");
+    infoTextEl.id = "infoText";
     infoTextEl.className = "info-text";
     const infoChipsEl = document.createElement("div");
+    infoChipsEl.id = "infoChips";
     infoChipsEl.className = "info-chips";
     infoBodyWrap.appendChild(infoTitleEl);
     infoBodyWrap.appendChild(infoTextEl);
@@ -6049,24 +6057,27 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const qBlock = document.createElement("div");
     qBlock.className = "dsa-u-question";
     const problemOuter = document.createElement("div");
-    problemOuter.className = "problem-section";
+    problemOuter.className = "problem-collapsible";
 
     const nameField = document.createElement("div");
     nameField.className = "dsa-q-field q-field-mock field-group";
     const nameLabelRow = document.createElement("div");
     nameLabelRow.className = "field-label";
     const nameLabEl = document.createElement("label");
-    nameLabEl.setAttribute("for", "dsa-q-name");
-    nameLabEl.appendChild(document.createTextNode("Problem label"));
+    nameLabEl.setAttribute("for", "nodeName");
+    const nameLabelSpan = document.createElement("span");
+    nameLabelSpan.id = "nameLabel";
+    nameLabelSpan.appendChild(document.createTextNode("Problem label"));
     const nameReqStar = document.createElement("span");
     nameReqStar.className = "dsa-req";
     nameReqStar.setAttribute("aria-hidden", "true");
     nameReqStar.textContent = "*";
-    nameLabEl.appendChild(nameReqStar);
+    nameLabelSpan.appendChild(nameReqStar);
+    nameLabEl.appendChild(nameLabelSpan);
     const nameCountWrap = document.createElement("span");
     nameCountWrap.className = "opt";
     const nameCharSpan = document.createElement("span");
-    nameCharSpan.id = "dsa-q-name-count";
+    nameCharSpan.id = "charCount";
     nameCharSpan.textContent = "0";
     nameCountWrap.appendChild(nameCharSpan);
     nameCountWrap.appendChild(document.createTextNode("/60"));
@@ -6081,7 +6092,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
 
     const nameIn = document.createElement("input");
     nameIn.type = "text";
-    nameIn.id = "dsa-q-name";
+    nameIn.id = "nodeName";
     nameIn.className = "dsa-field-control field-input";
     nameIn.placeholder = "e.g. Two Sum";
     nameIn.autocomplete = "off";
@@ -6115,13 +6126,17 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     urlIn.type = "url";
     urlIn.id = "dsa-q-url";
     urlIn.className = "dsa-field-control field-input";
-    urlIn.placeholder = "https://leetcode.com/… (optional)";
+    urlIn.placeholder = "https://leetcode.com/...";
     urlIn.setAttribute("aria-label", "Problem link (optional)");
     urlIn.setAttribute("inputmode", "url");
     urlInputWrap.appendChild(urlLead);
     urlInputWrap.appendChild(urlIn);
     urlField.appendChild(urlLabelRow);
     urlField.appendChild(urlInputWrap);
+
+    const problemSectionInner = document.createElement("div");
+    problemSectionInner.id = "problemSection";
+    problemSectionInner.className = "problem-section";
 
     const existingCard = document.createElement("div");
     existingCard.className = "dsa-q-existing q-existing-mock";
@@ -6205,24 +6220,47 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     hintTa.placeholder = "Hint / notes (admin: shown behind ? on the problem row)";
     hintTa.setAttribute("aria-label", "Hint / notes");
 
-    const hintSec = makeSection(
-        "Hint / notes",
-        ["M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"],
-        (headActions) => {
-            const btn = makeSectionClearIconBtn("Clear hint / notes", "Clear hint / notes");
-            btn.addEventListener("click", () => {
-                if (!isAdmin) {
-                    return;
-                }
-                if (!window.confirm("Clear all text in Hint / notes?")) {
-                    return;
-                }
-                hintTa.value = "";
-            });
-            headActions.appendChild(btn);
-        },
-    );
-    hintSec.body.appendChild(hintTa);
+    const hintFieldGroup = document.createElement("div");
+    hintFieldGroup.className = "field-group";
+    const hintTopLabel = document.createElement("div");
+    hintTopLabel.className = "field-label";
+    hintTopLabel.innerHTML = "<span>Hint / Notes <span class=\"opt\">(optional)</span></span>";
+    const noteCard = document.createElement("div");
+    noteCard.className = "note-card";
+    const noteHead = document.createElement("div");
+    noteHead.className = "note-head";
+    const noteHeadIcon = document.createElement("div");
+    noteHeadIcon.className = "note-head-icon";
+    noteHeadIcon.innerHTML =
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>';
+    const noteTitle = document.createElement("div");
+    noteTitle.className = "note-title";
+    noteTitle.textContent = "Hint / notes";
+    const noteDel = document.createElement("button");
+    noteDel.type = "button";
+    noteDel.className = "note-del";
+    noteDel.setAttribute("aria-label", "Delete");
+    noteDel.innerHTML =
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>';
+    noteDel.addEventListener("click", () => {
+        if (!isAdmin) {
+            return;
+        }
+        if (!window.confirm("Clear all text in Hint / notes?")) {
+            return;
+        }
+        hintTa.value = "";
+    });
+    noteHead.appendChild(noteHeadIcon);
+    noteHead.appendChild(noteTitle);
+    noteHead.appendChild(noteDel);
+    const noteBody = document.createElement("div");
+    noteBody.className = "note-body";
+    noteBody.appendChild(hintTa);
+    noteCard.appendChild(noteHead);
+    noteCard.appendChild(noteBody);
+    hintFieldGroup.appendChild(hintTopLabel);
+    hintFieldGroup.appendChild(noteCard);
 
     const sketchEditorRoot = document.createElement("div");
     sketchEditorRoot.className = "dsa-sketch-editor-host";
@@ -6733,248 +6771,163 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         solutionListRoot.appendChild(toggle);
     }
 
-    const videoSec = makeSection(
-        "Video solution",
-        ["M14.752 11.168l-5.197-3.03A1 1 0 008 8.03v6.06a1 1 0 001.555.832l5.197-3.03a1 1 0 000-1.664z"],
-        (headActions) => {
-            const btn = makeSectionClearIconBtn("Clear video link", "Clear video link");
-            btn.addEventListener("click", () => {
-                if (!isAdmin) {
-                    return;
-                }
-                if (!window.confirm("Clear the video URL?")) {
-                    return;
-                }
-                solutionVideoIn.value = "";
-            });
-            headActions.appendChild(btn);
-        },
-    );
-    const videoInputWrap = document.createElement("div");
-    videoInputWrap.className = "input-wrap";
-    const videoLead = document.createElement("span");
-    videoLead.innerHTML =
-        '<svg class="lead" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="currentColor" stroke="none"/></svg>';
-    videoInputWrap.appendChild(videoLead);
-    videoInputWrap.appendChild(solutionVideoIn);
-    videoSec.body.appendChild(videoInputWrap);
-
-    const solutionSec = makeSection(
-        "Solutions",
-        ["M16 18l6-6-6-6", "M8 6l-6 6 6 6"],
-        (headActions) => {
-            const btnAdd = document.createElement("button");
-            btnAdd.type = "button";
-            btnAdd.className = "dsa-q-solution-add-btn section-btn add";
-            btnAdd.setAttribute("aria-label", "Add solution");
-            btnAdd.title = "Add solution";
-            btnAdd.innerHTML =
-                '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-            btnAdd.addEventListener("click", () => openSolutionSheet(null));
-            const btn = makeSectionClearIconBtn("Clear all solutions", "Clear all solutions");
-            btn.addEventListener("click", () => {
-                if (!isAdmin) {
-                    return;
-                }
-                if (!window.confirm("Remove all solutions for this problem?")) {
-                    return;
-                }
-                solutionsState = [];
-                renderSolutionsEditorList();
-            });
-            headActions.appendChild(btnAdd);
-            headActions.appendChild(btn);
-        },
-    );
-    solutionSec.body.appendChild(solutionListRoot);
-    const btnAddSolutionEl = solutionSec.headActions.querySelector(".dsa-q-solution-add-btn");
+    const solutionsResGroup = document.createElement("div");
+    solutionsResGroup.className = "field-group";
+    const solResLab = document.createElement("div");
+    solResLab.className = "field-label";
+    solResLab.style.marginTop = "4px";
+    solResLab.textContent = "Solutions";
+    const btnAddSolutionLink = document.createElement("button");
+    btnAddSolutionLink.type = "button";
+    btnAddSolutionLink.className = "res-add-btn";
+    btnAddSolutionLink.setAttribute("aria-label", "Add solution link");
+    btnAddSolutionLink.innerHTML =
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add solution link';
+    btnAddSolutionLink.addEventListener("click", () => openSolutionSheet(null));
+    solutionsResGroup.appendChild(solResLab);
+    solutionsResGroup.appendChild(btnAddSolutionLink);
+    solutionsResGroup.appendChild(solutionListRoot);
     renderSolutionsEditorList();
-
-    const companyChipsWrap = document.createElement("div");
-    companyChipsWrap.className = "company-chips";
-    companyChipsWrap.setAttribute("aria-live", "polite");
-
-    const companyAddLab = document.createElement("div");
-    companyAddLab.className = "field-label";
-    companyAddLab.id = "dsa-q-company-add-heading";
-    companyAddLab.style.marginBottom = "6px";
-    companyAddLab.innerHTML = "<span>Add company</span>";
-
-    const companySelectWrap = document.createElement("div");
-    companySelectWrap.className = "dsa-q-company-select-wrap select-wrap";
-    const companyPresetSelect = document.createElement("select");
-    companyPresetSelect.id = "dsa-q-company-preset";
-    companyPresetSelect.className = "dsa-field-control dsa-q-company-select";
-    companyPresetSelect.setAttribute("aria-label", "Choose a company or Other");
-    companyPresetSelect.setAttribute("aria-labelledby", "dsa-q-company-add-heading");
-    const companyPresetOpt0 = document.createElement("option");
-    companyPresetOpt0.value = "";
-    companyPresetOpt0.textContent = "Select a company…";
-    companyPresetSelect.appendChild(companyPresetOpt0);
-    const companyOptgroup = document.createElement("optgroup");
-    companyOptgroup.label = "Companies";
-    DSA_COMPANY_PRESETS.forEach((p) => {
-        const o = document.createElement("option");
-        o.value = p.label;
-        o.textContent = p.label;
-        companyOptgroup.appendChild(o);
-    });
-    companyPresetSelect.appendChild(companyOptgroup);
-    const companyOptOther = document.createElement("option");
-    companyOptOther.value = "__other__";
-    companyOptOther.textContent = "Other…";
-    companyPresetSelect.appendChild(companyOptOther);
-    companySelectWrap.appendChild(companyPresetSelect);
 
     let companyTagsList = [];
 
-    function renderCompanyChips() {
-        companyChipsWrap.innerHTML = "";
-        companyTagsList.forEach((tag) => {
-            const chip = document.createElement("span");
-            chip.className = "c-chip";
-            chip.appendChild(document.createTextNode(tag));
-            if (isAdmin) {
-                const rm = document.createElement("button");
-                rm.type = "button";
-                rm.setAttribute("aria-label", `Remove ${tag}`);
-                rm.title = "Remove";
-                rm.textContent = "×";
-                rm.addEventListener("click", () => {
-                    const i = companyTagsList.indexOf(tag);
-                    if (i >= 0) {
-                        companyTagsList.splice(i, 1);
-                    }
-                    renderCompanyChips();
-                });
-                chip.appendChild(rm);
+    function syncCompaniesCsvFromList() {
+        companiesCsvIn.value = companyTagsList.join(", ");
+    }
+
+    function parseCompaniesFromCsvInput() {
+        const raw = String(companiesCsvIn.value || "")
+            .split(",")
+            .map((s) => String(s || "").trim())
+            .filter(Boolean);
+        const seen = new Set();
+        companyTagsList = [];
+        raw.forEach((t) => {
+            const k = t.toLowerCase();
+            if (seen.has(k)) {
+                return;
             }
-            companyChipsWrap.appendChild(chip);
+            seen.add(k);
+            companyTagsList.push(t);
         });
     }
 
-    companyPresetSelect.addEventListener("change", () => {
-        if (!isAdmin) {
-            companyPresetSelect.value = "";
-            return;
-        }
-        const v = companyPresetSelect.value;
-        if (!v) {
-            return;
-        }
-        companyPresetSelect.value = "";
-        if (v === "__other__") {
-            const entered = window.prompt("Enter company name:", "");
-            if (entered == null) {
-                return;
-            }
-            const name = String(entered).trim();
-            if (!name) {
-                return;
-            }
-            if (!companyTagsList.some((t) => t.toLowerCase() === name.toLowerCase())) {
-                companyTagsList.push(name);
-                renderCompanyChips();
-            }
-            return;
-        }
-        const label = String(v).trim();
-        if (!label) {
-            return;
-        }
-        if (!companyTagsList.some((t) => t.toLowerCase() === label.toLowerCase())) {
-            companyTagsList.push(label);
-            renderCompanyChips();
-        }
+    const companyFieldGroup = document.createElement("div");
+    companyFieldGroup.className = "field-group";
+    const companyLabRow = document.createElement("div");
+    companyLabRow.className = "field-label";
+    companyLabRow.innerHTML = "<span>Companies <span class=\"opt\">(comma separated)</span></span>";
+    const companyInputWrap = document.createElement("div");
+    companyInputWrap.className = "input-wrap";
+    const companyLead = document.createElement("span");
+    companyLead.innerHTML =
+        '<svg class="lead" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg>';
+    const companiesCsvIn = document.createElement("input");
+    companiesCsvIn.type = "text";
+    companiesCsvIn.className = "dsa-field-control field-input";
+    companiesCsvIn.setAttribute("aria-label", "Companies (comma separated)");
+    companiesCsvIn.placeholder = "Google, Amazon, Meta";
+    companiesCsvIn.addEventListener("blur", () => {
+        parseCompaniesFromCsvInput();
+        syncCompaniesCsvFromList();
     });
+    companyInputWrap.appendChild(companyLead);
+    companyInputWrap.appendChild(companiesCsvIn);
+    companyFieldGroup.appendChild(companyLabRow);
+    companyFieldGroup.appendChild(companyInputWrap);
 
-    const companySec = makeSection(
-        "Company tags",
-        [
-            "M4 21V9a1 1 0 011-1h4V4a1 1 0 011-1h4a1 1 0 011 1v4h4a1 1 0 011 1v12",
-            "M9 21v-4h2v4M15 21v-4h2v4",
-        ],
-        (headActions) => {
-            const btn = makeSectionClearIconBtn("Clear company tags", "Clear company tags");
-            btn.addEventListener("click", () => {
-                if (!isAdmin) {
-                    return;
-                }
-                if (!window.confirm("Remove all company tags for this problem?")) {
-                    return;
-                }
-                companyTagsList = [];
-                renderCompanyChips();
-            });
-            headActions.appendChild(btn);
-        },
-    );
-    companySec.body.appendChild(companyAddLab);
-    companySec.body.appendChild(companySelectWrap);
-    companySec.body.appendChild(companyChipsWrap);
-
-    const sketchSec = makeSection("Sketch", [
-        "M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z",
-    ], isEditProblem
-        ? (headActions) => {
-              const btn = makeSectionClearIconBtn("Clear sketch", "Clear sketch");
-              btn.addEventListener("click", () => {
-                  if (!isAdmin || sketchEditorRoot.classList.contains("dsa-sketch-editor-host--ro")) {
-                      return;
-                  }
-                  if (!window.confirm("Clear the entire sketch? Use Undo in the sketch toolbar to remove the last stroke.")) {
-                      return;
-                  }
-                  scratchApi.clear();
-              });
-              headActions.appendChild(btn);
-          }
-        : undefined);
-    sketchSec.body.appendChild(sketchEditorRoot);
+    const sketchResGroup = document.createElement("div");
+    sketchResGroup.className = "field-group";
+    const sketchResLab = document.createElement("div");
+    sketchResLab.className = "field-label";
+    sketchResLab.textContent = "Sketch / Diagram";
+    const btnAddSketch = document.createElement("button");
+    btnAddSketch.type = "button";
+    btnAddSketch.className = "res-add-btn";
+    btnAddSketch.setAttribute("aria-label", "Add sketch");
+    btnAddSketch.innerHTML =
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Add sketch';
+    btnAddSketch.addEventListener("click", () => {
+        sketchEditorRoot.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+    sketchResGroup.appendChild(sketchResLab);
+    sketchResGroup.appendChild(btnAddSketch);
+    sketchResGroup.appendChild(sketchEditorRoot);
     drawRow.appendChild(btnZoomOut);
     drawRow.appendChild(btnZoomIn);
-    sketchSec.body.appendChild(drawRow);
+    sketchResGroup.appendChild(drawRow);
 
-    const imageSec = makeSection("Image", [
-        "M4 5a2 2 0 012-2h12a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V5z",
-        "M8.5 10a1.5 1.5 0 100 3 1.5 1.5 0 000-3z",
-        "M4 17l4.5-5.5 3 3L15 11l5 6",
-    ]);
+    const imageResGroup = document.createElement("div");
+    imageResGroup.className = "field-group";
+    const imageResLab = document.createElement("div");
+    imageResLab.className = "field-label";
+    imageResLab.textContent = "Image";
+    const btnUploadImage = document.createElement("button");
+    btnUploadImage.type = "button";
+    btnUploadImage.className = "res-add-btn";
+    btnUploadImage.setAttribute("aria-label", "Upload image");
+    btnUploadImage.innerHTML =
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Upload image';
+    btnUploadImage.addEventListener("click", () => {
+        if (isAdmin) {
+            fileIn.click();
+        }
+    });
+    imageResGroup.appendChild(imageResLab);
+    imageResGroup.appendChild(btnUploadImage);
     imageActions.appendChild(btnPickImage);
     imageActions.appendChild(btnPasteImage);
-    imageSec.body.appendChild(imageActions);
-    imageSec.body.appendChild(fileIn);
-    imageSec.body.appendChild(imagePreview);
+    imageResGroup.appendChild(imageActions);
+    imageResGroup.appendChild(fileIn);
+    imageResGroup.appendChild(imagePreview);
+
+    const videoFieldGroup = document.createElement("div");
+    videoFieldGroup.className = "field-group";
+    const videoLabRow = document.createElement("div");
+    videoLabRow.className = "field-label";
+    videoLabRow.innerHTML = "<span>Video solution <span class=\"opt\">(optional)</span></span>";
+    const videoInputWrap2 = document.createElement("div");
+    videoInputWrap2.className = "input-wrap";
+    const videoLead2 = document.createElement("span");
+    videoLead2.innerHTML =
+        '<svg class="lead" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="currentColor" stroke="none"/></svg>';
+    videoInputWrap2.appendChild(videoLead2);
+    videoInputWrap2.appendChild(solutionVideoIn);
+    videoFieldGroup.appendChild(videoLabRow);
+    videoFieldGroup.appendChild(videoInputWrap2);
 
     const headerTabsRow = document.createElement("div");
+    headerTabsRow.id = "tabs";
     headerTabsRow.className = "tabs";
     headerTabsRow.setAttribute("role", "tablist");
     headerTabsRow.setAttribute("aria-label", "Problem sections");
     headerTabsRow.setAttribute("aria-hidden", "true");
     const tabPanelsWrap = document.createElement("div");
     tabPanelsWrap.className = "dsa-q-tabs-shell dsa-q-tabs-shell--below-heading q-tab-shell-mock";
-    const btnTabDetails = document.createElement("button");
-    btnTabDetails.type = "button";
+    const btnTabDetails = document.createElement("div");
     btnTabDetails.className = "tab active dsa-q-tab dsa-q-tab--active";
     btnTabDetails.setAttribute("role", "tab");
+    btnTabDetails.setAttribute("tabindex", "0");
+    btnTabDetails.setAttribute("data-tab", "details");
     btnTabDetails.setAttribute("aria-selected", "true");
     btnTabDetails.id = "dsa-q-tab-details";
     btnTabDetails.textContent = "Details";
-    const btnTabResources = document.createElement("button");
-    btnTabResources.type = "button";
+    const btnTabResources = document.createElement("div");
     btnTabResources.className = "tab dsa-q-tab";
     btnTabResources.setAttribute("role", "tab");
+    btnTabResources.setAttribute("tabindex", "0");
+    btnTabResources.setAttribute("data-tab", "resources");
     btnTabResources.setAttribute("aria-selected", "false");
     btnTabResources.id = "dsa-q-tab-resources";
     btnTabResources.textContent = "Resources";
     const detailsPanel = document.createElement("div");
-    detailsPanel.className = "dsa-q-tab-panel tab-pane active";
+    detailsPanel.className = "details-section dsa-q-tab-panel tab-pane active";
     detailsPanel.setAttribute("role", "tabpanel");
-    detailsPanel.id = "dsa-q-panel-details";
+    detailsPanel.id = "detailsSection";
     detailsPanel.setAttribute("aria-labelledby", "dsa-q-tab-details");
     const resourcesPanel = document.createElement("div");
-    resourcesPanel.className = "dsa-q-tab-panel tab-pane";
-    resourcesPanel.id = "dsa-q-panel-resources";
+    resourcesPanel.className = "res-section dsa-q-tab-panel tab-pane";
+    resourcesPanel.id = "resSection";
     resourcesPanel.setAttribute("role", "tabpanel");
     resourcesPanel.setAttribute("aria-labelledby", "dsa-q-tab-resources");
     function activateDsaProblemTab(which) {
@@ -6988,8 +6941,17 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         detailsPanel.classList.toggle("active", det);
         resourcesPanel.classList.toggle("active", !det);
     }
-    btnTabDetails.addEventListener("click", () => activateDsaProblemTab("details"));
-    btnTabResources.addEventListener("click", () => activateDsaProblemTab("resources"));
+    function onTabActivate(el, which) {
+        el.addEventListener("click", () => activateDsaProblemTab(which));
+        el.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                activateDsaProblemTab(which);
+            }
+        });
+    }
+    onTabActivate(btnTabDetails, "details");
+    onTabActivate(btnTabResources, "resources");
 
     headerTabsRow.appendChild(btnTabDetails);
     headerTabsRow.appendChild(btnTabResources);
@@ -7009,6 +6971,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     diffLabInner.appendChild(diffReqStar);
     diffLabRow.appendChild(diffLabInner);
     const difficultyPillWrap = document.createElement("div");
+    difficultyPillWrap.id = "diffPills";
     difficultyPillWrap.className = "difficulty-pills";
     const difficultySelectWrap = document.createElement("div");
     difficultySelectWrap.className = "dsa-q-difficulty-select-wrap";
@@ -7037,9 +7000,10 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     diffPillDefs.forEach(([val, lab, cls]) => {
         const labEl = document.createElement("label");
         labEl.className = `diff-pill ${cls}`;
+        labEl.dataset.diff = val;
         const inp = document.createElement("input");
         inp.type = "radio";
-        inp.name = "dsa-q-diff-pill";
+        inp.name = "difficulty";
         inp.value = val;
         if (difficultySelect.value === val) {
             labEl.classList.add("selected");
@@ -7054,12 +7018,12 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     });
     difficultyPillWrap.addEventListener("change", (e) => {
         const t = e.target;
-        if (!t || t.name !== "dsa-q-diff-pill") {
+        if (!t || t.name !== "difficulty") {
             return;
         }
         difficultySelect.value = t.value;
         difficultyPillWrap.querySelectorAll(".diff-pill").forEach((labEl) => {
-            const r = labEl.querySelector('input[name="dsa-q-diff-pill"]');
+            const r = labEl.querySelector('input[name="difficulty"]');
             labEl.classList.toggle("selected", !!(r && r.checked));
         });
         difficultySelect.dispatchEvent(new Event("change", { bubbles: true }));
@@ -7073,7 +7037,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     function syncDifficultyPillsFromSelect() {
         const v = dsaNormalizeProblemDifficulty(difficultySelect.value);
         difficultyPillWrap.querySelectorAll(".diff-pill").forEach((labEl) => {
-            const r = labEl.querySelector('input[name="dsa-q-diff-pill"]');
+            const r = labEl.querySelector('input[name="difficulty"]');
             const on = r && r.value === v;
             labEl.classList.toggle("selected", on);
             if (r) {
@@ -7083,6 +7047,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     }
 
     const importantWrap = document.createElement("div");
+    importantWrap.id = "starRow";
     importantWrap.className = "star-row";
     importantWrap.setAttribute("role", "button");
     importantWrap.tabIndex = 0;
@@ -7138,17 +7103,23 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     });
     importantInput.addEventListener("change", syncStarVisual);
 
+    const starFieldGroup = document.createElement("div");
+    starFieldGroup.className = "field-group";
+    starFieldGroup.appendChild(importantWrap);
+
+    problemSectionInner.appendChild(urlField);
+    problemSectionInner.appendChild(difficultyField);
+    problemSectionInner.appendChild(starFieldGroup);
+    problemSectionInner.appendChild(hintFieldGroup);
+    problemSectionInner.appendChild(companyFieldGroup);
+
     detailsPanel.appendChild(nameField);
-    detailsPanel.appendChild(difficultyField);
-    detailsPanel.appendChild(importantWrap);
-    detailsPanel.appendChild(hintSec.sec);
-    detailsPanel.appendChild(companySec.sec);
+    detailsPanel.appendChild(problemSectionInner);
     detailsPanel.appendChild(existingCard);
-    resourcesPanel.appendChild(urlField);
-    resourcesPanel.appendChild(videoSec.sec);
-    resourcesPanel.appendChild(solutionSec.sec);
-    resourcesPanel.appendChild(sketchSec.sec);
-    resourcesPanel.appendChild(imageSec.sec);
+    resourcesPanel.appendChild(videoFieldGroup);
+    resourcesPanel.appendChild(solutionsResGroup);
+    resourcesPanel.appendChild(sketchResGroup);
+    resourcesPanel.appendChild(imageResGroup);
 
     qBlock.appendChild(tabPanelsWrap);
     problemOuter.appendChild(qBlock);
@@ -7369,7 +7340,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             importantInput.checked = false;
         }
         renderSolutionsEditorList();
-        renderCompanyChips();
+        syncCompaniesCsvFromList();
         syncDifficultyPillsFromSelect();
         syncStarVisual();
     }
@@ -7396,6 +7367,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         if (graphBodyCatSelect) {
             graphBodyCatSelect.classList.remove("dsa-field-control--error");
         }
+        companiesCsvIn.classList.remove("dsa-field-control--error");
     }
 
     nameIn.addEventListener("input", () => {
@@ -7499,6 +7471,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
 
     const btnOk = document.createElement("button");
     btnOk.type = "button";
+    btnOk.id = "save";
     btnOk.className = "dsa-dialog-btn dsa-dialog-btn--primary btn btn-primary";
     btnOk.textContent = "Save";
 
@@ -7506,15 +7479,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     footer.className = "footer";
     const kbdHint = document.createElement("div");
     kbdHint.className = "kbd-hint";
-    kbdHint.innerHTML =
-        '<kbd class="kbd-key kbd-key--enter" title="Enter / Return" aria-label="Enter">' +
-        '<svg width="15" height="11" viewBox="0 0 24 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
-        '<path d="M4 10V4L1 7l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
-        '<path d="M4 10h14a3 3 0 0 0 3-3V5a3 3 0 0 0-3-3h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
-        "</svg></kbd>" +
-        '<span class="kbd-hint-sep">to save ·</span>' +
-        '<kbd class="kbd-key" title="Escape" aria-label="Escape">Esc</kbd>' +
-        '<span class="kbd-hint-sep">to close</span>';
+    kbdHint.innerHTML = "<kbd>↵</kbd> to save · <kbd>Esc</kbd> to close";
     const footerBtns = document.createElement("div");
     footerBtns.className = "btn-row";
     footerBtns.appendChild(btnFooterCancel);
@@ -7567,16 +7532,17 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         dlg.querySelectorAll('input[name="graphMindKind"]').forEach((inp) => {
             inp.disabled = ro;
         });
-        difficultyPillWrap.querySelectorAll('input[name="dsa-q-diff-pill"]').forEach((inp) => {
+        difficultyPillWrap.querySelectorAll('input[name="difficulty"]').forEach((inp) => {
             inp.disabled = ro;
         });
         importantWrap.style.pointerEvents = ro ? "none" : "";
         importantWrap.setAttribute("aria-disabled", ro ? "true" : "false");
-        if (btnAddSolutionEl) {
-            btnAddSolutionEl.disabled = ro;
-            btnAddSolutionEl.hidden = ro;
-        }
-        companyPresetSelect.disabled = ro;
+        btnAddSolutionLink.disabled = ro;
+        btnAddSolutionLink.hidden = ro;
+        btnAddSketch.disabled = ro;
+        btnUploadImage.disabled = ro;
+        companiesCsvIn.disabled = ro;
+        noteDel.disabled = ro;
         sketchEditorRoot.classList.toggle("dsa-sketch-editor-host--ro", ro || !isEditProblem);
         btnZoomOut.disabled = ro || !isEditProblem;
         btnZoomIn.disabled = ro || !isEditProblem;
@@ -7802,6 +7768,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             return;
         }
         clearFieldErrors();
+        parseCompaniesFromCsvInput();
         const name = nameIn.value.trim();
         const url = urlIn.value.trim();
         if (!name) {

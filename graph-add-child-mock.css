@@ -741,6 +741,12 @@
 }
 
 .graph-add-child-mock .star-icon {
+    /* Reset global .star-icon (styles.css) used for badges — that rule is absolute and breaks this row */
+    position: relative;
+    top: auto;
+    right: auto;
+    left: auto;
+    bottom: auto;
     display: flex;
     align-items: center;
     justify-content: center;

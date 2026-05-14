@@ -335,8 +335,22 @@
 }
 
 .graph-add-child-mock .field-label .field-char-limit {
-    margin-top: 2px;
-    align-self: flex-start;
+    margin-top: 0;
+    align-self: center;
+    flex-shrink: 0;
+    white-space: nowrap;
+    color: #86868b !important;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 11px;
+    font-weight: 500;
+    opacity: 1;
+    visibility: visible;
+}
+
+.graph-add-child-mock .dsa-u-node .field-label .field-char-limit,
+.graph-add-child-mock .dsa-u-node .field-label .opt {
+    color: #86868b !important;
 }
 
 .graph-add-child-mock .dsa-fieldset.dsa-u-mind-kind {
@@ -691,7 +705,9 @@
 
 .graph-add-child-mock .star-row {
     display: flex;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
     gap: 12px;
     padding: 12px 14px;
     background: #fff;
@@ -701,6 +717,7 @@
     transition: all 0.2s;
     user-select: none;
     position: relative;
+    overflow: visible;
 }
 
 .graph-add-child-mock .star-row:hover {
@@ -717,14 +734,22 @@
     height: 32px;
     border-radius: 8px;
     background: rgba(0, 0, 0, 0.05);
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: #b0b0b5;
     transition: all 0.25s;
     pointer-events: none;
     flex-shrink: 0;
+    flex-grow: 0;
     order: 0;
-    margin-top: 1px;
+    margin: 0;
+}
+
+.graph-add-child-mock .star-icon svg {
+    display: block;
+    width: 18px;
+    height: 18px;
 }
 
 .graph-add-child-mock .star-row.active .star-icon {
@@ -1007,14 +1032,6 @@
 
 .graph-add-child-mock .note-body textarea::placeholder {
     color: #c7c7cc;
-}
-
-.graph-add-child-mock .dsa-q-image-toolbar {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 8px;
-    margin-top: 10px;
 }
 
 .graph-add-child-mock .section-card {

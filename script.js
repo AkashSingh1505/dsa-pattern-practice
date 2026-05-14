@@ -6032,11 +6032,14 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     nodeReqStar.textContent = "*";
     nodeLabEl.appendChild(nodeLabelText);
     nodeLabEl.appendChild(nodeReqStar);
+    const nodeCountWrap = document.createElement("span");
+    nodeCountWrap.className = "opt field-char-limit";
     const nodeCharSpan = document.createElement("span");
-    nodeCharSpan.className = "opt field-char-limit";
     nodeCharSpan.textContent = "0";
+    nodeCountWrap.appendChild(nodeCharSpan);
+    nodeCountWrap.appendChild(document.createTextNode("/60"));
     nodeLabelRow.appendChild(nodeLabEl);
-    nodeLabelRow.appendChild(nodeCharSpan);
+    nodeLabelRow.appendChild(nodeCountWrap);
     const nodeInputWrap = document.createElement("div");
     nodeInputWrap.className = "input-wrap";
     const nodeLead = document.createElement("span");
@@ -6048,6 +6051,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     nodeIn.className = "dsa-field-control field-input";
     nodeIn.placeholder = "e.g. Sliding Window";
     nodeIn.autocomplete = "off";
+    nodeIn.maxLength = 60;
     nodeInputWrap.appendChild(nodeLead);
     nodeInputWrap.appendChild(nodeIn);
     nodeBlock.appendChild(nodeLabelRow);
@@ -6319,17 +6323,8 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const imagePreview = document.createElement("div");
     imagePreview.className = "dsa-q-image-preview";
 
-    const imageToolbarRow = document.createElement("div");
-    imageToolbarRow.className = "image-actions dsa-q-image-actions dsa-q-image-toolbar";
-
     const imageUploadRow = document.createElement("div");
     imageUploadRow.className = "dsa-q-image-upload-row";
-
-    const btnPickImage = document.createElement("button");
-    btnPickImage.type = "button";
-    btnPickImage.className = "btn-outline dsa-q-pick-image-btn";
-    btnPickImage.innerHTML =
-        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Choose image';
 
     let scratchApi;
     if (isEditProblem) {
@@ -6510,25 +6505,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const codeWrap = document.createElement("div");
     codeWrap.className = "code-wrap";
     codeWrap.appendChild(sheetCodeTa);
-    const codePasteBtn = document.createElement("button");
-    codePasteBtn.type = "button";
-    codePasteBtn.className = "code-paste";
-    codePasteBtn.title = "Paste from clipboard";
-    codePasteBtn.setAttribute("aria-label", "Paste solution code from clipboard");
-    codePasteBtn.innerHTML =
-        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>';
-    codePasteBtn.addEventListener("click", async () => {
-        try {
-            const t = await navigator.clipboard.readText();
-            if (t != null) {
-                sheetCodeTa.value = String(t);
-                syncSolutionSheetSaveEnabled();
-            }
-        } catch (_) {
-            /* ignore */
-        }
-    });
-    codeWrap.appendChild(codePasteBtn);
     codeField.appendChild(codeLabRow);
     codeField.appendChild(codeWrap);
 
@@ -6870,8 +6846,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     imageUploadRow.appendChild(imagePasteHint);
     imageResGroup.appendChild(imageResLab);
     imageResGroup.appendChild(imageUploadRow);
-    imageToolbarRow.appendChild(btnPickImage);
-    imageResGroup.appendChild(imageToolbarRow);
     imageResGroup.appendChild(fileIn);
     imageResGroup.appendChild(imagePreview);
 
@@ -7518,7 +7492,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         sheetSpaceIn.disabled = ro;
         sheetCodeTa.disabled = ro;
         sheetCancel.disabled = ro;
-        codePasteBtn.disabled = ro;
         syncSolutionSheetSaveEnabled();
         if (graphBodyCatSelect) {
             graphBodyCatSelect.disabled = ro;
@@ -7540,7 +7513,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         sketchEditorRoot.classList.toggle("dsa-sketch-editor-host--ro", ro || !isEditProblem);
         btnZoomOut.disabled = ro || !isEditProblem;
         btnZoomIn.disabled = ro || !isEditProblem;
-        btnPickImage.disabled = ro;
         imagePasteHint.classList.toggle("dsa-q-image-paste-hint--disabled", ro);
         btnOk.hidden = ro;
         kbdHint.hidden = ro;
@@ -7606,12 +7578,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         }
     });
 
-    btnPickImage.addEventListener("click", () => {
-        if (!isAdmin) {
-            return;
-        }
-        fileIn.click();
-    });
     btnZoomOut.addEventListener("click", () => {
         if (isAdmin && typeof scratchApi.zoomOut === "function") {
             scratchApi.zoomOut();

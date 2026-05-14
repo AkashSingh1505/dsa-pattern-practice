@@ -5,10 +5,32 @@ import {
     listGraphNodeCategories,
     parseAllowedChildSlugsJson,
     slugFromLabel,
+    validateNodeCategoryAllowedChildrenNoCycle,
+    validateNodeCategoriesAllHaveParent,
+    validateNodeCategoriesAllHaveParentExcept,
 } from "../../_lib/graph-node-category.js";
 
 function isHex6(s) {
     return typeof s === "string" && /^#[0-9a-fA-F]{6}$/.test(s.trim());
+}
+
+/** @param {Awaited<ReturnType<listGraphNodeCategories>>} existingList @param {Record<string, unknown>} body */
+function mergeCategoriesForValidation(existingList, patchSlug, body) {
+    const pu = String(patchSlug || "")
+        .toUpperCase()
+        .trim();
+    return existingList.map((c) => {
+        const cs = String(c.slug || "")
+            .toUpperCase()
+            .trim();
+        if (cs !== pu) {
+            return { slug: cs, allowedChildSlugs: [...(c.allowedChildSlugs || [])] };
+        }
+        const al = Array.isArray(body.allowedChildSlugs)
+            ? body.allowedChildSlugs.map((x) => String(x || "").trim().toUpperCase()).filter(Boolean)
+            : [...(c.allowedChildSlugs || [])];
+        return { slug: cs, allowedChildSlugs: al };
+    });
 }
 
 export async function onRequestGet(context) {
@@ -42,6 +64,19 @@ export async function onRequestPost(context) {
         if (ch !== slug && !existingSlugs.has(ch)) {
             return json({ error: 'allowedChildSlugs references unknown slug: "' + ch + '"' }, 400);
         }
+    }
+    const nextRows = existing.map((c) => ({
+        slug: c.slug,
+        allowedChildSlugs: [...(c.allowedChildSlugs || [])],
+    }));
+    nextRows.push({ slug, allowedChildSlugs: allowed });
+    const vCycle = validateNodeCategoryAllowedChildrenNoCycle(nextRows, slug, allowed);
+    if (!vCycle.ok) {
+        return json({ error: vCycle.error, code: vCycle.code }, 400);
+    }
+    const vPar = validateNodeCategoriesAllHaveParentExcept(nextRows, [slug]);
+    if (!vPar.ok) {
+        return json({ error: vPar.error, code: vPar.code }, 400);
     }
     let color = body.color != null ? String(body.color).trim() : "";
     if (!isHex6(color)) color = autoColorForSlug(slug);
@@ -88,6 +123,18 @@ export async function onRequestPatch(context) {
         return json({ error: "server error" }, 500);
     }
     if (!row) return json({ error: "not found" }, 404);
+    const existingList = await listGraphNodeCategories(db);
+    const nextRows = mergeCategoriesForValidation(existingList, slug, body);
+    const rowData = nextRows.find((c) => c.slug === slug);
+    if (!rowData) return json({ error: "not found" }, 404);
+    const vCycle = validateNodeCategoryAllowedChildrenNoCycle(nextRows, slug, rowData.allowedChildSlugs);
+    if (!vCycle.ok) {
+        return json({ error: vCycle.error, code: vCycle.code }, 400);
+    }
+    const vPar = validateNodeCategoriesAllHaveParent(nextRows);
+    if (!vPar.ok) {
+        return json({ error: vPar.error, code: vPar.code }, 400);
+    }
     const now = Math.floor(Date.now() / 1000);
     const updates = [];
     const binds = [];
@@ -105,8 +152,7 @@ export async function onRequestPatch(context) {
     }
     if (Array.isArray(body.allowedChildSlugs)) {
         const allowed = body.allowedChildSlugs.map((x) => String(x || "").trim().toUpperCase()).filter(Boolean);
-        const existing = await listGraphNodeCategories(db);
-        const existingSlugs = new Set(existing.map((c) => c.slug));
+        const existingSlugs = new Set(existingList.map((c) => c.slug));
         for (const ch of allowed) {
             if (ch !== slug && !existingSlugs.has(ch)) {
                 return json({ error: 'allowedChildSlugs references unknown slug: "' + ch + '"' }, 400);

@@ -916,6 +916,10 @@
                                     #adm-glib-node-types .adm-nt-chip-dot { width: 7px; height: 7px; border-radius: 50%; background: #d1d5db; flex-shrink: 0; }
                                     #adm-glib-node-types .adm-nt-chip.checked { background: #eff6ff; border-color: #93c5fd; color: #1d4ed8; }
                                     #adm-glib-node-types .adm-nt-chip.checked .adm-nt-chip-dot { background: currentColor; }
+                                    #adm-glib-node-types .adm-nt-chip.disabled { opacity: 0.48; cursor: not-allowed; pointer-events: none; border-style: dashed; color: #9ca3af; }
+                                    #adm-glib-node-types .adm-nt-chip.disabled .adm-nt-chip-dot { opacity: 0.5; }
+                                    #adm-glib-node-types .adm-nt-orphans-banner { display: block; background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; padding: 8px 12px; border-radius: 8px; font-size: 12px; line-height: 1.4; margin-bottom: 12px; }
+                                    #adm-glib-node-types .adm-nt-orphans-banner[hidden] { display: none !important; }
                                     #adm-glib-node-types .adm-nt-chip-group.locked .adm-nt-chip { cursor: not-allowed; pointer-events: none; opacity: 0.75; }
                                     #adm-glib-node-types .adm-nt-chip-group.locked .adm-nt-chip.checked { background: #f3f4f6; border-color: var(--adm-nt-border); color: #4b5563; }
                                     #adm-glib-node-types .adm-nt-chip-group.locked .adm-nt-chip:not(.checked) { opacity: 0.4; }
@@ -931,7 +935,7 @@
                                     <div class="adm-nt-header">
                                         <div>
                                             <h2>Mind-map node types</h2>
-                                            <p>Define categories for graph nodes. System categories have locked mapping rules; use <code>nodeCategorySlug</code> in JSON.</p>
+                                            <p>Define categories for graph nodes. Each type (except <code>TOPIC</code>) must appear as an allowed child on at least one other type. A type cannot list itself or any ancestor as a child. System categories have locked mappings; use <code>nodeCategorySlug</code> in JSON.</p>
                                         </div>
                                         <button type="button" class="adm-nt-btn" id="adm-glib-nt-refresh" title="Reload from server">
                                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -942,6 +946,7 @@
                                         </button>
                                     </div>
                                     <div id="adm-glib-nt-toast" class="adm-nt-toast" aria-live="polite" hidden></div>
+                                    <div id="adm-glib-nt-orphans" class="adm-nt-orphans-banner" hidden role="status"></div>
                                     <div class="adm-nt-tiles-section">
                                         <div class="adm-nt-section-title">
                                             <span>All categories <span class="adm-nt-count" id="adm-glib-nt-count">0</span></span>
@@ -1010,11 +1015,13 @@
                                                         <button type="button" id="adm-glib-nt-sel-none">None</button>
                                                     </div>
                                                 </div>
-                                                <div class="adm-nt-mapping-help" id="adm-glib-nt-map-help">Select at least one type that can appear under this node. Required to save.</div>
+                                                <div class="adm-nt-mapping-help" id="adm-glib-nt-map-help">
+                                                    Pick allowed children (at least one). Types cannot include themselves or ancestors. Every type except TOPIC needs a parent mapping elsewhere.
+                                                </div>
                                                 <div class="adm-nt-chip-group" id="adm-glib-nt-chip-group"></div>
                                                 <div class="adm-nt-error-text" id="adm-glib-nt-map-err">
                                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line></svg>
-                                                    Select at least one allowed child type.
+                                                    <span id="adm-glib-nt-map-err-msg">Select at least one allowed child type.</span>
                                                 </div>
                                             </div>
                                         </div>

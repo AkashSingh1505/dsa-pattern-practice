@@ -578,6 +578,7 @@
             if (cnt) {
                 cnt.textContent = String(n);
             }
+            admGlibNtUpdateOrphanBanner();
         } catch (e) {
             admGlibNtSetMsg(e.message || "Could not load node types.", "err");
         }
@@ -652,7 +653,223 @@
         host.appendChild(add);
     }
 
-    function admGlibNtRebuildChips(allowedSet) {
+    function admGlibNtSlugFromLabelRaw(label) {
+        return String(label || "")
+            .trim()
+            .toUpperCase()
+            .replace(/\s+/g, "_")
+            .replace(/[^A-Z0-9_]/g, "")
+            .slice(0, 48);
+    }
+
+    function admGlibNtResolvedNewSlug(label, slugInputVal) {
+        const manual = slugInputVal && String(slugInputVal).trim().toUpperCase();
+        if (manual) {
+            return manual;
+        }
+        const t = admGlibNtSlugFromLabelRaw(label);
+        return t || "TYPE";
+    }
+
+    function admGlibNtForbiddenChildSlugsLocal(categories, editingSlug) {
+        const target = String(editingSlug || "")
+            .toUpperCase()
+            .trim();
+        const out = new Set();
+        if (!target) {
+            return out;
+        }
+        const childToParents = new Map();
+        (categories || []).forEach(function (c) {
+            const p = String(c.slug || "")
+                .toUpperCase()
+                .trim();
+            if (!p) {
+                return;
+            }
+            (c.allowedChildSlugs || []).forEach(function (ch) {
+                const cs = String(ch || "")
+                    .toUpperCase()
+                    .trim();
+                if (!cs) {
+                    return;
+                }
+                if (!childToParents.has(cs)) {
+                    childToParents.set(cs, new Set());
+                }
+                childToParents.get(cs).add(p);
+            });
+        });
+        const stack = [...(childToParents.get(target) || [])];
+        while (stack.length) {
+            const p = String(stack.pop() || "")
+                .toUpperCase()
+                .trim();
+            if (!p || out.has(p)) {
+                continue;
+            }
+            out.add(p);
+            (childToParents.get(p) || []).forEach(function (gp) {
+                stack.push(gp);
+            });
+        }
+        out.add(target);
+        return out;
+    }
+
+    function admGlibNtGraphFromCache() {
+        return admGlibNodeTypesCache.map(function (c) {
+            return { slug: c.slug, allowedChildSlugs: (c.allowedChildSlugs || []).slice() };
+        });
+    }
+
+    function admGlibNtFindOrphansLocal(graph) {
+        const root = "TOPIC";
+        const allSlugs = (graph || []).map(function (c) {
+            return String(c.slug || "").toUpperCase().trim();
+        });
+        const all = new Set(allSlugs.filter(Boolean));
+        const orphans = [];
+        all.forEach(function (s) {
+            if (s === root) {
+                return;
+            }
+            let hasParent = false;
+            (graph || []).forEach(function (c) {
+                const p = String(c.slug || "").toUpperCase().trim();
+                if (p === s) {
+                    return;
+                }
+                if ((c.allowedChildSlugs || []).some(function (k) { return String(k || "").toUpperCase().trim() === s; })) {
+                    hasParent = true;
+                }
+            });
+            if (!hasParent) {
+                orphans.push(s);
+            }
+        });
+        return orphans;
+    }
+
+    function admGlibNtUpdateOrphanBanner() {
+        const el = document.getElementById("adm-glib-nt-orphans");
+        if (!el) {
+            return;
+        }
+        const o = admGlibNtFindOrphansLocal(admGlibNtGraphFromCache());
+        if (!o.length) {
+            el.hidden = true;
+            el.textContent = "";
+            return;
+        }
+        el.hidden = false;
+        el.textContent =
+            "These types have no parent — another type must list them as an allowed child (TOPIC is exempt): " +
+            o.join(", ");
+    }
+
+    function admGlibNtGetEditingSlugUpper() {
+        if (admGlibNtModalState.mode !== "new") {
+            return String(admGlibNtModalState.slug || "").toUpperCase();
+        }
+        const fSlug = document.getElementById("adm-glib-nt-f-slug");
+        const fLabel = document.getElementById("adm-glib-nt-f-label");
+        return admGlibNtResolvedNewSlug(fLabel && fLabel.value, fSlug && fSlug.value);
+    }
+
+    function admGlibNtCaptureChipAllowed() {
+        const o = {};
+        document.querySelectorAll("#adm-glib-nt-chip-group .adm-nt-chip input").forEach(function (inp) {
+            const s = inp.getAttribute("data-slug");
+            if (s && inp.checked && !inp.disabled) {
+                o[s] = true;
+            }
+        });
+        return o;
+    }
+
+    function admGlibNtValidateChildrenClient(editingSlug, allowedList, graphForAncestors) {
+        const ed = String(editingSlug || "").toUpperCase().trim();
+        if (!ed) {
+            return { ok: true };
+        }
+        const forbidden = admGlibNtForbiddenChildSlugsLocal(graphForAncestors, ed);
+        for (let i = 0; i < (allowedList || []).length; i++) {
+            const c = String(allowedList[i] || "").toUpperCase().trim();
+            if (forbidden.has(c)) {
+                return {
+                    ok: false,
+                    msg: 'Cannot allow "' + c + '" under "' + ed + '": not this type itself or any ancestor of it.',
+                };
+            }
+        }
+        return { ok: true };
+    }
+
+    function admGlibNtValidateParentsClient(nextGraph, exemptSlugsUpper) {
+        const root = "TOPIC";
+        const exempt = new Set((exemptSlugsUpper || []).map(function (s) { return String(s || "").toUpperCase().trim(); }));
+        const all = new Set(
+            (nextGraph || []).map(function (c) {
+                return String(c.slug || "").toUpperCase().trim();
+            }),
+        );
+        for (const s of all) {
+            if (s === root || exempt.has(s)) {
+                continue;
+            }
+            let hasParent = false;
+            (nextGraph || []).forEach(function (c) {
+                const p = String(c.slug || "").toUpperCase().trim();
+                if (p === s) {
+                    return;
+                }
+                if ((c.allowedChildSlugs || []).some(function (k) { return String(k || "").toUpperCase().trim() === s; })) {
+                    hasParent = true;
+                }
+            });
+            if (!hasParent) {
+                return {
+                    ok: false,
+                    msg:
+                        'Node type "' +
+                        s +
+                        '" must be an allowed child of at least one other type (TOPIC is exempt). Fix mappings or add a parent first.',
+                };
+            }
+        }
+        return { ok: true };
+    }
+
+    function admGlibNtMergePatchGraph(patchSlugUpper, allowedList) {
+        const pu = String(patchSlugUpper || "").toUpperCase().trim();
+        return admGlibNtGraphFromCache().map(function (c) {
+            const cs = String(c.slug || "").toUpperCase().trim();
+            if (cs !== pu) {
+                return { slug: c.slug, allowedChildSlugs: (c.allowedChildSlugs || []).slice() };
+            }
+            return { slug: c.slug, allowedChildSlugs: (allowedList || []).slice() };
+        });
+    }
+
+    function admGlibNtGraphWithNewRow(newSlugUpper, allowedList) {
+        const su = String(newSlugUpper || "").toUpperCase().trim();
+        const base = admGlibNtGraphFromCache();
+        return base.concat([{ slug: su, allowedChildSlugs: (allowedList || []).slice() }]);
+    }
+
+    function admGlibNtAllowedArrayFromChips() {
+        const allowed = [];
+        document.querySelectorAll("#adm-glib-nt-chip-group .adm-nt-chip input:checked:not(:disabled)").forEach(function (cb) {
+            const s = cb.getAttribute("data-slug");
+            if (s) {
+                allowed.push(s);
+            }
+        });
+        return allowed;
+    }
+
+    function admGlibNtRebuildChipsBasic(allowedSet) {
         const group = document.getElementById("adm-glib-nt-chip-group");
         if (!group) {
             return;
@@ -682,6 +899,63 @@
             });
             group.appendChild(lab);
         });
+    }
+
+    function admGlibNtRebuildChipsInteractive(allowedSet) {
+        const graph = admGlibNtGraphFromCache();
+        const editing = admGlibNtGetEditingSlugUpper();
+        const forbidden = admGlibNtForbiddenChildSlugsLocal(graph, editing);
+        const group = document.getElementById("adm-glib-nt-chip-group");
+        if (!group) {
+            return;
+        }
+        group.innerHTML = "";
+        admGlibNodeTypesCache.forEach(function (c) {
+            const slug = String(c.slug || "");
+            const lab = document.createElement("label");
+            lab.className = "adm-nt-chip";
+            const dis = forbidden.has(slug);
+            if (dis) {
+                lab.classList.add("disabled");
+            }
+            const inp = document.createElement("input");
+            inp.type = "checkbox";
+            inp.setAttribute("data-slug", slug);
+            if (dis) {
+                inp.disabled = true;
+                inp.checked = false;
+            } else {
+                inp.checked = !!(allowedSet && allowedSet[slug]);
+                if (inp.checked) {
+                    lab.classList.add("checked");
+                }
+            }
+            const chipDot = document.createElement("span");
+            chipDot.className = "adm-nt-chip-dot";
+            chipDot.style.color = String(c.color || "#6b7280").trim();
+            lab.appendChild(inp);
+            lab.appendChild(chipDot);
+            lab.appendChild(document.createTextNode(String(c.label || slug) + " · " + slug));
+            if (!dis) {
+                inp.addEventListener("change", function () {
+                    lab.classList.toggle("checked", inp.checked);
+                    admGlibNtValidateMapping();
+                });
+            }
+            group.appendChild(lab);
+        });
+    }
+
+    function admGlibNtRefreshChipsIfModalOpen() {
+        if (admGlibNtModalState.mode === "idle") {
+            return;
+        }
+        const mapBlock = document.getElementById("adm-glib-nt-map-block");
+        if (mapBlock && mapBlock.classList.contains("locked")) {
+            return;
+        }
+        admGlibNtRebuildChipsInteractive(admGlibNtCaptureChipAllowed());
+        admGlibNtValidateMapping();
     }
 
     function admGlibNtOpenEditor(mode, slug) {
@@ -766,7 +1040,7 @@
             (rec.allowedChildSlugs || []).forEach(function (s) {
                 allowed[String(s)] = true;
             });
-            admGlibNtRebuildChips(allowed);
+            admGlibNtRebuildChipsBasic(allowed);
         } else {
             if (mapBlock) {
                 mapBlock.classList.remove("locked");
@@ -780,7 +1054,8 @@
             }
             if (mapHelp) {
                 mapHelp.classList.remove("locked");
-                mapHelp.textContent = "Select at least one type that can appear under this node. Required to save.";
+                mapHelp.textContent =
+                    "Pick which types may appear as children of this one (at least one). A type cannot be its own child or an ancestor’s. Every type except TOPIC must also be listed as a child on some other type (new types can be fixed after save).";
             }
             if (reqStar) {
                 reqStar.style.display = "";
@@ -791,7 +1066,7 @@
                     allowed[String(s)] = true;
                 });
             }
-            admGlibNtRebuildChips(allowed);
+            admGlibNtRebuildChipsInteractive(allowed);
         }
 
         const delBtn = document.getElementById("adm-glib-nt-del-btn");
@@ -816,22 +1091,55 @@
     function admGlibNtValidateMapping() {
         const mapBlock = document.getElementById("adm-glib-nt-map-block");
         const saveBtn = document.getElementById("adm-glib-nt-save-btn");
+        const errMsgEl = document.getElementById("adm-glib-nt-map-err-msg");
         if (!mapBlock || !saveBtn) {
             return;
         }
         const locked = mapBlock.classList.contains("locked");
         if (locked) {
             saveBtn.disabled = false;
+            if (errMsgEl) {
+                errMsgEl.textContent = "Select at least one allowed child type.";
+            }
+            mapBlock.classList.remove("error");
             return;
         }
-        const any = !!document.querySelector("#adm-glib-nt-chip-group .adm-nt-chip input:checked");
+        const any = !!document.querySelector("#adm-glib-nt-chip-group .adm-nt-chip input:checked:not(:disabled)");
         if (!any) {
+            if (errMsgEl) {
+                errMsgEl.textContent = "Select at least one allowed child type (only selectable types count).";
+            }
             mapBlock.classList.add("error");
             saveBtn.disabled = true;
-        } else {
-            mapBlock.classList.remove("error");
-            saveBtn.disabled = false;
+            return;
         }
+        const allowedArr = admGlibNtAllowedArrayFromChips();
+        const slugEditing = admGlibNtGetEditingSlugUpper();
+        const isNew = admGlibNtModalState.mode === "new";
+        const childRes = admGlibNtValidateChildrenClient(slugEditing, allowedArr, admGlibNtGraphFromCache());
+        if (!childRes.ok) {
+            if (errMsgEl) {
+                errMsgEl.textContent = childRes.msg;
+            }
+            mapBlock.classList.add("error");
+            saveBtn.disabled = true;
+            return;
+        }
+        const nextGraph = isNew ? admGlibNtGraphWithNewRow(slugEditing, allowedArr) : admGlibNtMergePatchGraph(admGlibNtModalState.slug, allowedArr);
+        const parRes = admGlibNtValidateParentsClient(nextGraph, isNew ? [slugEditing] : []);
+        if (!parRes.ok) {
+            if (errMsgEl) {
+                errMsgEl.textContent = parRes.msg;
+            }
+            mapBlock.classList.add("error");
+            saveBtn.disabled = true;
+            return;
+        }
+        if (errMsgEl) {
+            errMsgEl.textContent = "Select at least one allowed child type.";
+        }
+        mapBlock.classList.remove("error");
+        saveBtn.disabled = false;
     }
 
     async function admGlibNtSaveModal() {
@@ -854,10 +1162,18 @@
 
         try {
             if (isNew) {
-                const allowed = [];
-                document.querySelectorAll("#adm-glib-nt-chip-group .adm-nt-chip input:checked").forEach(function (cb) {
-                    allowed.push(cb.getAttribute("data-slug"));
-                });
+                const allowed = admGlibNtAllowedArrayFromChips();
+                const slugNew = admGlibNtGetEditingSlugUpper();
+                const c0 = admGlibNtValidateChildrenClient(slugNew, allowed, admGlibNtGraphFromCache());
+                if (!c0.ok) {
+                    admGlibNtShowToast(c0.msg, true);
+                    return;
+                }
+                const p0 = admGlibNtValidateParentsClient(admGlibNtGraphWithNewRow(slugNew, allowed), [slugNew]);
+                if (!p0.ok) {
+                    admGlibNtShowToast(p0.msg, true);
+                    return;
+                }
                 const body = { label: label, allowedChildSlugs: allowed };
                 const slugHint = fSlug && fSlug.value.trim();
                 if (slugHint) {
@@ -885,10 +1201,17 @@
                     body.color = colorRaw.trim();
                 }
                 if (!isSys) {
-                    const allowed = [];
-                    document.querySelectorAll("#adm-glib-nt-chip-group .adm-nt-chip input:checked").forEach(function (cb) {
-                        allowed.push(cb.getAttribute("data-slug"));
-                    });
+                    const allowed = admGlibNtAllowedArrayFromChips();
+                    const c1 = admGlibNtValidateChildrenClient(slug, allowed, admGlibNtGraphFromCache());
+                    if (!c1.ok) {
+                        admGlibNtShowToast(c1.msg, true);
+                        return;
+                    }
+                    const p1 = admGlibNtValidateParentsClient(admGlibNtMergePatchGraph(slug, allowed), []);
+                    if (!p1.ok) {
+                        admGlibNtShowToast(p1.msg, true);
+                        return;
+                    }
                     body.allowedChildSlugs = allowed;
                     if (fOrder && fOrder.value !== "") {
                         const n = Number(fOrder.value);
@@ -995,7 +1318,7 @@
                 }
                 cg.querySelectorAll(".adm-nt-chip").forEach(function (lab) {
                     const cb = lab.querySelector("input");
-                    if (cb) {
+                    if (cb && !cb.disabled) {
                         cb.checked = true;
                         lab.classList.add("checked");
                     }
@@ -1011,13 +1334,27 @@
                 }
                 cg.querySelectorAll(".adm-nt-chip").forEach(function (lab) {
                     const cb = lab.querySelector("input");
-                    if (cb) {
+                    if (cb && !cb.disabled) {
                         cb.checked = false;
                         lab.classList.remove("checked");
                     }
                 });
                 admGlibNtValidateMapping();
             });
+        }
+        const fLabelNt = document.getElementById("adm-glib-nt-f-label");
+        const fSlugNt = document.getElementById("adm-glib-nt-f-slug");
+        function onNewSlugOrLabelInput() {
+            if (admGlibNtModalState.mode !== "new") {
+                return;
+            }
+            admGlibNtRefreshChipsIfModalOpen();
+        }
+        if (fLabelNt) {
+            fLabelNt.addEventListener("input", onNewSlugOrLabelInput);
+        }
+        if (fSlugNt) {
+            fSlugNt.addEventListener("input", onNewSlugOrLabelInput);
         }
     }
 

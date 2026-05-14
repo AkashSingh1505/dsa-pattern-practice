@@ -193,6 +193,195 @@ export function autoColorForSlug(slug) {
 }
 
 /**
+ * Slugs that must not appear as allowed children of `editingSlug` (itself + every ancestor
+ * in the taxonomy graph built from "P allows C" edges).
+ * @param {{ slug: string, allowedChildSlugs: string[] }[]} categories
+ * @param {string} editingSlug
+ */
+export function forbiddenChildSlugsForNodeCategory(categories, editingSlug) {
+    const target = String(editingSlug || "")
+        .toUpperCase()
+        .trim();
+    const out = new Set();
+    if (!target) {
+        return out;
+    }
+    const childToParents = new Map();
+    for (const c of categories || []) {
+        const p = String(c.slug || "")
+            .toUpperCase()
+            .trim();
+        if (!p) {
+            continue;
+        }
+        for (const ch of c.allowedChildSlugs || []) {
+            const cs = String(ch || "")
+                .toUpperCase()
+                .trim();
+            if (!cs) {
+                continue;
+            }
+            if (!childToParents.has(cs)) {
+                childToParents.set(cs, new Set());
+            }
+            childToParents.get(cs).add(p);
+        }
+    }
+    const stack = [...(childToParents.get(target) || [])];
+    while (stack.length) {
+        const p = String(stack.pop() || "")
+            .toUpperCase()
+            .trim();
+        if (!p || out.has(p)) {
+            continue;
+        }
+        out.add(p);
+        for (const gp of childToParents.get(p) || []) {
+            stack.push(gp);
+        }
+    }
+    out.add(target);
+    return out;
+}
+
+/**
+ * @param {{ slug: string, allowedChildSlugs: string[] }[]} categories full proposed taxonomy
+ * @param {string} editingSlug category whose allowedChildSlugs are being validated
+ * @param {string[]} allowedChildSlugs
+ */
+export function validateNodeCategoryAllowedChildrenNoCycle(categories, editingSlug, allowedChildSlugs) {
+    const ed = String(editingSlug || "")
+        .toUpperCase()
+        .trim();
+    const forbidden = forbiddenChildSlugsForNodeCategory(categories, ed);
+    for (const ch of allowedChildSlugs || []) {
+        const c = String(ch || "")
+            .toUpperCase()
+            .trim();
+        if (forbidden.has(c)) {
+            return {
+                ok: false,
+                error:
+                    'Cannot allow "' +
+                    c +
+                    '" under "' +
+                    ed +
+                    '": a type cannot list itself or any ancestor as a child.',
+                code: "GRAPH_NODE_CATEGORY_CHILD_FORBIDDEN",
+            };
+        }
+    }
+    return { ok: true };
+}
+
+const DEFAULT_ROOT_CATEGORY_SLUG = "TOPIC";
+
+/**
+ * Every category except the root must be listed as an allowed child of at least one other type.
+ * @param {{ slug: string, allowedChildSlugs: string[] }[]} categories
+ * @param {string} [rootSlug]
+ */
+export function validateNodeCategoriesAllHaveParent(categories, rootSlug = DEFAULT_ROOT_CATEGORY_SLUG) {
+    const root = String(rootSlug || "TOPIC")
+        .toUpperCase()
+        .trim();
+    const allSlugs = new Set(
+        (categories || [])
+            .map((c) =>
+                String(c.slug || "")
+                    .toUpperCase()
+                    .trim(),
+            )
+            .filter(Boolean),
+    );
+    for (const s of allSlugs) {
+        if (s === root) {
+            continue;
+        }
+        let hasParent = false;
+        for (const c of categories || []) {
+            const p = String(c.slug || "")
+                .toUpperCase()
+                .trim();
+            if (p === s) {
+                continue;
+            }
+            const kids = c.allowedChildSlugs || [];
+            if (kids.some((k) => String(k || "").toUpperCase().trim() === s)) {
+                hasParent = true;
+                break;
+            }
+        }
+        if (!hasParent) {
+            return {
+                ok: false,
+                error:
+                    'Node type "' +
+                    s +
+                    '" must be an allowed child of at least one other type (not itself). Root `' +
+                    root +
+                    "` is exempt.",
+                code: "GRAPH_NODE_CATEGORY_ORPHAN",
+            };
+        }
+    }
+    return { ok: true };
+}
+
+/**
+ * Like validateNodeCategoriesAllHaveParent but ignores slugs in `exemptSlugs` (e.g. a row just created).
+ * @param {string[]} exemptSlugs
+ */
+export function validateNodeCategoriesAllHaveParentExcept(categories, exemptSlugs, rootSlug = DEFAULT_ROOT_CATEGORY_SLUG) {
+    const exempt = new Set(
+        (exemptSlugs || []).map((x) =>
+            String(x || "")
+                .toUpperCase()
+                .trim(),
+        ),
+    );
+    const root = String(rootSlug || "TOPIC")
+        .toUpperCase()
+        .trim();
+    const allSlugs = new Set(
+        (categories || [])
+            .map((c) =>
+                String(c.slug || "")
+                    .toUpperCase()
+                    .trim(),
+            )
+            .filter(Boolean),
+    );
+    for (const s of allSlugs) {
+        if (s === root || exempt.has(s)) {
+            continue;
+        }
+        let hasParent = false;
+        for (const c of categories || []) {
+            const p = String(c.slug || "")
+                .toUpperCase()
+                .trim();
+            if (p === s) {
+                continue;
+            }
+            const kids = c.allowedChildSlugs || [];
+            if (kids.some((k) => String(k || "").toUpperCase().trim() === s)) {
+                hasParent = true;
+                break;
+            }
+        }
+        if (!hasParent) {
+            return {
+                ok: false,
+                error: 'Node type "' + s + '" must be an allowed child of at least one other type (not itself).',
+                code: "GRAPH_NODE_CATEGORY_ORPHAN",
+            };
+        }
+    }
+    return { ok: true };
+}
+
+/**
  * @param {string} label
  * @returns {string} slug
  */

@@ -5645,10 +5645,10 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     backdrop.className = "dsa-dialog-backdrop";
 
     const dlg = document.createElement("div");
-    dlg.className = "dsa-dialog dsa-dialog--question dsa-dialog--unified";
+    dlg.className = "dsa-dialog dsa-dialog--question dsa-dialog--unified dsa-add-child-shell";
     dlg.setAttribute("role", "dialog");
     dlg.setAttribute("aria-modal", "true");
-    dlg.setAttribute("data-dsa-question-ui", "unified-v3");
+    dlg.setAttribute("data-dsa-question-ui", "unified-v4");
 
     const title = document.createElement("h3");
     title.className = "dsa-dialog-title";
@@ -5660,6 +5660,19 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             : isMetaRoot
               ? "Add data structure"
               : "Add to graph";
+
+    const subtitleEl = document.createElement("p");
+    subtitleEl.className = "dsa-ac-modal-sub";
+    subtitleEl.hidden = true;
+
+    const btnInfo = document.createElement("button");
+    btnInfo.type = "button";
+    btnInfo.className = "dsa-ac-icon-btn";
+    btnInfo.setAttribute("aria-label", "Show type description");
+    btnInfo.title = "Show description";
+    btnInfo.hidden = true;
+    btnInfo.innerHTML =
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
 
     let adminNote = null;
     if (!isAdmin) {
@@ -5721,9 +5734,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             ? dsaMindAllowedChildSlugsRespectingParentState(parentKey, mindCatsPre)
             : [];
     const useMindTypePicker2 = mindAllowedEff.length > 0;
-    if (useMindTypePicker2) {
-        title.textContent = "Add child";
-    }
+
     if (isMetaRoot && addingNewItem) {
         catFs.hidden = true;
         catFs.setAttribute("aria-hidden", "true");
@@ -5754,16 +5765,47 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         mkLeg.className = "dsa-field-legend";
         mkLeg.textContent = "Node type";
         mindTypeFs.appendChild(mkLeg);
-        const mkRow = document.createElement("div");
-        mkRow.className = "dsa-u-cat-row";
+        const typeGrid = document.createElement("div");
+        typeGrid.className = "dsa-ac-type-grid";
+        typeGrid.setAttribute("role", "radiogroup");
         const order = ["TOPIC", "PATTERN", "PROBLEM"];
         const slugLabel = new Map(
             mindCatsPre.map((c) => [String(c.slug || "").toUpperCase().trim(), String(c.label || c.slug || "").trim()]),
         );
+        const slugCardClass = (su) => {
+            if (su === "PATTERN") {
+                return "dsa-ac-type-card dsa-ac-type-card--pattern";
+            }
+            if (su === "PROBLEM") {
+                return "dsa-ac-type-card dsa-ac-type-card--problem";
+            }
+            return "dsa-ac-type-card dsa-ac-type-card--topic";
+        };
+        const slugIconClass = (su) => {
+            if (su === "PATTERN") {
+                return "dsa-ac-type-icon dsa-ac-type-icon--pattern";
+            }
+            if (su === "PROBLEM") {
+                return "dsa-ac-type-icon dsa-ac-type-icon--problem";
+            }
+            return "dsa-ac-type-icon dsa-ac-type-icon--topic";
+        };
+        const slugIconSvg = (su) => {
+            if (su === "PATTERN") {
+                return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 10v6M4.22 4.22l4.24 4.24m7.07 7.07l4.24 4.24M1 12h6m10 0h6M4.22 19.78l4.24-4.24m7.07-7.07l4.24-4.24"/></svg>';
+            }
+            if (su === "PROBLEM") {
+                return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+            }
+            return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>';
+        };
         const allowedSorted = [...mindAllowedEff].sort((a, b) => order.indexOf(a) - order.indexOf(b));
         allowedSorted.forEach((slug, idx) => {
             const su = String(slug).toUpperCase();
             const id = `dsaMindKind_${su}`;
+            const lab = document.createElement("label");
+            lab.className = slugCardClass(su);
+            lab.setAttribute("for", id);
             const inp = document.createElement("input");
             inp.type = "radio";
             inp.name = "dsaMindKind";
@@ -5771,14 +5813,25 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             inp.id = id;
             if (idx === 0) {
                 inp.checked = true;
+                lab.classList.add("selected");
             }
-            const lab = document.createElement("label");
-            lab.htmlFor = id;
-            lab.textContent = slugLabel.get(su) || su;
-            mkRow.appendChild(inp);
-            mkRow.appendChild(lab);
+            lab.appendChild(inp);
+            const icon = document.createElement("span");
+            icon.className = slugIconClass(su);
+            icon.innerHTML = slugIconSvg(su);
+            lab.appendChild(icon);
+            const nm = document.createElement("div");
+            nm.className = "dsa-ac-type-name";
+            nm.textContent = slugLabel.get(su) || su;
+            lab.appendChild(nm);
+            const chk = document.createElement("span");
+            chk.className = "dsa-ac-type-check";
+            chk.innerHTML =
+                '<svg width="8" height="8" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6l3 3 5-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
+            lab.appendChild(chk);
+            typeGrid.appendChild(lab);
         });
-        mindTypeFs.appendChild(mkRow);
+        mindTypeFs.appendChild(typeGrid);
     }
 
     const graphBodyCats =
@@ -5816,10 +5869,108 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         graphBodyCatSelect.value = String(graphBodyCats[0].id);
     }
     graphBodyCatRow.appendChild(graphBodyCatLab);
-    graphBodyCatRow.appendChild(graphBodyCatSelect);
+    const graphBodySelectWrap = document.createElement("div");
+    graphBodySelectWrap.className = "dsa-ac-select-wrap";
+    graphBodySelectWrap.appendChild(graphBodyCatSelect);
+    graphBodyCatRow.appendChild(graphBodySelectWrap);
     graphBodyCatFs.appendChild(graphBodyCatLeg);
     graphBodyCatFs.appendChild(graphBodyCatRow);
     graphBodyCatFs.hidden = true;
+
+    const scrollBody = document.createElement("div");
+    scrollBody.className = "dsa-add-child-body";
+
+    const infoPanel = document.createElement("div");
+    infoPanel.className = "dsa-ac-info-panel dsa-ac-info-panel--topic";
+    infoPanel.id = "dsa-ac-info-panel";
+    infoPanel.setAttribute("aria-hidden", "true");
+    const infoInner = document.createElement("div");
+    infoInner.className = "dsa-ac-info-panel__inner";
+    const infoIconSm = document.createElement("div");
+    infoIconSm.className = "dsa-ac-info-panel__icon";
+    infoIconSm.innerHTML =
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+    const infoBodyWrap = document.createElement("div");
+    const infoTitleEl = document.createElement("div");
+    infoTitleEl.className = "dsa-ac-info-panel__title";
+    const infoTextEl = document.createElement("div");
+    infoTextEl.className = "dsa-ac-info-panel__text";
+    const infoChipsEl = document.createElement("div");
+    infoChipsEl.className = "dsa-ac-info-chips";
+    infoBodyWrap.appendChild(infoTitleEl);
+    infoBodyWrap.appendChild(infoTextEl);
+    infoBodyWrap.appendChild(infoChipsEl);
+    infoInner.appendChild(infoIconSm);
+    infoInner.appendChild(infoBodyWrap);
+    infoPanel.appendChild(infoInner);
+
+    const dsaAcMindInfoCopy = {
+        TOPIC: {
+            title: "About Topic",
+            text: "A high-level grouping that contains related patterns and problems. Use topics to organize broad areas of study.",
+            chips: ["Arrays", "Graphs", "Dynamic Programming"],
+        },
+        PATTERN: {
+            title: "About Pattern",
+            text: "A reusable problem-solving approach that applies to many problems. Patterns help you recognize structure.",
+            chips: ["Sliding Window", "Two Pointers", "BFS"],
+        },
+        PROBLEM: {
+            title: "About Problem",
+            text: "A concrete coding challenge. Add link, difficulty, hints, companies, and resources for spaced repetition.",
+            chips: ["Two Sum", "Binary Search", "Word Ladder"],
+        },
+    };
+
+    function fillMindInfoPanel(slugUpper) {
+        const u = String(slugUpper || "TOPIC").toUpperCase();
+        const meta = dsaAcMindInfoCopy[u] || dsaAcMindInfoCopy.TOPIC;
+        infoTitleEl.textContent = meta.title;
+        infoTextEl.textContent = meta.text;
+        infoChipsEl.textContent = "";
+        meta.chips.forEach((t) => {
+            const chip = document.createElement("span");
+            chip.className = "dsa-ac-chip";
+            chip.textContent = t;
+            infoChipsEl.appendChild(chip);
+        });
+        infoPanel.classList.remove("dsa-ac-info-panel--topic", "dsa-ac-info-panel--pattern", "dsa-ac-info-panel--problem");
+        infoPanel.classList.add(
+            u === "PATTERN" ? "dsa-ac-info-panel--pattern" : u === "PROBLEM" ? "dsa-ac-info-panel--problem" : "dsa-ac-info-panel--topic",
+        );
+    }
+
+    function syncMindTypeCardVisual() {
+        if (!useMindTypePicker2) {
+            return;
+        }
+        mindTypeFs.querySelectorAll(".dsa-ac-type-card").forEach((card) => {
+            const inp = card.querySelector('input[name="dsaMindKind"]');
+            card.classList.toggle("selected", !!(inp && inp.checked));
+        });
+        const mk = dlg.querySelector('input[name="dsaMindKind"]:checked');
+        fillMindInfoPanel(mk ? mk.value : "TOPIC");
+    }
+
+    function refreshAddChildChrome() {
+        if (!useMindTypePicker2 || !addingNewItem || isRenameNode || editQuestionName || editUserNodeId) {
+            subtitleEl.hidden = true;
+            btnInfo.hidden = true;
+            dlg.classList.remove("dsa-add-child-expanded");
+            return;
+        }
+        subtitleEl.hidden = false;
+        btnInfo.hidden = false;
+        const mk = dlg.querySelector('input[name="dsaMindKind"]:checked');
+        const slugU = mk ? String(mk.value).toUpperCase() : "TOPIC";
+        const isProb = slugU === "PROBLEM";
+        dlg.classList.toggle("dsa-add-child-expanded", isProb);
+        fillMindInfoPanel(slugU);
+        subtitleEl.textContent = isProb
+            ? "Capture problem details, difficulty and resources"
+            : "Add a new item beneath the current node";
+        title.textContent = isProb ? "Add problem" : "Add child node";
+    }
 
     function syncGraphBodyCategoryFieldset() {
         if (!graphBodyCats.length || isMetaRoot) {
@@ -5834,24 +5985,39 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     }
 
     const nodeBlock = document.createElement("div");
-    nodeBlock.className = "dsa-u-node";
+    nodeBlock.className = "dsa-u-node dsa-ac-field-group";
+    const nodeLabelRow = document.createElement("div");
+    nodeLabelRow.className = "dsa-ac-field-label-row";
     const nodeLabEl = document.createElement("label");
-    nodeLabEl.className = "dsa-field-label";
+    nodeLabEl.className = "dsa-field-label dsa-ac-fl-upper";
     nodeLabEl.setAttribute("for", "dsa-node-only");
-    nodeLabEl.appendChild(document.createTextNode("Node label "));
+    nodeLabEl.appendChild(document.createTextNode("Node name"));
     const nodeReqStar = document.createElement("span");
     nodeReqStar.className = "dsa-req";
     nodeReqStar.setAttribute("aria-hidden", "true");
     nodeReqStar.textContent = "*";
     nodeLabEl.appendChild(nodeReqStar);
+    const nodeCharSpan = document.createElement("span");
+    nodeCharSpan.className = "dsa-ac-field-opt";
+    nodeCharSpan.textContent = "0";
+    nodeLabelRow.appendChild(nodeLabEl);
+    nodeLabelRow.appendChild(nodeCharSpan);
+    const nodeInputWrap = document.createElement("div");
+    nodeInputWrap.className = "dsa-ac-input-wrap";
+    const nodeLead = document.createElement("span");
+    nodeLead.className = "dsa-ac-input-lead";
+    nodeLead.innerHTML =
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2"/><path d="M9 21h6M12 3v18"/></svg>';
     const nodeIn = document.createElement("input");
     nodeIn.type = "text";
     nodeIn.id = "dsa-node-only";
     nodeIn.className = "dsa-field-control";
-    nodeIn.placeholder = "Node label";
+    nodeIn.placeholder = "e.g. Sliding Window";
     nodeIn.autocomplete = "off";
-    nodeBlock.appendChild(nodeLabEl);
-    nodeBlock.appendChild(nodeIn);
+    nodeInputWrap.appendChild(nodeLead);
+    nodeInputWrap.appendChild(nodeIn);
+    nodeBlock.appendChild(nodeLabelRow);
+    nodeBlock.appendChild(nodeInputWrap);
     if (isMetaRoot && addingNewItem) {
         const metaNote = document.createElement("p");
         metaNote.className = "dsa-dialog-note dsa-meta-root-add-note";
@@ -5862,18 +6028,34 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
 
     const qBlock = document.createElement("div");
     qBlock.className = "dsa-u-question";
+    const problemOuter = document.createElement("div");
+    problemOuter.className = "dsa-ac-problem-section";
 
     const nameField = document.createElement("div");
     nameField.className = "dsa-q-field";
+    const nameLabelRow = document.createElement("div");
+    nameLabelRow.className = "dsa-ac-field-label-row";
     const nameLabEl = document.createElement("label");
-    nameLabEl.className = "dsa-field-label";
+    nameLabEl.className = "dsa-field-label dsa-ac-fl-upper";
     nameLabEl.setAttribute("for", "dsa-q-name");
-    nameLabEl.appendChild(document.createTextNode("Problem label "));
+    nameLabEl.appendChild(document.createTextNode("Problem label"));
     const nameReqStar = document.createElement("span");
     nameReqStar.className = "dsa-req";
     nameReqStar.setAttribute("aria-hidden", "true");
     nameReqStar.textContent = "*";
     nameLabEl.appendChild(nameReqStar);
+    const nameCharSpan = document.createElement("span");
+    nameCharSpan.className = "dsa-ac-field-opt";
+    nameCharSpan.textContent = "0";
+    nameLabelRow.appendChild(nameLabEl);
+    nameLabelRow.appendChild(nameCharSpan);
+
+    const nameInputWrap = document.createElement("div");
+    nameInputWrap.className = "dsa-ac-input-wrap";
+    const nameLead = document.createElement("span");
+    nameLead.className = "dsa-ac-input-lead";
+    nameLead.innerHTML =
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2"/><path d="M9 21h6M12 3v18"/></svg>';
 
     const nameIn = document.createElement("input");
     nameIn.type = "text";
@@ -5883,24 +6065,43 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     nameIn.autocomplete = "off";
     nameIn.readOnly = !!(editQuestionName || editUserNodeId);
     nameIn.setAttribute("aria-required", "true");
-    nameField.appendChild(nameLabEl);
-    nameField.appendChild(nameIn);
+    nameInputWrap.appendChild(nameLead);
+    nameInputWrap.appendChild(nameIn);
+    nameField.appendChild(nameLabelRow);
+    nameField.appendChild(nameInputWrap);
 
     const urlField = document.createElement("div");
     urlField.className = "dsa-q-field";
+    const urlLabelRow = document.createElement("div");
+    urlLabelRow.className = "dsa-ac-field-label-row";
     const urlLabEl = document.createElement("label");
-    urlLabEl.className = "dsa-field-label dsa-field-label--optional";
+    urlLabEl.className = "dsa-field-label dsa-ac-fl-upper dsa-field-label--optional";
     urlLabEl.setAttribute("for", "dsa-q-url");
-    urlLabEl.textContent = "Link";
+    urlLabEl.appendChild(document.createTextNode("Link"));
+    const urlOpt = document.createElement("span");
+    urlOpt.className = "dsa-ac-field-opt";
+    urlOpt.style.fontWeight = "500";
+    urlOpt.textContent = "(optional)";
+    urlLabelRow.appendChild(urlLabEl);
+    urlLabelRow.appendChild(urlOpt);
+
+    const urlInputWrap = document.createElement("div");
+    urlInputWrap.className = "dsa-ac-input-wrap";
+    const urlLead = document.createElement("span");
+    urlLead.className = "dsa-ac-input-lead";
+    urlLead.innerHTML =
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
 
     const urlIn = document.createElement("input");
     urlIn.type = "url";
     urlIn.id = "dsa-q-url";
     urlIn.className = "dsa-field-control";
-    urlIn.placeholder = "https://… (optional)";
+    urlIn.placeholder = "https://leetcode.com/… (optional)";
     urlIn.setAttribute("inputmode", "url");
-    urlField.appendChild(urlLabEl);
-    urlField.appendChild(urlIn);
+    urlInputWrap.appendChild(urlLead);
+    urlInputWrap.appendChild(urlIn);
+    urlField.appendChild(urlLabelRow);
+    urlField.appendChild(urlInputWrap);
 
     const existingCard = document.createElement("div");
     existingCard.className = "dsa-q-existing";
@@ -6759,14 +6960,16 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const difficultyField = document.createElement("div");
     difficultyField.className = "dsa-q-field";
     const diffLabEl = document.createElement("label");
-    diffLabEl.className = "dsa-field-label";
+    diffLabEl.className = "dsa-field-label dsa-ac-fl-upper";
     diffLabEl.setAttribute("for", "dsa-q-difficulty");
-    diffLabEl.appendChild(document.createTextNode("Difficulty "));
+    diffLabEl.appendChild(document.createTextNode("Difficulty"));
     const diffReqStar = document.createElement("span");
     diffReqStar.className = "dsa-req";
     diffReqStar.setAttribute("aria-hidden", "true");
     diffReqStar.textContent = "*";
     diffLabEl.appendChild(diffReqStar);
+    const difficultyPillWrap = document.createElement("div");
+    difficultyPillWrap.className = "dsa-ac-diff-pills";
     const difficultySelectWrap = document.createElement("div");
     difficultySelectWrap.className = "dsa-q-difficulty-select-wrap";
     const difficultySelect = document.createElement("select");
@@ -6785,33 +6988,118 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         o.textContent = lab;
         difficultySelect.appendChild(o);
     });
+    difficultySelect.value = "medium";
+    const diffPillDefs = [
+        ["easy", "Easy", "dsa-ac-diff-pill--easy"],
+        ["medium", "Medium", "dsa-ac-diff-pill--medium"],
+        ["hard", "Hard", "dsa-ac-diff-pill--hard"],
+    ];
+    diffPillDefs.forEach(([val, lab, cls]) => {
+        const labEl = document.createElement("label");
+        labEl.className = `dsa-ac-diff-pill ${cls}`;
+        const inp = document.createElement("input");
+        inp.type = "radio";
+        inp.name = "dsa-q-diff-pill";
+        inp.value = val;
+        if (difficultySelect.value === val) {
+            labEl.classList.add("selected");
+            inp.checked = true;
+        }
+        labEl.appendChild(inp);
+        const dot = document.createElement("span");
+        dot.className = "dsa-ac-diff-dot";
+        labEl.appendChild(dot);
+        labEl.appendChild(document.createTextNode(lab));
+        difficultyPillWrap.appendChild(labEl);
+    });
+    difficultyPillWrap.addEventListener("change", (e) => {
+        const t = e.target;
+        if (!t || t.name !== "dsa-q-diff-pill") {
+            return;
+        }
+        difficultySelect.value = t.value;
+        difficultyPillWrap.querySelectorAll(".dsa-ac-diff-pill").forEach((labEl) => {
+            const r = labEl.querySelector('input[name="dsa-q-diff-pill"]');
+            labEl.classList.toggle("selected", !!(r && r.checked));
+        });
+        difficultySelect.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    difficultySelect.classList.add("dsa-ac-diff-hidden");
     difficultySelectWrap.appendChild(difficultySelect);
     difficultyField.appendChild(diffLabEl);
+    difficultyField.appendChild(difficultyPillWrap);
     difficultyField.appendChild(difficultySelectWrap);
 
-    const importantField = document.createElement("label");
-    importantField.className = "dsa-q-important-toggle";
-    importantField.setAttribute("for", "dsa-q-important");
+    function syncDifficultyPillsFromSelect() {
+        const v = dsaNormalizeProblemDifficulty(difficultySelect.value);
+        difficultyPillWrap.querySelectorAll(".dsa-ac-diff-pill").forEach((labEl) => {
+            const r = labEl.querySelector('input[name="dsa-q-diff-pill"]');
+            const on = r && r.value === v;
+            labEl.classList.toggle("selected", on);
+            if (r) {
+                r.checked = on;
+            }
+        });
+    }
+
+    const importantWrap = document.createElement("div");
+    importantWrap.className = "dsa-ac-star-row";
+    importantWrap.setAttribute("role", "button");
+    importantWrap.tabIndex = 0;
     const importantInput = document.createElement("input");
     importantInput.type = "checkbox";
     importantInput.id = "dsa-q-important";
     importantInput.className = "dsa-q-important-input";
     importantInput.setAttribute("aria-label", "Mark as starred problem");
-    const importantMeta = document.createElement("span");
-    importantMeta.className = "dsa-q-important-meta";
-    const importantTitle = document.createElement("span");
-    importantTitle.className = "dsa-q-important-title";
-    importantTitle.textContent = "Starred (most important)";
-    const importantHelp = document.createElement("span");
-    importantHelp.className = "dsa-q-important-help";
-    importantHelp.textContent = "Shown first in the default Starred tab.";
-    importantMeta.appendChild(importantTitle);
-    importantMeta.appendChild(importantHelp);
-    importantField.appendChild(importantInput);
-    importantField.appendChild(importantMeta);
+    const starIcon = document.createElement("div");
+    starIcon.className = "dsa-ac-star-icon";
+    starIcon.innerHTML =
+        '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+    const starText = document.createElement("div");
+    starText.className = "dsa-ac-star-text";
+    const starTitle = document.createElement("div");
+    starTitle.className = "dsa-ac-star-title";
+    starTitle.textContent = "Mark as Starred";
+    const starSub = document.createElement("div");
+    starSub.className = "dsa-ac-star-sub";
+    starSub.textContent = "Shown first in the default Starred tab";
+    starText.appendChild(starTitle);
+    starText.appendChild(starSub);
+    const starSwitch = document.createElement("div");
+    starSwitch.className = "dsa-ac-switch";
+    starSwitch.setAttribute("aria-hidden", "true");
+    importantWrap.appendChild(importantInput);
+    importantWrap.appendChild(starIcon);
+    importantWrap.appendChild(starText);
+    importantWrap.appendChild(starSwitch);
+
+    function syncStarVisual() {
+        importantWrap.classList.toggle("dsa-ac-star-row--on", importantInput.checked);
+    }
+
+    importantWrap.addEventListener("click", () => {
+        if (!isAdmin || importantInput.disabled) {
+            return;
+        }
+        importantInput.checked = !importantInput.checked;
+        importantInput.dispatchEvent(new Event("change", { bubbles: true }));
+        syncStarVisual();
+    });
+    importantWrap.addEventListener("keydown", (e) => {
+        if (!isAdmin || importantInput.disabled) {
+            return;
+        }
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            importantInput.checked = !importantInput.checked;
+            importantInput.dispatchEvent(new Event("change", { bubbles: true }));
+            syncStarVisual();
+        }
+    });
+    importantInput.addEventListener("change", syncStarVisual);
 
     detailsPanel.appendChild(difficultyField);
-    detailsPanel.appendChild(importantField);
+    detailsPanel.appendChild(importantWrap);
     detailsPanel.appendChild(qHint);
     detailsPanel.appendChild(hintSec.sec);
     detailsPanel.appendChild(companySec.sec);
@@ -6824,6 +7112,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     qBlock.appendChild(nameField);
     qBlock.appendChild(urlField);
     qBlock.appendChild(tabPanelsWrap);
+    problemOuter.appendChild(qBlock);
 
     function renderExistingCard(ent) {
         existingCard.innerHTML = "";
@@ -7042,6 +7331,8 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         }
         renderSolutionsEditorList();
         renderCompanyChips();
+        syncDifficultyPillsFromSelect();
+        syncStarVisual();
     }
 
     function syncNameToEntry() {
@@ -7070,6 +7361,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
 
     nameIn.addEventListener("input", () => {
         clearFieldErrors();
+        nameCharSpan.textContent = String(nameIn.value.length);
         if (debounceTimer) {
             clearTimeout(debounceTimer);
         }
@@ -7080,16 +7372,22 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     });
     nodeIn.addEventListener("input", () => {
         clearFieldErrors();
+        nodeCharSpan.textContent = String(nodeIn.value.length);
     });
     urlIn.addEventListener("input", () => {
         urlIn.classList.remove("dsa-field-control--error");
     });
     difficultySelect.addEventListener("change", () => {
         difficultySelect.classList.remove("dsa-field-control--error");
+        syncDifficultyPillsFromSelect();
     });
     graphBodyCatSelect.addEventListener("change", () => {
         graphBodyCatSelect.classList.remove("dsa-field-control--error");
     });
+
+    function syncProblemSectionShell() {
+        problemOuter.classList.toggle("show", !qBlock.hidden && !isRenameNode);
+    }
 
     function syncCategory() {
         if (isRenameNode) {
@@ -7097,6 +7395,8 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             qBlock.hidden = true;
             headerTabsRow.hidden = true;
             syncGraphBodyCategoryFieldset();
+            syncProblemSectionShell();
+            refreshAddChildChrome();
             return;
         }
         if (useMindTypePicker2) {
@@ -7106,6 +7406,8 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             qBlock.hidden = !isProb;
             headerTabsRow.hidden = !isProb;
             syncGraphBodyCategoryFieldset();
+            syncProblemSectionShell();
+            refreshAddChildChrome();
             return;
         }
         const nodeMode = radN.checked;
@@ -7113,36 +7415,52 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         qBlock.hidden = nodeMode;
         headerTabsRow.hidden = nodeMode;
         syncGraphBodyCategoryFieldset();
+        syncProblemSectionShell();
+        refreshAddChildChrome();
     }
     radQ.addEventListener("change", syncCategory);
     radN.addEventListener("change", syncCategory);
 
-    const btnCancel = document.createElement("button");
-    btnCancel.type = "button";
-    btnCancel.className = "dsa-dialog-btn-icon dsa-dialog-btn-icon--close";
-    btnCancel.setAttribute("aria-label", "Cancel");
-    btnCancel.setAttribute("title", "Cancel");
+    const btnHeaderClose = document.createElement("button");
+    btnHeaderClose.type = "button";
+    btnHeaderClose.className = "dsa-ac-icon-btn dsa-ac-icon-btn--close";
+    btnHeaderClose.setAttribute("aria-label", "Close");
+    btnHeaderClose.setAttribute("title", "Close");
     const svgX = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svgX.setAttribute("width", "18");
-    svgX.setAttribute("height", "18");
-    svgX.setAttribute("viewBox", "0 0 24 24");
+    svgX.setAttribute("width", "11");
+    svgX.setAttribute("height", "11");
+    svgX.setAttribute("viewBox", "0 0 12 12");
     svgX.setAttribute("fill", "none");
-    svgX.setAttribute("stroke", "currentColor");
-    svgX.setAttribute("stroke-width", "2");
-    svgX.setAttribute("stroke-linecap", "round");
     svgX.setAttribute("aria-hidden", "true");
     const x1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    x1.setAttribute("d", "M18 6L6 18");
-    const x2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    x2.setAttribute("d", "M6 6l12 12");
+    x1.setAttribute("d", "M1 1l10 10M11 1L1 11");
+    x1.setAttribute("stroke", "currentColor");
+    x1.setAttribute("stroke-width", "1.6");
+    x1.setAttribute("stroke-linecap", "round");
     svgX.appendChild(x1);
-    svgX.appendChild(x2);
-    btnCancel.appendChild(svgX);
+    btnHeaderClose.appendChild(svgX);
+
+    const btnFooterCancel = document.createElement("button");
+    btnFooterCancel.type = "button";
+    btnFooterCancel.className = "dsa-ac-btn dsa-ac-btn-secondary";
+    btnFooterCancel.textContent = "Cancel";
 
     const btnOk = document.createElement("button");
     btnOk.type = "button";
-    btnOk.className = "dsa-dialog-btn dsa-dialog-btn--primary";
+    btnOk.className = "dsa-dialog-btn dsa-dialog-btn--primary dsa-ac-btn dsa-ac-btn-primary";
     btnOk.textContent = "Save";
+
+    const footer = document.createElement("div");
+    footer.className = "dsa-add-child-footer";
+    const kbdHint = document.createElement("div");
+    kbdHint.className = "dsa-ac-kbd-hint";
+    kbdHint.innerHTML = "<kbd>Enter</kbd> to save · <kbd>Esc</kbd> to close";
+    const footerBtns = document.createElement("div");
+    footerBtns.className = "dsa-ac-footer-btns";
+    footerBtns.appendChild(btnFooterCancel);
+    footerBtns.appendChild(btnOk);
+    footer.appendChild(kbdHint);
+    footer.appendChild(footerBtns);
 
     const header = document.createElement("div");
     header.className = "dsa-dialog-header";
@@ -7151,14 +7469,22 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const headerMain = document.createElement("div");
     headerMain.className = "dsa-dialog-header-main";
     headerMain.appendChild(title);
+    headerMain.appendChild(subtitleEl);
     const headerActions = document.createElement("div");
     headerActions.className = "dsa-dialog-header-actions";
-    headerActions.appendChild(btnOk);
-    headerActions.appendChild(btnCancel);
+    headerActions.appendChild(btnInfo);
+    headerActions.appendChild(btnHeaderClose);
     headerTop.appendChild(headerMain);
     headerTop.appendChild(headerActions);
     header.appendChild(headerTop);
     header.appendChild(headerTabsRow);
+
+    btnInfo.addEventListener("click", () => {
+        const on = !infoPanel.classList.contains("show");
+        infoPanel.classList.toggle("show", on);
+        infoPanel.setAttribute("aria-hidden", on ? "false" : "true");
+        btnInfo.classList.toggle("dsa-ac-icon-btn--active", on);
+    });
 
     function setAdminDisabled() {
         const ro = !isAdmin;
@@ -7185,6 +7511,11 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         dlg.querySelectorAll('input[name="dsaMindKind"]').forEach((inp) => {
             inp.disabled = ro;
         });
+        difficultyPillWrap.querySelectorAll('input[name="dsa-q-diff-pill"]').forEach((inp) => {
+            inp.disabled = ro;
+        });
+        importantWrap.style.pointerEvents = ro ? "none" : "";
+        importantWrap.setAttribute("aria-disabled", ro ? "true" : "false");
         if (btnAddSolutionEl) {
             btnAddSolutionEl.disabled = ro;
             btnAddSolutionEl.hidden = ro;
@@ -7196,6 +7527,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         btnPickImage.disabled = ro;
         btnPasteImage.disabled = ro;
         btnOk.hidden = ro;
+        kbdHint.hidden = ro;
         dlg.querySelectorAll(".dsa-q-section-clear-btn").forEach((b) => {
             b.disabled = ro;
             b.hidden = ro;
@@ -7238,10 +7570,20 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
                 return;
             }
             close();
+            return;
+        }
+        if (e.key === "Enter" && !e.repeat && isAdmin && !btnOk.hidden && sheetBackdrop.hidden) {
+            const t = e.target;
+            const tag = t && t.tagName;
+            if (tag !== "TEXTAREA" && tag !== "SELECT") {
+                e.preventDefault();
+                void performUnifiedSave({});
+            }
         }
     }
     document.addEventListener("keydown", onKey);
-    btnCancel.addEventListener("click", close);
+    btnHeaderClose.addEventListener("click", close);
+    btnFooterCancel.addEventListener("click", close);
     backdrop.addEventListener("click", (e) => {
         if (e.target === backdrop) {
             close();
@@ -7511,18 +7853,25 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
 
     dlg.appendChild(header);
     if (adminNote) {
-        dlg.appendChild(adminNote);
+        scrollBody.appendChild(adminNote);
     }
-    dlg.appendChild(catFs);
-    dlg.appendChild(mindTypeFs);
-    dlg.appendChild(graphBodyCatFs);
-    dlg.appendChild(nodeBlock);
-    dlg.appendChild(qBlock);
+    scrollBody.appendChild(infoPanel);
+    scrollBody.appendChild(catFs);
+    scrollBody.appendChild(mindTypeFs);
+    scrollBody.appendChild(graphBodyCatFs);
+    scrollBody.appendChild(nodeBlock);
+    scrollBody.appendChild(problemOuter);
+    dlg.appendChild(scrollBody);
+    dlg.appendChild(footer);
     setAdminDisabled();
     syncCategory();
+    syncMindTypeCardVisual();
     if (useMindTypePicker2) {
         dlg.querySelectorAll('input[name="dsaMindKind"]').forEach((inp) => {
-            inp.addEventListener("change", syncCategory);
+            inp.addEventListener("change", () => {
+                syncMindTypeCardVisual();
+                syncCategory();
+            });
         });
     }
 
@@ -7561,6 +7910,10 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         difficultySelect.value = "medium";
         nameIn.focus();
     }
+    syncDifficultyPillsFromSelect();
+    syncStarVisual();
+    nodeCharSpan.textContent = String(nodeIn.value.length);
+    nameCharSpan.textContent = String(nameIn.value.length);
 }
 /**
  * @param {{ siteAdmin: boolean, canEditGraph: boolean }} authCtx — siteAdmin = RSA CMS token; canEditGraph = customize UI rings.

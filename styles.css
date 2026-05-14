@@ -1,4 +1,4 @@
-@import url("./graph-add-child-mock.css?v=6");
+@import url("./graph-add-child-mock.css?v=7");
 
 /* Global reset for margins and paddings */
 * {
@@ -765,6 +765,18 @@ body.nav-mobile-menu-open {
     justify-content: center;
     padding: 20px;
     box-sizing: border-box;
+}
+
+/* Add-problem / unified graph modal — page background like HTML mock (not flat gray). */
+.dsa-dialog-backdrop.dsa-dialog-backdrop--graph-ac-mock {
+    background:
+        radial-gradient(1200px 600px at 10% 0%, #e8efff 0%, transparent 60%),
+        radial-gradient(900px 500px at 100% 100%, #ffe9f5 0%, transparent 55%),
+        linear-gradient(180deg, #f5f5f7, #ececf0);
+    background-color: #ececf0;
+    backdrop-filter: saturate(140%) blur(10px);
+    -webkit-backdrop-filter: saturate(140%) blur(10px);
+    padding: 24px;
 }
 
 .dsa-dialog {

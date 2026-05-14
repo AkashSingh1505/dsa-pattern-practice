@@ -5642,7 +5642,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     let syncEntryKey = "";
 
     const backdrop = document.createElement("div");
-    backdrop.className = "dsa-dialog-backdrop";
+    backdrop.className = "dsa-dialog-backdrop dsa-dialog-backdrop--graph-ac-mock";
 
     const dlg = document.createElement("div");
     dlg.className = "dsa-dialog dsa-dialog--question dsa-dialog--unified graph-add-child-mock modal";
@@ -7108,10 +7108,10 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const starSwitch = document.createElement("div");
     starSwitch.className = "switch";
     starSwitch.setAttribute("aria-hidden", "true");
-    importantWrap.appendChild(importantInput);
     importantWrap.appendChild(starIcon);
     importantWrap.appendChild(starText);
     importantWrap.appendChild(starSwitch);
+    importantWrap.appendChild(importantInput);
 
     function syncStarVisual() {
         importantWrap.classList.toggle("active", importantInput.checked);
@@ -7506,7 +7506,15 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     footer.className = "footer";
     const kbdHint = document.createElement("div");
     kbdHint.className = "kbd-hint";
-    kbdHint.innerHTML = "<kbd>Enter</kbd> to save · <kbd>Esc</kbd> to close";
+    kbdHint.innerHTML =
+        '<kbd class="kbd-key kbd-key--enter" title="Enter / Return" aria-label="Enter">' +
+        '<svg width="15" height="11" viewBox="0 0 24 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+        '<path d="M4 10V4L1 7l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '<path d="M4 10h14a3 3 0 0 0 3-3V5a3 3 0 0 0-3-3h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+        "</svg></kbd>" +
+        '<span class="kbd-hint-sep">to save ·</span>' +
+        '<kbd class="kbd-key" title="Escape" aria-label="Escape">Esc</kbd>' +
+        '<span class="kbd-hint-sep">to close</span>';
     const footerBtns = document.createElement("div");
     footerBtns.className = "btn-row";
     footerBtns.appendChild(btnFooterCancel);

@@ -617,6 +617,7 @@
             writeSession(null);
             if (typeof window !== "undefined") {
                 window.__dsaGraphBodyCategories = mapNodeCategoriesToPalette((j.graph && j.graph.nodeCategories) || []);
+                window.__dsaGraphNodeCategories = (j.graph && j.graph.nodeCategories) || [];
             }
             toast("Preview loaded — not saved to your library");
             if (typeof window.__dsaUdashNavigatePanel === "function") {
@@ -636,6 +637,7 @@
             }
             if (typeof window !== "undefined") {
                 window.__dsaGraphBodyCategories = mapNodeCategoriesToPalette(g.nodeCategories || []);
+                window.__dsaGraphNodeCategories = g.nodeCategories || [];
             }
             dsaImportMindMapHierarchyFromText(JSON.stringify(g.payload));
             writeSession({ copyId: g.id, title: g.title || title || "Graph", kind: g.kind || kind || "created" });

@@ -91,7 +91,7 @@ function dsaUserPayloadIsBranchStyleEntry(x) {
         return false;
     }
     const t = x.type;
-    return t === "branch" || t === "group" || t === "pattern";
+    return t === "branch" || t === "group" || t === "pattern" || t === "topic";
 }
 
 /** Preset labels for admin “Company tags” (dropdown). */
@@ -467,9 +467,110 @@ function dsaResolveParentNode(clone, parentKey) {
     return null;
 }
 
+/** Public API: global mind-map node types (slug, label, allowedChildSlugs, …). */
+async function dsaFetchGraphNodeCategoriesList() {
+    if (typeof window !== "undefined" && Array.isArray(window.__dsaGraphNodeCategories) && window.__dsaGraphNodeCategories.length) {
+        return window.__dsaGraphNodeCategories;
+    }
+    try {
+        const href =
+            typeof document !== "undefined" && document.baseURI
+                ? new URL("api/graph-library/node-categories", document.baseURI).href
+                : "/api/graph-library/node-categories";
+        const r = await fetch(href, { credentials: "same-origin" });
+        const j = await r.json();
+        if (j && j.ok && Array.isArray(j.categories)) {
+            if (typeof window !== "undefined") {
+                window.__dsaGraphNodeCategories = j.categories;
+            }
+            return j.categories;
+        }
+    } catch (e) {
+        console.warn("dsaFetchGraphNodeCategoriesList", e);
+    }
+    return [];
+}
+
+function dsaMindParentCategorySlug(parentKey) {
+    const merged = getDsaHierarchyMerged();
+    if (!parentKey || parentKey === "__DSA_META__") {
+        return "ROOT";
+    }
+    const parts = parentKey.split("::").map((s) => s.trim()).filter(Boolean);
+    if (!parts.length) {
+        return "ROOT";
+    }
+    const ds = merged.find((d) => d && dsaDsIdEq(d.id, parts[0]));
+    if (!ds) {
+        return "ROOT";
+    }
+    if (parts.length === 1) {
+        const s = ds.nodeCategorySlug != null ? String(ds.nodeCategorySlug).trim().toUpperCase() : "";
+        return s || "ROOT";
+    }
+    const r = dsaResolveParentNode(merged, parentKey);
+    if (!r || !r.parentNode) {
+        return "TOPIC";
+    }
+    const n = r.parentNode;
+    const slug = n.nodeCategorySlug != null ? String(n.nodeCategorySlug).trim().toUpperCase() : "";
+    return slug || "TOPIC";
+}
+
+/**
+ * @param {string} parentSlug
+ * @param {{ slug?: string, allowedChildSlugs?: string[] }[]} cats
+ * @returns {string[]}
+ */
+function dsaMindAllowedChildSlugs(parentSlug, cats) {
+    const p = String(parentSlug || "")
+        .toUpperCase()
+        .trim();
+    const list = Array.isArray(cats) ? cats : [];
+    const row = list.find((c) => c && String(c.slug || "").toUpperCase().trim() === p);
+    const raw = row && Array.isArray(row.allowedChildSlugs) ? row.allowedChildSlugs : [];
+    return raw.map((s) => String(s || "").toUpperCase().trim()).filter((s) => s && s !== "ROOT");
+}
+
+/**
+ * @param {{ ds: object, parentNode: object | null }} resolved
+ * @param {{ name: string, children?: unknown[], problems?: unknown[], nodeCategorySlug?: string }} newNode
+ * @param {string} mindSlug TOPIC | PATTERN
+ */
+function dsaMindInsertBranchChild(resolved, newNode, mindSlug) {
+    const { ds, parentNode } = resolved;
+    const s = String(mindSlug || "TOPIC").toUpperCase();
+    if (!parentNode) {
+        if (s === "PATTERN") {
+            if (!Array.isArray(ds.patterns)) {
+                ds.patterns = [];
+            }
+            ds.patterns.push(newNode);
+            return;
+        }
+        if (!Array.isArray(ds.tree)) {
+            ds.tree = [];
+        }
+        ds.tree.push(newNode);
+        return;
+    }
+    if (s === "PATTERN") {
+        if (!Array.isArray(parentNode.patterns)) {
+            parentNode.patterns = [];
+        }
+        parentNode.patterns.push(newNode);
+        return;
+    }
+    if (!Array.isArray(parentNode.children)) {
+        parentNode.children = [];
+    }
+    parentNode.children.push(newNode);
+}
+
 function dsaTryApplyOneUserNode(clone, e) {
     const { parentKey, type, name, url, id } = e;
     const gc = e && e.graphCategoryId != null ? String(e.graphCategoryId).trim() : "";
+    const mindSlug = e && e.nodeCategorySlug != null ? String(e.nodeCategorySlug).trim().toUpperCase() : "";
     if (!parentKey || !name || !type) {
         return true;
     }
@@ -483,7 +584,7 @@ function dsaTryApplyOneUserNode(clone, e) {
             if (clone.some((d) => d && dsaDsIdEq(d.id, id))) {
                 return true;
             }
-            const rootObj = { id, name: name.trim(), tree: [] };
+            const rootObj = { id, name: name.trim(), tree: [], nodeCategorySlug: "ROOT" };
             if (gc) {
                 rootObj.graphCategoryId = gc;
             }
@@ -492,9 +593,9 @@ function dsaTryApplyOneUserNode(clone, e) {
         }
         return true;
     }
-    const { parentNode, topArray } = resolved;
+    const { parentNode } = resolved;
     const isQuestion = dsaUserPayloadIsProblemEntry({ type });
-    const isBranch = type === "branch" || type === "group" || type === "pattern";
+    const isBranch = type === "branch" || type === "group" || type === "pattern" || type === "topic";
 
     if (isQuestion) {
         const hrefRaw = (url || "").trim();
@@ -534,24 +635,41 @@ function dsaTryApplyOneUserNode(clone, e) {
         if (!nm) {
             return true;
         }
-        const newNode = { name: nm, children: [] };
+        const branchCat = mindSlug === "PATTERN" ? "PATTERN" : "TOPIC";
+        const newNode = {
+            name: nm,
+            children: [],
+            problems: [],
+            nodeCategorySlug: branchCat,
+        };
         if (gc) {
             newNode.graphCategoryId = gc;
         }
         if (!parentNode) {
-            if (topArray.some((n) => n && String(n.name || "").trim() === nm)) {
+            const treeN = Array.isArray(resolved.ds.tree) ? resolved.ds.tree : [];
+            const patN = Array.isArray(resolved.ds.patterns) ? resolved.ds.patterns : [];
+            const dup =
+                treeN.some((n) => n && String(n.name || "").trim() === nm) ||
+                patN.some((n) => n && String(n.name || "").trim() === nm);
+            if (dup) {
                 return true;
             }
-            topArray.push(newNode);
+            dsaMindInsertBranchChild(resolved, newNode, branchCat);
             return true;
         }
-        if (!parentNode.children) {
-            parentNode.children = [];
-        }
-        if (parentNode.children.some((n) => n && String(n.name || "").trim() === nm)) {
+        if (branchCat === "PATTERN") {
+            const pat = Array.isArray(parentNode.patterns) ? parentNode.patterns : [];
+            if (pat.some((n) => n && String(n.name || "").trim() === nm)) {
+                return true;
+            }
+            dsaMindInsertBranchChild(resolved, newNode, "PATTERN");
             return true;
         }
-        parentNode.children.push(newNode);
+        const ch = Array.isArray(parentNode.children) ? parentNode.children : [];
+        if (ch.some((n) => n && String(n.name || "").trim() === nm)) {
+            return true;
+        }
+        dsaMindInsertBranchChild(resolved, newNode, "TOPIC");
         return true;
     }
 
@@ -779,6 +897,10 @@ function dsaAddUserNode(entry) {
     if (gbc) {
         row.graphCategoryId = gbc;
     }
+    const ncs = entry.nodeCategorySlug != null ? String(entry.nodeCategorySlug).trim().toUpperCase() : "";
+    if (ncs) {
+        row.nodeCategorySlug = ncs;
+    }
     dsaUserPayload.nodes.push(row);
     dsaPersistUserPayload();
     dsaScheduleDsaCmsSync();
@@ -993,6 +1115,7 @@ function dsaBuildProblemFromQuestionEntry(e, name, href) {
     if (gbc) {
         o.graphCategoryId = gbc;
     }
+    o.nodeCategorySlug = "PROBLEM";
     return o;
 }
 
@@ -1232,6 +1355,12 @@ function dsaUpsertUserQuestionNode(payload) {
         }
     } else if (prevRow && prevRow.graphCategoryId) {
         row.graphCategoryId = prevRow.graphCategoryId;
+    }
+    const pSlug = payload.nodeCategorySlug != null ? String(payload.nodeCategorySlug).trim().toUpperCase() : "";
+    if (pSlug) {
+        row.nodeCategorySlug = pSlug;
+    } else {
+        row.nodeCategorySlug = "PROBLEM";
     }
     if (idx >= 0) {
         dsaUserPayload.nodes[idx] = row;
@@ -2730,6 +2859,7 @@ function createCustomizeClockBadge(opts) {
         problemsPanel,
         nameEl,
         isAdmin,
+        openModalParentKey,
     } = opts;
     const canEdit = !!isAdmin;
 
@@ -2861,7 +2991,8 @@ function createCustomizeClockBadge(opts) {
 
     btnAdd.addEventListener("click", (e) => {
         e.stopPropagation();
-        dsaOpenCustomizeUnifiedModal(pathKey, refresh);
+        const pkModal = openModalParentKey != null && String(openModalParentKey).trim() ? String(openModalParentKey).trim() : pathKey;
+        dsaOpenCustomizeUnifiedModal(pkModal, refresh);
     });
 
     if (!canEdit) {
@@ -4871,6 +5002,16 @@ function buildUnifiedMindmapTree(panel, scheduleRedraw, customizeCtx, graphRefre
     });
 
     const rootCount = topicNodes.length;
+    let metaAddModalParentKey = "__DSA_META__";
+    if (
+        typeof dsaGraphPreviewMode !== "undefined" &&
+        dsaGraphPreviewMode &&
+        merged.length === 1 &&
+        merged[0] &&
+        merged[0].id != null
+    ) {
+        metaAddModalParentKey = String(merged[0].id);
+    }
     let rootBadgeEl;
     if (customizeCtx) {
         rootBadgeEl = createCustomizeClockBadge({
@@ -4889,6 +5030,7 @@ function buildUnifiedMindmapTree(panel, scheduleRedraw, customizeCtx, graphRefre
             problemsPanel: null,
             nameEl: null,
             isAdmin: customizeCtx.isAdmin,
+            openModalParentKey: metaAddModalParentKey,
         });
     } else {
         rootBadgeEl = createExpandableCountBadge(rootCount, "dsa-h-badge--root");
@@ -5482,6 +5624,27 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     catFs.appendChild(catLeg);
     catFs.appendChild(rowCat);
     const addingNewItem = !editQuestionName && !editUserNodeId && !isRenameNode;
+    const mindCatsPre =
+        typeof window !== "undefined" && Array.isArray(window.__dsaGraphNodeCategories) ? window.__dsaGraphNodeCategories : [];
+    const mindParentSlugEff =
+        addingNewItem && !isRenameNode && !editQuestionName && !editUserNodeId
+            ? dsaMindParentCategorySlug(parentKey)
+            : "";
+    const mindAllowedEff =
+        typeof dsaGraphPreviewMode !== "undefined" &&
+        dsaGraphPreviewMode &&
+        mindCatsPre.length > 0 &&
+        mindParentSlugEff &&
+        addingNewItem &&
+        !isRenameNode &&
+        !editQuestionName &&
+        !editUserNodeId
+            ? dsaMindAllowedChildSlugs(mindParentSlugEff, mindCatsPre)
+            : [];
+    const useMindTypePicker2 = mindAllowedEff.length > 0;
+    if (useMindTypePicker2) {
+        title.textContent = "Add child";
+    }
     if (isMetaRoot && addingNewItem) {
         catFs.hidden = true;
         catFs.setAttribute("aria-hidden", "true");
@@ -5500,6 +5663,43 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         catFs.hidden = true;
         radQ.checked = true;
         radN.checked = false;
+    }
+
+    const mindTypeFs = document.createElement("fieldset");
+    mindTypeFs.className = "dsa-fieldset dsa-u-mind-kind";
+    mindTypeFs.hidden = !useMindTypePicker2;
+    if (useMindTypePicker2) {
+        catFs.hidden = true;
+        catFs.setAttribute("aria-hidden", "true");
+        const mkLeg = document.createElement("legend");
+        mkLeg.className = "dsa-field-legend";
+        mkLeg.textContent = "Node type";
+        mindTypeFs.appendChild(mkLeg);
+        const mkRow = document.createElement("div");
+        mkRow.className = "dsa-u-cat-row";
+        const order = ["TOPIC", "PATTERN", "PROBLEM"];
+        const slugLabel = new Map(
+            mindCatsPre.map((c) => [String(c.slug || "").toUpperCase().trim(), String(c.label || c.slug || "").trim()]),
+        );
+        const allowedSorted = [...mindAllowedEff].sort((a, b) => order.indexOf(a) - order.indexOf(b));
+        allowedSorted.forEach((slug, idx) => {
+            const su = String(slug).toUpperCase();
+            const id = `dsaMindKind_${su}`;
+            const inp = document.createElement("input");
+            inp.type = "radio";
+            inp.name = "dsaMindKind";
+            inp.value = su;
+            inp.id = id;
+            if (idx === 0) {
+                inp.checked = true;
+            }
+            const lab = document.createElement("label");
+            lab.htmlFor = id;
+            lab.textContent = slugLabel.get(su) || su;
+            mkRow.appendChild(inp);
+            mkRow.appendChild(lab);
+        });
+        mindTypeFs.appendChild(mkRow);
     }
 
     const graphBodyCats =
@@ -6820,6 +7020,15 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             syncGraphBodyCategoryFieldset();
             return;
         }
+        if (useMindTypePicker2) {
+            const mk = dlg.querySelector('input[name="dsaMindKind"]:checked');
+            const isProb = mk && mk.value === "PROBLEM";
+            nodeBlock.hidden = isProb;
+            qBlock.hidden = !isProb;
+            headerTabsRow.hidden = !isProb;
+            syncGraphBodyCategoryFieldset();
+            return;
+        }
         const nodeMode = radN.checked;
         nodeBlock.hidden = !nodeMode;
         qBlock.hidden = nodeMode;
@@ -6828,7 +7037,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     }
     radQ.addEventListener("change", syncCategory);
     radN.addEventListener("change", syncCategory);
-    syncCategory();
 
     const btnCancel = document.createElement("button");
     btnCancel.type = "button";
@@ -6895,6 +7103,9 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         if (graphBodyCatSelect) {
             graphBodyCatSelect.disabled = ro;
         }
+        dlg.querySelectorAll('input[name="dsaMindKind"]').forEach((inp) => {
+            inp.disabled = ro;
+        });
         if (btnAddSolutionEl) {
             btnAddSolutionEl.disabled = ro;
             btnAddSolutionEl.hidden = ro;
@@ -6911,11 +7122,10 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             b.hidden = ro;
         });
     }
-    if (!isMetaRoot && !editQuestionName && !editUserNodeId && !isRenameNode && kindFlags.hasSubnodes) {
+    if (!isMetaRoot && !editQuestionName && !editUserNodeId && !isRenameNode && kindFlags.hasSubnodes && !useMindTypePicker2) {
         radN.checked = true;
         radQ.checked = false;
     }
-    syncCategory();
     if (isRenameNode) {
         btnOk.textContent = "Save name";
         nodeIn.value =
@@ -7031,6 +7241,16 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         if (!isAdmin) {
             return;
         }
+        if (useMindTypePicker2) {
+            const mk = dlg.querySelector('input[name="dsaMindKind"]:checked');
+            const kind = mk ? String(mk.value).toUpperCase() : "";
+            if (!kind || !mindAllowedEff.includes(kind)) {
+                window.alert("Choose a node type allowed for this parent.");
+                return;
+            }
+            radQ.checked = kind === "PROBLEM";
+            radN.checked = kind !== "PROBLEM";
+        }
         if (isRenameNode) {
             clearFieldErrors();
             const nameRm = nodeIn.value.trim();
@@ -7085,6 +7305,15 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             };
             if (graphBodyCats.length && graphBodyCatSelect && !graphBodyCatFs.hidden) {
                 nodeEntry.graphCategoryId = graphBodyCatSelect.value.trim();
+            }
+            if (useMindTypePicker2) {
+                const mk = dlg.querySelector('input[name="dsaMindKind"]:checked');
+                const k = mk ? String(mk.value).toUpperCase() : "TOPIC";
+                if (k === "PATTERN" || k === "TOPIC") {
+                    nodeEntry.nodeCategorySlug = k;
+                }
+            } else if (typeof dsaGraphPreviewMode !== "undefined" && dsaGraphPreviewMode) {
+                nodeEntry.nodeCategorySlug = "TOPIC";
             }
             dsaAddUserNode(nodeEntry);
             if (fromFullscreen && typeof scratchApi.exitFullscreen === "function") {
@@ -7181,6 +7410,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             starred: importantInput.checked === true,
             done: !!(entForId && entForId.done),
             difficulty: dsaNormalizeProblemDifficulty(difficultySelect.value),
+            nodeCategorySlug: "PROBLEM",
         };
         if (graphBodyCats.length && graphBodyCatSelect && !graphBodyCatFs.hidden) {
             upsertPayload.graphCategoryId = graphBodyCatSelect.value.trim();
@@ -7205,10 +7435,17 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         dlg.appendChild(adminNote);
     }
     dlg.appendChild(catFs);
+    dlg.appendChild(mindTypeFs);
     dlg.appendChild(graphBodyCatFs);
     dlg.appendChild(nodeBlock);
     dlg.appendChild(qBlock);
     setAdminDisabled();
+    syncCategory();
+    if (useMindTypePicker2) {
+        dlg.querySelectorAll('input[name="dsaMindKind"]').forEach((inp) => {
+            inp.addEventListener("change", syncCategory);
+        });
+    }
 
     backdrop.appendChild(dlg);
     document.body.appendChild(backdrop);
@@ -7400,6 +7637,20 @@ function dsaReloadGraphFromEditorJson(jsonStr, mount) {
         };
     }
     dsaHierarchy = parsed;
+    void (async () => {
+        try {
+            const base =
+                typeof document !== "undefined" && document.baseURI ? document.baseURI : typeof window !== "undefined" ? window.location.href : "";
+            const href = new URL("api/graph-library/node-categories", base || "http://localhost/").href;
+            const r = await fetch(href, { credentials: "same-origin" });
+            const j = await r.json();
+            if (j && j.ok && Array.isArray(j.categories) && typeof window !== "undefined") {
+                window.__dsaGraphNodeCategories = j.categories;
+            }
+        } catch (_) {
+            /* ignore */
+        }
+    })();
     loadDsaPatternsPage({
         graphPreview: true,
         mount:

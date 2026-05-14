@@ -3,6 +3,7 @@ import { newGraphId, requirePracticeUser } from "../../_lib/practice-auth-reques
 import { ensureUserGraphVisibilityColumn } from "../../_lib/user-graph-visibility.js";
 import { listCatalogCategoriesForCatalog, remapGraphCategoryIdsInPayload, validateMindMapGraphInvariant } from "../../_lib/graph-catalog-category-rows.js";
 import { ensureUserGraphCategoriesJsonColumn, stringifyUserGraphCategories } from "../../_lib/user-graph-categories-json.js";
+import { touchUserSavedCategories } from "../../_lib/user-saved-graph-categories.js";
 
 export async function onRequestPost(context) {
     const { request, env } = context;
@@ -121,6 +122,12 @@ export async function onRequestPost(context) {
     } catch (e) {
         console.error("download batch", e);
         return json({ error: "server error" }, 500);
+    }
+
+    try {
+        await touchUserSavedCategories(db, userId, newCatRows);
+    } catch (e) {
+        console.error("download palette", e);
     }
 
     let uniqueDownloaders = 0;

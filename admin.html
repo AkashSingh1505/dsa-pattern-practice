@@ -979,7 +979,16 @@
                                                 <input id="adm-glib-difficulty" type="text" placeholder="e.g. beginner" maxlength="32" autocomplete="off" />
                                             </div>
                                             <div class="adm-field adm-field--span-2">
-                                                <label class="adm-glib-cat-field-label" id="adm-glib-cat-field-label">Categories <span class="adm-glib-label-muted">name required, color optional</span></label>
+                                                <label for="adm-glib-cat-saved-preset">Saved categories <span class="adm-glib-label-muted">(your Practice account)</span></label>
+                                                <select id="adm-glib-cat-saved-preset" class="adm-select-enhanced">
+                                                    <option value="">— Add from saved (pick one) —</option>
+                                                </select>
+                                                <p class="adm-field-hint" style="margin-top:6px;margin-bottom:0">
+                                                    Sign in on <strong>Account</strong> with the same browser to load your palette. Each row below needs a <strong>name</strong> and <strong>color</strong>.
+                                                </p>
+                                            </div>
+                                            <div class="adm-field adm-field--span-2">
+                                                <label class="adm-glib-cat-field-label" id="adm-glib-cat-field-label">Categories <span class="adm-req" aria-hidden="true">*</span> <span class="adm-glib-label-muted">each row: name + color required</span></label>
                                                 <div class="adm-glib-cat-toolbar">
                                                     <label class="adm-glib-cat-inline-check">
                                                         <input type="checkbox" id="adm-glib-cat-random" autocomplete="off" />
@@ -1134,7 +1143,7 @@
     <script src="./auth/dsa-user-auth.js?v=3"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
     <script src="./script.js?v=34"></script>
-    <script src="./auth/account-admin-panel.js?v=34"></script>
+    <script src="./auth/account-admin-panel.js?v=35"></script>
     <script src="./auth/site-marketing-admin-panel.js?v=5"></script>
     <script src="./auth/admin-site-page.js?v=11"></script>
 </body>

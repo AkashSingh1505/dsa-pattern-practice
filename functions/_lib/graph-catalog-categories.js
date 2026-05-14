@@ -1,7 +1,8 @@
 /**
  * Category payloads for mind maps: `{ id, name, color }[]`.
- * Community catalog: canonical category rows live in **`graph_catalog_category`** (not JSON on `graph_catalog`).
- * Personal graphs: **`user_graphs.categories_json`** only (see user-graph-categories-json.js).
+ * Community catalog: **`graph_catalog.categories_json`** (see graph-catalog-category-rows.js).
+ * Personal graphs: **`user_graphs.categories_json`** (see user-graph-categories-json.js).
+ * Per-user palette for suggestions: **`user_profiles.saved_graph_categories_json`**.
  */
 
 import { newGraphId } from "./practice-auth-request.js";
@@ -66,10 +67,11 @@ export function normalizeGraphCategoriesBody(input) {
         if (!name) {
             continue;
         }
-        if (seenName.has(name)) {
-            return { ok: false, error: 'duplicate category name: "' + name + '"' };
+        const nameKey = name.toLowerCase();
+        if (seenName.has(nameKey)) {
+            return { ok: false, error: 'duplicate category name (case-insensitive): "' + name + '"' };
         }
-        seenName.add(name);
+        seenName.add(nameKey);
         let id = String(raw.id != null ? raw.id : "").trim();
         if (id && !validCategoryId(id)) {
             return { ok: false, error: "invalid category id" };

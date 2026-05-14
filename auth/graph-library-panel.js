@@ -4,6 +4,8 @@
  */
 (function () {
     var SESSION_KEY = "dsaUdashCloudGraphV1";
+    /** @type {{ id?: string, name: string, color: string }[] | null} */
+    var glibSavedCategoriesCache = null;
 
     function apiUrl(path) {
         return new URL(path.replace(/^\//, ""), document.baseURI).href;
@@ -694,9 +696,98 @@
             description: document.getElementById("udash-glib-create-description"),
             catName: document.getElementById("udash-glib-create-cat-name"),
             catColor: document.getElementById("udash-glib-create-cat-color"),
+            catPreset: document.getElementById("udash-glib-create-cat-preset"),
             cancel: document.getElementById("udash-glib-create-cancel"),
             save: document.getElementById("udash-glib-create-save"),
         };
+    }
+
+    function findSavedCatById(id) {
+        if (!id || !glibSavedCategoriesCache || !glibSavedCategoriesCache.length) {
+            return null;
+        }
+        var sid = String(id);
+        for (var i = 0; i < glibSavedCategoriesCache.length; i++) {
+            if (String(glibSavedCategoriesCache[i].id) === sid) {
+                return glibSavedCategoriesCache[i];
+            }
+        }
+        return null;
+    }
+
+    async function loadSavedCategoriesForCreateModal() {
+        var sel = document.getElementById("udash-glib-create-cat-preset");
+        try {
+            var j = await fetchJson("api/graph-library/my-categories", { method: "GET" });
+            glibSavedCategoriesCache = Array.isArray(j.categories) ? j.categories : [];
+        } catch (e) {
+            glibSavedCategoriesCache = [];
+        }
+        if (sel) {
+            var preserve = sel.value;
+            sel.innerHTML = "";
+            var o0 = document.createElement("option");
+            o0.value = "";
+            o0.textContent = "New — enter name and pick color below";
+            sel.appendChild(o0);
+            for (var i = 0; i < (glibSavedCategoriesCache || []).length; i++) {
+                var c = glibSavedCategoriesCache[i];
+                var o = document.createElement("option");
+                o.value = c.id || "";
+                o.textContent = (c.name || "Category") + " (" + (c.color || "#64748b") + ")";
+                sel.appendChild(o);
+            }
+            if (preserve) {
+                var ok = false;
+                for (var k = 0; k < sel.options.length; k++) {
+                    if (sel.options[k].value === preserve) {
+                        ok = true;
+                        break;
+                    }
+                }
+                if (ok) {
+                    sel.value = preserve;
+                }
+            }
+        }
+    }
+
+    /**
+     * @param {{ catPreset?: HTMLSelectElement | null, catName?: HTMLInputElement | null, catColor?: HTMLInputElement | null }} els
+     * @returns {{ id?: string, name: string, color: string } | null}
+     */
+    function resolveCategoryForCreate(els) {
+        var name = els.catName && els.catName.value ? String(els.catName.value).trim() : "";
+        var colorRaw =
+            els.catColor && els.catColor.value ? String(els.catColor.value).trim() : "#64748b";
+        if (!name) {
+            return null;
+        }
+        var pid = els.catPreset && els.catPreset.value ? String(els.catPreset.value).trim() : "";
+        if (pid) {
+            var pc = findSavedCatById(pid);
+            if (pc && name.toLowerCase() === String(pc.name || "").trim().toLowerCase()) {
+                return {
+                    id: String(pc.id),
+                    name: name,
+                    color: colorRaw || String(pc.color || "").trim() || "#64748b",
+                };
+            }
+        }
+        var lower = name.toLowerCase();
+        if (glibSavedCategoriesCache && glibSavedCategoriesCache.length) {
+            for (var j = 0; j < glibSavedCategoriesCache.length; j++) {
+                var c = glibSavedCategoriesCache[j];
+                if (String(c.name || "").trim().toLowerCase() === lower) {
+                    return {
+                        id: String(c.id),
+                        name: c.name,
+                        color: colorRaw || String(c.color || "").trim() || "#64748b",
+                    };
+                }
+            }
+        }
+        return { name: name, color: colorRaw || "#64748b" };
     }
 
     function openCreateGraphModal() {
@@ -705,10 +796,12 @@
             return;
         }
         els.wrap.hidden = false;
-        if (els.name) {
-            els.name.focus();
-            els.name.select();
-        }
+        loadSavedCategoriesForCreateModal().then(function () {
+            if (els.name) {
+                els.name.focus();
+                els.name.select();
+            }
+        });
     }
 
     function closeCreateGraphModal() {
@@ -734,15 +827,25 @@
             }
             return;
         }
-        var catName = els.catName && els.catName.value ? String(els.catName.value).trim() : "";
-        var catColor = els.catColor && els.catColor.value ? String(els.catColor.value).trim() : "#64748b";
-        if (!catName) {
-            toast("Category name required — define how you group nodes (you can add more later in the editor).");
+        var resolvedCat = resolveCategoryForCreate(els);
+        if (!resolvedCat) {
+            toast("Category name and color are required.");
             if (els.catName) {
                 els.catName.focus();
             }
             return;
         }
+        var colorOk = resolvedCat.color && String(resolvedCat.color).trim();
+        if (!colorOk) {
+            toast("Pick a category color.");
+            if (els.catColor) {
+                els.catColor.focus();
+            }
+            return;
+        }
+        var categories = resolvedCat.id
+            ? [{ id: resolvedCat.id, name: resolvedCat.name, color: resolvedCat.color }]
+            : [{ name: resolvedCat.name, color: resolvedCat.color }];
         if (accentHue != null && (!Number.isFinite(accentHue) || accentHue < 0 || accentHue > 359)) {
             toast("Accent hue must be between 0 and 359");
             if (els.accent) {
@@ -761,7 +864,7 @@
                     title: name,
                     description: description,
                     accentHue: accentHue,
-                    categories: [{ name: catName, color: catColor }],
+                    categories: categories,
                 }),
             });
             closeCreateGraphModal();
@@ -774,9 +877,12 @@
         if (els.catName) {
             els.catName.value = "";
         }
-        if (els.catColor) {
-            els.catColor.value = "#64748b";
-        }
+            if (els.catColor) {
+                els.catColor.value = "#64748b";
+            }
+            if (els.catPreset) {
+                els.catPreset.value = "";
+            }
             if (els.accent) {
                 els.accent.value = "";
             }
@@ -946,6 +1052,38 @@
             els.description.addEventListener("keydown", function (ev) {
                 if ((ev.metaKey || ev.ctrlKey) && ev.key === "Enter") {
                     createGraph();
+                }
+            });
+        }
+        if (els.catPreset) {
+            els.catPreset.addEventListener("change", function () {
+                var id = els.catPreset.value;
+                if (!id) {
+                    return;
+                }
+                var c = findSavedCatById(id);
+                if (!c) {
+                    return;
+                }
+                if (els.catName) {
+                    els.catName.value = c.name || "";
+                }
+                if (els.catColor) {
+                    els.catColor.value = (c.color || "#64748b").trim();
+                }
+            });
+        }
+        if (els.catName) {
+            els.catName.addEventListener("input", function () {
+                if (!els.catPreset || !els.catPreset.value) {
+                    return;
+                }
+                var c = findSavedCatById(els.catPreset.value);
+                if (!c) {
+                    return;
+                }
+                if (String(els.catName.value).trim().toLowerCase() !== String(c.name || "").trim().toLowerCase()) {
+                    els.catPreset.value = "";
                 }
             });
         }

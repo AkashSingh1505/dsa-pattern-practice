@@ -5,6 +5,7 @@ import { ensureUserGraphVisibilityColumn } from "../../_lib/user-graph-visibilit
 import { normalizeGraphCategoriesBody } from "../../_lib/graph-catalog-categories.js";
 import { validateMindMapGraphInvariant } from "../../_lib/graph-catalog-category-rows.js";
 import { ensureUserGraphCategoriesJsonColumn, stringifyUserGraphCategories } from "../../_lib/user-graph-categories-json.js";
+import { touchUserSavedCategories } from "../../_lib/user-saved-graph-categories.js";
 
 function defaultPayload(title, firstCategoryId) {
     const safe = String(title || "My graph").slice(0, 80);
@@ -165,6 +166,11 @@ export async function onRequestPost(context) {
     } catch (e) {
         console.error("graph create", e);
         return json({ error: "server error" }, 500);
+    }
+    try {
+        await touchUserSavedCategories(db, userId, catNorm.categories);
+    } catch (e) {
+        console.error("graph create palette", e);
     }
     return json({
         ok: true,

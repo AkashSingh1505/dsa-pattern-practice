@@ -7,6 +7,7 @@ import {
     listCategoriesFromUserGraphRow,
     stringifyUserGraphCategories,
 } from "../../_lib/user-graph-categories-json.js";
+import { touchUserSavedCategories } from "../../_lib/user-saved-graph-categories.js";
 
 export async function onRequestPost(context) {
     const { request, env } = context;
@@ -120,6 +121,11 @@ export async function onRequestPost(context) {
     } catch (e) {
         console.error("share insert", e);
         return json({ error: "server error" }, 500);
+    }
+    try {
+        await touchUserSavedCategories(db, rid, newCats);
+    } catch (e) {
+        console.error("share recipient palette", e);
     }
     return json({
         ok: true,

@@ -38,21 +38,24 @@ npx wrangler d1 execute dsa-pattern-practice-subscribers --remote --file=migrati
 npx wrangler d1 execute dsa-pattern-practice-subscribers --remote --file=migrations/subscribers/0003_graph_library.sql
 ```
 
-Catalog category rows (after `0003`; **`graph_catalog_category`** — no JSON column on `graph_catalog`):
+**Catalog + palette** (after `0003` + profile fields if you use them):
+
+- **`graph_catalog.categories_json`** — `{ id, name, color }[]` per catalog graph (replaces the old `graph_catalog_category` table).
+- **`user_profiles.saved_graph_categories_json`** — union of categories the member has used (deduped **case-insensitively** when merging server-side).
 
 ```bash
-npx wrangler d1 execute dsa-pattern-practice-subscribers --remote --file=migrations/subscribers/0008_graph_catalog_category_table.sql
+npx wrangler d1 execute dsa-pattern-practice-subscribers --remote --file=migrations/subscribers/0012_user_saved_categories_catalog_json.sql
 ```
 
-If an older database still has `graph_catalog.categories_json`, migrate categories into `graph_catalog_category`, then drop the column:
+If an old database still has **`graph_catalog_category`**, populate **`graph_catalog.categories_json`** (admin Library save per graph, or your own SQL), then remove the empty table:
 
 ```bash
-npx wrangler d1 execute dsa-pattern-practice-subscribers --remote --file=migrations/subscribers/0011_drop_graph_catalog_categories_json.sql
+npx wrangler d1 execute dsa-pattern-practice-subscribers --remote --file=migrations/subscribers/0013_drop_graph_catalog_category.sql
 ```
 
-(`0007_graph_catalog_categories.sql` is a no-op placeholder for legacy docs.)
+(`0007_graph_catalog_categories.sql` is a no-op placeholder; **`0008`** is legacy — skip on new installs.)
 
-**Personal graph body categories** live in **`user_graphs.categories_json`** (same shape as catalog: `{ id, name, color }[]`). Add the column after `0003` (and after optional catalog migrations if you use them):
+**Personal graph body categories** live in **`user_graphs.categories_json`** (same shape as catalog). Add the column after `0003`:
 
 ```bash
 npx wrangler d1 execute dsa-pattern-practice-subscribers --remote --file=migrations/subscribers/0010_user_graphs_categories_json.sql
@@ -60,9 +63,13 @@ npx wrangler d1 execute dsa-pattern-practice-subscribers --remote --file=migrati
 
 The first library API call after deploy can migrate legacy **`user_graph_category`** rows into JSON and drop that table (see `functions/_lib/user-graph-categories-json.js`).
 
+Members can **`GET /api/graph-library/my-categories`** for saved names (browser datalist when creating a graph).
+
 ### Mandatory node categories (runtime validation)
 
-Library APIs require **catalog**: **`graph_catalog_category`** rows (and **personal graphs**: **`user_graphs.categories_json`**) with **at least one** `{ id, name, color }`, and **every** mind-map root, nested topic (`tree` / `patterns`), and embedded **problem** must set **`graphCategoryId`** (or legacy `catalogCategoryId`). Invalid graphs return **422** / **400** as documented earlier.
+Library APIs require **catalog**: **`graph_catalog.categories_json`** (and **personal graphs**: **`user_graphs.categories_json`**) with **at least one** `{ id, name, color }`, and **every** mind-map root, nested topic (`tree` / `patterns`), and embedded **problem** must set **`graphCategoryId`** (or legacy `catalogCategoryId`). Invalid graphs return **422** / **400** as documented earlier.
+
+Duplicate **category names are rejected case-insensitively** within a single graph payload (`normalizeGraphCategoriesBody`).
 
 **Migrating legacy rows (SQL cannot rewrite `payload_json` easily):**
 
@@ -70,18 +77,18 @@ Library APIs require **catalog**: **`graph_catalog_category`** rows (and **perso
 2. **Personal graphs** — same via member workspace + save, or `PUT /api/graph-library/mine-detail` with `categories` + `payload`.
 3. Optional script: export `payload_json` / `categories_json` locally, run a small Node script to inject a default category id on every node/problem, then `UPDATE` via Wrangler or dashboard.
 
-Re-seed reference data with **`seed_graph_catalog_manual.sql`** after **`0008_graph_catalog_category_table.sql`** (seed inserts both `graph_catalog` and `graph_catalog_category` rows).
+Re-seed reference data with **`seed_graph_catalog_manual.sql`** after **`0012`** (seed stores categories on **`graph_catalog.categories_json`**).
 
-Publish catalog entries from **Site admin → Library** (signed in with RSA), or with **`POST /api/admin/graph-catalog`** (RSA JWT or practice **`role = admin`**). Members use **`GET /api/graph-library/public`**, **`POST /api/graph-library/download`**, and **`/api/graph-library/mine*`** with the practice Bearer token.
+Publish catalog entries from **Site admin → Library** (signed in with RSA), or with **`POST /api/admin/graph-catalog`** (RSA JWT or practice **`role = admin`**). Members use **`GET /api/graph-library/public`**, **`POST /api/graph-library/download`**, **`GET /api/graph-library/my-categories`**, and **`/api/graph-library/mine*`** with the practice Bearer token.
 
-**D1 console only (no Wrangler):** run the schema in `0003_graph_library.sql` if needed, then paste the **`INSERT`** statements from [`migrations/subscribers/seed_graph_catalog_manual.sql`](subscribers/seed_graph_catalog_manual.sql) into the Cloudflare dashboard SQL editor for the subscribers database.
+**D1 console only (no Wrangler):** run the schema in `0003_graph_library.sql` if needed, apply **`0012`**, then paste the **`INSERT`** statements from [`migrations/subscribers/seed_graph_catalog_manual.sql`](subscribers/seed_graph_catalog_manual.sql) into the Cloudflare dashboard SQL editor for the subscribers database.
 
 ## Schema overview
 
 | Database    | Tables (high level) |
 |------------|----------------------|
 | **Content** | Legacy **`cms_content`** / drafts (optional), **`app_kv`**, **`content_audit`** — public practice graph lives in subscribers **`graph_catalog`** |
-| **Subscribers** | `practice_users` (`role`: `user` \| `admin` \| `subscriber`), `user_profiles`, `user_entitlements`, `billing_*`, `subscriber_contacts`, `security_audit`, **`graph_catalog`** (+ **`graph_catalog_category`** for catalog color groups; reserved **`dsa-site-map`** for **`GET /api/data?k=dsa`**), **`graph_catalog_downloads`**, **`user_graphs`** (incl. **`categories_json`** for personal-graph color groups) |
+| **Subscribers** | `practice_users` (`role`: `user` \| `admin` \| `subscriber`), `user_profiles` (incl. **`saved_graph_categories_json`** palette), `user_entitlements`, `billing_*`, `subscriber_contacts`, `security_audit`, **`graph_catalog`** (incl. **`categories_json`**; reserved **`dsa-site-map`** for **`GET /api/data?k=dsa`**), **`graph_catalog_downloads`**, **`user_graphs`** (incl. **`categories_json`**) |
 
 Practice roles: **`user`** (default), **`subscriber`** (paid tier label in JWT), **`admin`** (elevated staff). Promote or upgrade (examples):
 

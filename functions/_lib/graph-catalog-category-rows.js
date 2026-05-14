@@ -1,4 +1,65 @@
-/** Mind-map nodes: `graphCategoryId` (preferred) or legacy `catalogCategoryId` → category row id for that graph. */
+/** Mind-map nodes: `graphCategoryId` (preferred) or legacy `catalogCategoryId` → category id from that graph's category list. */
+
+import { normalizeGraphCategoriesBody, parseGraphCategoriesJson } from "./graph-catalog-categories.js";
+
+function graphCatalogTableInfoRows(result) {
+    if (!result) {
+        return [];
+    }
+    if (Array.isArray(result.results)) {
+        return result.results;
+    }
+    if (Array.isArray(result)) {
+        return result;
+    }
+    return [];
+}
+
+function graphCatalogHasCategoriesJsonColumn(rows) {
+    return rows.some(function (row) {
+        return String((row && row.name) || "").toLowerCase() === "categories_json";
+    });
+}
+
+/**
+ * Ensures `graph_catalog.categories_json` exists (runtime `ALTER` if migration not applied yet).
+ * @param {*} db
+ */
+export async function ensureGraphCatalogCategoriesJsonColumn(db) {
+    if (!db) {
+        return;
+    }
+    let info;
+    try {
+        info = await db.prepare("PRAGMA table_info(graph_catalog)").all();
+    } catch {
+        return;
+    }
+    if (graphCatalogHasCategoriesJsonColumn(graphCatalogTableInfoRows(info))) {
+        return;
+    }
+    try {
+        await db.prepare("ALTER TABLE graph_catalog ADD COLUMN categories_json TEXT").run();
+    } catch (e) {
+        const msg = String((e && e.message) || e || "").toLowerCase();
+        if (msg.indexOf("duplicate column") < 0 && msg.indexOf("already exists") < 0) {
+            try {
+                info = await db.prepare("PRAGMA table_info(graph_catalog)").all();
+                if (!graphCatalogHasCategoriesJsonColumn(graphCatalogTableInfoRows(info))) {
+                    return;
+                }
+            } catch {
+                return;
+            }
+        }
+    }
+}
+
+function categoriesFromCatalogJsonColumn(raw) {
+    const parsed = parseGraphCategoriesJson(raw);
+    const n = normalizeGraphCategoriesBody(parsed);
+    return n.ok ? n.categories : [];
+}
 
 /**
  * @param {*} db
@@ -6,44 +67,42 @@
  * @returns {Promise<{ id: string, name: string, color: string }[]>}
  */
 export async function listCatalogCategoriesForCatalog(db, catalogId) {
-    const r = await db
-        .prepare(
-            `SELECT id, name, color, sort_order FROM graph_catalog_category WHERE catalog_id = ? ORDER BY sort_order ASC, id ASC`,
-        )
-        .bind(catalogId)
-        .all();
-    return (r.results || []).map((x) => ({
-        id: String(x.id),
-        name: String(x.name || ""),
-        color: String(x.color || "").trim() || "#6b7280",
-    }));
+    await ensureGraphCatalogCategoriesJsonColumn(db);
+    let row;
+    try {
+        row = await db
+            .prepare(`SELECT categories_json FROM graph_catalog WHERE id = ? AND deleted_at IS NULL`)
+            .bind(catalogId)
+            .first();
+    } catch (e) {
+        console.error("listCatalogCategoriesForCatalog", e);
+        return [];
+    }
+    return categoriesFromCatalogJsonColumn(row && row.categories_json);
 }
 
 /**
- * Replace all category rows for a catalog (`graph_catalog_category` only).
  * @param {*} db
  * @param {string} catalogId
  * @param {{ id: string, name: string, color: string }[]} categories
  * @param {number} now unix seconds
  */
 export async function replaceCatalogCategoriesForCatalog(db, catalogId, categories, now) {
-    const stmts = [db.prepare(`DELETE FROM graph_catalog_category WHERE catalog_id = ?`).bind(catalogId)];
-    for (let i = 0; i < categories.length; i++) {
-        const c = categories[i];
-        stmts.push(
-            db
-                .prepare(
-                    `INSERT INTO graph_catalog_category (id, catalog_id, name, color, sort_order, created_at, updated_at)
-                     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                )
-                .bind(c.id, catalogId, c.name, c.color, i, now, now),
-        );
-    }
-    await db.batch(stmts);
+    await ensureGraphCatalogCategoriesJsonColumn(db);
+    const text = JSON.stringify(
+        (Array.isArray(categories) ? categories : []).map((c) => ({
+            id: String(c.id || ""),
+            name: String(c.name || ""),
+            color: String(c.color || "").trim() || "#6b7280",
+        })),
+    );
+    await db
+        .prepare(`UPDATE graph_catalog SET categories_json = ?, updated_at = ? WHERE id = ? AND deleted_at IS NULL`)
+        .bind(text, now, catalogId)
+        .run();
 }
 
 /**
- * Resolved categories for a catalog graph (normalized table only).
  * @param {*} db
  * @param {string} catalogId
  * @returns {Promise<{ id: string, name: string, color: string }[]>}
@@ -61,28 +120,25 @@ export async function listCatalogCategoriesByCatalogIds(db, catalogIds) {
     if (!catalogIds.length) {
         return map;
     }
+    await ensureGraphCatalogCategoriesJsonColumn(db);
     const uniq = [...new Set(catalogIds)];
     const ph = uniq.map(() => "?").join(", ");
-    const r = await db
-        .prepare(
-            `SELECT catalog_id, id, name, color, sort_order FROM graph_catalog_category WHERE catalog_id IN (${ph}) ORDER BY catalog_id, sort_order ASC, id ASC`,
-        )
-        .bind(...uniq)
-        .all();
+    let r;
+    try {
+        r = await db
+            .prepare(`SELECT id, categories_json FROM graph_catalog WHERE id IN (${ph}) AND deleted_at IS NULL`)
+            .bind(...uniq)
+            .all();
+    } catch (e) {
+        console.error("listCatalogCategoriesByCatalogIds", e);
+        return map;
+    }
     for (const row of r.results || []) {
-        const cid = String(row.catalog_id);
-        const list = map.get(cid) || [];
-        list.push({
-            id: String(row.id),
-            name: String(row.name || ""),
-            color: String(row.color || "").trim() || "#6b7280",
-        });
-        map.set(cid, list);
+        const cid = String(row.id);
+        map.set(cid, categoriesFromCatalogJsonColumn(row.categories_json));
     }
     return map;
 }
-
-/** Mind-map nodes: `graphCategoryId` (preferred) or legacy `catalogCategoryId` → category row id for that graph. */
 
 /**
  * @param {unknown} payload mind-map roots array

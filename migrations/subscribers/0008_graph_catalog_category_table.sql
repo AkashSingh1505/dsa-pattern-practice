@@ -1,4 +1,5 @@
--- Normalized catalog graph categories (stable ids on mind-map nodes via graphCategoryId).
+-- LEGACY: Normalized catalog categories table. **Superseded by `graph_catalog.categories_json`** (see `0012_user_saved_categories_catalog_json.sql`).
+-- New installs: skip this file; run **`0012`**. To drop the table after migrating data, run **`0013_drop_graph_catalog_category.sql`**.
 -- Run after 0003_graph_library.sql. (0007 is obsolete; legacy JSON column removed by 0011.)
 --   npx wrangler d1 execute dsa-pattern-practice-subscribers --remote --file=migrations/subscribers/0008_graph_catalog_category_table.sql
 

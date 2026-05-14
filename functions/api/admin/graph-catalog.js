@@ -3,6 +3,7 @@ import { verifyPracticeToken } from "../../_lib/practice-jwt.js";
 import { newGraphId, requireGraphCatalogWriter } from "../../_lib/practice-auth-request.js";
 import { normalizeGraphCategoriesBody } from "../../_lib/graph-catalog-categories.js";
 import {
+    ensureGraphCatalogCategoriesJsonColumn,
     getResolvedCatalogCategories,
     replaceCatalogCategoriesForCatalog,
     validateMindMapGraphInvariant,
@@ -184,6 +185,7 @@ export async function onRequestPost(context) {
     if (!invPost.ok) {
         return json({ error: invPost.error, code: invPost.code || "GRAPH_INVALID" }, 400);
     }
+    const categoriesJson = JSON.stringify(catNorm.categories);
     const slugIn = String(body.slug || "").trim();
     const base = slugify(slugIn || title);
 
@@ -191,6 +193,12 @@ export async function onRequestPost(context) {
     const slug = await uniqueSlug(db, base);
     const id = newGraphId();
     const now = Math.floor(Date.now() / 1000);
+
+    try {
+        await ensureGraphCatalogCategoriesJsonColumn(db);
+    } catch (e) {
+        console.error("admin graph-catalog ensure categories column", e);
+    }
 
     let creatorUserId = null;
     if (gate.via === "practice_admin") {
@@ -213,8 +221,8 @@ export async function onRequestPost(context) {
     try {
         await db
             .prepare(
-                `INSERT INTO graph_catalog (id, slug, title, description, visibility, creator_user_id, payload_json, accent_hue, tags_json, difficulty, estimated_minutes, download_count, created_at, updated_at, deleted_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, NULL)`,
+                `INSERT INTO graph_catalog (id, slug, title, description, visibility, creator_user_id, payload_json, accent_hue, tags_json, difficulty, estimated_minutes, download_count, categories_json, created_at, updated_at, deleted_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, NULL)`,
             )
             .bind(
                 id,
@@ -228,18 +236,13 @@ export async function onRequestPost(context) {
                 tags,
                 difficulty,
                 estimatedMinutes,
+                categoriesJson,
                 now,
                 now,
             )
             .run();
     } catch (e) {
         console.error("admin graph-catalog insert", e);
-        return json({ error: "server error" }, 500);
-    }
-    try {
-        await replaceCatalogCategoriesForCatalog(db, id, catNorm.categories, now);
-    } catch (e) {
-        console.error("admin graph-catalog insert categories", e);
         return json({ error: "server error" }, 500);
     }
     return json({ ok: true, id, slug });
@@ -262,6 +265,11 @@ export async function onRequestPatch(context) {
         return json({ error: "id required" }, 400);
     }
     const { db } = gate;
+    try {
+        await ensureGraphCatalogCategoriesJsonColumn(db);
+    } catch (e) {
+        console.error("admin graph-catalog patch ensure categories column", e);
+    }
     const fullRow = await db
         .prepare(`SELECT id, payload_json FROM graph_catalog WHERE id = ? AND deleted_at IS NULL`)
         .bind(id)

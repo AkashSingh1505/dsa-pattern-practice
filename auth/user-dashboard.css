@@ -1863,8 +1863,16 @@ html.dsa-udash-html,
     margin-bottom: 18px;
 }
 .dsa-glib-create-form .dsa-udash-input,
-.dsa-glib-create-form .dsa-udash-textarea {
+.dsa-glib-create-form .dsa-udash-textarea,
+.dsa-glib-create-form select.dsa-udash-input {
     max-width: none;
+}
+.dsa-glib-create-cat-hint {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: #52525b;
 }
 .dsa-glib-create-form .dsa-udash-field:last-child {
     grid-column: 1 / -1;

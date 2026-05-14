@@ -8,6 +8,7 @@ import {
     listCategoriesFromUserGraphRow,
     stringifyUserGraphCategories,
 } from "../../_lib/user-graph-categories-json.js";
+import { touchUserSavedCategories } from "../../_lib/user-saved-graph-categories.js";
 
 export async function onRequestGet(context) {
     const { request, env } = context;
@@ -131,6 +132,8 @@ export async function onRequestPut(context) {
     }
 
     let categoriesJsonReplace = null;
+    /** @type {{ id: string, name: string, color: string }[] | null} */
+    let categoriesForPalette = null;
     if (body.categories !== undefined) {
         const catNorm = normalizeGraphCategoriesBody(body.categories);
         if (!catNorm.ok) {
@@ -146,6 +149,7 @@ export async function onRequestPut(context) {
             }
         }
         categoriesJsonReplace = stringifyUserGraphCategories(catNorm.categories);
+        categoriesForPalette = catNorm.categories;
     }
 
     if (body.payload != null && body.categories === undefined) {
@@ -213,6 +217,13 @@ export async function onRequestPut(context) {
     } catch (e) {
         console.error("mine-detail put", e);
         return json({ error: "server error" }, 500);
+    }
+    if (categoriesForPalette && categoriesForPalette.length) {
+        try {
+            await touchUserSavedCategories(db, userId, categoriesForPalette);
+        } catch (e) {
+            console.error("mine-detail palette", e);
+        }
     }
     return json({ ok: true, updatedAt: now });
 }

@@ -1,9 +1,9 @@
 -- Paste into Cloudflare D1 → your subscribers database → Query (SQL editor).
--- Requires `graph_catalog` (0003) and `graph_catalog_category` (0008).
+-- Requires `graph_catalog` (0003) and **`graph_catalog.categories_json`** (see `0012_user_saved_categories_catalog_json.sql`).
 -- Prefer Site admin → Library (RSA) for day-to-day publishing; use SQL for bulk seeds or automation.
--- Re-run safe: INSERT OR IGNORE on graph_catalog id / graph_catalog_category id.
+-- Re-run safe: INSERT OR IGNORE on graph_catalog id.
 --
--- Mind maps must declare ≥1 category row and every root/topic/problem must set graphCategoryId (see API validation).
+-- Mind maps must declare ≥1 category in `categories_json` and every root/topic/problem must set graphCategoryId (see API validation).
 
 -- ---------------------------------------------------------------------------
 -- 1) Public starter map
@@ -21,6 +21,7 @@ INSERT OR IGNORE INTO graph_catalog (
     difficulty,
     estimated_minutes,
     download_count,
+    categories_json,
     created_at,
     updated_at,
     deleted_at
@@ -37,20 +38,10 @@ INSERT OR IGNORE INTO graph_catalog (
     'mixed',
     60,
     0,
+    '[{"id":"st-cat-1","name":"Topics","color":"#3b82f6"}]',
     CAST(strftime('%s', 'now') AS INTEGER),
     CAST(strftime('%s', 'now') AS INTEGER),
     NULL
-);
-
-INSERT OR IGNORE INTO graph_catalog_category (id, catalog_id, name, color, sort_order, created_at, updated_at)
-VALUES (
-    'st-cat-1',
-    'a1000000-0000-4000-8000-000000000001',
-    'Topics',
-    '#3b82f6',
-    0,
-    CAST(strftime('%s', 'now') AS INTEGER),
-    CAST(strftime('%s', 'now') AS INTEGER)
 );
 
 -- ---------------------------------------------------------------------------
@@ -69,6 +60,7 @@ INSERT OR IGNORE INTO graph_catalog (
     difficulty,
     estimated_minutes,
     download_count,
+    categories_json,
     created_at,
     updated_at,
     deleted_at
@@ -85,20 +77,10 @@ INSERT OR IGNORE INTO graph_catalog (
     'intermediate',
     90,
     0,
+    '[{"id":"sp-cat-1","name":"Topics","color":"#059669"}]',
     CAST(strftime('%s', 'now') AS INTEGER),
     CAST(strftime('%s', 'now') AS INTEGER),
     NULL
-);
-
-INSERT OR IGNORE INTO graph_catalog_category (id, catalog_id, name, color, sort_order, created_at, updated_at)
-VALUES (
-    'sp-cat-1',
-    'a1000000-0000-4000-8000-000000000002',
-    'Topics',
-    '#059669',
-    0,
-    CAST(strftime('%s', 'now') AS INTEGER),
-    CAST(strftime('%s', 'now') AS INTEGER)
 );
 
 -- ---------------------------------------------------------------------------

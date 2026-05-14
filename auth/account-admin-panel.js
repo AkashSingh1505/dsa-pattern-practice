@@ -103,6 +103,8 @@
 
     /** True while composing a new catalog row before first save */
     let glibCatalogNewDraft = false;
+    /** Member palette for Library form (Practice Bearer; same as GET /api/graph-library/my-categories). */
+    let glibMemberSavedCategoriesCache = [];
 
     function glibClientRootId() {
         return "glib-root-" + Math.random().toString(36).slice(2, 11);
@@ -138,6 +140,17 @@
 
     function glibIsHexColor(s) {
         return typeof s === "string" && /^#[0-9a-fA-F]{6}$/.test(s.trim());
+    }
+
+    function glibIsAcceptableCategoryColor(s) {
+        const t = String(s || "").trim();
+        if (!t) {
+            return false;
+        }
+        if (glibIsHexColor(t)) {
+            return true;
+        }
+        return /^hsla?\(/i.test(t);
     }
 
     function glibPickDistinctColors(n) {
@@ -305,13 +318,22 @@
                 c.color = picked[i];
             });
         }
+        for (let i = 0; i < cats.length; i++) {
+            if (!glibIsAcceptableCategoryColor(cats[i].color)) {
+                return {
+                    ok: false,
+                    err: 'Pick a color for every category (check row "' + (cats[i].name || "").trim() + '").',
+                };
+            }
+        }
         const seenNames = new Set();
         for (let i = 0; i < cats.length; i++) {
             const n = cats[i].name;
-            if (seenNames.has(n)) {
-                return { ok: false, err: 'Duplicate category name: "' + n + '"' };
+            const key = String(n || "").trim().toLowerCase();
+            if (seenNames.has(key)) {
+                return { ok: false, err: 'Duplicate category name (case-insensitive): "' + n + '"' };
             }
-            seenNames.add(n);
+            seenNames.add(key);
         }
         return { ok: true, categories: cats };
     }
@@ -343,6 +365,70 @@
         }
         if (!list.children.length) {
             glibMakeCategoryRow("", "", "");
+        }
+        const presetSel = document.getElementById("adm-glib-cat-saved-preset");
+        if (presetSel && presetSel.dataset.admGlibSavedPresetBound !== "1") {
+            presetSel.dataset.admGlibSavedPresetBound = "1";
+            presetSel.addEventListener("change", function () {
+                const id = presetSel.value;
+                if (!id) {
+                    return;
+                }
+                const c = glibMemberSavedCategoriesCache.find(function (x) {
+                    return String(x && x.id) === String(id);
+                });
+                if (!c) {
+                    return;
+                }
+                glibMakeCategoryRow(c.name, c.color || "#6b7280", c.id);
+                presetSel.value = "";
+                refreshGlibSaveAndWorkspaceUi();
+            });
+        }
+        void glibFetchMemberSavedCategories();
+    }
+
+    async function glibFetchMemberSavedCategories() {
+        glibMemberSavedCategoriesCache = [];
+        const t = typeof dsaGetPracticeUserToken === "function" ? dsaGetPracticeUserToken() : "";
+        if (!t) {
+            glibFillMemberSavedCategoryPresetSelect();
+            return;
+        }
+        try {
+            const r = await fetch(new URL("api/graph-library/my-categories", document.baseURI).href, {
+                method: "GET",
+                headers: { Accept: "application/json", Authorization: "Bearer " + t },
+            });
+            const j = await r.json();
+            if (r.ok && j && Array.isArray(j.categories)) {
+                glibMemberSavedCategoriesCache = j.categories;
+            }
+        } catch (e) {
+            /* ignore */
+        }
+        glibFillMemberSavedCategoryPresetSelect();
+    }
+
+    function glibFillMemberSavedCategoryPresetSelect() {
+        const sel = document.getElementById("adm-glib-cat-saved-preset");
+        if (!sel) {
+            return;
+        }
+        const prev = sel.value;
+        sel.innerHTML = "";
+        const o0 = document.createElement("option");
+        o0.value = "";
+        o0.textContent = "— Add from saved (pick one) —";
+        sel.appendChild(o0);
+        glibMemberSavedCategoriesCache.forEach(function (c) {
+            const o = document.createElement("option");
+            o.value = (c && c.id) || "";
+            o.textContent = ((c && c.name) || "Category") + " (" + ((c && c.color) || "#6b7280") + ")";
+            sel.appendChild(o);
+        });
+        if (prev && Array.from(sel.options).some(function (opt) { return opt.value === prev; })) {
+            sel.value = prev;
         }
     }
 
@@ -1122,6 +1208,7 @@
         glibSelectedCatalogId = null;
         glibSelectedUserGraphId = null;
         glibClearCatalogFormFieldsOnly();
+        void glibFetchMemberSavedCategories();
         const sub = document.getElementById("adm-glib-form-sub");
         if (sub) {
             sub.innerHTML =

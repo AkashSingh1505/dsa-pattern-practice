@@ -846,6 +846,41 @@
                                 </div>
                             </div>
 
+                            <div class="adm-glib-filters-card" id="adm-glib-node-types">
+                                <div class="adm-glib-filters-row" style="align-items: flex-end; flex-wrap: wrap; gap: 12px">
+                                    <div class="adm-glib-masthead" style="flex: 1; min-width: 220px; margin: 0">
+                                        <h2 class="adm-glib-h1" style="margin: 0 0 6px; font-size: 1.1rem">Mind-map node types</h2>
+                                        <p class="adm-glib-lede" style="margin: 0; font-size: 13px">
+                                            Global rules for every graph: each node uses <code>nodeCategorySlug</code> (must match a row below). Checkboxes define which child types may appear under that parent.
+                                        </p>
+                                    </div>
+                                    <button type="button" class="adm-glib-btn adm-glib-btn--sm" id="adm-glib-nt-refresh">Reload types</button>
+                                </div>
+                                <div id="adm-glib-nt-list" class="adm-glib-nt-list" role="list" style="margin-top: 12px"></div>
+                                <div class="adm-form-grid cols-2" style="margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--adm-border, rgba(0, 0, 0, 0.12))">
+                                    <div class="adm-field">
+                                        <label for="adm-glib-nt-new-label">Add type — label <span class="adm-req" aria-hidden="true">*</span></label>
+                                        <input id="adm-glib-nt-new-label" type="text" placeholder="e.g. Milestone" maxlength="80" autocomplete="off" />
+                                    </div>
+                                    <div class="adm-field">
+                                        <label for="adm-glib-nt-new-slug">Slug <span class="adm-glib-label-muted">optional; derived from label if empty</span></label>
+                                        <input id="adm-glib-nt-new-slug" type="text" placeholder="MILESTONE" maxlength="48" autocomplete="off" />
+                                    </div>
+                                    <div class="adm-field">
+                                        <label for="adm-glib-nt-new-color">Color <span class="adm-glib-label-muted">#RRGGBB; server picks if invalid</span></label>
+                                        <input id="adm-glib-nt-new-color" type="text" placeholder="#6b7280" maxlength="32" autocomplete="off" />
+                                    </div>
+                                    <div class="adm-field adm-field--span-2">
+                                        <label for="adm-glib-nt-new-allowed">Allowed child slugs <span class="adm-glib-label-muted">comma-separated; must already exist (or match new slug)</span></label>
+                                        <input id="adm-glib-nt-new-allowed" type="text" placeholder="PATTERN,PROBLEM" autocomplete="off" />
+                                    </div>
+                                    <div class="adm-field adm-field--span-2">
+                                        <button type="button" class="adm-glib-btn adm-glib-btn--primary adm-glib-btn--sm" id="adm-glib-nt-add">Add node type</button>
+                                    </div>
+                                </div>
+                                <p id="adm-glib-nt-msg" class="status adm-glib-status" style="margin-top: 10px" aria-live="polite"></p>
+                            </div>
+
                             <div class="adm-glib-filters-card">
                                 <div class="adm-glib-filters-row">
                                     <div class="adm-glib-field adm-glib-field--search">
@@ -979,24 +1014,10 @@
                                                 <input id="adm-glib-difficulty" type="text" placeholder="e.g. beginner" maxlength="32" autocomplete="off" />
                                             </div>
                                             <div class="adm-field adm-field--span-2">
-                                                <label for="adm-glib-cat-saved-preset">Saved categories <span class="adm-glib-label-muted">(your Practice account)</span></label>
-                                                <select id="adm-glib-cat-saved-preset" class="adm-select-enhanced">
-                                                    <option value="">— Add from saved (pick one) —</option>
-                                                </select>
-                                                <p class="adm-field-hint" style="margin-top:6px;margin-bottom:0">
-                                                    Sign in on <strong>Account</strong> with the same browser to load your palette. Each row below needs a <strong>name</strong> and <strong>color</strong>.
+                                                <p class="helper adm-field-hint" style="margin: 0">
+                                                    Node kinds and colors are <strong>global</strong> — edit <a href="#adm-glib-node-types">Mind-map node types</a> above. In the JSON body, every topic / pattern / problem must set
+                                                    <code>nodeCategorySlug</code> (e.g. <code>TOPIC</code>, <code>PATTERN</code>, <code>PROBLEM</code>) according to parent→child rules.
                                                 </p>
-                                            </div>
-                                            <div class="adm-field adm-field--span-2">
-                                                <label class="adm-glib-cat-field-label" id="adm-glib-cat-field-label">Categories <span class="adm-req" aria-hidden="true">*</span> <span class="adm-glib-label-muted">each row: name + color required</span></label>
-                                                <div class="adm-glib-cat-toolbar">
-                                                    <label class="adm-glib-cat-inline-check">
-                                                        <input type="checkbox" id="adm-glib-cat-random" autocomplete="off" />
-                                                        <span>Auto-assign random distinct colors</span>
-                                                    </label>
-                                                </div>
-                                                <div id="adm-glib-categories-list" class="adm-glib-cat-list" role="list"></div>
-                                                <button type="button" class="btn ghost btn-sm adm-glib-cat-add" id="adm-glib-cat-add">+ Add category</button>
                                             </div>
                                             <div class="adm-field adm-field--span-2">
                                                 <label for="adm-glib-tags">Tags <span class="adm-glib-label-muted">comma-separated</span></label>

@@ -88,6 +88,9 @@
     let glibSelectedCatalogId = null;
     let glibSelectedUserGraphId = null;
 
+    /** Global mind-map node categories (`GET/PATCH /api/admin/graph-node-categories`). */
+    let admGlibNodeTypesCache = [];
+
     /** Workspace: which graph is loaded in the studio */
     let wsContext = { mode: "idle" };
     /** Recently opened graphs in workspace (persisted) */
@@ -116,7 +119,10 @@
             {
                 id: glibClientRootId(),
                 name: name,
-                tree: [{ name: "Topic", problems: [] }],
+                nodeCategorySlug: "TOPIC",
+                tree: [],
+                patterns: [],
+                problems: [],
             },
         ];
     }
@@ -523,6 +529,276 @@
             .replace(/"/g, "&quot;");
     }
 
+    function admGlibNtSetMsg(text, kind) {
+        const el = document.getElementById("adm-glib-nt-msg");
+        if (!el) {
+            return;
+        }
+        el.textContent = text || "";
+        el.className = "status adm-glib-status" + (kind === "err" ? " err" : kind === "ok" ? " ok" : "");
+    }
+
+    function admGlibNtParseAllowedCsv(s) {
+        return String(s || "")
+            .split(",")
+            .map(function (x) {
+                return x.trim().toUpperCase();
+            })
+            .filter(Boolean);
+    }
+
+    async function admGlibNtFetch() {
+        if (!document.getElementById("adm-glib-nt-list")) {
+            return;
+        }
+        admGlibNtSetMsg("Loading node types…", "");
+        try {
+            const j = await fetchJson(apiAdmin("graph-node-categories"));
+            admGlibNodeTypesCache = Array.isArray(j.categories) ? j.categories : [];
+            admGlibNtRender();
+            admGlibNtSetMsg(admGlibNodeTypesCache.length + " node type(s) loaded.", "ok");
+        } catch (e) {
+            admGlibNtSetMsg(e.message || "Could not load node types.", "err");
+        }
+    }
+
+    function admGlibNtRender() {
+        const host = document.getElementById("adm-glib-nt-list");
+        if (!host) {
+            return;
+        }
+        host.innerHTML = "";
+        const allSlugs = admGlibNodeTypesCache.map(function (c) {
+            return String(c.slug || "");
+        });
+        admGlibNodeTypesCache.forEach(function (c) {
+            const slug = String(c.slug || "");
+            const row = document.createElement("div");
+            row.className = "adm-glib-nt-row";
+            row.style.cssText =
+                "border:1px solid var(--adm-border,rgba(0,0,0,.12));border-radius:8px;padding:12px;margin-bottom:10px;background:var(--adm-surface-2,transparent)";
+            const head = document.createElement("div");
+            const strong = document.createElement("strong");
+            strong.textContent = slug;
+            head.appendChild(strong);
+            if (c.isSystem) {
+                const badge = document.createElement("span");
+                badge.className = "adm-glib-badge";
+                badge.textContent = "system";
+                badge.style.marginLeft = "8px";
+                head.appendChild(badge);
+            }
+            row.appendChild(head);
+
+            const grid = document.createElement("div");
+            grid.style.cssText =
+                "display:grid;grid-template-columns:minmax(0,1fr) 140px 100px;gap:8px;margin-top:10px;align-items:end";
+            function labeledInput(labelText, inputEl) {
+                const w = document.createElement("div");
+                const lab = document.createElement("label");
+                lab.className = "adm-glib-label-muted";
+                lab.style.fontSize = "11px";
+                lab.textContent = labelText;
+                w.appendChild(lab);
+                w.appendChild(inputEl);
+                return w;
+            }
+            const inpLbl = document.createElement("input");
+            inpLbl.type = "text";
+            inpLbl.className = "adm-glib-input adm-glib-nt-label";
+            inpLbl.value = c.label || "";
+            const inpCol = document.createElement("input");
+            inpCol.type = "text";
+            inpCol.className = "adm-glib-input adm-glib-nt-color";
+            inpCol.value = c.color || "";
+            const inpSort = document.createElement("input");
+            inpSort.type = "number";
+            inpSort.className = "adm-glib-input adm-glib-nt-sort";
+            inpSort.value = String(c.sortOrder != null ? c.sortOrder : 0);
+            grid.appendChild(labeledInput("Label", inpLbl));
+            grid.appendChild(labeledInput("Color (#hex)", inpCol));
+            grid.appendChild(labeledInput("Sort order", inpSort));
+            row.appendChild(grid);
+
+            const allowLabel = document.createElement("div");
+            allowLabel.className = "adm-glib-label-muted";
+            allowLabel.style.cssText = "font-size:11px;margin-top:10px";
+            allowLabel.textContent = "Allowed child types";
+            row.appendChild(allowLabel);
+            const allowBox = document.createElement("div");
+            allowBox.className = "adm-glib-nt-allows";
+            allowBox.style.cssText = "display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:4px";
+            const allowedSet = {};
+            (c.allowedChildSlugs || []).forEach(function (x) {
+                allowedSet[String(x)] = true;
+            });
+            allSlugs.forEach(function (ch) {
+                const lab = document.createElement("label");
+                lab.style.cssText = "font-size:12px;display:inline-flex;align-items:center;gap:4px;cursor:pointer";
+                const cb = document.createElement("input");
+                cb.type = "checkbox";
+                cb.className = "adm-glib-nt-allow";
+                cb.setAttribute("data-child", ch);
+                cb.checked = !!allowedSet[ch];
+                lab.appendChild(cb);
+                lab.appendChild(document.createTextNode(ch));
+                allowBox.appendChild(lab);
+            });
+            row.appendChild(allowBox);
+
+            const actions = document.createElement("div");
+            actions.style.marginTop = "10px";
+            const saveBtn = document.createElement("button");
+            saveBtn.type = "button";
+            saveBtn.className = "adm-glib-btn adm-glib-btn--sm";
+            saveBtn.textContent = "Save mapping";
+            saveBtn.addEventListener("click", function () {
+                void admGlibNtSaveRow(row, slug);
+            });
+            actions.appendChild(saveBtn);
+            if (!c.isSystem) {
+                const delBtn = document.createElement("button");
+                delBtn.type = "button";
+                delBtn.className = "adm-glib-btn adm-glib-btn--sm adm-glib-btn--danger";
+                delBtn.textContent = "Delete";
+                delBtn.style.marginLeft = "8px";
+                delBtn.addEventListener("click", function () {
+                    void admGlibNtDeleteRow(slug);
+                });
+                actions.appendChild(delBtn);
+            }
+            row.appendChild(actions);
+            host.appendChild(row);
+        });
+    }
+
+    async function admGlibNtSaveRow(row, slug) {
+        const labelEl = row.querySelector(".adm-glib-nt-label");
+        const colorEl = row.querySelector(".adm-glib-nt-color");
+        const sortEl = row.querySelector(".adm-glib-nt-sort");
+        const allowed = [];
+        row.querySelectorAll(".adm-glib-nt-allow:checked").forEach(function (cb) {
+            allowed.push(cb.getAttribute("data-child"));
+        });
+        const body = {
+            slug: slug,
+            label: labelEl ? labelEl.value.trim() : "",
+            allowedChildSlugs: allowed,
+        };
+        if (!body.label) {
+            admGlibNtSetMsg("Label is required for " + slug + ".", "err");
+            return;
+        }
+        if (colorEl && colorEl.value.trim()) {
+            body.color = colorEl.value.trim();
+        }
+        if (sortEl && sortEl.value !== "") {
+            const n = Number(sortEl.value);
+            if (Number.isFinite(n)) {
+                body.sortOrder = n;
+            }
+        }
+        admGlibNtSetMsg("Saving " + slug + "…", "");
+        try {
+            await fetchJson(apiAdmin("graph-node-categories"), {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+            });
+            await admGlibNtFetch();
+            admGlibNtSetMsg("Saved " + slug + ".", "ok");
+        } catch (e) {
+            admGlibNtSetMsg(e.message || "Save failed.", "err");
+        }
+    }
+
+    async function admGlibNtDeleteRow(slug) {
+        const ok = await adminConfirm(
+            "Delete node type?",
+            "Remove «" + slug + "» only if no other type lists it as an allowed child. System types cannot be deleted.",
+        );
+        if (!ok) {
+            return;
+        }
+        admGlibNtSetMsg("Deleting…", "");
+        try {
+            await fetchJson(apiAdmin("graph-node-categories") + "?slug=" + encodeURIComponent(slug), { method: "DELETE" });
+            await admGlibNtFetch();
+            admGlibNtSetMsg("Deleted " + slug + ".", "ok");
+        } catch (e) {
+            admGlibNtSetMsg(e.message || "Delete failed.", "err");
+        }
+    }
+
+    async function admGlibNtAddNew() {
+        const labelEl = document.getElementById("adm-glib-nt-new-label");
+        const slugEl = document.getElementById("adm-glib-nt-new-slug");
+        const colorEl = document.getElementById("adm-glib-nt-new-color");
+        const allowedEl = document.getElementById("adm-glib-nt-new-allowed");
+        const label = labelEl ? labelEl.value.trim() : "";
+        if (!label) {
+            admGlibNtSetMsg("Enter a label for the new type.", "err");
+            return;
+        }
+        const body = {
+            label: label,
+            allowedChildSlugs: admGlibNtParseAllowedCsv(allowedEl && allowedEl.value),
+        };
+        const slugHint = slugEl && slugEl.value.trim();
+        if (slugHint) {
+            body.slug = slugHint;
+        }
+        const col = colorEl && colorEl.value.trim();
+        if (col) {
+            body.color = col;
+        }
+        admGlibNtSetMsg("Adding type…", "");
+        try {
+            await fetchJson(apiAdmin("graph-node-categories"), {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+            });
+            if (labelEl) {
+                labelEl.value = "";
+            }
+            if (slugEl) {
+                slugEl.value = "";
+            }
+            if (colorEl) {
+                colorEl.value = "";
+            }
+            if (allowedEl) {
+                allowedEl.value = "";
+            }
+            await admGlibNtFetch();
+            admGlibNtSetMsg("Node type created.", "ok");
+        } catch (e) {
+            admGlibNtSetMsg(e.message || "Could not add type.", "err");
+        }
+    }
+
+    function glibBindNodeTypesUiOnce() {
+        const root = document.getElementById("adm-glib-node-types");
+        if (!root || root.dataset.admGlibNtBound === "1") {
+            return;
+        }
+        root.dataset.admGlibNtBound = "1";
+        const ref = document.getElementById("adm-glib-nt-refresh");
+        if (ref) {
+            ref.addEventListener("click", function () {
+                void admGlibNtFetch();
+            });
+        }
+        const addBtn = document.getElementById("adm-glib-nt-add");
+        if (addBtn) {
+            addBtn.addEventListener("click", function () {
+                void admGlibNtAddNew();
+            });
+        }
+        void admGlibNtFetch();
+    }
+
     function fmtTime(ts) {
         if (ts == null || ts === "") return "—";
         if (typeof ts === "string") {
@@ -834,7 +1110,6 @@
             est: est,
             diff: diff,
             tags: tags,
-            catSnap: glibSerializeCategoriesStateForSnapshot(),
             payload: payload,
         });
     }
@@ -947,6 +1222,9 @@
             const arr = JSON.parse(pay.value || "[]");
             if (Array.isArray(arr) && arr[0] && typeof arr[0] === "object") {
                 arr[0].name = title.trim() || "Untitled graph";
+                if (!arr[0].nodeCategorySlug) {
+                    arr[0].nodeCategorySlug = "TOPIC";
+                }
                 pay.value = JSON.stringify(arr, null, 2);
             }
         } catch (e) {
@@ -1208,7 +1486,6 @@
         glibSelectedCatalogId = null;
         glibSelectedUserGraphId = null;
         glibClearCatalogFormFieldsOnly();
-        void glibFetchMemberSavedCategories();
         const sub = document.getElementById("adm-glib-form-sub");
         if (sub) {
             sub.innerHTML =
@@ -1263,7 +1540,6 @@
         if (diff) {
             diff.value = graph.difficulty || "";
         }
-        glibSetCategoriesFromGraph(graph.categories);
         const tags = document.getElementById("adm-glib-tags");
         if (tags) {
             tags.value = Array.isArray(graph.tags) ? graph.tags.join(", ") : "";
@@ -1501,17 +1777,6 @@
         const accentHue = accentRaw != null ? Math.floor(accentRaw) % 360 : null;
         const estRaw = readGlibOptionalNumber("adm-glib-estimated");
         const estimatedMinutes = estRaw != null ? Math.max(0, Math.floor(estRaw)) : null;
-        const catRes = glibCollectCategoriesForSave();
-        if (!catRes.ok) {
-            setGlibStatus(catRes.err, "err");
-            return;
-        }
-        const categories = catRes.categories;
-        if (!categories.length) {
-            setGlibStatus("Add at least one node category (name + color) before saving.", "err");
-            return;
-        }
-
         setGlibStatus("Saving…", "");
         try {
             if (id.trim()) {
@@ -1525,7 +1790,6 @@
                         visibility,
                         payload,
                         tags,
-                        categories,
                         difficulty,
                         accentHue,
                         estimatedMinutes,
@@ -1541,7 +1805,6 @@
                     visibility,
                     payload,
                     tags,
-                    categories,
                     difficulty,
                     accentHue,
                     estimatedMinutes,
@@ -2284,7 +2547,7 @@
         }
         root.dataset.admGlibBound = "1";
 
-        glibBindCategoriesUiOnce();
+        glibBindNodeTypesUiOnce();
 
         document.getElementById("adm-glib-filter-apply") &&
             document.getElementById("adm-glib-filter-apply").addEventListener("click", function () {
@@ -3602,6 +3865,7 @@
                 void reloadWorkspaceSection();
             } else if (name === "library") {
                 void loadGraphInventoryList();
+                void admGlibNtFetch();
             } else if (name === "system") loadSystemUi();
         }
 

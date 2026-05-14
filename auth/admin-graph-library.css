@@ -1448,29 +1448,13 @@ html[data-admin-theme="dark"] .dsa-portal-page--admin #adm-glib-graph-types-pane
     display: grid;
     grid-template-columns: 1.4fr 1fr auto auto;
     gap: 10px;
-    align-items: end;
+    align-items: center;
 }
 
 #adm-glib-graph-types-panel.adm-glib-gt-scope .field {
     display: flex;
     flex-direction: column;
     min-width: 0;
-}
-
-#adm-glib-graph-types-panel.adm-glib-gt-scope .field label {
-    font-size: 10.5px;
-    font-weight: 700;
-    color: var(--gt-text-secondary);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-}
-
-#adm-glib-graph-types-panel.adm-glib-gt-scope .field label .optional {
-    font-weight: 500;
-    color: var(--gt-text-tertiary);
-    text-transform: none;
-    letter-spacing: 0;
 }
 
 #adm-glib-graph-types-panel.adm-glib-gt-scope .field input {

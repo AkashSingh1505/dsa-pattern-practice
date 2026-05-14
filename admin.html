@@ -39,7 +39,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css?v=26" />
     <link rel="stylesheet" href="./dsa-index-shell.css?v=20" />
-    <link rel="stylesheet" href="./auth/admin-graph-library.css?v=10" />
+    <link rel="stylesheet" href="./auth/admin-graph-library.css?v=11" />
     <link rel="stylesheet" href="./auth/admin-workspace.css?v=7" />
     <link rel="stylesheet" href="./auth/admin-loader.css?v=2" />
 </head>
@@ -1130,12 +1130,25 @@
                                         <form id="adm-glib-gt-add-form" autocomplete="off">
                                             <div class="form-grid">
                                                 <div class="field">
-                                                    <label for="adm-glib-gt-new-label">New type label</label>
-                                                    <input id="adm-glib-gt-new-label" name="label" type="text" maxlength="80" placeholder="e.g. System Design" required />
+                                                    <input
+                                                        id="adm-glib-gt-new-label"
+                                                        name="label"
+                                                        type="text"
+                                                        maxlength="80"
+                                                        placeholder="New type label — e.g. System Design"
+                                                        aria-label="New graph type label"
+                                                        required
+                                                    />
                                                 </div>
                                                 <div class="field">
-                                                    <label for="adm-glib-gt-new-slug">Slug <span class="optional">(optional)</span></label>
-                                                    <input id="adm-glib-gt-new-slug" name="slug" type="text" maxlength="48" placeholder="auto from label" />
+                                                    <input
+                                                        id="adm-glib-gt-new-slug"
+                                                        name="slug"
+                                                        type="text"
+                                                        maxlength="48"
+                                                        placeholder="Slug (optional; auto from label)"
+                                                        aria-label="Graph type slug (optional)"
+                                                    />
                                                 </div>
                                                 <button class="btn-primary" type="submit" id="adm-glib-gt-add">
                                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

@@ -6322,19 +6322,14 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const imageToolbarRow = document.createElement("div");
     imageToolbarRow.className = "image-actions dsa-q-image-actions dsa-q-image-toolbar";
 
+    const imageUploadRow = document.createElement("div");
+    imageUploadRow.className = "dsa-q-image-upload-row";
+
     const btnPickImage = document.createElement("button");
     btnPickImage.type = "button";
     btnPickImage.className = "btn-outline dsa-q-pick-image-btn";
     btnPickImage.innerHTML =
         '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Choose image';
-
-    const btnPasteImage = document.createElement("button");
-    btnPasteImage.type = "button";
-    btnPasteImage.className = "btn-outline icon dsa-q-paste-image-btn dsa-q-paste-image-btn--icon";
-    btnPasteImage.title = "Paste from clipboard (or use Ctrl/Cmd+V in this dialog)";
-    btnPasteImage.setAttribute("aria-label", "Paste image from clipboard");
-    btnPasteImage.innerHTML =
-        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>';
 
     let scratchApi;
     if (isEditProblem) {
@@ -6391,37 +6386,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             }
         });
         return true;
-    }
-
-    async function pasteImageFromClipboardViaApi() {
-        if (!isAdmin) {
-            return;
-        }
-        try {
-            if (navigator.clipboard && typeof navigator.clipboard.read === "function") {
-                const items = await navigator.clipboard.read();
-                for (let i = 0; i < items.length; i++) {
-                    const item = items[i];
-                    const types = item.types || [];
-                    for (let j = 0; j < types.length; j++) {
-                        const type = types[j];
-                        if (type && type.startsWith("image/")) {
-                            const blob = await item.getType(type);
-                            const ext = type.indexOf("jpeg") >= 0 ? "jpg" : "png";
-                            const file = new File([blob], `paste.${ext}`, { type: type || "image/png" });
-                            if (applyImageFileFromPaste(file)) {
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (_) {
-            /* fall through */
-        }
-        window.alert(
-            "No image found in the clipboard, or permission was denied. Copy an image first, focus this dialog, try Ctrl/Cmd+V, or use Choose image.",
-        );
     }
 
     const solutionVideoIn = document.createElement("input");
@@ -6896,10 +6860,17 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             fileIn.click();
         }
     });
+    const imagePasteHint = document.createElement("div");
+    imagePasteHint.className = "dsa-q-image-paste-hint";
+    imagePasteHint.setAttribute("role", "note");
+    imagePasteHint.setAttribute("aria-label", "Paste an image with the keyboard while this dialog is focused");
+    imagePasteHint.innerHTML =
+        '<kbd>Ctrl</kbd><span class="dsa-q-image-paste-hint__plus">+</span><kbd>V</kbd> <span class="dsa-q-image-paste-hint__for">for paste</span>';
+    imageUploadRow.appendChild(btnUploadImage);
+    imageUploadRow.appendChild(imagePasteHint);
     imageResGroup.appendChild(imageResLab);
-    imageResGroup.appendChild(btnUploadImage);
+    imageResGroup.appendChild(imageUploadRow);
     imageToolbarRow.appendChild(btnPickImage);
-    imageToolbarRow.appendChild(btnPasteImage);
     imageResGroup.appendChild(imageToolbarRow);
     imageResGroup.appendChild(fileIn);
     imageResGroup.appendChild(imagePreview);
@@ -7570,7 +7541,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         btnZoomOut.disabled = ro || !isEditProblem;
         btnZoomIn.disabled = ro || !isEditProblem;
         btnPickImage.disabled = ro;
-        btnPasteImage.disabled = ro;
+        imagePasteHint.classList.toggle("dsa-q-image-paste-hint--disabled", ro);
         btnOk.hidden = ro;
         kbdHint.hidden = ro;
         dlg.querySelectorAll(".dsa-q-section-clear-btn").forEach((b) => {
@@ -7650,9 +7621,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         if (isAdmin && typeof scratchApi.zoomIn === "function") {
             scratchApi.zoomIn();
         }
-    });
-    btnPasteImage.addEventListener("click", () => {
-        pasteImageFromClipboardViaApi();
     });
     dlg.addEventListener(
         "paste",

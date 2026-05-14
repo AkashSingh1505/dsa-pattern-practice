@@ -538,181 +538,384 @@
         el.className = "status adm-glib-status" + (kind === "err" ? " err" : kind === "ok" ? " ok" : "");
     }
 
-    function admGlibNtParseAllowedCsv(s) {
-        return String(s || "")
-            .split(",")
-            .map(function (x) {
-                return x.trim().toUpperCase();
-            })
-            .filter(Boolean);
+    function admGlibNtIsHex6(s) {
+        return typeof s === "string" && /^#[0-9a-fA-F]{6}$/.test(s.trim());
+    }
+
+    let admGlibNtModalState = { mode: "idle", slug: "", isSystem: false };
+    let admGlibNtToastTimer = null;
+
+    function admGlibNtShowToast(message, isError) {
+        const el = document.getElementById("adm-glib-nt-toast");
+        if (!el) {
+            return;
+        }
+        el.textContent = message || "";
+        el.hidden = false;
+        el.classList.add("is-visible");
+        el.classList.toggle("adm-nt-toast--err", !!isError);
+        if (admGlibNtToastTimer) {
+            clearTimeout(admGlibNtToastTimer);
+        }
+        admGlibNtToastTimer = setTimeout(function () {
+            el.classList.remove("is-visible", "adm-nt-toast--err");
+            el.hidden = true;
+        }, 4200);
     }
 
     async function admGlibNtFetch() {
-        if (!document.getElementById("adm-glib-nt-list")) {
+        if (!document.getElementById("adm-glib-nt-tiles")) {
             return;
         }
         admGlibNtSetMsg("Loading node types…", "");
         try {
             const j = await fetchJson(apiAdmin("graph-node-categories"));
             admGlibNodeTypesCache = Array.isArray(j.categories) ? j.categories : [];
-            admGlibNtRender();
-            admGlibNtSetMsg(admGlibNodeTypesCache.length + " node type(s) loaded.", "ok");
+            admGlibNtRenderTiles();
+            const n = admGlibNodeTypesCache.length;
+            admGlibNtSetMsg(n + " node type(s) loaded.", "ok");
+            const cnt = document.getElementById("adm-glib-nt-count");
+            if (cnt) {
+                cnt.textContent = String(n);
+            }
         } catch (e) {
             admGlibNtSetMsg(e.message || "Could not load node types.", "err");
         }
     }
 
-    function admGlibNtRender() {
-        const host = document.getElementById("adm-glib-nt-list");
+    function admGlibNtFormatChildrenMeta(c) {
+        const arr = c.allowedChildSlugs || [];
+        if (!arr.length) {
+            return "Leaf node (no children)";
+        }
+        return "→ " + arr.join(", ");
+    }
+
+    function admGlibNtRenderTiles() {
+        const host = document.getElementById("adm-glib-nt-tiles");
         if (!host) {
             return;
         }
         host.innerHTML = "";
-        const allSlugs = admGlibNodeTypesCache.map(function (c) {
-            return String(c.slug || "");
-        });
-        admGlibNodeTypesCache.forEach(function (c) {
-            const slug = String(c.slug || "");
-            const row = document.createElement("div");
-            row.className = "adm-glib-nt-row";
-            row.style.cssText =
-                "border:1px solid var(--adm-border,rgba(0,0,0,.12));border-radius:8px;padding:12px;margin-bottom:10px;background:var(--adm-surface-2,transparent)";
-            const head = document.createElement("div");
-            const strong = document.createElement("strong");
-            strong.textContent = slug;
-            head.appendChild(strong);
-            if (c.isSystem) {
-                const badge = document.createElement("span");
-                badge.className = "adm-glib-badge";
-                badge.textContent = "system";
-                badge.style.marginLeft = "8px";
-                head.appendChild(badge);
-            }
-            row.appendChild(head);
-
-            const grid = document.createElement("div");
-            grid.style.cssText =
-                "display:grid;grid-template-columns:minmax(0,1fr) 140px 100px;gap:8px;margin-top:10px;align-items:end";
-            function labeledInput(labelText, inputEl) {
-                const w = document.createElement("div");
-                const lab = document.createElement("label");
-                lab.className = "adm-glib-label-muted";
-                lab.style.fontSize = "11px";
-                lab.textContent = labelText;
-                w.appendChild(lab);
-                w.appendChild(inputEl);
-                return w;
-            }
-            const inpLbl = document.createElement("input");
-            inpLbl.type = "text";
-            inpLbl.className = "adm-glib-input adm-glib-nt-label";
-            inpLbl.value = c.label || "";
-            const inpCol = document.createElement("input");
-            inpCol.type = "text";
-            inpCol.className = "adm-glib-input adm-glib-nt-color";
-            inpCol.value = c.color || "";
-            const inpSort = document.createElement("input");
-            inpSort.type = "number";
-            inpSort.className = "adm-glib-input adm-glib-nt-sort";
-            inpSort.value = String(c.sortOrder != null ? c.sortOrder : 0);
-            grid.appendChild(labeledInput("Label", inpLbl));
-            grid.appendChild(labeledInput("Color (#hex)", inpCol));
-            grid.appendChild(labeledInput("Sort order", inpSort));
-            row.appendChild(grid);
-
-            const allowLabel = document.createElement("div");
-            allowLabel.className = "adm-glib-label-muted";
-            allowLabel.style.cssText = "font-size:11px;margin-top:10px";
-            allowLabel.textContent = "Allowed child types";
-            row.appendChild(allowLabel);
-            const allowBox = document.createElement("div");
-            allowBox.className = "adm-glib-nt-allows";
-            allowBox.style.cssText = "display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:4px";
-            const allowedSet = {};
-            (c.allowedChildSlugs || []).forEach(function (x) {
-                allowedSet[String(x)] = true;
-            });
-            allSlugs.forEach(function (ch) {
-                const lab = document.createElement("label");
-                lab.style.cssText = "font-size:12px;display:inline-flex;align-items:center;gap:4px;cursor:pointer";
-                const cb = document.createElement("input");
-                cb.type = "checkbox";
-                cb.className = "adm-glib-nt-allow";
-                cb.setAttribute("data-child", ch);
-                cb.checked = !!allowedSet[ch];
-                lab.appendChild(cb);
-                lab.appendChild(document.createTextNode(ch));
-                allowBox.appendChild(lab);
-            });
-            row.appendChild(allowBox);
-
-            const actions = document.createElement("div");
-            actions.style.marginTop = "10px";
-            const saveBtn = document.createElement("button");
-            saveBtn.type = "button";
-            saveBtn.className = "adm-glib-btn adm-glib-btn--sm";
-            saveBtn.textContent = "Save mapping";
-            saveBtn.addEventListener("click", function () {
-                void admGlibNtSaveRow(row, slug);
-            });
-            actions.appendChild(saveBtn);
-            if (!c.isSystem) {
-                const delBtn = document.createElement("button");
-                delBtn.type = "button";
-                delBtn.className = "adm-glib-btn adm-glib-btn--sm adm-glib-btn--danger";
-                delBtn.textContent = "Delete";
-                delBtn.style.marginLeft = "8px";
-                delBtn.addEventListener("click", function () {
-                    void admGlibNtDeleteRow(slug);
+        admGlibNodeTypesCache
+            .slice()
+            .sort(function (a, b) {
+                return (a.sortOrder || 0) - (b.sortOrder || 0) || String(a.slug).localeCompare(String(b.slug));
+            })
+            .forEach(function (c) {
+                const slug = String(c.slug || "");
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "adm-nt-tile";
+                btn.setAttribute("data-slug", slug);
+                const dot = document.createElement("span");
+                dot.className = "adm-nt-tile-dot";
+                dot.style.background = String(c.color || "#6b7280").trim();
+                const info = document.createElement("div");
+                info.className = "adm-nt-tile-info";
+                const nameRow = document.createElement("div");
+                nameRow.className = "adm-nt-tile-name";
+                nameRow.appendChild(document.createTextNode(String(c.label || slug)));
+                if (c.isSystem) {
+                    const lock = document.createElement("span");
+                    lock.className = "adm-nt-lock-ico";
+                    lock.title = "System – mapping locked";
+                    lock.innerHTML =
+                        '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>';
+                    nameRow.appendChild(lock);
+                }
+                const meta = document.createElement("div");
+                meta.className = "adm-nt-tile-meta";
+                meta.textContent = admGlibNtFormatChildrenMeta(c);
+                info.appendChild(nameRow);
+                info.appendChild(meta);
+                const edit = document.createElement("span");
+                edit.className = "adm-nt-tile-edit";
+                edit.innerHTML =
+                    '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+                btn.appendChild(dot);
+                btn.appendChild(info);
+                btn.appendChild(edit);
+                btn.addEventListener("click", function () {
+                    admGlibNtOpenEditor("edit", slug);
                 });
-                actions.appendChild(delBtn);
-            }
-            row.appendChild(actions);
-            host.appendChild(row);
+                host.appendChild(btn);
+            });
+        const add = document.createElement("button");
+        add.type = "button";
+        add.className = "adm-nt-tile adm-nt-tile-add";
+        add.innerHTML =
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add new type';
+        add.addEventListener("click", function () {
+            admGlibNtOpenEditor("new", "");
         });
+        host.appendChild(add);
     }
 
-    async function admGlibNtSaveRow(row, slug) {
-        const labelEl = row.querySelector(".adm-glib-nt-label");
-        const colorEl = row.querySelector(".adm-glib-nt-color");
-        const sortEl = row.querySelector(".adm-glib-nt-sort");
-        const allowed = [];
-        row.querySelectorAll(".adm-glib-nt-allow:checked").forEach(function (cb) {
-            allowed.push(cb.getAttribute("data-child"));
-        });
-        const body = {
-            slug: slug,
-            label: labelEl ? labelEl.value.trim() : "",
-            allowedChildSlugs: allowed,
-        };
-        if (!body.label) {
-            admGlibNtSetMsg("Label is required for " + slug + ".", "err");
+    function admGlibNtRebuildChips(allowedSet) {
+        const group = document.getElementById("adm-glib-nt-chip-group");
+        if (!group) {
             return;
         }
-        if (colorEl && colorEl.value.trim()) {
-            body.color = colorEl.value.trim();
-        }
-        if (sortEl && sortEl.value !== "") {
-            const n = Number(sortEl.value);
-            if (Number.isFinite(n)) {
-                body.sortOrder = n;
+        group.innerHTML = "";
+        admGlibNodeTypesCache.forEach(function (c) {
+            const slug = String(c.slug || "");
+            const lab = document.createElement("label");
+            lab.className = "adm-nt-chip";
+            const inp = document.createElement("input");
+            inp.type = "checkbox";
+            inp.setAttribute("data-slug", slug);
+            const on = !!(allowedSet && allowedSet[slug]);
+            inp.checked = on;
+            if (on) {
+                lab.classList.add("checked");
             }
-        }
-        admGlibNtSetMsg("Saving " + slug + "…", "");
-        try {
-            await fetchJson(apiAdmin("graph-node-categories"), {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body),
+            const chipDot = document.createElement("span");
+            chipDot.className = "adm-nt-chip-dot";
+            chipDot.style.color = String(c.color || "#6b7280").trim();
+            lab.appendChild(inp);
+            lab.appendChild(chipDot);
+            lab.appendChild(document.createTextNode(String(c.label || slug) + " · " + slug));
+            inp.addEventListener("change", function () {
+                lab.classList.toggle("checked", inp.checked);
+                admGlibNtValidateMapping();
             });
-            await admGlibNtFetch();
-            admGlibNtSetMsg("Saved " + slug + ".", "ok");
-        } catch (e) {
-            admGlibNtSetMsg(e.message || "Save failed.", "err");
+            group.appendChild(lab);
+        });
+    }
+
+    function admGlibNtOpenEditor(mode, slug) {
+        const overlay = document.getElementById("adm-glib-nt-overlay");
+        if (!overlay) {
+            return;
+        }
+        admGlibNtModalState.mode = mode;
+        admGlibNtModalState.slug = slug;
+        const isNew = mode === "new";
+        const rec = !isNew ? admGlibNodeTypesCache.find(function (x) { return String(x.slug) === slug; }) : null;
+        admGlibNtModalState.isSystem = !!(rec && rec.isSystem);
+        const isSys = admGlibNtModalState.isSystem;
+
+        const hText = document.getElementById("adm-glib-nt-h-text");
+        if (hText) {
+            hText.textContent = isNew ? "Add new node type" : "Edit " + (rec && rec.label ? String(rec.label) : slug);
+        }
+        const lockPill = document.getElementById("adm-glib-nt-lock-pill");
+        if (lockPill) {
+            lockPill.hidden = !isSys || isNew;
+        }
+        const banner = document.getElementById("adm-glib-nt-lock-banner");
+        if (banner) {
+            banner.classList.toggle("is-visible", !!(isSys && !isNew));
+        }
+        const hDot = document.getElementById("adm-glib-nt-h-dot");
+        const fLabel = document.getElementById("adm-glib-nt-f-label");
+        const fColor = document.getElementById("adm-glib-nt-f-color");
+        const fSwatch = document.getElementById("adm-glib-nt-f-swatch");
+        const fSlug = document.getElementById("adm-glib-nt-f-slug");
+        const fOrder = document.getElementById("adm-glib-nt-f-order");
+
+        const col = rec ? String(rec.color || "#6b7280").trim() : "#6b7280";
+        if (hDot) {
+            hDot.style.background = col;
+        }
+        if (fLabel) {
+            fLabel.value = rec ? String(rec.label || "") : "";
+        }
+        if (fColor) {
+            fColor.value = col;
+        }
+        if (fSwatch) {
+            fSwatch.style.background = col;
+        }
+        if (fSlug) {
+            fSlug.value = rec ? String(rec.slug || "") : "";
+            fSlug.disabled = !isNew;
+        }
+        if (fOrder) {
+            fOrder.value = String(rec && rec.sortOrder != null ? rec.sortOrder : admGlibNodeTypesCache.length);
+            fOrder.disabled = !!(isSys && !isNew);
+        }
+
+        const mapBlock = document.getElementById("adm-glib-nt-map-block");
+        const chipGroup = document.getElementById("adm-glib-nt-chip-group");
+        const mini = document.getElementById("adm-glib-nt-mini-actions");
+        const mapHelp = document.getElementById("adm-glib-nt-map-help");
+        const reqStar = document.getElementById("adm-glib-nt-req-star");
+
+        if (isSys && !isNew) {
+            if (mapBlock) {
+                mapBlock.classList.add("locked");
+                mapBlock.classList.remove("error");
+            }
+            if (chipGroup) {
+                chipGroup.classList.add("locked");
+            }
+            if (mini) {
+                mini.classList.add("disabled");
+            }
+            if (mapHelp) {
+                mapHelp.classList.add("locked");
+                mapHelp.innerHTML =
+                    '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> Mapping is fixed for system categories and cannot be changed.';
+            }
+            if (reqStar) {
+                reqStar.style.display = "none";
+            }
+            const allowed = {};
+            (rec.allowedChildSlugs || []).forEach(function (s) {
+                allowed[String(s)] = true;
+            });
+            admGlibNtRebuildChips(allowed);
+        } else {
+            if (mapBlock) {
+                mapBlock.classList.remove("locked");
+                mapBlock.classList.remove("error");
+            }
+            if (chipGroup) {
+                chipGroup.classList.remove("locked");
+            }
+            if (mini) {
+                mini.classList.remove("disabled");
+            }
+            if (mapHelp) {
+                mapHelp.classList.remove("locked");
+                mapHelp.textContent = "Select at least one type that can appear under this node. Required to save.";
+            }
+            if (reqStar) {
+                reqStar.style.display = "";
+            }
+            const allowed = {};
+            if (rec) {
+                (rec.allowedChildSlugs || []).forEach(function (s) {
+                    allowed[String(s)] = true;
+                });
+            }
+            admGlibNtRebuildChips(allowed);
+        }
+
+        const delBtn = document.getElementById("adm-glib-nt-del-btn");
+        if (delBtn) {
+            delBtn.hidden = isNew || isSys;
+        }
+        overlay.classList.add("is-open");
+        overlay.setAttribute("aria-hidden", "false");
+        admGlibNtValidateMapping();
+    }
+
+    function admGlibNtCloseEditor() {
+        const overlay = document.getElementById("adm-glib-nt-overlay");
+        if (!overlay) {
+            return;
+        }
+        overlay.classList.remove("is-open");
+        overlay.setAttribute("aria-hidden", "true");
+        admGlibNtModalState.mode = "idle";
+    }
+
+    function admGlibNtValidateMapping() {
+        const mapBlock = document.getElementById("adm-glib-nt-map-block");
+        const saveBtn = document.getElementById("adm-glib-nt-save-btn");
+        if (!mapBlock || !saveBtn) {
+            return;
+        }
+        const locked = mapBlock.classList.contains("locked");
+        if (locked) {
+            saveBtn.disabled = false;
+            return;
+        }
+        const any = !!document.querySelector("#adm-glib-nt-chip-group .adm-nt-chip input:checked");
+        if (!any) {
+            mapBlock.classList.add("error");
+            saveBtn.disabled = true;
+        } else {
+            mapBlock.classList.remove("error");
+            saveBtn.disabled = false;
         }
     }
 
-    async function admGlibNtDeleteRow(slug) {
+    async function admGlibNtSaveModal() {
+        const saveBtn = document.getElementById("adm-glib-nt-save-btn");
+        if (saveBtn && saveBtn.disabled) {
+            return;
+        }
+        const fLabel = document.getElementById("adm-glib-nt-f-label");
+        const fColor = document.getElementById("adm-glib-nt-f-color");
+        const fSlug = document.getElementById("adm-glib-nt-f-slug");
+        const fOrder = document.getElementById("adm-glib-nt-f-order");
+        const label = fLabel ? fLabel.value.trim() : "";
+        if (!label) {
+            admGlibNtShowToast("Label is required.", true);
+            return;
+        }
+        const colorRaw = fColor ? fColor.value.trim() : "";
+        const isNew = admGlibNtModalState.mode === "new";
+        const isSys = admGlibNtModalState.isSystem;
+
+        try {
+            if (isNew) {
+                const allowed = [];
+                document.querySelectorAll("#adm-glib-nt-chip-group .adm-nt-chip input:checked").forEach(function (cb) {
+                    allowed.push(cb.getAttribute("data-slug"));
+                });
+                const body = { label: label, allowedChildSlugs: allowed };
+                const slugHint = fSlug && fSlug.value.trim();
+                if (slugHint) {
+                    body.slug = slugHint.toUpperCase();
+                }
+                if (colorRaw) {
+                    body.color = colorRaw;
+                }
+                if (fOrder && fOrder.value !== "") {
+                    const n = Number(fOrder.value);
+                    if (Number.isFinite(n)) {
+                        body.sortOrder = Math.floor(n);
+                    }
+                }
+                await fetchJson(apiAdmin("graph-node-categories"), {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body),
+                });
+                admGlibNtShowToast("Created node type «" + label + "».", false);
+            } else {
+                const slug = admGlibNtModalState.slug;
+                const body = { slug: slug, label: label };
+                if (colorRaw != null && admGlibNtIsHex6(colorRaw)) {
+                    body.color = colorRaw.trim();
+                }
+                if (!isSys) {
+                    const allowed = [];
+                    document.querySelectorAll("#adm-glib-nt-chip-group .adm-nt-chip input:checked").forEach(function (cb) {
+                        allowed.push(cb.getAttribute("data-slug"));
+                    });
+                    body.allowedChildSlugs = allowed;
+                    if (fOrder && fOrder.value !== "") {
+                        const n = Number(fOrder.value);
+                        if (Number.isFinite(n)) {
+                            body.sortOrder = Math.floor(n);
+                        }
+                    }
+                }
+                await fetchJson(apiAdmin("graph-node-categories"), {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body),
+                });
+                admGlibNtShowToast("Saved «" + slug + "».", false);
+            }
+            admGlibNtCloseEditor();
+            await admGlibNtFetch();
+        } catch (e) {
+            admGlibNtShowToast(e.message || "Save failed.", true);
+        }
+    }
+
+    async function admGlibNtDeleteModal() {
+        const slug = admGlibNtModalState.slug;
+        if (!slug) {
+            return;
+        }
         const ok = await adminConfirm(
             "Delete node type?",
             "Remove «" + slug + "» only if no other type lists it as an allowed child. System types cannot be deleted.",
@@ -720,61 +923,101 @@
         if (!ok) {
             return;
         }
-        admGlibNtSetMsg("Deleting…", "");
         try {
             await fetchJson(apiAdmin("graph-node-categories") + "?slug=" + encodeURIComponent(slug), { method: "DELETE" });
+            admGlibNtCloseEditor();
             await admGlibNtFetch();
-            admGlibNtSetMsg("Deleted " + slug + ".", "ok");
+            admGlibNtShowToast("Deleted «" + slug + "».", false);
         } catch (e) {
-            admGlibNtSetMsg(e.message || "Delete failed.", "err");
+            admGlibNtShowToast(e.message || "Delete failed.", true);
         }
     }
 
-    async function admGlibNtAddNew() {
-        const labelEl = document.getElementById("adm-glib-nt-new-label");
-        const slugEl = document.getElementById("adm-glib-nt-new-slug");
-        const colorEl = document.getElementById("adm-glib-nt-new-color");
-        const allowedEl = document.getElementById("adm-glib-nt-new-allowed");
-        const label = labelEl ? labelEl.value.trim() : "";
-        if (!label) {
-            admGlibNtSetMsg("Enter a label for the new type.", "err");
+    function admGlibNtWireModalOnce() {
+        const root = document.getElementById("adm-glib-node-types");
+        if (!root || root.dataset.admGlibNtModalBound === "1") {
             return;
         }
-        const body = {
-            label: label,
-            allowedChildSlugs: admGlibNtParseAllowedCsv(allowedEl && allowedEl.value),
-        };
-        const slugHint = slugEl && slugEl.value.trim();
-        if (slugHint) {
-            body.slug = slugHint;
+        root.dataset.admGlibNtModalBound = "1";
+        const closeBtn = document.getElementById("adm-glib-nt-modal-close");
+        const cancelBtn = document.getElementById("adm-glib-nt-cancel-btn");
+        const overlay = document.getElementById("adm-glib-nt-overlay");
+        const saveBtn = document.getElementById("adm-glib-nt-save-btn");
+        const delBtn = document.getElementById("adm-glib-nt-del-btn");
+        const fColor = document.getElementById("adm-glib-nt-f-color");
+        const selAll = document.getElementById("adm-glib-nt-sel-all");
+        const selNone = document.getElementById("adm-glib-nt-sel-none");
+        function onClose() {
+            admGlibNtCloseEditor();
         }
-        const col = colorEl && colorEl.value.trim();
-        if (col) {
-            body.color = col;
+        if (closeBtn) {
+            closeBtn.addEventListener("click", onClose);
         }
-        admGlibNtSetMsg("Adding type…", "");
-        try {
-            await fetchJson(apiAdmin("graph-node-categories"), {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body),
+        if (cancelBtn) {
+            cancelBtn.addEventListener("click", onClose);
+        }
+        if (overlay) {
+            overlay.addEventListener("click", function (e) {
+                if (e.target === overlay) {
+                    onClose();
+                }
             });
-            if (labelEl) {
-                labelEl.value = "";
-            }
-            if (slugEl) {
-                slugEl.value = "";
-            }
-            if (colorEl) {
-                colorEl.value = "";
-            }
-            if (allowedEl) {
-                allowedEl.value = "";
-            }
-            await admGlibNtFetch();
-            admGlibNtSetMsg("Node type created.", "ok");
-        } catch (e) {
-            admGlibNtSetMsg(e.message || "Could not add type.", "err");
+        }
+        if (saveBtn) {
+            saveBtn.addEventListener("click", function () {
+                void admGlibNtSaveModal();
+            });
+        }
+        if (delBtn) {
+            delBtn.addEventListener("click", function () {
+                void admGlibNtDeleteModal();
+            });
+        }
+        if (fColor) {
+            fColor.addEventListener("input", function () {
+                const v = fColor.value.trim();
+                const sw = document.getElementById("adm-glib-nt-f-swatch");
+                const hd = document.getElementById("adm-glib-nt-h-dot");
+                const safe = v || "#ccc";
+                if (sw) {
+                    sw.style.background = safe;
+                }
+                if (hd) {
+                    hd.style.background = safe;
+                }
+            });
+        }
+        if (selAll) {
+            selAll.addEventListener("click", function () {
+                const cg = document.getElementById("adm-glib-nt-chip-group");
+                if (!cg || cg.classList.contains("locked")) {
+                    return;
+                }
+                cg.querySelectorAll(".adm-nt-chip").forEach(function (lab) {
+                    const cb = lab.querySelector("input");
+                    if (cb) {
+                        cb.checked = true;
+                        lab.classList.add("checked");
+                    }
+                });
+                admGlibNtValidateMapping();
+            });
+        }
+        if (selNone) {
+            selNone.addEventListener("click", function () {
+                const cg = document.getElementById("adm-glib-nt-chip-group");
+                if (!cg || cg.classList.contains("locked")) {
+                    return;
+                }
+                cg.querySelectorAll(".adm-nt-chip").forEach(function (lab) {
+                    const cb = lab.querySelector("input");
+                    if (cb) {
+                        cb.checked = false;
+                        lab.classList.remove("checked");
+                    }
+                });
+                admGlibNtValidateMapping();
+            });
         }
     }
 
@@ -784,16 +1027,11 @@
             return;
         }
         root.dataset.admGlibNtBound = "1";
+        admGlibNtWireModalOnce();
         const ref = document.getElementById("adm-glib-nt-refresh");
         if (ref) {
             ref.addEventListener("click", function () {
                 void admGlibNtFetch();
-            });
-        }
-        const addBtn = document.getElementById("adm-glib-nt-add");
-        if (addBtn) {
-            addBtn.addEventListener("click", function () {
-                void admGlibNtAddNew();
             });
         }
         void admGlibNtFetch();

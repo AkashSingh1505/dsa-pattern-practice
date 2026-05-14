@@ -846,39 +846,190 @@
                                 </div>
                             </div>
 
-                            <div class="adm-glib-filters-card" id="adm-glib-node-types">
-                                <div class="adm-glib-filters-row" style="align-items: flex-end; flex-wrap: wrap; gap: 12px">
-                                    <div class="adm-glib-masthead" style="flex: 1; min-width: 220px; margin: 0">
-                                        <h2 class="adm-glib-h1" style="margin: 0 0 6px; font-size: 1.1rem">Mind-map node types</h2>
-                                        <p class="adm-glib-lede" style="margin: 0; font-size: 13px">
-                                            Global rules for every graph: each node uses <code>nodeCategorySlug</code> (must match a row below). Checkboxes define which child types may appear under that parent.
-                                        </p>
+                            <div class="adm-glib-filters-card adm-glib-nt-page" id="adm-glib-node-types">
+                                <style>
+                                    #adm-glib-node-types.adm-glib-nt-page { --adm-nt-bg: #f6f7f9; --adm-nt-fg: #1a1d23; --adm-nt-muted: #6b7280; --adm-nt-border: #e5e7eb; font-size: 13px; line-height: 1.4; color: var(--adm-nt-fg); }
+                                    #adm-glib-node-types .adm-nt-container { max-width: 980px; margin: 0 auto; }
+                                    #adm-glib-node-types .adm-nt-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+                                    #adm-glib-node-types .adm-nt-header h2 { font-size: 16px; font-weight: 600; margin: 0 0 2px; }
+                                    #adm-glib-node-types .adm-nt-header p { color: var(--adm-nt-muted); font-size: 12px; margin: 0; }
+                                    #adm-glib-node-types .adm-nt-btn { border: 1px solid #d1d5db; background: #fff; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; color: #374151; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s; font-family: inherit; }
+                                    #adm-glib-node-types .adm-nt-btn:hover { background: #f9fafb; border-color: #9ca3af; }
+                                    #adm-glib-node-types .adm-nt-btn-primary { background: #111827; color: #fff; border-color: #111827; }
+                                    #adm-glib-node-types .adm-nt-btn-primary:hover { background: #1f2937; }
+                                    #adm-glib-node-types .adm-nt-btn-primary:disabled { background: #d1d5db; border-color: #d1d5db; color: #fff; cursor: not-allowed; }
+                                    #adm-glib-node-types .adm-nt-toast { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 6px 12px; border-radius: 6px; font-size: 12px; margin-bottom: 14px; display: none; align-items: center; gap: 8px; }
+                                    #adm-glib-node-types .adm-nt-toast.is-visible { display: flex; }
+                                    #adm-glib-node-types .adm-nt-toast--err { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+                                    #adm-glib-node-types .adm-nt-tiles-section { background: #fff; border: 1px solid var(--adm-nt-border); border-radius: 10px; padding: 14px; }
+                                    #adm-glib-node-types .adm-nt-section-title { font-size: 11px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; color: var(--adm-nt-muted); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+                                    #adm-glib-node-types .adm-nt-count { background: #f3f4f6; color: #374151; padding: 1px 7px; border-radius: 10px; font-size: 10px; }
+                                    #adm-glib-node-types .adm-nt-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+                                    #adm-glib-node-types .adm-nt-tile { display: flex; align-items: center; gap: 10px; padding: 9px 11px; border: 1px solid var(--adm-nt-border); border-radius: 8px; background: #fff; cursor: pointer; transition: all 0.15s; text-align: left; font: inherit; width: 100%; }
+                                    #adm-glib-node-types .adm-nt-tile:hover { border-color: #9ca3af; background: #fafbfc; }
+                                    #adm-glib-node-types .adm-nt-tile:hover .adm-nt-tile-edit { opacity: 1; }
+                                    #adm-glib-node-types .adm-nt-tile-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+                                    #adm-glib-node-types .adm-nt-tile-info { flex: 1; min-width: 0; }
+                                    #adm-glib-node-types .adm-nt-tile-name { font-size: 12px; font-weight: 600; color: #111827; letter-spacing: 0.3px; display: flex; align-items: center; gap: 5px; }
+                                    #adm-glib-node-types .adm-nt-tile-meta { font-size: 10px; color: #9ca3af; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+                                    #adm-glib-node-types .adm-nt-tile-edit { opacity: 0; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; color: #6b7280; transition: opacity 0.15s; flex-shrink: 0; border: none; background: transparent; cursor: pointer; padding: 0; }
+                                    #adm-glib-node-types .adm-nt-tile-edit:hover { background: #e5e7eb; color: #111827; }
+                                    #adm-glib-node-types .adm-nt-tile-add { border: 1px dashed #d1d5db; background: transparent; color: #6b7280; justify-content: center; font-weight: 500; font-size: 12px; cursor: pointer; }
+                                    #adm-glib-node-types .adm-nt-tile-add:hover { border-color: #111827; color: #111827; background: #fff; }
+                                    #adm-glib-node-types .adm-nt-lock-ico { color: #9ca3af; display: inline-flex; }
+                                    #adm-glib-node-types .adm-nt-overlay { position: fixed; inset: 0; background: rgba(17, 24, 39, 0.4); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 20px; }
+                                    #adm-glib-node-types .adm-nt-overlay.is-open { display: flex; }
+                                    #adm-glib-node-types .adm-nt-modal { background: #fff; border-radius: 10px; width: 100%; max-width: 480px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25); overflow: hidden; }
+                                    #adm-glib-node-types .adm-nt-modal-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid #f3f4f6; }
+                                    #adm-glib-node-types .adm-nt-h-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+                                    #adm-glib-node-types .adm-nt-modal-header h3 { font-size: 14px; font-weight: 600; flex: 1; display: flex; align-items: center; gap: 8px; margin: 0; }
+                                    #adm-glib-node-types .adm-nt-lock-pill { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px; background: #f3f4f6; color: #6b7280; text-transform: uppercase; letter-spacing: 0.3px; }
+                                    #adm-glib-node-types .adm-nt-modal-close { border: none; background: transparent; cursor: pointer; color: #6b7280; width: 26px; height: 26px; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+                                    #adm-glib-node-types .adm-nt-modal-close:hover { background: #f3f4f6; color: #111827; }
+                                    #adm-glib-node-types .adm-nt-modal-body { padding: 14px 16px; }
+                                    #adm-glib-node-types .adm-nt-field-row { display: grid; grid-template-columns: 1fr 130px; gap: 8px; margin-bottom: 14px; }
+                                    #adm-glib-node-types .adm-nt-field { display: flex; flex-direction: column; }
+                                    #adm-glib-node-types .adm-nt-field label { font-size: 10px; text-transform: uppercase; font-weight: 600; color: #9ca3af; margin-bottom: 4px; letter-spacing: 0.4px; }
+                                    #adm-glib-node-types .adm-nt-field .adm-nt-req { color: #ef4444; }
+                                    #adm-glib-node-types .adm-nt-field input { border: 1px solid var(--adm-nt-border); border-radius: 5px; padding: 6px 8px; font-size: 12px; font-family: inherit; background: #fff; }
+                                    #adm-glib-node-types .adm-nt-field input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1); }
+                                    #adm-glib-node-types .adm-nt-field input:disabled { background: #f9fafb; color: #6b7280; cursor: not-allowed; }
+                                    #adm-glib-node-types .adm-nt-color-input { position: relative; }
+                                    #adm-glib-node-types .adm-nt-color-input input { padding-left: 26px; font-family: ui-monospace, Menlo, monospace; font-size: 11px; }
+                                    #adm-glib-node-types .adm-nt-swatch { position: absolute; left: 6px; top: 26px; width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0, 0, 0, 0.08); pointer-events: none; }
+                                    #adm-glib-node-types .adm-nt-field-row-sec { display: grid; grid-template-columns: 1fr 70px; gap: 8px; margin-bottom: 14px; }
+                                    #adm-glib-node-types .adm-nt-mapping-block { border: 1px solid var(--adm-nt-border); border-radius: 8px; padding: 10px 12px; background: #fafbfc; }
+                                    #adm-glib-node-types .adm-nt-mapping-block.error { border-color: #fecaca; background: #fef2f2; }
+                                    #adm-glib-node-types .adm-nt-mapping-block.locked { background: #f9fafb; border-style: dashed; }
+                                    #adm-glib-node-types .adm-nt-mapping-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
+                                    #adm-glib-node-types .adm-nt-mapping-help { font-size: 11px; color: var(--adm-nt-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
+                                    #adm-glib-node-types .adm-nt-mapping-help.locked { font-style: italic; }
+                                    #adm-glib-node-types .adm-nt-mini-actions { display: flex; gap: 6px; font-size: 11px; align-items: center; }
+                                    #adm-glib-node-types .adm-nt-mini-actions button { background: none; border: none; padding: 0; color: #2563eb; cursor: pointer; font: inherit; font-weight: 500; }
+                                    #adm-glib-node-types .adm-nt-mini-actions button:hover { text-decoration: underline; }
+                                    #adm-glib-node-types .adm-nt-mini-actions.disabled button { color: #d1d5db; cursor: not-allowed; pointer-events: none; }
+                                    #adm-glib-node-types .adm-nt-sep { color: #d1d5db; }
+                                    #adm-glib-node-types .adm-nt-chip-group { display: flex; flex-wrap: wrap; gap: 5px; }
+                                    #adm-glib-node-types .adm-nt-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border: 1px solid var(--adm-nt-border); border-radius: 14px; font-size: 11px; font-weight: 500; cursor: pointer; user-select: none; background: #fff; color: #6b7280; transition: all 0.15s; }
+                                    #adm-glib-node-types .adm-nt-chip:hover { border-color: #9ca3af; }
+                                    #adm-glib-node-types .adm-nt-chip input { display: none; }
+                                    #adm-glib-node-types .adm-nt-chip-dot { width: 7px; height: 7px; border-radius: 50%; background: #d1d5db; flex-shrink: 0; }
+                                    #adm-glib-node-types .adm-nt-chip.checked { background: #eff6ff; border-color: #93c5fd; color: #1d4ed8; }
+                                    #adm-glib-node-types .adm-nt-chip.checked .adm-nt-chip-dot { background: currentColor; }
+                                    #adm-glib-node-types .adm-nt-chip-group.locked .adm-nt-chip { cursor: not-allowed; pointer-events: none; opacity: 0.75; }
+                                    #adm-glib-node-types .adm-nt-chip-group.locked .adm-nt-chip.checked { background: #f3f4f6; border-color: var(--adm-nt-border); color: #4b5563; }
+                                    #adm-glib-node-types .adm-nt-chip-group.locked .adm-nt-chip:not(.checked) { opacity: 0.4; }
+                                    #adm-glib-node-types .adm-nt-lock-banner { display: none; align-items: flex-start; gap: 8px; padding: 8px 10px; background: #f3f4f6; border: 1px solid var(--adm-nt-border); border-radius: 6px; font-size: 11px; color: #4b5563; margin-bottom: 12px; }
+                                    #adm-glib-node-types .adm-nt-lock-banner.is-visible { display: flex; }
+                                    #adm-glib-node-types .adm-nt-error-text { color: #b91c1c; font-size: 11px; margin-top: 8px; display: none; align-items: center; gap: 5px; }
+                                    #adm-glib-node-types .adm-nt-mapping-block.error .adm-nt-error-text { display: flex; }
+                                    #adm-glib-node-types .adm-nt-modal-footer { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-top: 1px solid #f3f4f6; background: #fafbfc; }
+                                    #adm-glib-node-types .adm-nt-btn-danger { color: #b91c1c; border-color: transparent; background: transparent; }
+                                    #adm-glib-node-types .adm-nt-btn-danger:hover { background: #fef2f2; border-color: #fecaca; }
+                                </style>
+                                <div class="adm-nt-container adm-glib-nt-page">
+                                    <div class="adm-nt-header">
+                                        <div>
+                                            <h2>Mind-map node types</h2>
+                                            <p>Define categories for graph nodes. System categories have locked mapping rules; use <code>nodeCategorySlug</code> in JSON.</p>
+                                        </div>
+                                        <button type="button" class="adm-nt-btn" id="adm-glib-nt-refresh" title="Reload from server">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M23 4v6h-6M1 20v-6h6"></path>
+                                                <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"></path>
+                                            </svg>
+                                            Reload
+                                        </button>
                                     </div>
-                                    <button type="button" class="adm-glib-btn adm-glib-btn--sm" id="adm-glib-nt-refresh">Reload types</button>
+                                    <div id="adm-glib-nt-toast" class="adm-nt-toast" aria-live="polite" hidden></div>
+                                    <div class="adm-nt-tiles-section">
+                                        <div class="adm-nt-section-title">
+                                            <span>All categories <span class="adm-nt-count" id="adm-glib-nt-count">0</span></span>
+                                            <span style="font-weight: 400; text-transform: none; letter-spacing: 0">Click a tile to edit</span>
+                                        </div>
+                                        <div id="adm-glib-nt-tiles" class="adm-nt-tiles" role="list"></div>
+                                    </div>
+                                    <p id="adm-glib-nt-msg" class="status adm-glib-status" style="margin-top: 12px" aria-live="polite"></p>
                                 </div>
-                                <div id="adm-glib-nt-list" class="adm-glib-nt-list" role="list" style="margin-top: 12px"></div>
-                                <div class="adm-form-grid cols-2" style="margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--adm-border, rgba(0, 0, 0, 0.12))">
-                                    <div class="adm-field">
-                                        <label for="adm-glib-nt-new-label">Add type — label <span class="adm-req" aria-hidden="true">*</span></label>
-                                        <input id="adm-glib-nt-new-label" type="text" placeholder="e.g. Milestone" maxlength="80" autocomplete="off" />
-                                    </div>
-                                    <div class="adm-field">
-                                        <label for="adm-glib-nt-new-slug">Slug <span class="adm-glib-label-muted">optional; derived from label if empty</span></label>
-                                        <input id="adm-glib-nt-new-slug" type="text" placeholder="MILESTONE" maxlength="48" autocomplete="off" />
-                                    </div>
-                                    <div class="adm-field">
-                                        <label for="adm-glib-nt-new-color">Color <span class="adm-glib-label-muted">#RRGGBB; server picks if invalid</span></label>
-                                        <input id="adm-glib-nt-new-color" type="text" placeholder="#6b7280" maxlength="32" autocomplete="off" />
-                                    </div>
-                                    <div class="adm-field adm-field--span-2">
-                                        <label for="adm-glib-nt-new-allowed">Allowed child slugs <span class="adm-glib-label-muted">comma-separated; must already exist (or match new slug)</span></label>
-                                        <input id="adm-glib-nt-new-allowed" type="text" placeholder="PATTERN,PROBLEM" autocomplete="off" />
-                                    </div>
-                                    <div class="adm-field adm-field--span-2">
-                                        <button type="button" class="adm-glib-btn adm-glib-btn--primary adm-glib-btn--sm" id="adm-glib-nt-add">Add node type</button>
+                                <div class="adm-nt-overlay" id="adm-glib-nt-overlay" aria-hidden="true">
+                                    <div class="adm-nt-modal" role="dialog" aria-modal="true" aria-labelledby="adm-glib-nt-modal-title">
+                                        <div class="adm-nt-modal-header">
+                                            <span class="adm-nt-h-dot" id="adm-glib-nt-h-dot"></span>
+                                            <h3 id="adm-glib-nt-modal-title">
+                                                <span id="adm-glib-nt-h-text">Edit category</span>
+                                                <span class="adm-nt-lock-pill" id="adm-glib-nt-lock-pill" hidden>
+                                                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                                        <rect x="3" y="11" width="18" height="11" rx="2"></rect>
+                                                        <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                                                    </svg>
+                                                    System
+                                                </span>
+                                            </h3>
+                                            <button type="button" class="adm-nt-modal-close" id="adm-glib-nt-modal-close" aria-label="Close">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <div class="adm-nt-modal-body">
+                                            <div class="adm-nt-lock-banner" id="adm-glib-nt-lock-banner">
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <rect x="3" y="11" width="18" height="11" rx="2"></rect>
+                                                    <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                                                </svg>
+                                                <span><strong>System category.</strong> Only <strong>label</strong> and <strong>color</strong> can be edited. Slug, order, and mapping rules are locked.</span>
+                                            </div>
+                                            <div class="adm-nt-field-row">
+                                                <div class="adm-nt-field">
+                                                    <label for="adm-glib-nt-f-label">Label <span class="adm-nt-req">*</span></label>
+                                                    <input type="text" id="adm-glib-nt-f-label" maxlength="80" autocomplete="off" />
+                                                </div>
+                                                <div class="adm-nt-field adm-nt-color-input">
+                                                    <label for="adm-glib-nt-f-color">Color</label>
+                                                    <span class="adm-nt-swatch" id="adm-glib-nt-f-swatch"></span>
+                                                    <input type="text" id="adm-glib-nt-f-color" maxlength="32" autocomplete="off" placeholder="#2563eb or hsl(...)" />
+                                                </div>
+                                            </div>
+                                            <div class="adm-nt-field-row-sec">
+                                                <div class="adm-nt-field">
+                                                    <label for="adm-glib-nt-f-slug">Slug</label>
+                                                    <input type="text" id="adm-glib-nt-f-slug" maxlength="48" autocomplete="off" placeholder="AUTO_FROM_LABEL" style="text-transform: uppercase" />
+                                                </div>
+                                                <div class="adm-nt-field">
+                                                    <label for="adm-glib-nt-f-order">Order</label>
+                                                    <input type="number" id="adm-glib-nt-f-order" value="0" step="1" />
+                                                </div>
+                                            </div>
+                                            <div class="adm-nt-mapping-block" id="adm-glib-nt-map-block">
+                                                <div class="adm-nt-mapping-head">
+                                                    <span style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: #374151; letter-spacing: 0.3px">Allowed child types <span class="adm-nt-req" id="adm-glib-nt-req-star">*</span></span>
+                                                    <div class="adm-nt-mini-actions" id="adm-glib-nt-mini-actions">
+                                                        <button type="button" id="adm-glib-nt-sel-all">All</button>
+                                                        <span class="adm-nt-sep">·</span>
+                                                        <button type="button" id="adm-glib-nt-sel-none">None</button>
+                                                    </div>
+                                                </div>
+                                                <div class="adm-nt-mapping-help" id="adm-glib-nt-map-help">Select at least one type that can appear under this node. Required to save.</div>
+                                                <div class="adm-nt-chip-group" id="adm-glib-nt-chip-group"></div>
+                                                <div class="adm-nt-error-text" id="adm-glib-nt-map-err">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line></svg>
+                                                    Select at least one allowed child type.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="adm-nt-modal-footer">
+                                            <button type="button" class="adm-nt-btn adm-nt-btn-danger" id="adm-glib-nt-del-btn" hidden>
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>
+                                                Delete
+                                            </button>
+                                            <div style="display: flex; gap: 8px; margin-left: auto">
+                                                <button type="button" class="adm-nt-btn" id="adm-glib-nt-cancel-btn">Cancel</button>
+                                                <button type="button" class="adm-nt-btn adm-nt-btn-primary" id="adm-glib-nt-save-btn">Save changes</button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <p id="adm-glib-nt-msg" class="status adm-glib-status" style="margin-top: 10px" aria-live="polite"></p>
                             </div>
 
                             <div class="adm-glib-filters-card">

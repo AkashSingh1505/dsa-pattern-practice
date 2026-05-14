@@ -1,4 +1,4 @@
-@import url("./graph-add-child-mock.css?v=4");
+@import url("./graph-add-child-mock.css?v=5");
 
 /* Global reset for margins and paddings */
 * {
@@ -6902,4 +6902,222 @@ body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
         background: rgba(255, 255, 255, 0.6);
         color: var(--dsa-shell-ink);
     }
+}
+
+/* -------------------------------------------------------------------------
+   Add-solution bottom sheet — glass theme (matches graph add-child modal).
+   Panel is mounted on document.body; selectors must beat earlier .dsa-q-sheet-* rules.
+   ------------------------------------------------------------------------- */
+
+.dsa-q-sheet-backdrop.graph-ac-solution-sheet {
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.dsa-q-sheet-panel.graph-ac-solution-sheet-panel {
+    max-width: 540px;
+    margin: 0 auto;
+    padding: 12px 24px calc(20px + env(safe-area-inset-bottom, 0));
+    border-radius: 24px 24px 0 0;
+    background: rgba(255, 255, 255, 0.92);
+    -webkit-backdrop-filter: saturate(180%) blur(40px);
+    backdrop-filter: saturate(180%) blur(40px);
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    border-bottom: none;
+    box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.04);
+    transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.3, 1);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.graph-ac-sheet-grip.dsa-q-sheet-grab {
+    width: 36px;
+    height: 5px;
+    margin: 0 auto 14px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.18);
+}
+
+.graph-ac-solution-sheet-panel .graph-ac-sheet-title.dsa-q-sheet-title {
+    margin: 0 0 16px;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: #1d1d1f;
+}
+
+.graph-ac-solution-sheet-panel .graph-ac-sheet-field {
+    margin-bottom: 14px;
+}
+
+.graph-ac-solution-sheet-panel .graph-ac-sheet-label {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #86868b;
+    margin-bottom: 8px;
+}
+
+.graph-ac-solution-sheet-panel .graph-ac-sheet-label .dsa-req {
+    color: #ff3b30;
+}
+
+.graph-ac-solution-sheet-panel .graph-ac-sheet-select.dsa-q-modern-select-shell {
+    position: relative;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
+}
+
+.graph-ac-solution-sheet-panel .graph-ac-sheet-select.dsa-q-modern-select-shell:focus-within {
+    border-color: #0071e3;
+    box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15);
+}
+
+.graph-ac-solution-sheet-panel .graph-ac-sheet-select.dsa-q-modern-select-shell::after {
+    right: 14px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    margin-top: 0;
+    border-right: 1.5px solid #86868b;
+    border-bottom: 1.5px solid #86868b;
+    border-left: none;
+    border-top: none;
+    transform: translateY(-70%) rotate(45deg);
+}
+
+.graph-ac-solution-sheet-panel .graph-ac-sheet-select select {
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 12px 38px 12px 14px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #1d1d1f;
+    border: none;
+    border-radius: 12px;
+    background: transparent;
+    box-shadow: none;
+    cursor: pointer;
+}
+
+.graph-ac-solution-sheet-panel .graph-ac-sheet-select select:focus {
+    outline: none;
+    border: none;
+    box-shadow: none;
+}
+
+.graph-ac-solution-sheet-panel .graph-ac-sheet-input-wrap.input-wrap {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    padding: 0 14px;
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
+}
+
+.graph-ac-solution-sheet-panel .graph-ac-sheet-input-wrap:focus-within {
+    border-color: #0071e3;
+    box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15);
+}
+
+.graph-ac-solution-sheet-panel .graph-ac-sheet-input-wrap .dsa-field-control {
+    flex: 1;
+    border: none;
+    box-shadow: none;
+    padding: 12px 0;
+    font-size: 15px;
+    background: transparent;
+}
+
+.graph-ac-solution-sheet-panel .graph-ac-sheet-input-wrap .dsa-field-control:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.graph-ac-solution-sheet-panel .dsa-q-code--sheet.code-editor,
+.graph-ac-solution-sheet-panel .graph-ac-sheet-code.dsa-q-code--sheet {
+    min-height: 160px;
+    resize: vertical;
+    font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    tab-size: 2;
+    background: #0d1226;
+    color: #e8eaf6;
+    border: 1px solid #1a2042;
+    border-radius: 12px;
+    padding: 14px 16px;
+}
+
+.graph-ac-solution-sheet-panel .dsa-q-code--sheet:focus {
+    outline: none;
+    border-color: #0071e3;
+    box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.22);
+}
+
+.graph-ac-solution-sheet-panel .dsa-q-code--sheet::placeholder {
+    color: #6b7290;
+}
+
+.graph-ac-solution-sheet-panel .graph-ac-sheet-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    padding-top: 8px;
+}
+
+.graph-ac-solution-sheet-panel .graph-ac-sheet-actions .dsa-dialog-btn {
+    border: none;
+    padding: 10px 20px;
+    border-radius: 980px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s,
+        background 0.2s;
+}
+
+.graph-ac-solution-sheet-panel .graph-ac-sheet-actions .dsa-dialog-btn--ghost {
+    background: rgba(0, 0, 0, 0.06);
+    color: #1d1d1f;
+}
+
+.graph-ac-solution-sheet-panel .graph-ac-sheet-actions .dsa-dialog-btn--ghost:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.graph-ac-solution-sheet-panel .graph-ac-sheet-actions .dsa-dialog-btn--primary {
+    background: linear-gradient(180deg, #1a85f0, #0071e3);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(0, 113, 227, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.graph-ac-solution-sheet-panel .graph-ac-sheet-actions .dsa-dialog-btn--primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(0, 113, 227, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.graph-ac-solution-sheet-panel .graph-ac-sheet-actions .dsa-dialog-btn--primary:disabled {
+    background: #c7c7cc;
+    cursor: not-allowed;
+    box-shadow: none;
 }

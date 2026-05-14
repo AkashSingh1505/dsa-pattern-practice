@@ -6148,8 +6148,8 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         const wrap = document.createElement("span");
         wrap.className = "dsa-q-section-icon section-icon";
         const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.setAttribute("width", "24");
-        svg.setAttribute("height", "24");
+        svg.setAttribute("width", "14");
+        svg.setAttribute("height", "14");
         svg.setAttribute("viewBox", "0 0 24 24");
         svg.setAttribute("fill", "none");
         svg.setAttribute("aria-hidden", "true");
@@ -6165,8 +6165,8 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         b.setAttribute("aria-label", ariaLabel);
         b.title = titleText;
         const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.setAttribute("width", "18");
-        svg.setAttribute("height", "18");
+        svg.setAttribute("width", "13");
+        svg.setAttribute("height", "13");
         svg.setAttribute("viewBox", "0 0 24 24");
         svg.setAttribute("fill", "none");
         svg.setAttribute("stroke", "currentColor");
@@ -6186,7 +6186,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         head.className = "dsa-q-section-head section-head";
         head.appendChild(makeSectionIcon(svgPaths));
         const h = document.createElement("h4");
-        h.className = "dsa-q-section-title";
+        h.className = "dsa-q-section-title section-title";
         h.textContent = title;
         head.appendChild(h);
         const headActions = document.createElement("div");
@@ -6196,17 +6196,36 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         }
         head.appendChild(headActions);
         const body = document.createElement("div");
-        body.className = "dsa-q-section-body";
+        body.className = "dsa-q-section-body section-body";
         sec.appendChild(head);
         sec.appendChild(body);
         return { sec, head, body, headActions };
     }
 
     const hintTa = document.createElement("textarea");
-    hintTa.className = "dsa-field-control dsa-q-hint dsa-q-hint-note-ta";
+    hintTa.className = "plain-textarea dsa-q-hint dsa-q-hint-note-ta";
     hintTa.rows = 4;
-    hintTa.placeholder = "Hint / notes (admin; shown behind ? on the problem row)";
+    hintTa.placeholder = "Hint / notes (admin: shown behind ? on the problem row)";
     hintTa.setAttribute("aria-label", "Hint / notes");
+
+    const hintSec = makeSection(
+        "Hint / notes",
+        ["M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"],
+        (headActions) => {
+            const btn = makeSectionClearIconBtn("Clear hint / notes", "Clear hint / notes");
+            btn.addEventListener("click", () => {
+                if (!isAdmin) {
+                    return;
+                }
+                if (!window.confirm("Clear all text in Hint / notes?")) {
+                    return;
+                }
+                hintTa.value = "";
+            });
+            headActions.appendChild(btn);
+        },
+    );
+    hintSec.body.appendChild(hintTa);
 
     const sketchEditorRoot = document.createElement("div");
     sketchEditorRoot.className = "dsa-sketch-editor-host";
@@ -6341,50 +6360,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         );
     }
 
-    const hintCard = document.createElement("div");
-    hintCard.className = "note-card dsa-q-hint-note";
-    const hintNoteHead = document.createElement("div");
-    hintNoteHead.className = "note-head";
-    const hintNoteHeadIcon = document.createElement("div");
-    hintNoteHeadIcon.className = "note-head-icon";
-    hintNoteHeadIcon.innerHTML =
-        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>';
-    const hintNoteTitle = document.createElement("div");
-    hintNoteTitle.className = "note-title";
-    hintNoteTitle.textContent = "Hint / notes";
-    const hintNoteDel = document.createElement("button");
-    hintNoteDel.type = "button";
-    hintNoteDel.className = "note-del dsa-q-section-clear-btn";
-    hintNoteDel.setAttribute("aria-label", "Clear hint / notes");
-    hintNoteDel.title = "Clear hint / notes";
-    hintNoteDel.innerHTML =
-        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>';
-    hintNoteDel.addEventListener("click", () => {
-        if (!isAdmin) {
-            return;
-        }
-        if (!window.confirm("Clear all text in Hint / notes?")) {
-            return;
-        }
-        hintTa.value = "";
-    });
-    hintNoteHead.appendChild(hintNoteHeadIcon);
-    hintNoteHead.appendChild(hintNoteTitle);
-    hintNoteHead.appendChild(hintNoteDel);
-    const hintNoteBody = document.createElement("div");
-    hintNoteBody.className = "note-body";
-    hintNoteBody.appendChild(hintTa);
-    hintCard.appendChild(hintNoteHead);
-    hintCard.appendChild(hintNoteBody);
-
-    const hintFieldGrp = document.createElement("div");
-    hintFieldGrp.className = "field-group";
-    const hintLabRow = document.createElement("div");
-    hintLabRow.className = "field-label";
-    hintLabRow.innerHTML = "<span>Hint / Notes <span class=\"opt\">(optional)</span></span>";
-    hintFieldGrp.appendChild(hintLabRow);
-    hintFieldGrp.appendChild(hintCard);
-
     const solutionVideoIn = document.createElement("input");
     solutionVideoIn.type = "url";
     solutionVideoIn.id = "dsa-q-solution-video";
@@ -6399,28 +6374,28 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     solutionListRoot.setAttribute("aria-live", "polite");
 
     const sheetBackdrop = document.createElement("div");
-    sheetBackdrop.className = "dsa-q-sheet-backdrop";
+    sheetBackdrop.className = "dsa-q-sheet-backdrop graph-ac-solution-sheet";
     sheetBackdrop.hidden = true;
     const sheetPanel = document.createElement("div");
-    sheetPanel.className = "dsa-q-sheet-panel";
+    sheetPanel.className = "dsa-q-sheet-panel graph-ac-solution-sheet-panel";
     sheetPanel.id = "dsa-q-solution-sheet";
     sheetPanel.setAttribute("role", "dialog");
     sheetPanel.setAttribute("aria-modal", "true");
     sheetPanel.setAttribute("aria-labelledby", "dsa-q-solution-sheet-title");
 
     const sheetGrab = document.createElement("div");
-    sheetGrab.className = "dsa-q-sheet-grab";
+    sheetGrab.className = "dsa-q-sheet-grab graph-ac-sheet-grip";
     sheetGrab.setAttribute("aria-hidden", "true");
 
     const sheetTitle = document.createElement("h3");
-    sheetTitle.className = "dsa-q-sheet-title";
+    sheetTitle.className = "dsa-q-sheet-title graph-ac-sheet-title";
     sheetTitle.id = "dsa-q-solution-sheet-title";
     sheetTitle.textContent = "Add solution";
 
     const approachField = document.createElement("div");
-    approachField.className = "dsa-q-field";
+    approachField.className = "dsa-q-field field-group graph-ac-sheet-field";
     const approachLab = document.createElement("label");
-    approachLab.className = "dsa-field-label";
+    approachLab.className = "dsa-field-label graph-ac-sheet-label";
     approachLab.setAttribute("for", "dsa-q-sheet-approach");
     approachLab.appendChild(document.createTextNode("Approach "));
     const approachReq = document.createElement("span");
@@ -6439,15 +6414,15 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         sheetApproachSelect.appendChild(o);
     });
     const approachShell = document.createElement("div");
-    approachShell.className = "dsa-q-modern-select-shell";
+    approachShell.className = "dsa-q-modern-select-shell select-wrap graph-ac-sheet-select";
     approachShell.appendChild(sheetApproachSelect);
     approachField.appendChild(approachLab);
     approachField.appendChild(approachShell);
 
     const timeField = document.createElement("div");
-    timeField.className = "dsa-q-field";
+    timeField.className = "dsa-q-field field-group graph-ac-sheet-field";
     const timeLab = document.createElement("label");
-    timeLab.className = "dsa-field-label";
+    timeLab.className = "dsa-field-label graph-ac-sheet-label";
     timeLab.setAttribute("for", "dsa-q-sheet-time");
     timeLab.appendChild(document.createTextNode("Time complexity "));
     const timeReq = document.createElement("span");
@@ -6458,18 +6433,21 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const sheetTimeIn = document.createElement("input");
     sheetTimeIn.type = "text";
     sheetTimeIn.id = "dsa-q-sheet-time";
-    sheetTimeIn.className = "dsa-field-control";
+    sheetTimeIn.className = "dsa-field-control field-input";
     sheetTimeIn.placeholder = "e.g. O(n)";
     sheetTimeIn.required = true;
     sheetTimeIn.setAttribute("aria-required", "true");
     sheetTimeIn.setAttribute("aria-label", "Time complexity (required)");
+    const timeInputWrap = document.createElement("div");
+    timeInputWrap.className = "input-wrap graph-ac-sheet-input-wrap";
+    timeInputWrap.appendChild(sheetTimeIn);
     timeField.appendChild(timeLab);
-    timeField.appendChild(sheetTimeIn);
+    timeField.appendChild(timeInputWrap);
 
     const spaceField = document.createElement("div");
-    spaceField.className = "dsa-q-field";
+    spaceField.className = "dsa-q-field field-group graph-ac-sheet-field";
     const spaceLab = document.createElement("label");
-    spaceLab.className = "dsa-field-label";
+    spaceLab.className = "dsa-field-label graph-ac-sheet-label";
     spaceLab.setAttribute("for", "dsa-q-sheet-space");
     spaceLab.appendChild(document.createTextNode("Space complexity "));
     const spaceReq = document.createElement("span");
@@ -6480,17 +6458,20 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const sheetSpaceIn = document.createElement("input");
     sheetSpaceIn.type = "text";
     sheetSpaceIn.id = "dsa-q-sheet-space";
-    sheetSpaceIn.className = "dsa-field-control";
+    sheetSpaceIn.className = "dsa-field-control field-input";
     sheetSpaceIn.placeholder = "e.g. O(1)";
     sheetSpaceIn.required = true;
     sheetSpaceIn.setAttribute("aria-required", "true");
     sheetSpaceIn.setAttribute("aria-label", "Space complexity (required)");
+    const spaceInputWrap = document.createElement("div");
+    spaceInputWrap.className = "input-wrap graph-ac-sheet-input-wrap";
+    spaceInputWrap.appendChild(sheetSpaceIn);
     spaceField.appendChild(spaceLab);
-    spaceField.appendChild(sheetSpaceIn);
+    spaceField.appendChild(spaceInputWrap);
 
     const sheetCodeTa = document.createElement("textarea");
     sheetCodeTa.id = "dsa-q-code";
-    sheetCodeTa.className = "dsa-field-control dsa-q-code dsa-q-code--sheet";
+    sheetCodeTa.className = "dsa-field-control dsa-q-code dsa-q-code--sheet code-editor graph-ac-sheet-code";
     sheetCodeTa.rows = 12;
     sheetCodeTa.spellcheck = false;
     sheetCodeTa.wrap = "off";
@@ -6508,9 +6489,9 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     });
 
     const codeField = document.createElement("div");
-    codeField.className = "dsa-q-field";
+    codeField.className = "dsa-q-field field-group graph-ac-sheet-field";
     const codeLabSheet = document.createElement("label");
-    codeLabSheet.className = "dsa-field-label";
+    codeLabSheet.className = "dsa-field-label graph-ac-sheet-label";
     codeLabSheet.setAttribute("for", "dsa-q-code");
     codeLabSheet.appendChild(document.createTextNode("Solution code "));
     const codeReq = document.createElement("span");
@@ -6525,14 +6506,14 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     codeField.appendChild(sheetCodeTa);
 
     const sheetActions = document.createElement("div");
-    sheetActions.className = "dsa-q-sheet-actions";
+    sheetActions.className = "dsa-q-sheet-actions graph-ac-sheet-actions btn-row";
     const sheetCancel = document.createElement("button");
     sheetCancel.type = "button";
-    sheetCancel.className = "dsa-dialog-btn dsa-dialog-btn--ghost";
+    sheetCancel.className = "dsa-dialog-btn dsa-dialog-btn--ghost btn btn-secondary";
     sheetCancel.textContent = "Cancel";
     const sheetSave = document.createElement("button");
     sheetSave.type = "button";
-    sheetSave.className = "dsa-dialog-btn dsa-dialog-btn--primary";
+    sheetSave.className = "dsa-dialog-btn dsa-dialog-btn--primary btn btn-primary";
     sheetSave.textContent = "Save solution";
     sheetActions.appendChild(sheetCancel);
     sheetActions.appendChild(sheetSave);
@@ -6627,76 +6608,74 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         solutionListRoot.innerHTML = "";
         if (!solutionsState.length) {
             solutionsListExpanded = false;
-            const empty = document.createElement("p");
-            empty.className = "dsa-q-solution-empty";
-            empty.textContent =
-                "No solutions yet. Tap + to add approach, time and space complexity, and code (all required).";
+            const empty = document.createElement("div");
+            empty.className = "dsa-q-solution-empty empty-state";
+            empty.innerHTML =
+                "<strong>No solutions yet.</strong> Tap <strong>+</strong> to add approach, time &amp; space complexity, and code.";
             solutionListRoot.appendChild(empty);
             return;
         }
 
+        const delTrashSvg =
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>';
+
         function appendCard(origIdx) {
             const sol = solutionsState[origIdx];
+            const cat = dsaNormalizeSolutionCategory(sol.approach);
+            const solTagCls = cat === "brute_force" ? "brute" : cat;
+
             const card = document.createElement("article");
-            card.className = "dsa-q-solution-item";
-            const head = document.createElement("div");
-            head.className = "dsa-q-solution-item__head";
-            const badges = document.createElement("div");
-            badges.className = "dsa-q-solution-item__badges";
-            const appr = dsaSolutionCategoryLabel(dsaNormalizeSolutionCategory(sol.approach));
-            if (appr) {
-                const b = document.createElement("span");
-                b.className = "dsa-q-solution-item__pill dsa-q-solution-item__pill--appr";
-                b.textContent = appr;
-                badges.appendChild(b);
-            }
-            if (sol.timeComplexity && String(sol.timeComplexity).trim()) {
-                const b = document.createElement("span");
-                b.className = "dsa-q-solution-item__pill";
-                b.textContent = `T: ${String(sol.timeComplexity).trim()}`;
-                badges.appendChild(b);
-            }
-            if (sol.spaceComplexity && String(sol.spaceComplexity).trim()) {
-                const b = document.createElement("span");
-                b.className = "dsa-q-solution-item__pill dsa-q-solution-item__pill--space";
-                b.textContent = `S: ${String(sol.spaceComplexity).trim()}`;
-                badges.appendChild(b);
-            }
-            head.appendChild(badges);
-            const actions = document.createElement("div");
-            actions.className = "dsa-q-solution-item__actions";
-            const btnEdit = document.createElement("button");
-            btnEdit.type = "button";
-            btnEdit.className = "dsa-q-solution-item__btn";
-            btnEdit.textContent = "Edit";
-            btnEdit.addEventListener("click", () => openSolutionSheet(origIdx));
-            const btnDel = document.createElement("button");
-            btnDel.type = "button";
-            btnDel.className = "dsa-q-solution-item__btn dsa-q-solution-item__btn--danger";
-            btnDel.textContent = "Remove";
-            btnDel.addEventListener("click", () => {
-                if (!window.confirm("Remove this solution?")) {
-                    return;
-                }
-                solutionsState.splice(origIdx, 1);
-                if (solutionsState.length <= 1) {
-                    solutionsListExpanded = false;
-                }
-                renderSolutionsEditorList();
-            });
+            card.className = "dsa-q-solution-item solution-item";
+
+            const tag = document.createElement("span");
+            tag.className = `sol-tag ${solTagCls || "sol-tag--unknown"}`;
+            tag.textContent = dsaSolutionCategoryLabel(cat) || "Approach";
+
+            const info = document.createElement("div");
+            info.className = "sol-info";
+            const comp = document.createElement("div");
+            comp.className = "sol-comp";
+            comp.appendChild(document.createTextNode("Time "));
+            const tc = document.createElement("code");
+            tc.textContent = String(sol.timeComplexity || "").trim() || "—";
+            comp.appendChild(tc);
+            comp.appendChild(document.createTextNode(" · Space "));
+            const sc = document.createElement("code");
+            sc.textContent = String(sol.spaceComplexity || "").trim() || "—";
+            comp.appendChild(sc);
+            info.appendChild(comp);
+
+            card.appendChild(tag);
+            card.appendChild(info);
+
             if (isAdmin) {
-                actions.appendChild(btnEdit);
-                actions.appendChild(btnDel);
-            }
-            head.appendChild(actions);
-            card.appendChild(head);
-            const codePreview = String(sol.code || "").trim();
-            if (codePreview) {
-                const pre = document.createElement("pre");
-                pre.className = "dsa-q-solution-item__code";
-                pre.textContent =
-                    codePreview.length > 360 ? `${codePreview.slice(0, 357)}…` : codePreview;
-                card.appendChild(pre);
+                const btnEdit = document.createElement("button");
+                btnEdit.type = "button";
+                btnEdit.className = "section-btn dsa-q-solution-edit";
+                btnEdit.setAttribute("aria-label", "Edit solution");
+                btnEdit.title = "Edit";
+                btnEdit.innerHTML =
+                    '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
+                btnEdit.addEventListener("click", () => openSolutionSheet(origIdx));
+
+                const btnDel = document.createElement("button");
+                btnDel.type = "button";
+                btnDel.className = "section-btn del";
+                btnDel.setAttribute("aria-label", "Remove solution");
+                btnDel.title = "Remove";
+                btnDel.innerHTML = delTrashSvg;
+                btnDel.addEventListener("click", () => {
+                    if (!window.confirm("Remove this solution?")) {
+                        return;
+                    }
+                    solutionsState.splice(origIdx, 1);
+                    if (solutionsState.length <= 1) {
+                        solutionsListExpanded = false;
+                    }
+                    renderSolutionsEditorList();
+                });
+                card.appendChild(btnEdit);
+                card.appendChild(btnDel);
             }
             solutionListRoot.appendChild(card);
         }
@@ -6750,10 +6729,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             headActions.appendChild(btn);
         },
     );
-    const videoIconEl = videoSec.head.querySelector(".section-icon");
-    if (videoIconEl) {
-        videoIconEl.classList.add("red");
-    }
     videoSec.body.appendChild(solutionVideoIn);
 
     const solutionSec = makeSection(
@@ -6765,7 +6740,8 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             btnAdd.className = "dsa-q-solution-add-btn section-btn add";
             btnAdd.setAttribute("aria-label", "Add solution");
             btnAdd.title = "Add solution";
-            btnAdd.textContent = "+";
+            btnAdd.innerHTML =
+                '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
             btnAdd.addEventListener("click", () => openSolutionSheet(null));
             const btn = makeSectionClearIconBtn("Clear all solutions", "Clear all solutions");
             btn.addEventListener("click", () => {
@@ -6797,7 +6773,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     companyPresetLab.setAttribute("for", "dsa-q-company-preset");
     companyPresetLab.textContent = "Add company";
     const companySelectWrap = document.createElement("div");
-    companySelectWrap.className = "dsa-q-company-select-wrap";
+    companySelectWrap.className = "dsa-q-company-select-wrap select-wrap";
     const companyPresetSelect = document.createElement("select");
     companyPresetSelect.id = "dsa-q-company-preset";
     companyPresetSelect.className = "dsa-field-control dsa-q-company-select";
@@ -6964,12 +6940,12 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     btnTabResources.id = "dsa-q-tab-resources";
     btnTabResources.textContent = "Resources";
     const detailsPanel = document.createElement("div");
-    detailsPanel.className = "dsa-q-tab-panel details-section active";
+    detailsPanel.className = "dsa-q-tab-panel tab-pane active";
     detailsPanel.setAttribute("role", "tabpanel");
     detailsPanel.id = "dsa-q-panel-details";
     detailsPanel.setAttribute("aria-labelledby", "dsa-q-tab-details");
     const resourcesPanel = document.createElement("div");
-    resourcesPanel.className = "dsa-q-tab-panel res-section";
+    resourcesPanel.className = "dsa-q-tab-panel tab-pane";
     resourcesPanel.id = "dsa-q-panel-resources";
     resourcesPanel.setAttribute("role", "tabpanel");
     resourcesPanel.setAttribute("aria-labelledby", "dsa-q-tab-resources");
@@ -6981,7 +6957,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         btnTabResources.classList.toggle("active", !det);
         btnTabDetails.setAttribute("aria-selected", det ? "true" : "false");
         btnTabResources.setAttribute("aria-selected", !det ? "true" : "false");
-        detailsPanel.classList.toggle("hidden", !det);
+        detailsPanel.classList.toggle("active", det);
         resourcesPanel.classList.toggle("active", !det);
     }
     btnTabDetails.addEventListener("click", () => activateDsaProblemTab("details"));
@@ -7136,7 +7112,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     detailsPanel.appendChild(difficultyField);
     detailsPanel.appendChild(importantWrap);
     detailsPanel.appendChild(qHint);
-    detailsPanel.appendChild(hintFieldGrp);
+    detailsPanel.appendChild(hintSec.sec);
     detailsPanel.appendChild(companySec.sec);
     detailsPanel.appendChild(existingCard);
     resourcesPanel.appendChild(videoSec.sec);

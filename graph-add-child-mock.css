@@ -28,9 +28,10 @@
     -webkit-font-smoothing: antialiased;
     color: var(--text);
 
+    position: relative;
     width: 100%;
-    max-width: 520px;
-    background: rgba(255, 255, 255, 0.82);
+    max-width: 580px;
+    background: rgba(255, 255, 255, 0.85);
     backdrop-filter: saturate(180%) blur(40px);
     -webkit-backdrop-filter: saturate(180%) blur(40px);
     border-radius: 24px;
@@ -40,6 +41,7 @@
     max-height: 90vh;
     display: flex;
     flex-direction: column;
+    min-height: 0;
     animation: graph-ac-pop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.15);
     transition: max-width 0.4s cubic-bezier(0.2, 0.9, 0.3, 1);
     padding: 0;
@@ -62,7 +64,7 @@
 }
 
 .graph-add-child-mock .header {
-    padding: 20px 24px 8px;
+    padding: 20px 24px 6px;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -116,7 +118,7 @@
 }
 
 .graph-add-child-mock .tabs {
-    margin: 6px 24px 0;
+    margin: 8px 24px 0;
     display: none;
     background: rgba(120, 120, 128, 0.12);
     border-radius: 10px;
@@ -164,7 +166,7 @@
 }
 
 .graph-add-child-mock .body {
-    padding: 14px 24px 6px;
+    padding: 16px 24px 6px;
     overflow-y: auto;
     flex: 1;
     min-height: 0;
@@ -179,19 +181,11 @@
     border-radius: 3px;
 }
 
-.graph-add-child-mock .details-section {
-    display: block;
-}
-
-.graph-add-child-mock .details-section.hidden {
+.graph-add-child-mock .tab-pane {
     display: none;
 }
 
-.graph-add-child-mock .res-section {
-    display: none;
-}
-
-.graph-add-child-mock .res-section.active {
+.graph-add-child-mock .tab-pane.active {
     display: block;
     animation: graph-ac-fade 0.3s var(--ease);
 }
@@ -355,7 +349,7 @@
     background: #fff;
     border: 1px solid var(--line);
     border-radius: 12px;
-    transition: 0.2s;
+    transition: all 0.2s;
     display: flex;
     align-items: center;
     padding: 0 14px;
@@ -403,7 +397,7 @@
     background: #fff;
     border: 1px solid var(--line);
     border-radius: 12px;
-    transition: 0.2s;
+    transition: all 0.2s;
 }
 
 .graph-add-child-mock .select-wrap:focus-within {
@@ -693,7 +687,7 @@
     background: rgba(0, 0, 0, 0.05);
     display: grid;
     place-items: center;
-    color: #c7c7cc;
+    color: #b0b0b5;
     transition: 0.3s var(--ease);
     pointer-events: none;
 }
@@ -772,88 +766,6 @@
     opacity: 1;
 }
 
-/* Hint — note card (expandable mock) */
-.graph-add-child-mock .note-card {
-    background: #fff;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.graph-add-child-mock .note-head {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--line);
-    background: #fafafc;
-}
-
-.graph-add-child-mock .note-head-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    background: rgba(175, 82, 222, 0.12);
-    color: var(--purple);
-    display: grid;
-    place-items: center;
-    flex-shrink: 0;
-}
-
-.graph-add-child-mock .note-title {
-    font-size: 13.5px;
-    font-weight: 600;
-    flex: 1;
-}
-
-.graph-add-child-mock .note-del {
-    width: 26px;
-    height: 26px;
-    border: none;
-    background: transparent;
-    color: var(--muted);
-    border-radius: 6px;
-    cursor: pointer;
-    display: grid;
-    place-items: center;
-    transition: all 0.2s;
-}
-
-.graph-add-child-mock .note-del:hover {
-    background: rgba(255, 59, 48, 0.1);
-    color: var(--red);
-}
-
-.graph-add-child-mock .note-body {
-    padding: 4px 12px 4px;
-}
-
-.graph-add-child-mock .note-body .dsa-q-hint-note-ta {
-    width: 100%;
-    border: none;
-    outline: none;
-    font-family: inherit;
-    font-size: 14px;
-    background: transparent;
-    resize: vertical;
-    min-height: 56px;
-    padding: 8px 0;
-    color: var(--text);
-    line-height: 1.5;
-}
-
-.graph-add-child-mock .note-body .dsa-q-hint-note-ta::placeholder {
-    color: #c7c7cc;
-}
-
-.graph-add-child-mock .note-body .dsa-q-hint-note-ta:focus {
-    box-shadow: none;
-}
-
-.graph-add-child-mock .input-wrap:focus-within svg.lead {
-    color: var(--blue);
-}
-
 .graph-add-child-mock .section-card {
     background: #fff;
     border: 1px solid var(--line);
@@ -867,7 +779,7 @@
     align-items: center;
     gap: 10px;
     padding: 11px 12px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    border-bottom: 1px solid var(--line);
     background: #fafafc;
 }
 
@@ -887,7 +799,29 @@
     color: var(--red);
 }
 
-.graph-add-child-mock .section-title {
+.graph-add-child-mock .section-icon.blue {
+    background: rgba(0, 113, 227, 0.12);
+    color: var(--blue);
+}
+
+.graph-add-child-mock .section-icon.orange {
+    background: rgba(255, 149, 0, 0.12);
+    color: var(--orange);
+}
+
+.graph-add-child-mock .section-icon.green {
+    background: rgba(52, 199, 89, 0.12);
+    color: var(--green);
+}
+
+.graph-add-child-mock .section-icon svg {
+    width: 14px;
+    height: 14px;
+    display: block;
+}
+
+.graph-add-child-mock .section-title,
+.graph-add-child-mock .dsa-q-section-title {
     font-size: 14px;
     font-weight: 600;
     flex: 1;
@@ -943,7 +877,7 @@
     font-size: 14px;
     color: var(--text);
     resize: vertical;
-    min-height: 80px;
+    min-height: 90px;
     outline: none;
     transition: 0.2s;
     background: #fff;
@@ -972,14 +906,8 @@
     align-items: center;
     gap: 10px;
     padding: 11px 12px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    border-bottom: 1px solid var(--line);
     background: #fafafc;
-}
-
-.graph-add-child-mock .dsa-q-section-title {
-    font-size: 14px;
-    font-weight: 600;
-    flex: 1;
 }
 
 .graph-add-child-mock .dsa-q-section-body {
@@ -998,6 +926,7 @@
     flex-wrap: wrap;
     gap: 6px;
     margin-top: 10px;
+    min-height: 4px;
 }
 
 .graph-add-child-mock .c-chip {
@@ -1005,11 +934,38 @@
     color: var(--blue);
     font-size: 12px;
     font-weight: 500;
-    padding: 4px 6px 4px 10px;
+    padding: 4px 8px 4px 10px;
     border-radius: 999px;
     display: inline-flex;
     align-items: center;
-    gap: 2px;
+    gap: 4px;
+    animation: graph-ac-chip-in 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.3);
+}
+
+@keyframes graph-ac-chip-in {
+    from {
+        opacity: 0;
+        transform: scale(0.7);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.graph-add-child-mock .c-chip button {
+    border: none;
+    background: transparent;
+    color: var(--blue);
+    cursor: pointer;
+    opacity: 0.7;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0 2px;
+}
+
+.graph-add-child-mock .c-chip button:hover {
+    opacity: 1;
 }
 
 .graph-add-child-mock .empty-state {
@@ -1026,15 +982,112 @@
     color: var(--text);
 }
 
-.graph-add-child-mock .solution-item {
+.graph-add-child-mock .solution-item,
+.graph-add-child-mock .dsa-q-solution-item.solution-item {
     background: #fafafc;
-    border: 1px solid rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--line);
     border-radius: 10px;
     padding: 10px 12px;
     margin-bottom: 8px;
     display: flex;
     align-items: center;
     gap: 10px;
+    animation: graph-ac-chip-in 0.25s;
+    min-width: 0;
+}
+
+.graph-add-child-mock .sol-tag {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: var(--purpleS);
+    color: var(--purple);
+    flex-shrink: 0;
+}
+
+.graph-add-child-mock .sol-tag.brute {
+    background: var(--redS);
+    color: var(--red);
+}
+
+.graph-add-child-mock .sol-tag.better {
+    background: var(--orangeS);
+    color: var(--orange);
+}
+
+.graph-add-child-mock .sol-tag.optimal {
+    background: var(--greenS);
+    color: var(--green);
+}
+
+.graph-add-child-mock .sol-tag.sol-tag--unknown {
+    background: rgba(120, 120, 128, 0.12);
+    color: #515154;
+}
+
+.graph-add-child-mock .sol-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.graph-add-child-mock .sol-comp {
+    font-size: 12.5px;
+    color: #515154;
+}
+
+.graph-add-child-mock .sol-comp code {
+    background: rgba(0, 0, 0, 0.05);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 11.5px;
+}
+
+.graph-add-child-mock .dsa-q-solution-edit.section-btn {
+    color: var(--muted);
+}
+
+.graph-add-child-mock .dsa-q-solution-edit.section-btn:hover {
+    background: rgba(0, 113, 227, 0.1);
+    color: var(--blue);
+}
+
+.graph-add-child-mock .dsa-q-solution-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    min-width: 0;
+}
+
+.graph-add-child-mock .dsa-q-solution-expand-toggle {
+    margin-top: 8px;
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: #fff;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+
+.graph-add-child-mock .dsa-q-solution-expand-toggle:hover {
+    background: #fafafc;
+    color: var(--text);
+}
+
+.graph-add-child-mock .dsa-q-solution-empty.empty-state {
+    margin: 0;
 }
 
 .graph-add-child-mock .footer {
@@ -1045,6 +1098,11 @@
     border-top: 1px solid rgba(0, 0, 0, 0.06);
     background: rgba(255, 255, 255, 0.6);
     flex-shrink: 0;
+    flex-grow: 0;
+    min-height: 0;
+    width: auto;
+    max-width: none;
+    font-family: inherit;
 }
 
 .graph-add-child-mock .kbd-hint {
@@ -1072,13 +1130,13 @@
 
 .graph-add-child-mock .btn {
     border: none;
-    padding: 10px 22px;
+    padding: 10px 20px;
     border-radius: 980px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     font-family: inherit;
-    transition: 0.2s;
+    transition: all 0.2s;
 }
 
 .graph-add-child-mock .btn-secondary {
@@ -1103,6 +1161,7 @@
 
 .graph-add-child-mock .btn-primary:disabled {
     background: #c7c7cc;
+    color: #fff;
     cursor: not-allowed;
     box-shadow: none;
 }
@@ -1125,6 +1184,7 @@
 
 .graph-add-child-mock .btn-outline:hover {
     background: #fafafc;
+    border-color: rgba(0, 0, 0, 0.15);
 }
 
 .graph-add-child-mock .u-cat-row-mock {

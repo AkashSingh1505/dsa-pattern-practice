@@ -559,32 +559,28 @@
             if (!ds || typeof ds !== "object") {
                 return;
             }
-            var soloRoot =
-                arr.length === 1 && String(ds.nodeCategorySlug || "").trim().toUpperCase() === "ROOT";
             var tree = getDsTreeForOrb(ds);
-            var emptyBranches =
-                !tree.length &&
-                !(ds.patterns && ds.patterns.length) &&
-                !(ds.problems && ds.problems.length);
-            if (soloRoot && emptyBranches) {
-                return;
-            }
-            var dsKey = nextId();
-            var dsName = String(ds.name != null ? ds.name : "Root " + (i + 1)).slice(0, 22);
             var col = colors[i % colors.length];
-            var hexDs = hexForMindCategory(pickMindGc(ds));
-            nodes[dsKey] = {
-                id: dsKey,
-                name: dsName,
-                r: 32,
-                color: col,
-                ringHex: hexDs || "",
-                count: tree.length,
-                mastery: 0,
-                diff: "Medium",
-                category: "ds",
-            };
-            edges.push(["core", dsKey, 1]);
+            var singleTop = arr.length === 1;
+            var parentForTopics = "core";
+            if (!singleTop) {
+                var dsKey = nextId();
+                var dsName = String(ds.name != null ? ds.name : "Root " + (i + 1)).slice(0, 22);
+                var hexDs = hexForMindCategory(pickMindGc(ds));
+                nodes[dsKey] = {
+                    id: dsKey,
+                    name: dsName,
+                    r: 32,
+                    color: col,
+                    ringHex: hexDs || "",
+                    count: tree.length,
+                    mastery: 0,
+                    diff: "Medium",
+                    category: "ds",
+                };
+                edges.push(["core", dsKey, 1]);
+                parentForTopics = dsKey;
+            }
 
             var maxTopics = 14;
             tree.slice(0, maxTopics).forEach(function (ch, j) {
@@ -605,7 +601,7 @@
                     diff: "Easy",
                     category: isLeafProblems ? "problem" : "pattern",
                 };
-                edges.push([dsKey, tKey, j < 5 ? 1 : 0]);
+                edges.push([parentForTopics, tKey, j < 5 ? 1 : 0]);
             });
         });
 

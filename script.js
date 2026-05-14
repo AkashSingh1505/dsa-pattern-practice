@@ -4994,15 +4994,27 @@ function dsaUnifiedMetaRootDisplayName(merged) {
     return "DSA Patterns";
 }
 
-/** One top-level mind-map row with `nodeCategorySlug` ROOT (member / catalog graph shape). */
+/** One top-level graph row: slug ROOT, known root id prefix (`mind-root-`, `glib-root-`, …), or legacy ROOT-shaped row (slug omitted). */
+function dsaMindMapLooksLikeRootGraphRow(r) {
+    if (!r || typeof r !== "object") {
+        return false;
+    }
+    const s = String(r.nodeCategorySlug || "").trim().toUpperCase();
+    if (s === "ROOT") {
+        return true;
+    }
+    const id = String(r.id || "").toLowerCase();
+    if (id.includes("mind-root") || id.includes("glib-root") || id.includes("ug-root") || id.includes("gc-root")) {
+        return true;
+    }
+    if (s) {
+        return false;
+    }
+    return Array.isArray(r.tree) && Array.isArray(r.patterns) && Array.isArray(r.problems);
+}
+
 function dsaMindMapIsSingleRootPayload(merged) {
-    return (
-        Array.isArray(merged) &&
-        merged.length === 1 &&
-        merged[0] &&
-        typeof merged[0] === "object" &&
-        String(merged[0].nodeCategorySlug || "").trim().toUpperCase() === "ROOT"
-    );
+    return Array.isArray(merged) && merged.length === 1 && dsaMindMapLooksLikeRootGraphRow(merged[0]);
 }
 
 /** All data structures under one “DSA Patterns” root (full map). */

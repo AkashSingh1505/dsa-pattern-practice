@@ -109,16 +109,12 @@
     /** Member palette for Library form (Practice Bearer; same as GET /api/graph-library/my-categories). */
     let glibMemberSavedCategoriesCache = [];
 
-    function glibClientRootId() {
-        return "glib-root-" + Math.random().toString(36).slice(2, 11);
-    }
-
     function buildDefaultGraphPayloadFromTitle(title) {
         /** Same shape as `defaultMindMapGraphPayloadFromTitle` in functions/_lib/graph-default-payload.js */
         const name = String(title || "").trim().slice(0, 80) || "Untitled graph";
         return [
             {
-                id: glibClientRootId(),
+                id: "mind-root-" + Math.random().toString(36).slice(2, 11),
                 name: name,
                 nodeCategorySlug: "ROOT",
                 tree: [],

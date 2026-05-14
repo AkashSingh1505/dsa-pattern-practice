@@ -6,9 +6,19 @@ let dsaHierarchy = [];
 
 const DSA_HIERARCHY_MINIMAL = [
     {
-        id: "placeholder",
+        id: "mind-root-placeholder",
         name: "DSA Patterns",
-        tree: [{ name: "No graph data yet — seed catalog graph `dsa-site-map` (site admin → Library)", problems: [] }],
+        nodeCategorySlug: "ROOT",
+        tree: [
+            {
+                name: "No graph data yet — seed catalog graph `dsa-site-map` (site admin → Library)",
+                nodeCategorySlug: "TOPIC",
+                children: [],
+                problems: [],
+            },
+        ],
+        patterns: [],
+        problems: [],
     },
 ];
 
@@ -533,6 +543,28 @@ function dsaMindAllowedChildSlugs(parentSlug, cats) {
 }
 
 /**
+ * Allowed child slugs from `graph_node_category`, then narrowed by branch-vs-problem exclusivity on this parent
+ * (same rule as {@link dsaNormalizeExclusiveChildKindOnNode}: if the parent already has branch children, no new
+ * PROBLEM nodes at that holder).
+ *
+ * @param {string} parentKey mind-map path key (e.g. `rootId::Topic A`)
+ * @param {{ slug?: string, allowedChildSlugs?: string[] }[]} cats `window.__dsaGraphNodeCategories`
+ * @returns {string[]}
+ */
+function dsaMindAllowedChildSlugsRespectingParentState(parentKey, cats) {
+    const slug = dsaMindParentCategorySlug(parentKey);
+    let allowed = dsaMindAllowedChildSlugs(slug, cats);
+    if (!allowed.length) {
+        return [];
+    }
+    const kindFlags = dsaParentChildKindFlags(parentKey);
+    if (kindFlags.hasSubnodes) {
+        allowed = allowed.filter((s) => String(s).toUpperCase().trim() !== "PROBLEM");
+    }
+    return allowed;
+}
+
+/**
  * @param {{ ds: object, parentNode: object | null }} resolved
  * @param {{ name: string, children?: unknown[], problems?: unknown[], nodeCategorySlug?: string }} newNode
  * @param {string} mindSlug TOPIC | PATTERN
@@ -584,7 +616,14 @@ function dsaTryApplyOneUserNode(clone, e) {
             if (clone.some((d) => d && dsaDsIdEq(d.id, id))) {
                 return true;
             }
-            const rootObj = { id, name: name.trim(), tree: [], nodeCategorySlug: "ROOT" };
+            const rootObj = {
+                id,
+                name: name.trim(),
+                nodeCategorySlug: "ROOT",
+                tree: [],
+                patterns: [],
+                problems: [],
+            };
             if (gc) {
                 rootObj.graphCategoryId = gc;
             }
@@ -787,19 +826,21 @@ function dsaApplyRemovalsToClone(clone, removals) {
 }
 
 /**
- * Each node (and each DS) may list either nested `children` or `problems`, not both.
- * If both exist (legacy data), keep `children` and drop `problems` on that holder.
+ * Each node (and each DS) may list either nested branch children (`children` / `patterns`) or `problems`, not both.
+ * If both exist (legacy data), keep branches and drop `problems` on that holder.
  */
 function dsaNormalizeExclusiveChildKindOnNode(node) {
     if (!node || typeof node !== "object") {
         return;
     }
     const ch = Array.isArray(node.children) ? node.children : [];
+    const pat = Array.isArray(node.patterns) ? node.patterns : [];
     const probs = Array.isArray(node.problems) ? node.problems : [];
-    if (ch.length > 0 && probs.length > 0) {
+    if ((ch.length > 0 || pat.length > 0) && probs.length > 0) {
         node.problems = [];
     }
     ch.forEach((c) => dsaNormalizeExclusiveChildKindOnNode(c));
+    pat.forEach((c) => dsaNormalizeExclusiveChildKindOnNode(c));
 }
 
 function dsaNormalizeExclusiveChildKindInClone(clone) {
@@ -831,7 +872,7 @@ function getDsaHierarchyMerged() {
     return clone;
 }
 
-/** For add-modal: whether the parent already holds subnodes vs problems (mutually exclusive). */
+/** For add-modal: branch children vs problems on this parent (mutually exclusive holders). */
 function dsaParentChildKindFlags(parentKey) {
     if (!parentKey || parentKey === "__DSA_META__") {
         return { hasSubnodes: false, hasProblems: false };
@@ -849,8 +890,9 @@ function dsaParentChildKindFlags(parentKey) {
     }
     const n = r.parentNode;
     const ch = Array.isArray(n.children) ? n.children : [];
+    const pat = Array.isArray(n.patterns) ? n.patterns : [];
     const probs = Array.isArray(n.problems) ? n.problems : [];
-    return { hasSubnodes: ch.length > 0, hasProblems: probs.length > 0 };
+    return { hasSubnodes: ch.length > 0 || pat.length > 0, hasProblems: probs.length > 0 };
 }
 
 function dsaFlattenParentOptions(hierarchy) {
@@ -5631,7 +5673,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         !isRenameNode &&
         !editQuestionName &&
         !editUserNodeId
-            ? dsaMindAllowedChildSlugs(mindParentSlugEff, mindCatsPre)
+            ? dsaMindAllowedChildSlugsRespectingParentState(parentKey, mindCatsPre)
             : [];
     const useMindTypePicker2 = mindAllowedEff.length > 0;
     if (useMindTypePicker2) {

@@ -147,7 +147,7 @@ export async function onRequestPost(context) {
     }
     let payload = body.payload;
     if (payload == null || (Array.isArray(payload) && payload.length === 0)) {
-        payload = defaultMindMapGraphPayloadFromTitle(title, { idPrefix: "gc-root-" });
+        payload = defaultMindMapGraphPayloadFromTitle(title);
     }
     if (!Array.isArray(payload)) {
         return json({ error: "payload must be array (mind map roots)" }, 400);

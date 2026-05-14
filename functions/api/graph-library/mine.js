@@ -6,7 +6,7 @@ import { defaultMindMapGraphPayloadFromTitle } from "../../_lib/graph-default-pa
 import { validateMindMapNodeCategoriesWithDb } from "../../_lib/graph-node-category.js";
 
 function defaultPayload(title) {
-    return JSON.stringify(defaultMindMapGraphPayloadFromTitle(title, { idPrefix: "ug-root-" }));
+    return JSON.stringify(defaultMindMapGraphPayloadFromTitle(title));
 }
 
 export async function onRequestGet(context) {

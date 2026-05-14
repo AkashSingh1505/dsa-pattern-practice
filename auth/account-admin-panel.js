@@ -119,7 +119,7 @@
             {
                 id: glibClientRootId(),
                 name: name,
-                nodeCategorySlug: "TOPIC",
+                nodeCategorySlug: "ROOT",
                 tree: [],
                 patterns: [],
                 problems: [],
@@ -584,7 +584,7 @@
         }
     }
 
-    const ADM_GLIB_NT_ROOT = "TOPIC";
+    const ADM_GLIB_NT_ROOT = "ROOT";
 
     function admGlibNtSlugUpper(s) {
         return String(s || "")
@@ -680,7 +680,7 @@
                 if (isRootTile) {
                     const br = document.createElement("span");
                     br.className = "adm-nt-badge-root";
-                    br.textContent = "Root";
+                    br.textContent = "ROOT";
                     nameRow.appendChild(br);
                 }
                 if (c.isSystem) {
@@ -690,6 +690,13 @@
                     lock.innerHTML =
                         '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>';
                     nameRow.appendChild(lock);
+                }
+                const descText = c.description != null ? String(c.description).trim() : "";
+                if (descText) {
+                    const descEl = document.createElement("div");
+                    descEl.className = "adm-nt-tile-desc";
+                    descEl.textContent = descText.replace(/\s+/g, " ");
+                    info.appendChild(descEl);
                 }
                 const meta = document.createElement("div");
                 meta.className = "adm-nt-tile-meta";
@@ -750,7 +757,7 @@
     }
 
     function admGlibNtFindOrphansLocal(graph) {
-        const root = "TOPIC";
+        const root = "ROOT";
         const allSlugs = (graph || []).map(function (c) {
             return String(c.slug || "").toUpperCase().trim();
         });
@@ -790,7 +797,7 @@
         }
         el.hidden = false;
         el.textContent =
-            "These types have no parent — another type must list them as an allowed child (TOPIC is exempt): " +
+            "These types have no parent — another type must list them as an allowed child (ROOT is exempt): " +
             o.join(", ");
     }
 
@@ -1077,7 +1084,7 @@
     }
 
     function admGlibNtValidateParentsClient(nextGraph, exemptSlugsUpper) {
-        const root = "TOPIC";
+        const root = "ROOT";
         const exempt = new Set((exemptSlugsUpper || []).map(function (s) { return String(s || "").toUpperCase().trim(); }));
         const all = new Set(
             (nextGraph || []).map(function (c) {
@@ -1104,7 +1111,7 @@
                     msg:
                         'Node type "' +
                         s +
-                        '" must be an allowed child of at least one other type (TOPIC is exempt). Fix mappings or add a parent first.',
+                        '" must be an allowed child of at least one other type (ROOT is exempt). Fix mappings or add a parent first.',
                 };
             }
         }
@@ -1152,6 +1159,7 @@
         const fSwatch = document.getElementById("adm-glib-nt-f-swatch");
         const fSlug = document.getElementById("adm-glib-nt-f-slug");
         const fOrder = document.getElementById("adm-glib-nt-f-order");
+        const fDesc = document.getElementById("adm-glib-nt-f-desc");
 
         const col = rec ? String(rec.color || "#6b7280").trim() : "#6b7280";
         if (hDot) {
@@ -1173,6 +1181,9 @@
         if (fOrder) {
             fOrder.value = String(rec && rec.sortOrder != null ? rec.sortOrder : admGlibNodeTypesCache.length);
             fOrder.disabled = !!(isSys && !isNew);
+        }
+        if (fDesc) {
+            fDesc.value = rec ? String(rec.description != null ? rec.description : "") : "";
         }
 
         const stepper = document.getElementById("adm-glib-nt-stepper");
@@ -1226,12 +1237,12 @@
             if (parentHelp) {
                 parentHelp.classList.remove("locked");
                 parentHelp.textContent =
-                    "Which types may list this one as an allowed child? Pick at least one (except for TOPIC—the root has no parent).";
+                    "Which types may list this one as an allowed child? Pick at least one (except for ROOT—the root has no parent).";
             }
             if (childHelp) {
                 childHelp.classList.remove("locked");
                 childHelp.textContent = isTopicRoot
-                    ? "These types may appear as direct children under TOPIC in a mind map."
+                    ? "These types may appear as direct children under ROOT in a mind map."
                     : "Leave empty for a leaf. You cannot allow a parent or any of its ancestors as a child.";
             }
             const pset = {};
@@ -1369,11 +1380,13 @@
         const fColor = document.getElementById("adm-glib-nt-f-color");
         const fSlug = document.getElementById("adm-glib-nt-f-slug");
         const fOrder = document.getElementById("adm-glib-nt-f-order");
+        const fDesc = document.getElementById("adm-glib-nt-f-desc");
         const label = fLabel ? fLabel.value.trim() : "";
         if (!label) {
             admGlibNtShowToast("Label is required.", true);
             return;
         }
+        const descTrim = fDesc ? fDesc.value.trim().slice(0, 2000) : "";
         const colorRaw = fColor ? fColor.value.trim() : "";
         const isNew = admGlibNtModalState.mode === "new";
         const isSys = admGlibNtModalState.isSystem;
@@ -1407,6 +1420,7 @@
                         body.sortOrder = Math.floor(n);
                     }
                 }
+                body.description = descTrim;
                 await fetchJson(apiAdmin("graph-node-categories"), {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -1415,7 +1429,7 @@
                 admGlibNtShowToast("Created node type «" + label + "».", false);
             } else {
                 const slug = admGlibNtModalState.slug;
-                const body = { slug: slug, label: label };
+                const body = { slug: slug, label: label, description: descTrim };
                 if (colorRaw != null && admGlibNtIsHex6(colorRaw)) {
                     body.color = colorRaw.trim();
                 }
@@ -2045,7 +2059,7 @@
             if (Array.isArray(arr) && arr[0] && typeof arr[0] === "object") {
                 arr[0].name = title.trim() || "Untitled graph";
                 if (!arr[0].nodeCategorySlug) {
-                    arr[0].nodeCategorySlug = "TOPIC";
+                    arr[0].nodeCategorySlug = "ROOT";
                 }
                 pay.value = JSON.stringify(arr, null, 2);
             }

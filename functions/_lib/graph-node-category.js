@@ -1,5 +1,5 @@
 /**
- * Global node categories (TOPIC / PATTERN / PROBLEM + admin-defined slugs).
+ * Global node categories (ROOT / TOPIC / PATTERN / PROBLEM + admin-defined slugs).
  * Mind-map nodes use **`nodeCategorySlug`** (must match `graph_node_category.slug`).
  */
 
@@ -24,7 +24,7 @@ export function parseAllowedChildSlugsJson(raw) {
 
 /**
  * @param {*} db
- * @returns {Promise<{ slug: string, label: string, color: string, allowedChildSlugs: string[], sortOrder: number, isSystem: boolean }[]>}
+ * @returns {Promise<{ slug: string, label: string, description: string, color: string, allowedChildSlugs: string[], sortOrder: number, isSystem: boolean }[]>}
  */
 export async function listGraphNodeCategories(db) {
     if (!db) {
@@ -34,7 +34,7 @@ export async function listGraphNodeCategories(db) {
     try {
         r = await db
             .prepare(
-                `SELECT slug, label, color, allowed_child_slugs_json, sort_order, is_system
+                `SELECT slug, label, description, color, allowed_child_slugs_json, sort_order, is_system
                  FROM graph_node_category
                  ORDER BY sort_order ASC, slug ASC`,
             )
@@ -47,6 +47,7 @@ export async function listGraphNodeCategories(db) {
     return rows.map((row) => ({
         slug: String(row.slug || "").toUpperCase(),
         label: String(row.label || ""),
+        description: row.description != null ? String(row.description) : "",
         color: String(row.color || "").trim() || "#6b7280",
         allowedChildSlugs: parseAllowedChildSlugsJson(row.allowed_child_slugs_json),
         sortOrder: Number(row.sort_order) || 0,
@@ -105,6 +106,9 @@ export function validateMindMapNodeCategoryPayload(payload, slugMap) {
     if (payload.length === 0) {
         return { ok: true };
     }
+    if (payload.length > 1) {
+        return fail("mind map must have exactly one root object (one ROOT per graph)", "GRAPH_SINGLE_ROOT");
+    }
 
     function checkEntity(n, parentSlug, pathLabel) {
         const slug = pickNodeCategorySlug(n);
@@ -114,9 +118,12 @@ export function validateMindMapNodeCategoryPayload(payload, slugMap) {
         if (!slugMap.has(slug)) {
             return fail(`unknown nodeCategorySlug: "${slug}" (${pathLabel})`, "GRAPH_INVALID");
         }
+        if (parentSlug != null && slug === "ROOT") {
+            return fail(`nodeCategorySlug ROOT is only allowed on the single top-level node (${pathLabel})`, "GRAPH_ROOT_NESTED");
+        }
         if (parentSlug == null) {
-            if (slug !== "TOPIC") {
-                return fail(`mind-map root must use nodeCategorySlug TOPIC, not "${slug}" (${pathLabel})`, "GRAPH_INVALID");
+            if (slug !== "ROOT") {
+                return fail(`mind-map root must use nodeCategorySlug ROOT, not "${slug}" (${pathLabel})`, "GRAPH_INVALID");
             }
         } else {
             const allowed = slugMap.get(parentSlug)?.allowed || [];
@@ -294,7 +301,7 @@ export function validateAllGraphEdgesNoCycle(categories) {
     return { ok: true };
 }
 
-const DEFAULT_ROOT_CATEGORY_SLUG = "TOPIC";
+const DEFAULT_ROOT_CATEGORY_SLUG = "ROOT";
 
 /**
  * Every category except the root must be listed as an allowed child of at least one other type.
@@ -302,7 +309,7 @@ const DEFAULT_ROOT_CATEGORY_SLUG = "TOPIC";
  * @param {string} [rootSlug]
  */
 export function validateNodeCategoriesAllHaveParent(categories, rootSlug = DEFAULT_ROOT_CATEGORY_SLUG) {
-    const root = String(rootSlug || "TOPIC")
+    const root = String(rootSlug || DEFAULT_ROOT_CATEGORY_SLUG)
         .toUpperCase()
         .trim();
     const allSlugs = new Set(
@@ -360,7 +367,7 @@ export function validateNodeCategoriesAllHaveParentExcept(categories, exemptSlug
                 .trim(),
         ),
     );
-    const root = String(rootSlug || "TOPIC")
+    const root = String(rootSlug || DEFAULT_ROOT_CATEGORY_SLUG)
         .toUpperCase()
         .trim();
     const allSlugs = new Set(

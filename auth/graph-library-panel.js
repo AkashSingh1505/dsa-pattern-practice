@@ -52,6 +52,7 @@
                 return {
                     id: String(c.slug).toUpperCase(),
                     name: String(c.label || c.slug || ""),
+                    description: c.description != null ? String(c.description) : "",
                     color: String(c.color || "#6b7280").trim(),
                 };
             })

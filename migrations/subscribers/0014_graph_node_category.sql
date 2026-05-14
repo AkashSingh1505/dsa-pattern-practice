@@ -1,4 +1,4 @@
--- Global mind-map node types (TOPIC / PATTERN / PROBLEM) + admin-defined types.
+-- Global mind-map node types (ROOT / TOPIC / PATTERN / PROBLEM) + admin-defined types.
 -- Child rules: each row lists which category slugs may appear as direct children.
 --
 --   npx wrangler d1 execute dsa-pattern-practice-subscribers --remote --file=migrations/subscribers/0014_graph_node_category.sql
@@ -23,11 +23,21 @@ CREATE INDEX IF NOT EXISTS idx_graph_node_category_sort ON graph_node_category (
 
 INSERT OR IGNORE INTO graph_node_category (slug, label, color, allowed_child_slugs_json, sort_order, is_system, created_at, updated_at) VALUES
 (
-    'TOPIC',
-    'Topic',
+    'ROOT',
+    'Root',
     '#2563eb',
     '["TOPIC","PATTERN","PROBLEM"]',
     0,
+    1,
+    CAST(strftime('%s', 'now') AS INTEGER),
+    CAST(strftime('%s', 'now') AS INTEGER)
+),
+(
+    'TOPIC',
+    'Topic',
+    '#0e7490',
+    '["TOPIC","PATTERN","PROBLEM"]',
+    1,
     1,
     CAST(strftime('%s', 'now') AS INTEGER),
     CAST(strftime('%s', 'now') AS INTEGER)
@@ -37,7 +47,7 @@ INSERT OR IGNORE INTO graph_node_category (slug, label, color, allowed_child_slu
     'Pattern',
     '#059669',
     '["PATTERN","PROBLEM"]',
-    1,
+    2,
     1,
     CAST(strftime('%s', 'now') AS INTEGER),
     CAST(strftime('%s', 'now') AS INTEGER)
@@ -47,7 +57,7 @@ INSERT OR IGNORE INTO graph_node_category (slug, label, color, allowed_child_slu
     'Problem',
     '#c026d3',
     '[]',
-    2,
+    3,
     1,
     CAST(strftime('%s', 'now') AS INTEGER),
     CAST(strftime('%s', 'now') AS INTEGER)

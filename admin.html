@@ -872,6 +872,7 @@
                                     #adm-glib-node-types .adm-nt-tile-info { flex: 1; min-width: 0; }
                                     #adm-glib-node-types .adm-nt-tile-name { font-size: 12px; font-weight: 600; color: #111827; letter-spacing: 0.3px; display: flex; align-items: center; gap: 5px; }
                                     #adm-glib-node-types .adm-nt-tile-meta { font-size: 10px; color: #9ca3af; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+                                    #adm-glib-node-types .adm-nt-tile-desc { font-size: 10px; color: #9ca3af; margin-top: 3px; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
                                     #adm-glib-node-types .adm-nt-tile-edit { opacity: 0; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; color: #6b7280; transition: opacity 0.15s; flex-shrink: 0; border: none; background: transparent; cursor: pointer; padding: 0; }
                                     #adm-glib-node-types .adm-nt-tile-edit:hover { background: #e5e7eb; color: #111827; }
                                     #adm-glib-node-types .adm-nt-tile-add { border: 1px dashed #d1d5db; background: transparent; color: #6b7280; justify-content: center; font-weight: 500; font-size: 12px; cursor: pointer; }
@@ -912,6 +913,8 @@
                                     #adm-glib-node-types .adm-nt-field .adm-nt-req { color: #ef4444; }
                                     #adm-glib-node-types .adm-nt-field input { border: 1px solid var(--adm-nt-border); border-radius: 5px; padding: 6px 8px; font-size: 12px; font-family: inherit; background: #fff; }
                                     #adm-glib-node-types .adm-nt-field input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1); }
+                                    #adm-glib-node-types .adm-nt-field textarea { border: 1px solid var(--adm-nt-border); border-radius: 5px; padding: 6px 8px; font-size: 12px; font-family: inherit; background: #fff; min-height: 52px; resize: vertical; max-width: 100%; box-sizing: border-box; width: 100%; }
+                                    #adm-glib-node-types .adm-nt-field textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1); }
                                     #adm-glib-node-types .adm-nt-field input:disabled { background: #f9fafb; color: #6b7280; cursor: not-allowed; }
                                     #adm-glib-node-types .adm-nt-color-input { position: relative; }
                                     #adm-glib-node-types .adm-nt-color-input input { padding-left: 26px; font-family: ui-monospace, Menlo, monospace; font-size: 11px; }
@@ -954,7 +957,7 @@
                                     <div class="adm-nt-header">
                                         <div>
                                             <h2>Mind-map node types</h2>
-                                            <p><code>TOPIC</code> is the top-level type. Every other type must choose at least one <strong>parent</strong> (who may list it as a child). <strong>Children</strong> are optional—leave empty for a leaf. A type cannot list itself or any ancestor as a child.</p>
+                                            <p><code>ROOT</code> is the single top-level type (sort order 0); each graph uses one root object. Use <code>TOPIC</code>, <code>PATTERN</code>, and <code>PROBLEM</code> under it. Every non-root type must choose at least one <strong>parent</strong>. <strong>Children</strong> are optional—leave empty for a leaf.</p>
                                         </div>
                                         <button type="button" class="adm-nt-btn" id="adm-glib-nt-refresh" title="Reload from server">
                                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1011,7 +1014,7 @@
                                                     <rect x="3" y="11" width="18" height="11" rx="2"></rect>
                                                     <path d="M7 11V7a5 5 0 0110 0v4"></path>
                                                 </svg>
-                                                <span><strong>System category.</strong> Only <strong>label</strong> and <strong>color</strong> can be edited. Slug, order, and mapping rules are locked.</span>
+                                                <span><strong>System category.</strong> Only <strong>label</strong>, <strong>description</strong>, and <strong>color</strong> can be edited. Slug, order, and mapping rules are locked.</span>
                                             </div>
                                             <div class="adm-nt-field-row">
                                                 <div class="adm-nt-field">
@@ -1023,6 +1026,10 @@
                                                     <span class="adm-nt-swatch" id="adm-glib-nt-f-swatch"></span>
                                                     <input type="text" id="adm-glib-nt-f-color" maxlength="32" autocomplete="off" placeholder="#2563eb or hsl(...)" />
                                                 </div>
+                                            </div>
+                                            <div class="adm-nt-field" style="margin-bottom: 14px">
+                                                <label for="adm-glib-nt-f-desc">Description</label>
+                                                <textarea id="adm-glib-nt-f-desc" rows="2" maxlength="2000" placeholder="Optional. Helps editors understand when to use this node type." autocomplete="off"></textarea>
                                             </div>
                                             <div class="adm-nt-field-row-sec">
                                                 <div class="adm-nt-field">
@@ -1052,7 +1059,7 @@
                                                         <button type="button" id="adm-glib-nt-parent-sel-none">None</button>
                                                     </div>
                                                 </div>
-                                                <div class="adm-nt-mapping-help" id="adm-glib-nt-parent-help">Which types may list this one as an allowed child? Pick at least one (except for TOPIC).</div>
+                                                <div class="adm-nt-mapping-help" id="adm-glib-nt-parent-help">Which types may list this one as an allowed child? Pick at least one (except for ROOT).</div>
                                                 <div class="adm-nt-chip-group" id="adm-glib-nt-parent-chips"></div>
                                                 <div class="adm-nt-error-text" id="adm-glib-nt-parent-err">
                                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line></svg>
@@ -1239,8 +1246,8 @@
                                             </div>
                                             <div class="adm-field adm-field--span-2">
                                                 <p class="helper adm-field-hint" style="margin: 0">
-                                                    Node kinds and colors are <strong>global</strong> — edit <a href="#adm-glib-node-types">Mind-map node types</a> above. In the JSON body, every topic / pattern / problem must set
-                                                    <code>nodeCategorySlug</code> (e.g. <code>TOPIC</code>, <code>PATTERN</code>, <code>PROBLEM</code>) according to parent→child rules.
+                                                    Node kinds and colors are <strong>global</strong> — edit <a href="#adm-glib-node-types">Mind-map node types</a> above. The JSON body is one root object in an array; set
+                                                    <code>nodeCategorySlug</code> on every node (e.g. <code>ROOT</code> on that lone root, then <code>TOPIC</code>, <code>PATTERN</code>, <code>PROBLEM</code> under it per parent→child rules).
                                                 </p>
                                             </div>
                                             <div class="adm-field adm-field--span-2">

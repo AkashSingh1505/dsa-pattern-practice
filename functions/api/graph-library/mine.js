@@ -9,7 +9,7 @@ function defaultPayload(title) {
     const root = {
         id: "ug-root-" + Math.random().toString(36).slice(2, 9),
         name: safe,
-        nodeCategorySlug: "TOPIC",
+        nodeCategorySlug: "ROOT",
         tree: [],
         patterns: [],
         problems: [],

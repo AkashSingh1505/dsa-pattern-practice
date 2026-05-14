@@ -106,6 +106,15 @@ function sortedJsonForKids(kids) {
     return JSON.stringify([...(kids || [])].map(slugU).sort());
 }
 
+const NODE_CATEGORY_DESCRIPTION_MAX_LEN = 2000;
+
+function normDescription(body) {
+    if (body == null || typeof body.description !== "string") {
+        return null;
+    }
+    return body.description.trim().slice(0, NODE_CATEGORY_DESCRIPTION_MAX_LEN);
+}
+
 export async function onRequestGet(context) {
     const { request, env } = context;
     const gate = await requireGraphCatalogWriter(request, env);
@@ -139,7 +148,7 @@ export async function onRequestPost(context) {
         return json({ error: "slug already exists" }, 409);
     }
     if (parentsList.length === 0) {
-        return json({ error: "allowedParentSlugs: pick at least one parent type (TOPIC is usually included).", code: "PARENT_REQUIRED" }, 400);
+        return json({ error: "allowedParentSlugs: pick at least one parent type (ROOT is usually included).", code: "PARENT_REQUIRED" }, 400);
     }
     for (const p of parentsList) {
         if (!existingSlugs.has(p)) {
@@ -166,6 +175,7 @@ export async function onRequestPost(context) {
     }
     let color = body.color != null ? String(body.color).trim() : "";
     if (!isHex6(color)) color = autoColorForSlug(slug);
+    const description = normDescription(body) ?? "";
     const now = Math.floor(Date.now() / 1000);
     const sortOrder =
         typeof body.sortOrder === "number" && Number.isFinite(body.sortOrder)
@@ -175,10 +185,10 @@ export async function onRequestPost(context) {
     try {
         await db
             .prepare(
-                `INSERT INTO graph_node_category (slug, label, color, allowed_child_slugs_json, sort_order, is_system, created_at, updated_at)
-                 VALUES (?, ?, ?, ?, ?, 0, ?, ?)`,
+                `INSERT INTO graph_node_category (slug, label, description, color, allowed_child_slugs_json, sort_order, is_system, created_at, updated_at)
+                 VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)`,
             )
-            .bind(slug, label, color, JSON.stringify(allowed), sortOrder, now, now)
+            .bind(slug, label, description, color, JSON.stringify(allowed), sortOrder, now, now)
             .run();
         for (const r of nextRows) {
             if (r.slug === slug) {
@@ -280,6 +290,11 @@ export async function onRequestPatch(context) {
     if (typeof body.sortOrder === "number" && Number.isFinite(body.sortOrder)) {
         updates.push("sort_order = ?");
         binds.push(Math.floor(body.sortOrder));
+    }
+    const descPatch = normDescription(body);
+    if (descPatch !== null) {
+        updates.push("description = ?");
+        binds.push(descPatch);
     }
 
     if (nextRows) {

@@ -1786,6 +1786,10 @@
 
     function setMode(m) {
         S.mode = m || "customize";
+        var cbMode = $("node-chips");
+        if (cbMode) {
+            cbMode.classList.remove("show");
+        }
         var reprCls = document.body.classList.contains("ws-repr-orbital") ? "ws-repr-orbital" : "ws-repr-linear";
         document.body.className = "mode-" + S.mode + " " + reprCls;
         var mc = $("mode-chip");

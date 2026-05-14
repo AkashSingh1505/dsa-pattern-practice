@@ -37,7 +37,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=18" />
+    <link rel="stylesheet" href="./styles.css?v=20" />
     <link rel="stylesheet" href="./dsa-index-shell.css?v=20" />
     <link rel="stylesheet" href="./auth/admin-graph-library.css?v=8" />
     <link rel="stylesheet" href="./auth/admin-workspace.css?v=7" />
@@ -1112,6 +1112,33 @@
                                 </div>
                             </div>
 
+                            <div class="adm-glib-filters-card adm-glib-gt-card" id="adm-glib-graph-types-panel" style="margin-bottom: 14px">
+                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px">
+                                    <div>
+                                        <h3 style="margin: 0; font-size: 14px; font-weight: 600">Graph types (whole graph)</h3>
+                                        <p class="helper" style="margin: 4px 0 0; font-size: 12px; color: #6b7280">
+                                            Each catalog entry and member graph stores a type (e.g. <strong>DSA</strong> vs <strong>GENERIC</strong>) for UI and features. Built-in types cannot be removed.
+                                        </p>
+                                    </div>
+                                    <button type="button" class="btn btn-sm ghost" id="adm-glib-gt-refresh">Reload types</button>
+                                </div>
+                                <div id="adm-glib-gt-list" class="adm-glib-gt-list" style="font-size: 12px; margin-bottom: 12px"></div>
+                                <div class="adm-form-grid cols-3" style="align-items: end; gap: 10px">
+                                    <div class="adm-field">
+                                        <label for="adm-glib-gt-new-label">New type label</label>
+                                        <input id="adm-glib-gt-new-label" type="text" maxlength="80" placeholder="e.g. System design" autocomplete="off" />
+                                    </div>
+                                    <div class="adm-field">
+                                        <label for="adm-glib-gt-new-slug">Slug <span class="adm-glib-label-muted">(optional)</span></label>
+                                        <input id="adm-glib-gt-new-slug" type="text" maxlength="48" placeholder="auto from label" autocomplete="off" />
+                                    </div>
+                                    <div class="adm-field">
+                                        <button type="button" class="btn btn-sm" id="adm-glib-gt-add">Add type</button>
+                                    </div>
+                                </div>
+                                <p id="adm-glib-gt-msg" class="status adm-glib-status" style="margin-top: 10px" aria-live="polite"></p>
+                            </div>
+
                             <div class="adm-glib-filters-card">
                                 <div class="adm-glib-filters-row">
                                     <div class="adm-glib-field adm-glib-field--search">
@@ -1227,6 +1254,13 @@
                                                     <option value="unlisted">unlisted — link/API only</option>
                                                     <option value="private">private — staff drafts</option>
                                                 </select>
+                                            </div>
+                                            <div class="adm-field adm-field--span-2">
+                                                <label for="adm-glib-graph-type">Graph type</label>
+                                                <select id="adm-glib-graph-type" class="adm-select-enhanced"></select>
+                                                <p class="helper adm-field-hint" style="margin: 6px 0 0">
+                                                    Drives workspace behavior and future features. Manage the global list in <strong>Graph types</strong> above the search filters.
+                                                </p>
                                             </div>
                                             <div class="adm-field adm-field--span-2">
                                                 <label for="adm-glib-description">Description</label>
@@ -1394,8 +1428,8 @@
     <script src="./auth/dsa-member-roles.js?v=1"></script>
     <script src="./auth/dsa-user-auth.js?v=3"></script>
     <script src="./dsa-sketch-native.js?v=3"></script>
-    <script src="./script.js?v=44"></script>
-    <script src="./auth/account-admin-panel.js?v=36"></script>
+    <script src="./script.js?v=46"></script>
+    <script src="./auth/account-admin-panel.js?v=37"></script>
     <script src="./auth/site-marketing-admin-panel.js?v=5"></script>
     <script src="./auth/admin-site-page.js?v=11"></script>
 </body>

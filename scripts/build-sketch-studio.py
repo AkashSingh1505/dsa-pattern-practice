@@ -34,7 +34,6 @@ ID_REPL = [
     ('id="gRows"', 'id="dsaSkGRows"'),
     ('id="gCols"', 'id="dsaSkGCols"'),
     ('id="penBadge"', 'id="dsaSkPenBadge"'),
-    ('id="docTitle"', 'id="dsaSkDocTitle"'),
     ('id="brandMark"', 'id="dsaSkBrandMark"'),
     ('id="brandMarkText"', 'id="dsaSkBrandMarkText"'),
     ('id="brandTitle"', 'id="dsaSkBrandTitle"'),
@@ -91,7 +90,6 @@ GET_REPL = [
     ("document.getElementById('gridDone')", "$('dsaSkGridDone')"),
     ("document.getElementById('gridRemove')", "$('dsaSkGridRemove')"),
     ("document.getElementById('penBadge')", "$('dsaSkPenBadge')"),
-    ("document.getElementById('docTitle')", "$('dsaSkDocTitle')"),
     ("document.getElementById('pressureWrap')", "$('dsaSkPressureWrap')"),
     ("document.getElementById('sPr')", "$('dsaSkSPr')"),
     ("document.querySelectorAll('.btn[data-tool]')", "mount.querySelectorAll('.btn[data-tool]')"),
@@ -105,8 +103,9 @@ def transform_body(body: str) -> str:
     for a, b in ID_REPL:
         body = body.replace(a, b)
     back_btn = (
-        '<button type="button" class="btn-flat dsa-sketch-fs-back" '
-        'id="dsaSkBackBtn" data-tip="Back to dialog">Back</button>\n'
+        '<button type="button" class="btn-flat primary dsa-sketch-fs-back" '
+        'id="dsaSkBackBtn" data-tip="Return to problem" hidden>'
+        '<span class="dsa-sk-back-label">Close</span></button>\n'
     )
     return body.replace(
         '<div class="header-actions">\n',
@@ -200,19 +199,20 @@ def transform_script(scr: str) -> str:
         "T.list=T.list.filter(t=>t.id!==T.selected);\n      T.selected=null;saveHNotify();",
     )
 
-    # Done button — persist via host hook instead of download event only
+    # Remove standalone done / sketch:save block (fullscreen uses back button)
     scr = re.sub(
-        r"\$\('dsaSkDoneBtn'\)\.addEventListener\('click',\(\)=>\{[\s\S]*?toast\('Saved ✓'\);\s*\}\);",
-        """function flushSketchDone(){
-  if(T.editing!==null)commitTextEdit();
-  if(G.current)gridDone();
-  syncInk();
-  onChange();
-  if(typeof hooks.onPersist==='function'){hooks.onPersist();}
-  toast('Saved');
-}
-$('dsaSkDoneBtn').addEventListener('click',()=>{flushSketchDone();});""",
+        r"\$\('dsaSkDoneBtn'\)\.addEventListener\('click',\(\)=>\{[\s\S]*?toast\('Saved ✓'\);\s*\}\);\s*",
+        "",
         scr,
+    )
+    scr = re.sub(
+        r"function flushSketchDone\(\)\{[\s\S]*?toast\('Saved'\);\s*\}\s*\$\('dsaSkDoneBtn'\)\.addEventListener\('click',\(\)=>\{flushSketchDone\(\);\}\);\s*",
+        "",
+        scr,
+    )
+    scr = scr.replace(
+        "function resize(){\n  const r=cw.getBoundingClientRect();\n  const padding=48;\n  const w=Math.floor(r.width-padding);\n  const h=Math.floor(r.height-padding);\n  if(w<=0||h<=0)return;",
+        "function resize(){\n  const r=cw.getBoundingClientRect();\n  const padding=isFakeFs?40:16;\n  let w=Math.max(120,Math.floor(r.width-padding));\n  let h=Math.max(120,Math.floor(r.height-padding));\n  if(r.width<4||r.height<4){if(!isFakeFs){w=320;h=220;}else return;}",
     )
 
     scr = scr.replace(
@@ -223,8 +223,12 @@ $('dsaSkDoneBtn').addEventListener('click',()=>{flushSketchDone();});""",
     scr = scr.replace(
         "if(e.key==='Escape' && S.tool==='grid' && G.current){gridRemove();}\n});",
         "if(e.key==='Escape' && S.tool==='grid' && G.current){gridRemove();}\n"
-        "if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();flushSketchDone();return;}\n}",
+        "if((e.ctrlKey||e.metaKey)&&e.key==='s'&&isFakeFs){e.preventDefault();if(flushSketchDone())return;}\n}",
         1,
+    )
+    scr = scr.replace(
+        "if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();$('dsaSkDoneBtn').click();return;}",
+        "",
     )
 
     scr = scr.replace(
@@ -260,6 +264,7 @@ $('dsaSkDoneBtn').addEventListener('click',()=>{flushSketchDone();});""",
         "  if(fsHideBackdrop)fsHideBackdrop.classList.add('dsa-sketch-fs-hide-dialog');\n"
         "  if(fsHideDlg)fsHideDlg.classList.add('dsa-sketch-fs-hide-dialog');\n"
         "  isFakeFs=true;\n"
+        "  syncFsChrome();\n"
         "  requestAnimationFrame(()=>setTimeout(resize,80));\n"
         "}\n"
         "function leaveFakeFullscreen(){\n"
@@ -274,6 +279,7 @@ $('dsaSkDoneBtn').addEventListener('click',()=>{flushSketchDone();});""",
         "    else fsParent.appendChild(editorRoot);\n"
         "  }\n"
         "  fsParent=null;fsNext=null;isFakeFs=false;\n"
+        "  syncFsChrome();\n"
         "  requestAnimationFrame(()=>setTimeout(resize,80));\n"
         "}\n"
         "function applySiteBrand(){\n"
@@ -284,6 +290,35 @@ $('dsaSkDoneBtn').addEventListener('click',()=>{flushSketchDone();});""",
         "  if(s&&b.subtitle)s.textContent=b.subtitle;\n"
         "  if(m&&b.markText)m.textContent=b.markText;\n"
         "}\n"
+        "function syncFsChrome(){\n"
+        "  const back=$('dsaSkBackBtn');\n"
+        "  if(!back)return;\n"
+        "  if(isFakeFs){\n"
+        "    back.hidden=false;\n"
+        "    syncInk();\n"
+        "    const lab=back.querySelector('.dsa-sk-back-label');\n"
+        "    if(lab)lab.textContent=hasInk?'Done':'Close';\n"
+        "    back.dataset.tip=hasInk?'Save sketch and return':'Return without saving';\n"
+        "  }else{back.hidden=true;}\n"
+        "}\n"
+        "function flushSketchDone(){\n"
+        "  if(T.editing!==null)commitTextEdit();\n"
+        "  if(G.current)gridDone();\n"
+        "  syncInk();\n"
+        "  onChange();\n"
+        "  if(!hasInk){return false;}\n"
+        "  if(typeof hooks.onPersist==='function'){hooks.onPersist();}\n"
+        "  toast('Saved');\n"
+        "  return true;\n"
+        "}\n"
+        "function exitFullscreenSmart(){\n"
+        "  if(T.editing!==null)commitTextEdit();\n"
+        "  if(G.current)gridDone();\n"
+        "  syncInk();\n"
+        "  onChange();\n"
+        "  if(hasInk&&typeof hooks.onPersist==='function'){hooks.onPersist();toast('Saved');}\n"
+        "  leaveFakeFullscreen();\n"
+        "}\n"
         "function toast",
     )
 
@@ -293,7 +328,7 @@ $('dsaSkDoneBtn').addEventListener('click',()=>{flushSketchDone();});""",
     )
     scr = scr.replace(
         "S.redo=[];}catch(e){}}\nfunction restore",
-        "S.redo=[];}catch(e){}}\nfunction saveHNotify(){saveH();syncInk();onChange();}\nfunction restore",
+        "S.redo=[];}catch(e){}}\nfunction saveHNotify(){saveH();syncInk();if(isFakeFs)syncFsChrome();onChange();}\nfunction restore",
     )
 
     if "document.getElementById" in scr:
@@ -320,7 +355,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {{
     if (!document.head.querySelector("link[data-dsa-sketch-studio-css]")) {{
         const lk = document.createElement("link");
         lk.rel = "stylesheet";
-        lk.href = "./dsa-sketch-studio.css?v=2";
+        lk.href = "./dsa-sketch-studio.css?v=3";
         lk.dataset.dsaSketchStudioCss = "1";
         document.head.appendChild(lk);
     }}
@@ -340,17 +375,17 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {{
     applySiteBrand();
 
     $('dsaSkFsBtn').addEventListener('click', () => {
-        if (isFakeFs) leaveFakeFullscreen();
+        if (isFakeFs) exitFullscreenSmart();
         else enterFakeFullscreen();
     });
     const backBtn = $('dsaSkBackBtn');
-    if (backBtn) backBtn.addEventListener('click', () => leaveFakeFullscreen());
+    if (backBtn) backBtn.addEventListener('click', () => exitFullscreenSmart());
 
     function onDocKey(e) {
         if (e.key === 'Escape' && isFakeFs) {
             e.preventDefault();
             e.stopPropagation();
-            leaveFakeFullscreen();
+            exitFullscreenSmart();
             return;
         }
         onDocKeyInner(e);
@@ -366,6 +401,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {{
     resize();
     saveH();
     syncInk();
+    syncFsChrome();
     onChange();
     overlayLoop();
 

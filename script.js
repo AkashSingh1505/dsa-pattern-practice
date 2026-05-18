@@ -6231,7 +6231,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     nameIn.placeholder = "e.g. Two Sum";
     nameIn.autocomplete = "off";
     nameIn.maxLength = 60;
-    nameIn.readOnly = !!(editQuestionName || editUserNodeId);
+    nameIn.readOnly = false;
     nameIn.setAttribute("aria-required", "true");
     nameInputWrap.appendChild(nameLead);
     nameInputWrap.appendChild(nameIn);
@@ -6473,13 +6473,14 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
                     ? scratchApi.toPersistedSketchDataUrl()
                     : scratchApi.toDataUrl();
         }
+        const lookupName = isEditProblem && editQuestionName ? editQuestionName : name;
         if (!drawingPayload && !userClearedSketch) {
-            const entKeep = dsaResolveQuestionForModal(parentKey, name, editUserNodeId);
+            const entKeep = dsaResolveQuestionForModal(parentKey, lookupName, editUserNodeId);
             if (entKeep && String(entKeep.drawing || "").trim()) {
                 drawingPayload = String(entKeep.drawing);
             }
         }
-        const entForId = dsaResolveQuestionForModal(parentKey, name, editUserNodeId);
+        const entForId = dsaResolveQuestionForModal(parentKey, lookupName, editUserNodeId);
         const persistId =
             (editUserNodeId && String(editUserNodeId).trim()) ||
             (entForId && entForId.id ? String(entForId.id).trim() : "");
@@ -7386,6 +7387,48 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             row.appendChild(val);
             grid.appendChild(row);
         }
+        const drawingPreview = ent && ent.drawing ? String(ent.drawing).trim() : "";
+        if (drawingPreview) {
+            const row = document.createElement("div");
+            row.className = "preview-row dsa-q-existing-block";
+            const tag = document.createElement("div");
+            tag.className = "preview-label";
+            tag.textContent = "Sketch";
+            const val = document.createElement("div");
+            val.className = "preview-val dsa-q-existing-val";
+            const fig = document.createElement("div");
+            fig.className = "dsa-q-existing-thumb dsa-q-existing-thumb--sketch";
+            const im = document.createElement("img");
+            im.src = drawingPreview;
+            im.alt = "Saved sketch";
+            im.loading = "lazy";
+            fig.appendChild(im);
+            val.appendChild(fig);
+            row.appendChild(tag);
+            row.appendChild(val);
+            grid.appendChild(row);
+        }
+        const imagePreview = ent && ent.image ? String(ent.image).trim() : "";
+        if (imagePreview) {
+            const row = document.createElement("div");
+            row.className = "preview-row dsa-q-existing-block";
+            const tag = document.createElement("div");
+            tag.className = "preview-label";
+            tag.textContent = "Image";
+            const val = document.createElement("div");
+            val.className = "preview-val dsa-q-existing-val";
+            const fig = document.createElement("div");
+            fig.className = "dsa-q-existing-thumb dsa-q-existing-thumb--image";
+            const im = document.createElement("img");
+            im.src = imagePreview;
+            im.alt = "Saved image";
+            im.loading = "lazy";
+            fig.appendChild(im);
+            val.appendChild(fig);
+            row.appendChild(tag);
+            row.appendChild(val);
+            grid.appendChild(row);
+        }
         existingCard.appendChild(grid);
     }
 
@@ -7456,6 +7499,9 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         clearFieldErrors();
         if (nameCountWrap.id === "nameCount") {
             nameCountWrap.textContent = `${String(nameIn.value.length)}/60`;
+        }
+        if (isEditProblem) {
+            return;
         }
         if (debounceTimer) {
             clearTimeout(debounceTimer);
@@ -7849,6 +7895,21 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             nameIn.focus();
             return;
         }
+        if (isEditProblem && editQuestionName && name.toLowerCase() !== editQuestionName.toLowerCase()) {
+            const existingOther = dsaResolveQuestionForModal(parentKey, name, "");
+            const myId =
+                (editUserNodeId && String(editUserNodeId).trim()) ||
+                ((() => {
+                    const e = dsaResolveQuestionForModal(parentKey, editQuestionName, editUserNodeId);
+                    return e && e.id ? String(e.id) : "";
+                })());
+            if (existingOther && (!myId || existingOther.id !== myId)) {
+                alert(`Another problem named "${name}" already exists in this topic. Choose a different name.`);
+                nameIn.classList.add("dsa-field-control--error");
+                nameIn.focus();
+                return;
+            }
+        }
         const diffPick = difficultySelect.value.trim();
         if (!diffPick || !["easy", "medium", "hard"].includes(dsaNormalizeProblemDifficulty(diffPick))) {
             difficultySelect.classList.add("dsa-field-control--error");
@@ -7887,13 +7948,14 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
                     ? scratchApi.toPersistedSketchDataUrl()
                     : scratchApi.toDataUrl();
         }
+        const lookupName = isEditProblem && editQuestionName ? editQuestionName : name;
         if (!drawingPayload && !userClearedSketch) {
-            const entKeep = dsaResolveQuestionForModal(parentKey, name, editUserNodeId);
+            const entKeep = dsaResolveQuestionForModal(parentKey, lookupName, editUserNodeId);
             if (entKeep && String(entKeep.drawing || "").trim()) {
                 drawingPayload = String(entKeep.drawing);
             }
         }
-        const entForId = dsaResolveQuestionForModal(parentKey, name, editUserNodeId);
+        const entForId = dsaResolveQuestionForModal(parentKey, lookupName, editUserNodeId);
         const persistId =
             (editUserNodeId && String(editUserNodeId).trim()) ||
             (entForId && entForId.id ? String(entForId.id).trim() : "");

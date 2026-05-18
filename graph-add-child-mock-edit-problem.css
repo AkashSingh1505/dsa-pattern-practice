@@ -720,6 +720,25 @@ body > .dsa-sol-pro-toast {
     color: var(--text);
 }
 
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-existing-thumb {
+    display: inline-block;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    max-width: 180px;
+    max-height: 110px;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-existing-thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: 180px;
+    max-height: 110px;
+    object-fit: contain;
+}
+
 .graph-add-child-mock.modal.dsa-dialog--question .section-divider {
     margin: 14px 0 10px;
 }

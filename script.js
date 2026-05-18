@@ -5628,6 +5628,40 @@ function dsaCompressImageToDataUrl(file, maxSide, quality, cb) {
     reader.readAsDataURL(file);
 }
 
+/** Info (i) control beside resource “Add …” buttons; intro panel hidden until clicked. */
+function dsaCreateResInfoButton() {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "icon-btn dsa-res-info-btn";
+    btn.setAttribute("aria-label", "Show description");
+    btn.setAttribute("aria-expanded", "false");
+    btn.title = "Info";
+    btn.innerHTML =
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12.01" y2="16"/><path d="M12 8v4"/></svg>';
+    return btn;
+}
+
+function dsaCreateResAddRow(actionBtn) {
+    const row = document.createElement("div");
+    row.className = "dsa-res-add-row";
+    const infoBtn = dsaCreateResInfoButton();
+    row.appendChild(actionBtn);
+    row.appendChild(infoBtn);
+    return { row, infoBtn };
+}
+
+function dsaWireResAddIntroToggle(introEl, infoBtn) {
+    introEl.hidden = true;
+    infoBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const show = introEl.hidden;
+        introEl.hidden = !show;
+        infoBtn.classList.toggle("active", show);
+        infoBtn.setAttribute("aria-expanded", show ? "true" : "false");
+    });
+}
+
 function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const isMetaRoot = parentKey === "__DSA_META__";
     /** Edit mode in customize UI: site admin (RSA) or Pro / practice-admin (see dsa-user-auth). */
@@ -6118,6 +6152,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const nameInputWrap = document.createElement("div");
     nameInputWrap.className = "input-wrap";
     const nameLead = document.createElement("span");
+    nameLead.className = "input-wrap-lead";
     nameLead.innerHTML =
         '<svg class="lead" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2"/><path d="M9 21h6M12 3v18"/></svg>';
 
@@ -6150,6 +6185,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const urlInputWrap = document.createElement("div");
     urlInputWrap.className = "input-wrap";
     const urlLead = document.createElement("span");
+    urlLead.className = "input-wrap-lead";
     urlLead.innerHTML =
         '<svg class="lead" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
 
@@ -6296,15 +6332,11 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const sketchEditorRoot = document.createElement("div");
 
     const sketchIntro = document.createElement("div");
-    sketchIntro.className = "dsa-q-sketch-intro";
-    const sketchIntroTitle = document.createElement("p");
-    sketchIntroTitle.className = "dsa-q-sketch-intro-title";
-    sketchIntroTitle.textContent = "Sketch your approach";
+    sketchIntro.className = "dsa-q-resource-intro dsa-q-sketch-intro";
     const sketchIntroBody = document.createElement("p");
-    sketchIntroBody.className = "dsa-q-sketch-intro-body";
+    sketchIntroBody.className = "dsa-q-resource-intro-body";
     sketchIntroBody.textContent =
         "Draw trees, graphs, or pointers on a scratch pad attached to this problem. Use it to capture how you think through the solution before you code—helpful when revisiting problems or comparing approaches later.";
-    sketchIntro.appendChild(sketchIntroTitle);
     sketchIntro.appendChild(sketchIntroBody);
 
     const sketchPanel = document.createElement("div");
@@ -6365,11 +6397,13 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     function openSketchPanel() {
         ensureSketchEditor();
         sketchIntro.hidden = true;
+        btnSketchInfo.classList.remove("active");
+        btnSketchInfo.setAttribute("aria-expanded", "false");
         sketchPanel.hidden = false;
         drawRow.hidden = false;
         btnZoomOut.hidden = false;
         btnZoomIn.hidden = false;
-        btnAddSketch.hidden = true;
+        sketchAddRow.hidden = true;
         requestAnimationFrame(() => {
             sketchPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
         });
@@ -6380,12 +6414,14 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         if (hasDrawing) {
             openSketchPanel();
         } else if (!sketchEditorWired) {
-            sketchIntro.hidden = false;
+            sketchIntro.hidden = true;
+            btnSketchInfo.classList.remove("active");
+            btnSketchInfo.setAttribute("aria-expanded", "false");
             sketchPanel.hidden = true;
             drawRow.hidden = true;
             btnZoomOut.hidden = true;
             btnZoomIn.hidden = true;
-            btnAddSketch.hidden = false;
+            sketchAddRow.hidden = false;
         }
     }
 
@@ -6793,8 +6829,19 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     btnAddSolutionLink.innerHTML =
         '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add solutions / Code snippet';
     btnAddSolutionLink.addEventListener("click", () => openSolutionSheet(null));
+    const solutionsIntro = document.createElement("div");
+    solutionsIntro.className = "dsa-q-resource-intro dsa-q-solutions-intro";
+    const solutionsIntroBody = document.createElement("p");
+    solutionsIntroBody.className = "dsa-q-resource-intro-body";
+    solutionsIntroBody.textContent =
+        "Add one or more solutions with approach (brute force, better, optimal), code snippets, and time/space complexity—so you can compare approaches when you revisit this problem.";
+    solutionsIntro.appendChild(solutionsIntroBody);
+    const { row: solutionsAddRow, infoBtn: btnSolutionsInfo } = dsaCreateResAddRow(btnAddSolutionLink);
+    dsaWireResAddIntroToggle(solutionsIntro, btnSolutionsInfo);
+
     solutionsResGroup.appendChild(solResLab);
-    solutionsResGroup.appendChild(btnAddSolutionLink);
+    solutionsResGroup.appendChild(solutionsAddRow);
+    solutionsResGroup.appendChild(solutionsIntro);
     solutionsResGroup.appendChild(solutionListRoot);
     renderSolutionsEditorList();
 
@@ -6916,11 +6963,13 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     btnAddSketch.addEventListener("click", () => {
         openSketchPanel();
     });
+    const { row: sketchAddRow, infoBtn: btnSketchInfo } = dsaCreateResAddRow(btnAddSketch);
+    dsaWireResAddIntroToggle(sketchIntro, btnSketchInfo);
     drawRow.appendChild(btnZoomOut);
     drawRow.appendChild(btnZoomIn);
     sketchPanel.appendChild(drawRow);
     sketchResGroup.appendChild(sketchResLab);
-    sketchResGroup.appendChild(btnAddSketch);
+    sketchResGroup.appendChild(sketchAddRow);
     sketchResGroup.appendChild(sketchIntro);
     sketchResGroup.appendChild(sketchPanel);
 
@@ -6961,6 +7010,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const videoInputWrap2 = document.createElement("div");
     videoInputWrap2.className = "input-wrap";
     const videoLead2 = document.createElement("span");
+    videoLead2.className = "input-wrap-lead";
     videoLead2.innerHTML =
         '<svg class="lead" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="currentColor" stroke="none"/></svg>';
     videoInputWrap2.appendChild(videoLead2);
@@ -7617,6 +7667,8 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         btnAddSolutionLink.disabled = ro;
         btnAddSolutionLink.hidden = ro;
         btnAddSketch.disabled = ro;
+        btnSketchInfo.disabled = ro;
+        btnSolutionsInfo.disabled = ro;
         btnUploadImage.disabled = ro;
         companySearchIn.disabled = ro;
         companyListEl.querySelectorAll(".dsa-q-company-picker-item").forEach((b) => {

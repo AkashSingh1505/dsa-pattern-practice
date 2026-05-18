@@ -375,6 +375,17 @@
     -webkit-text-fill-color: transparent;
 }
 
+.dsa-sol-pro-editor-body textarea::placeholder {
+    color: rgba(192, 202, 245, 0.45);
+    -webkit-text-fill-color: rgba(192, 202, 245, 0.45);
+    opacity: 1;
+}
+
+.dsa-sol-pro-editor-body textarea:not(:placeholder-shown)::placeholder {
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+}
+
 .dsa-sol-pro-editor-status {
     display: flex;
     justify-content: space-between;

@@ -6211,12 +6211,9 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     nameLabelSpan.appendChild(nameReqStar);
     nameLabEl.appendChild(nameLabelSpan);
     const nameCountWrap = document.createElement("span");
-    nameCountWrap.className = "opt field-char-limit";
-    const nameCharSpan = document.createElement("span");
-    nameCharSpan.id = "charCount";
-    nameCharSpan.textContent = "0";
-    nameCountWrap.appendChild(nameCharSpan);
-    nameCountWrap.appendChild(document.createTextNode("/60"));
+    nameCountWrap.className = "char-count";
+    nameCountWrap.id = "nameCount";
+    nameCountWrap.textContent = "0/60";
     nameLabelRow.appendChild(nameLabEl);
     nameLabelRow.appendChild(nameCountWrap);
 
@@ -6242,9 +6239,20 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     nameField.appendChild(nameInputWrap);
     if (isEditProblem) {
         nameField.classList.add("field");
+        nameLabelRow.innerHTML = "";
+        const nameLabText = document.createElement("span");
+        nameLabText.appendChild(document.createTextNode("Problem Name "));
+        const nameReqInline = document.createElement("span");
+        nameReqInline.className = "req";
+        nameReqInline.setAttribute("aria-hidden", "true");
+        nameReqInline.textContent = "*";
+        nameLabText.appendChild(nameReqInline);
+        nameLabelRow.appendChild(nameLabText);
+        nameLabelRow.appendChild(nameCountWrap);
         if (nameLead.parentNode) {
             nameLead.remove();
         }
+        nameInputWrap.className = "";
         nameIn.classList.add("input");
     }
 
@@ -6374,7 +6382,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     hintTa.setAttribute("aria-label", "Hint / notes");
 
     const hintFieldGroup = document.createElement("div");
-    hintFieldGroup.className = "field-group";
+    hintFieldGroup.className = "field field-group dsa-q-hint-field-group";
     const hintTopLabel = document.createElement("div");
     hintTopLabel.className = "field-label";
     hintTopLabel.innerHTML = "<span>Hint / Notes <span class=\"opt\">(optional)</span></span>";
@@ -6903,23 +6911,27 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     }
 
     const companyFieldGroup = document.createElement("div");
-    companyFieldGroup.className = "field-group dsa-q-company-field-group";
-    const companyHead = document.createElement("div");
-    companyHead.className = "dsa-q-company-field-head";
+    companyFieldGroup.className = "field field-group dsa-q-company-field-group";
     const companyLabRow = document.createElement("div");
     companyLabRow.className = "field-label";
     companyLabRow.innerHTML = "<span>Companies</span>";
-    const btnCompanyInfo = dsaCreateResInfoButton();
-    companyHead.appendChild(companyLabRow);
-    companyHead.appendChild(btnCompanyInfo);
-    const companyIntro = document.createElement("div");
-    companyIntro.className = "dsa-q-resource-intro dsa-q-company-intro";
-    const companyIntroBody = document.createElement("p");
-    companyIntroBody.className = "dsa-q-resource-intro-body";
-    companyIntroBody.textContent =
-        "Tag companies that have asked this problem (or similar). Helps you filter and prioritize practice by interview target.";
-    companyIntro.appendChild(companyIntroBody);
-    dsaWireResAddIntroToggle(companyIntro, btnCompanyInfo);
+    let companyHead = null;
+    let companyIntro = null;
+    if (!isEditProblem) {
+        companyHead = document.createElement("div");
+        companyHead.className = "dsa-q-company-field-head";
+        const btnCompanyInfo = dsaCreateResInfoButton();
+        companyHead.appendChild(companyLabRow.cloneNode(true));
+        companyHead.appendChild(btnCompanyInfo);
+        companyIntro = document.createElement("div");
+        companyIntro.className = "dsa-q-resource-intro dsa-q-company-intro";
+        const companyIntroBody = document.createElement("p");
+        companyIntroBody.className = "dsa-q-resource-intro-body";
+        companyIntroBody.textContent =
+            "Tag companies that have asked this problem (or similar). Helps you filter and prioritize practice by interview target.";
+        companyIntro.appendChild(companyIntroBody);
+        dsaWireResAddIntroToggle(companyIntro, btnCompanyInfo);
+    }
     const companyMount = document.createElement("div");
     companyMount.className = "dsa-q-company-selector-mount";
     let companyApi = null;
@@ -7075,6 +7087,13 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     headerTabsRow.appendChild(btnTabResources);
     tabPanelsWrap.appendChild(detailsPanel);
     tabPanelsWrap.appendChild(resourcesPanel);
+
+    if (isEditProblem) {
+        nodeBlock.hidden = true;
+        qBlock.hidden = false;
+        headerTabsRow.classList.add("show");
+        headerTabsRow.setAttribute("aria-hidden", "false");
+    }
 
     const difficultyField = document.createElement("div");
     difficultyField.className = "dsa-q-field q-field-mock q-diff-field-mock field-group";
@@ -7238,6 +7257,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const savedDivider = document.createElement("div");
     savedDivider.className = "section-divider";
     savedDivider.innerHTML = "<span>Saved details</span>";
+    savedDivider.hidden = true;
     detailsPanel.appendChild(savedDivider);
     detailsPanel.appendChild(existingCard);
     resourcesPanel.appendChild(videoFieldGroup);
@@ -7252,7 +7272,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         existingCard.innerHTML = "";
         if (!ent) {
             existingCard.hidden = true;
-            if (typeof savedDivider !== "undefined" && savedDivider) {
+            if (savedDivider) {
                 savedDivider.hidden = true;
             }
             return;
@@ -7272,13 +7292,13 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             dsaProblemDifficultyLabel(ent.difficulty);
         if (!has) {
             existingCard.hidden = true;
-            if (typeof savedDivider !== "undefined" && savedDivider) {
+            if (savedDivider) {
                 savedDivider.hidden = true;
             }
             return;
         }
         existingCard.hidden = false;
-        if (typeof savedDivider !== "undefined" && savedDivider) {
+        if (savedDivider) {
             savedDivider.hidden = false;
         }
         const head = document.createElement("div");
@@ -7292,7 +7312,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         const diffRow0 = document.createElement("div");
         diffRow0.className = "preview-row dsa-q-existing-block";
         const diffTag0 = document.createElement("div");
-        diffTag0.className = "preview-label dsa-q-existing-tag";
+        diffTag0.className = "preview-label";
         diffTag0.textContent = "Difficulty";
         const diffVal0 = document.createElement("div");
         diffVal0.className = "preview-val dsa-q-existing-val";
@@ -7307,7 +7327,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             const impRow = document.createElement("div");
             impRow.className = "preview-row dsa-q-existing-block";
             const impTag = document.createElement("div");
-            impTag.className = "preview-label dsa-q-existing-tag";
+            impTag.className = "preview-label";
             impTag.textContent = "Starred";
             const impVal = document.createElement("div");
             impVal.className = "preview-val dsa-q-existing-val";
@@ -7320,7 +7340,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             const row = document.createElement("div");
             row.className = "preview-row dsa-q-existing-block";
             const tag = document.createElement("div");
-            tag.className = "preview-label dsa-q-existing-tag";
+            tag.className = "preview-label";
             tag.textContent = tagText;
             const el =
                 className === "pre"
@@ -7332,7 +7352,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
                       })()
                     : (() => {
                           const block = document.createElement("div");
-                          block.className = "preview-val dsa-q-existing-val";
+                          block.className = "preview-val";
                           block.textContent = content.length > 280 ? `${content.slice(0, 277)}…` : content;
                           return block;
                       })();
@@ -7359,7 +7379,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             const row = document.createElement("div");
             row.className = "preview-row dsa-q-existing-block";
             const tag = document.createElement("div");
-            tag.className = "preview-label dsa-q-existing-tag";
+            tag.className = "preview-label";
             tag.textContent = "Solutions";
             const val = document.createElement("div");
             val.className = "preview-val dsa-q-existing-val";
@@ -7397,26 +7417,15 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             const row = document.createElement("div");
             row.className = "preview-row dsa-q-existing-block";
             const tag = document.createElement("div");
-            tag.className = "preview-label dsa-q-existing-tag";
+            tag.className = "preview-label";
             tag.textContent = "Companies";
             const val = document.createElement("div");
-            val.className = "preview-val dsa-q-existing-val";
+            val.className = "preview-val";
             compsPreview.forEach((c) => {
                 const pill = document.createElement("span");
                 pill.className = "co-tag";
-                const logoHtml =
-                    companyApi && typeof companyApi.getCompanyLogoHtml === "function"
-                        ? companyApi.getCompanyLogoHtml(c)
-                        : typeof dsaResolveCompanyLogoHtml === "function"
-                          ? dsaResolveCompanyLogoHtml(c, DSA_COMPANY_PRESETS)
-                          : "";
-                if (logoHtml) {
-                    const logo = document.createElement("span");
-                    logo.className = "co-tag-logo";
-                    logo.innerHTML = logoHtml;
-                    pill.appendChild(logo);
-                }
-                pill.appendChild(document.createTextNode(c));
+                pill.style.marginRight = "3px";
+                pill.textContent = c;
                 val.appendChild(pill);
             });
             row.appendChild(tag);
@@ -7491,7 +7500,9 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
 
     nameIn.addEventListener("input", () => {
         clearFieldErrors();
-        nameCharSpan.textContent = String(nameIn.value.length);
+        if (nameCountWrap.id === "nameCount") {
+            nameCountWrap.textContent = `${String(nameIn.value.length)}/60`;
+        }
         if (debounceTimer) {
             clearTimeout(debounceTimer);
         }
@@ -8047,7 +8058,9 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     syncDifficultyPillsFromSelect();
     syncStarVisual();
     nodeCharSpan.textContent = String(nodeIn.value.length);
-    nameCharSpan.textContent = String(nameIn.value.length);
+    if (nameCountWrap.id === "nameCount") {
+        nameCountWrap.textContent = `${String(nameIn.value.length)}/60`;
+    }
 }
 /**
  * @param {{ siteAdmin: boolean, canEditGraph: boolean }} authCtx — siteAdmin = RSA CMS token; canEditGraph = customize UI rings.

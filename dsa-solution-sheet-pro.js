@@ -179,20 +179,7 @@ function dsaCreateSolutionSheetPro(opts) {
     const dots = document.createElement("div");
     dots.className = "dsa-sol-pro-dots";
     dots.innerHTML = '<span class="dsa-sol-pro-dot r"></span><span class="dsa-sol-pro-dot y"></span><span class="dsa-sol-pro-dot g"></span>';
-    const langWrap = document.createElement("div");
-    langWrap.className = "dsa-sol-pro-lang-pick";
-    const langSel = document.createElement("select");
-    langSel.id = "dsaSolProLang";
-    langSel.setAttribute("aria-label", "Language");
-    LANGS.forEach((l) => {
-        const o = document.createElement("option");
-        o.value = l.value;
-        o.textContent = l.label;
-        langSel.appendChild(o);
-    });
-    langWrap.appendChild(langSel);
     toolbar.appendChild(dots);
-    toolbar.appendChild(langWrap);
 
     const editorBody = document.createElement("div");
     editorBody.className = "dsa-sol-pro-editor-body";
@@ -209,7 +196,7 @@ function dsaCreateSolutionSheetPro(opts) {
     const codeTa = document.createElement("textarea");
     codeTa.id = "dsaSolProCode";
     codeTa.spellcheck = false;
-    codeTa.placeholder = "// Write your solution here…";
+    codeTa.placeholder = "Paste your solution here";
     codeTa.required = true;
     editorBody.appendChild(gutter);
     editorBody.appendChild(pre);
@@ -217,7 +204,7 @@ function dsaCreateSolutionSheetPro(opts) {
 
     const status = document.createElement("div");
     status.className = "dsa-sol-pro-editor-status";
-    status.innerHTML = '<div class="left"><span><span class="dsa-sol-pro-dot-live"></span> Live highlighting</span><span id="dsaSolProLangLabel">JavaScript</span></div><div class="right"><span id="dsaSolProLineCol">Ln 1, Col 1</span> · <span id="dsaSolProChars">0 chars</span></div>';
+    status.innerHTML = '<div class="left"><span><span class="dsa-sol-pro-dot-live"></span> Live highlighting</span></div><div class="right"><span id="dsaSolProLineCol">Ln 1, Col 1</span> · <span id="dsaSolProChars">0 chars</span></div>';
     editor.appendChild(toolbar);
     editor.appendChild(editorBody);
     editor.appendChild(status);
@@ -255,7 +242,6 @@ function dsaCreateSolutionSheetPro(opts) {
     toast.className = "dsa-sol-pro-toast";
     toast.innerHTML = '<span class="check">✓</span><span>Solution saved</span>';
 
-    const langLabel = status.querySelector("#dsaSolProLangLabel");
     const lineColInfo = status.querySelector("#dsaSolProLineCol");
     const charInfo = status.querySelector("#dsaSolProChars");
 
@@ -311,9 +297,7 @@ function dsaCreateSolutionSheetPro(opts) {
         gutter.style.transform = "translateY(" + (-codeTa.scrollTop) + "px)";
     }
     function setLanguage(lang) {
-        codeHighlight.className = "language-" + lang;
-        const opt = langSel.options[langSel.selectedIndex];
-        if (langLabel) langLabel.textContent = opt ? opt.textContent : lang;
+        codeHighlight.className = "language-" + (lang || "javascript");
         updateHighlight();
     }
 
@@ -323,7 +307,6 @@ function dsaCreateSolutionSheetPro(opts) {
     codeTa.addEventListener("click", updateStatus);
     codeTa.addEventListener("focus", () => editor.classList.add("focused"));
     codeTa.addEventListener("blur", () => editor.classList.remove("focused"));
-    langSel.addEventListener("change", () => setLanguage(langSel.value));
     [timeIn, spaceIn].forEach((el) => el.addEventListener("input", validate));
 
     const pairs = { "(": ")", "[": "]", "{": "}", '"': '"', "'": "'", "`": "`" };
@@ -393,7 +376,7 @@ function dsaCreateSolutionSheetPro(opts) {
         timeIn.value = sol && sol.timeComplexity ? String(sol.timeComplexity) : "";
         spaceIn.value = sol && sol.spaceComplexity ? String(sol.spaceComplexity) : "";
         codeTa.value = sol && sol.code != null ? String(sol.code) : "";
-        ensurePrism().then(() => { setLanguage(langSel.value || "javascript"); updateHighlight(); });
+        ensurePrism().then(() => { setLanguage("javascript"); updateHighlight(); });
         validate();
         overlay.hidden = false;
         requestAnimationFrame(() => {

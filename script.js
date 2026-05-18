@@ -6416,28 +6416,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     sketchPanel.hidden = true;
     sketchPanel.appendChild(sketchEditorRoot);
 
-    const drawRow = document.createElement("div");
-    drawRow.className = "dsa-q-draw-row dsa-q-sketch-zoom-row zoom-row";
-    drawRow.hidden = true;
-    const btnZoomOut = document.createElement("button");
-    btnZoomOut.type = "button";
-    btnZoomOut.className = "dsa-dialog-btn dsa-dialog-btn--ghost dsa-q-sketch-zoom tool-btn";
-    btnZoomOut.textContent = "";
-    btnZoomOut.innerHTML =
-        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-    btnZoomOut.setAttribute("aria-label", "Zoom sketch out");
-    btnZoomOut.title = "Zoom out";
-    btnZoomOut.hidden = true;
-    const btnZoomIn = document.createElement("button");
-    btnZoomIn.type = "button";
-    btnZoomIn.className = "dsa-dialog-btn dsa-dialog-btn--ghost dsa-q-sketch-zoom tool-btn";
-    btnZoomIn.textContent = "";
-    btnZoomIn.innerHTML =
-        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-    btnZoomIn.setAttribute("aria-label", "Zoom sketch in");
-    btnZoomIn.title = "Zoom in";
-    btnZoomIn.hidden = true;
-
     const fileIn = document.createElement("input");
     fileIn.type = "file";
     fileIn.accept = "image/*";
@@ -6536,9 +6514,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             afterClear() {
                 userClearedSketch = true;
                 sketchPanel.hidden = true;
-                drawRow.hidden = true;
-                btnZoomOut.hidden = true;
-                btnZoomIn.hidden = true;
                 syncSketchSlotUi();
             },
             admin: isAdmin,
@@ -6574,9 +6549,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             btnSketchInfo.setAttribute("aria-expanded", "false");
         }
         sketchPanel.hidden = false;
-        drawRow.hidden = false;
-        btnZoomOut.hidden = false;
-        btnZoomIn.hidden = false;
         if (sketchAddRow) {
             sketchAddRow.hidden = true;
         }
@@ -6597,9 +6569,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
                 btnSketchInfo.setAttribute("aria-expanded", "false");
             }
             sketchPanel.hidden = true;
-            drawRow.hidden = true;
-            btnZoomOut.hidden = true;
-            btnZoomIn.hidden = true;
             if (sketchAddRow) {
                 sketchAddRow.hidden = true;
             }
@@ -6923,9 +6892,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     });
     const { row: sketchAddRow, infoBtn: btnSketchInfo } = dsaCreateResAddRow(btnAddSketch);
     dsaWireResAddIntroToggle(sketchIntro, btnSketchInfo);
-    drawRow.appendChild(btnZoomOut);
-    drawRow.appendChild(btnZoomIn);
-    sketchPanel.appendChild(drawRow);
     sketchSlot.appendChild(sketchEmptySlot);
     sketchSlot.appendChild(sketchPanel);
     syncSketchSlotUi();
@@ -7668,8 +7634,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             btnCompanyInfo.disabled = ro;
         }
         sketchPanel.classList.toggle("dsa-q-sketch-panel--ro", ro);
-        btnZoomOut.disabled = ro;
-        btnZoomIn.disabled = ro;
         imagePasteHint.classList.toggle("dsa-q-image-paste-hint--disabled", ro);
         btnOk.hidden = ro;
         kbdHint.hidden = ro;
@@ -7741,16 +7705,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         }
     });
 
-    btnZoomOut.addEventListener("click", () => {
-        if (isAdmin && typeof scratchApi.zoomOut === "function") {
-            scratchApi.zoomOut();
-        }
-    });
-    btnZoomIn.addEventListener("click", () => {
-        if (isAdmin && typeof scratchApi.zoomIn === "function") {
-            scratchApi.zoomIn();
-        }
-    });
     dlg.addEventListener(
         "paste",
         (e) => {

@@ -118,7 +118,64 @@ input[type="range"]::-moz-range-thumb{width:16px;height:16px;background:#fff;bor
 .dsa-sketch-fs-hide-dialog { visibility: hidden !important; pointer-events: none !important; }
 .dsa-sketch-studio-mount .dsa-sketch-fs-back { display: none; }
 .dsa-sketch-studio-host--fullscreen .dsa-sketch-fs-back { display: inline-flex !important; }
-.dsa-sketch-studio-mount .dsa-sk-brand-mark { background: linear-gradient(180deg, #2a3442, #0f1720) !important; box-shadow: 0 6px 16px rgba(15, 23, 32, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15); color: #fff; font-weight: 700; font-size: 15px; }
-.dsa-sketch-studio-mount .dsa-sk-brand-mark svg { display: none; }
+.dsa-sketch-studio-mount .dsa-sk-brand-mark { background: linear-gradient(180deg, #2a3442, #0f1720) !important; box-shadow: 0 6px 16px rgba(15, 23, 32, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15); color: #fff; font-weight: 700; font-size: 15px; position: relative; }
+/* Default (minimized) state — show a unique sketch icon, hide the brand text mark */
+.dsa-sketch-studio-mount .dsa-sk-brand-mark svg.dsa-sk-brand-mark-icon { display: block; width: 22px; height: 22px; color: #fff; }
 .dsa-sketch-studio-mount .dsa-sk-brand-mark #dsaSkBrandMarkText,
-.dsa-sketch-studio-mount .dsa-sk-brand-mark span { display: block; }
+.dsa-sketch-studio-mount .dsa-sk-brand-mark span { display: none; }
+/* Fullscreen state — show the brand text mark, hide the sketch icon */
+.dsa-sketch-studio-mount .app.fs .dsa-sk-brand-mark svg.dsa-sk-brand-mark-icon { display: none; }
+.dsa-sketch-studio-mount .app.fs .dsa-sk-brand-mark #dsaSkBrandMarkText,
+.dsa-sketch-studio-mount .app.fs .dsa-sk-brand-mark span { display: block; }
+
+/* Floating zoom controls in the canvas wrapper (.fz) — compact pill */
+.dsa-sketch-studio-mount .fz { pointer-events: auto; gap: 4px; padding: 4px 6px; }
+.dsa-sketch-studio-mount .fz .fz-glass { color: var(--muted); }
+.dsa-sketch-studio-mount .fz .fz-btn {
+    width: 26px; height: 26px; padding: 0; border: 1px solid var(--border); background: var(--solid); border-radius: 7px;
+    display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text2); transition: all 0.2s;
+}
+.dsa-sketch-studio-mount .fz .fz-btn svg { width: 14px; height: 14px; }
+.dsa-sketch-studio-mount .fz .fz-btn:hover { background: var(--hover); color: var(--text); }
+.dsa-sketch-studio-mount .fz .fz-btn:active { transform: scale(0.92); }
+/* Fullscreen already has dedicated zoom buttons in the view group — hide the floating ones */
+.dsa-sketch-studio-mount .app.fs .fz .fz-btn { display: none; }
+
+/* Disabled tool buttons (undo/redo when nothing to undo/redo) */
+.dsa-sketch-studio-mount .btn:disabled,
+.dsa-sketch-studio-mount .btn.is-disabled,
+.dsa-sketch-studio-mount .btn[aria-disabled="true"] {
+    opacity: 0.4; cursor: not-allowed; pointer-events: none;
+}
+
+/* ===== Minimized state (NOT fullscreen) — compact toolbar + visible canvas ===== */
+/* Toolbar tightens up */
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar { padding: 10px 14px; gap: 8px; align-items: center; flex-wrap: nowrap; overflow-x: auto; }
+/* Hide opacity, shapes, insert, and the grid-cols control */
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .sg:has(#dsaSkOpR),
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="shapes"],
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="insert"],
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .gridCtl { display: none !important; }
+/* In view group, keep only the Fullscreen button (Zi/Zo/Zr are moved to the floating panel) */
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="view"] #dsaSkZiBtn,
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="view"] #dsaSkZoBtn,
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="view"] #dsaSkZrBtn { display: none !important; }
+/* Colors — horizontally scrollable, show ~4 swatches at a time */
+.dsa-sketch-studio-mount .app:not(.fs) .colors {
+    width: calc(24px * 4 + 8px * 3 + 20px); max-width: calc(24px * 4 + 8px * 3 + 20px);
+    overflow-x: auto; overflow-y: hidden;
+    flex-wrap: nowrap; flex-shrink: 0; scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+}
+.dsa-sketch-studio-mount .app:not(.fs) .colors .swatch,
+.dsa-sketch-studio-mount .app:not(.fs) .colors .cpw { flex-shrink: 0; }
+.dsa-sketch-studio-mount .app:not(.fs) .colors::-webkit-scrollbar { height: 4px; }
+.dsa-sketch-studio-mount .app:not(.fs) .colors::-webkit-scrollbar-thumb { background: var(--bs); border-radius: 2px; }
+/* Canvas visibility in minimized state — fixed working area */
+.dsa-sketch-studio-mount .app:not(.fs) { min-height: 460px; }
+.dsa-sketch-studio-mount .app:not(.fs) .cw { min-height: 280px; padding: 18px; }
+/* Hide the Back button when not in our fake fullscreen (already handled), keep header tight */
+.dsa-sketch-studio-mount .app:not(.fs) .header { padding: 10px 16px; min-height: 52px; }
+.dsa-sketch-studio-mount .app:not(.fs) .logo { width: 36px; height: 36px; border-radius: 10px; }
+.dsa-sketch-studio-mount .app:not(.fs) .dsa-sk-brand-mark svg.dsa-sk-brand-mark-icon { width: 20px; height: 20px; }
+.dsa-sketch-studio-mount .app:not(.fs) .status { padding: 8px 16px; font-size: 11.5px; }

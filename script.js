@@ -6542,7 +6542,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     }
 
     function openSketchPanel() {
-        ensureSketchEditor();
         sketchIntro.hidden = true;
         if (btnSketchInfo) {
             btnSketchInfo.classList.remove("active");
@@ -6554,7 +6553,13 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         }
         syncSketchSlotUi();
         requestAnimationFrame(() => {
-            sketchPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            ensureSketchEditor();
+            requestAnimationFrame(() => {
+                if (typeof scratchApi.resize === "function") {
+                    scratchApi.resize();
+                }
+                sketchPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            });
         });
     }
 

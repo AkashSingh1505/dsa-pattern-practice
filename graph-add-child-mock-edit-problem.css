@@ -1090,7 +1090,17 @@ body > .dsa-sol-pro-toast {
     border: 1px solid var(--border);
     border-radius: 10px;
     overflow: hidden;
-    min-height: 380px;
+    min-height: 520px;
+    display: flex;
+    flex-direction: column;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel > .dsa-sketch-studio-host {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    width: 100%;
 }
 
 .graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel[hidden] {

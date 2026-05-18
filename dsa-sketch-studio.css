@@ -203,6 +203,14 @@ input[type="range"]::-moz-range-thumb{width:16px;height:16px;background:#fff;bor
 .dsa-sketch-studio-mount .dsa-sk-mini-fs-btn { display: none; }
 .dsa-sketch-studio-mount .app:not(.fs) .dsa-sk-mini-fs-btn { display: inline-flex; }
 
+/* Propagate height through the layout chain so the canvas can fill available space */
+.dsa-sketch-studio-host:not(.dsa-sketch-studio-host--fullscreen) .dsa-sketch-studio-mount { flex: 1; min-height: 0; }
+.dsa-sketch-studio-host:not(.dsa-sketch-studio-host--fullscreen) .dsa-sketch-studio-mount .app:not(.fs) {
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+}
+
 /* ===== TOPBAR (header restyle) ===== */
 .dsa-sketch-studio-mount .app:not(.fs) {
     background: var(--mini-bg);
@@ -291,14 +299,14 @@ input[type="range"]::-moz-range-thumb{width:16px;height:16px;background:#fff;bor
 .dsa-sketch-studio-mount .app:not(.fs) .toolbar::-webkit-scrollbar { height: 4px; }
 .dsa-sketch-studio-mount .app:not(.fs) .toolbar::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.12); border-radius: 2px; }
 
-/* Hide opacity, shapes, insert, gridCtl, laser group in minimized */
+/* Hide opacity, shapes, gridCtl, laser group, view group in minimized */
 .dsa-sketch-studio-mount .app:not(.fs) .toolbar .sg:has(#dsaSkOpR),
 .dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="shapes"],
-.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="insert"],
 .dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="laser"],
-.dsa-sketch-studio-mount .app:not(.fs) .toolbar .gridCtl { display: none !important; }
-/* Hide the view group entirely (fullscreen moved to topbar; zoom moved to floating .fz) */
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .gridCtl,
 .dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="view"] { display: none !important; }
+/* Keep the insert group visible but only show the Grid button (use as the "View" group from the design) */
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="insert"] .btn:not([data-tool="grid"]) { display: none !important; }
 
 /* Tool-group styling (history + draw) */
 .dsa-sketch-studio-mount .app:not(.fs) .toolbar .group {
@@ -333,22 +341,25 @@ input[type="range"]::-moz-range-thumb{width:16px;height:16px;background:#fff;bor
 }
 .dsa-sketch-studio-mount .app:not(.fs) .toolbar .group .btn svg { width: 18px; height: 18px; }
 
-/* Reorder toolbar items visually: History | Drawing | Colors | Size */
+/* Reorder toolbar items visually: History | Drawing | Colors | Size | View(Grid) */
 .dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="history"] { order: 1; }
 .dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="draw"] { order: 2; }
 .dsa-sketch-studio-mount .app:not(.fs) .toolbar .colors { order: 3; }
 .dsa-sketch-studio-mount .app:not(.fs) .toolbar .sg:has(#dsaSkSizeR) { order: 4; }
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="insert"] { order: 5; }
 
 /* Visual dividers between visible toolbar groups */
 .dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="draw"],
 .dsa-sketch-studio-mount .app:not(.fs) .toolbar .colors,
-.dsa-sketch-studio-mount .app:not(.fs) .toolbar .sg:has(#dsaSkSizeR) {
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .sg:has(#dsaSkSizeR),
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="insert"] {
     position: relative;
     margin-left: 12px;
 }
 .dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="draw"]::before,
 .dsa-sketch-studio-mount .app:not(.fs) .toolbar .colors::before,
-.dsa-sketch-studio-mount .app:not(.fs) .toolbar .sg:has(#dsaSkSizeR)::before {
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .sg:has(#dsaSkSizeR)::before,
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="insert"]::before {
     content: "";
     position: absolute;
     left: -6px;
@@ -452,15 +463,14 @@ input[type="range"]::-moz-range-thumb{width:16px;height:16px;background:#fff;bor
 }
 
 /* Canvas wrapper redesign */
-.dsa-sketch-studio-mount .app:not(.fs) { min-height: 520px; }
 .dsa-sketch-studio-mount .app:not(.fs) .cw {
-    min-height: 320px;
+    flex: 1;
+    min-height: 280px;
     padding: 24px;
     background:
-        radial-gradient(circle at 20% 20%, rgba(124, 92, 255, 0.06), transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(91, 141, 239, 0.06), transparent 50%),
+        radial-gradient(circle at 20% 20%, rgba(124, 92, 255, 0.08), transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(91, 141, 239, 0.08), transparent 50%),
         var(--mini-bg);
-    background-size: auto, auto, auto;
 }
 .dsa-sketch-studio-mount .app:not(.fs) .stage {
     background: var(--mini-surface-solid);

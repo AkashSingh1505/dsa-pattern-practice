@@ -1417,6 +1417,12 @@
     display: none !important;
 }
 
+.graph-add-child-mock .dsa-q-sketch-panel .dsa-sketch-studio-host {
+    min-height: 380px;
+    height: 380px;
+    width: 100%;
+}
+
 .graph-add-child-mock .dsa-q-sketch-panel--ro .dsa-sketch-studio-mount .app {
     pointer-events: none;
     opacity: 0.88;

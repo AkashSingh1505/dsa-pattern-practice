@@ -10,7 +10,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     if (!document.head.querySelector("link[data-dsa-sketch-studio-css]")) {
         const lk = document.createElement("link");
         lk.rel = "stylesheet";
-        lk.href = "./dsa-sketch-studio.css?v=2";
+        lk.href = "./dsa-sketch-studio.css?v=3";
         lk.dataset.dsaSketchStudioCss = "1";
         document.head.appendChild(lk);
     }
@@ -19,7 +19,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     const mount = document.createElement("div");
     mount.className = "dsa-sketch-studio-mount";
     mount.dataset.theme = "light";
-    mount.innerHTML = "<div class=\"app\" id=\"dsaSkApp\">\n<header class=\"header\">\n  <div class=\"brand\">\n    <div class=\"logo dsa-sk-brand-mark\" id=\"dsaSkBrandMark\"><span id=\"dsaSkBrandMarkText\">D</span></div>\n    <div class=\"brand-text\"><h1 id=\"dsaSkBrandTitle\">DSA Patterns</h1><p id=\"dsaSkBrandSubtitle\">Learn DSA as a Connected System</p></div>\n  </div>\n  <div class=\"doc-name\">\n    <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"/><polyline points=\"14 2 14 8 20 8\"/></svg>\n    <input id=\"dsaSkDocTitle\" type=\"text\" value=\"Untitled Sketch\" spellcheck=\"false\"/>\n  </div>\n  <div class=\"header-actions\">\n<button type=\"button\" class=\"btn-flat dsa-sketch-fs-back\" id=\"dsaSkBackBtn\" data-tip=\"Back to dialog\">Back</button>\n    <label class=\"btn-flat\" data-tip=\"Import image\" style=\"cursor:pointer\">\n      <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\"/><circle cx=\"8.5\" cy=\"8.5\" r=\"1.5\"/><polyline points=\"21 15 16 10 5 21\"/></svg>\n      <span>Import</span>\n      <input type=\"file\" id=\"dsaSkImgInput\" accept=\"image/*\" hidden/>\n    </label>\n    <button class=\"btn-flat danger\" id=\"dsaSkClearBtn\" data-tip=\"Clear canvas\">\n      <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"3 6 5 6 21 6\"/><path d=\"M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6\"/></svg>\n    </button>\n    <button class=\"btn-flat primary\" id=\"dsaSkDoneBtn\" data-tip=\"Save sketch\">\n      <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"/></svg>\n      <span>Done</span>\n    </button>\n  </div>\n</header>\n<div class=\"toolbar\">\n  <div class=\"group\" data-group=\"view\" data-nocollapse>\n    <button class=\"btn\" id=\"dsaSkFsBtn\" data-tip=\"Fullscreen\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 8V5a2 2 0 0 1 2-2h3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M21 16v3a2 2 0 0 1-2 2h-3\"/></svg></button>\n    <button class=\"btn\" id=\"dsaSkZiBtn\" data-tip=\"Zoom In\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"/><line x1=\"11\" y1=\"8\" x2=\"11\" y2=\"14\"/><line x1=\"8\" y1=\"11\" x2=\"14\" y2=\"11\"/></svg></button>\n    <button class=\"btn\" id=\"dsaSkZoBtn\" data-tip=\"Zoom Out\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"/><line x1=\"8\" y1=\"11\" x2=\"14\" y2=\"11\"/></svg></button>\n    <button class=\"btn\" id=\"dsaSkZrBtn\" data-tip=\"Reset zoom\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 12a9 9 0 0 1 15-6.7L21 8\"/><path d=\"M21 3v5h-5\"/><path d=\"M21 12a9 9 0 0 1-15 6.7L3 16\"/><path d=\"M3 21v-5h5\"/></svg></button>\n  </div>\n  <div class=\"group\" data-group=\"history\" data-nocollapse>\n    <button class=\"btn\" id=\"dsaSkUndoBtn\" data-tip=\"Undo (⌘Z)\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 7v6h6\"/><path d=\"M21 17a9 9 0 0 0-15-6.7L3 13\"/></svg></button>\n    <button class=\"btn\" id=\"dsaSkRedoBtn\" data-tip=\"Redo (⌘⇧Z)\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M21 7v6h-6\"/><path d=\"M3 17a9 9 0 0 1 15-6.7L21 13\"/></svg></button>\n  </div>\n  <div class=\"group\" data-group=\"draw\">\n    <button class=\"btn active\" data-tool=\"brush\" data-tip=\"Brush\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 19l7-7 3 3-7 7-3-3z\"/><path d=\"M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z\"/></svg></button>\n    <button class=\"btn\" data-tool=\"pencil\" data-tip=\"Pencil\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 20h9\"/><path d=\"M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z\"/></svg></button>\n    <button class=\"btn\" data-tool=\"marker\" data-tip=\"Highlighter\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9 11l-6 6v3h3l6-6\"/><path d=\"M22 12l-4.6 4.6a2 2 0 0 1-2.8 0L9 11l5-5 8 6z\"/></svg></button>\n    <button class=\"btn\" data-tool=\"eraser\" data-tip=\"Eraser\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 20H7l-4-4 11-11 8 8-7 7\"/><line x1=\"14\" y1=\"6\" x2=\"20\" y2=\"12\"/></svg></button>\n  </div>\n  <div class=\"group\" data-group=\"laser\" data-nocollapse>\n    <button class=\"btn\" data-tool=\"laser\" data-tip=\"Laser Pointer\">\n      <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">\n        <circle cx=\"12\" cy=\"12\" r=\"2.5\" fill=\"currentColor\"/>\n        <path d=\"M12 4v2\"/><path d=\"M12 18v2\"/><path d=\"M4 12h2\"/><path d=\"M18 12h2\"/>\n        <path d=\"M6.34 6.34l1.41 1.41\"/><path d=\"M16.24 16.24l1.41 1.41\"/>\n        <path d=\"M6.34 17.66l1.41-1.41\"/><path d=\"M16.24 7.76l1.41-1.41\"/>\n      </svg>\n    </button>\n  </div>\n  <div class=\"group\" data-group=\"shapes\">\n    <button class=\"btn\" data-tool=\"line\" data-tip=\"Line\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><line x1=\"4\" y1=\"20\" x2=\"20\" y2=\"4\"/></svg></button>\n    <button class=\"btn\" data-tool=\"rect\" data-tip=\"Rectangle\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect x=\"4\" y=\"4\" width=\"16\" height=\"16\" rx=\"2\"/></svg></button>\n    <button class=\"btn\" data-tool=\"circle\" data-tip=\"Circle\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"9\"/></svg></button>\n    <button class=\"btn\" data-tool=\"arrow\" data-tip=\"Arrow\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"4\" y1=\"20\" x2=\"20\" y2=\"4\"/><polyline points=\"10 4 20 4 20 14\"/></svg></button>\n  </div>\n  <div class=\"group\" data-group=\"insert\">\n    <button class=\"btn\" data-tool=\"text\" data-tip=\"Text\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><polyline points=\"4 7 4 4 20 4 20 7\"/><line x1=\"9\" y1=\"20\" x2=\"15\" y2=\"20\"/><line x1=\"12\" y1=\"4\" x2=\"12\" y2=\"20\"/></svg></button>\n    <button class=\"btn\" data-tool=\"grid\" data-tip=\"Add Table\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\"/><line x1=\"3\" y1=\"9\" x2=\"21\" y2=\"9\"/><line x1=\"3\" y1=\"15\" x2=\"21\" y2=\"15\"/><line x1=\"9\" y1=\"3\" x2=\"9\" y2=\"21\"/><line x1=\"15\" y1=\"3\" x2=\"15\" y2=\"21\"/></svg></button>\n  </div>\n  <div class=\"sg\"><label>Size</label><input type=\"range\" id=\"dsaSkSizeR\" min=\"1\" max=\"80\" value=\"6\"/><span class=\"chip\" id=\"dsaSkSizeV\">6</span></div>\n  <div class=\"sg\"><label>Opacity</label><input type=\"range\" id=\"dsaSkOpR\" min=\"10\" max=\"100\" value=\"100\"/><span class=\"chip\" id=\"dsaSkOpV\">100</span></div>\n  <div class=\"gridCtl\" id=\"dsaSkGridCtl\">\n    <div class=\"sg\"><label>Rows</label><input type=\"number\" id=\"dsaSkGRows\" min=\"1\" max=\"50\" value=\"6\"/></div>\n    <div class=\"sg\"><label>Cols</label><input type=\"number\" id=\"dsaSkGCols\" min=\"1\" max=\"50\" value=\"6\"/></div>\n  </div>\n  <div class=\"colors\" id=\"dsaSkColors\">\n    <div class=\"swatch active\" data-color=\"#1d1d1f\" style=\"background:#1d1d1f\"></div>\n    <div class=\"swatch\" data-color=\"#ffffff\" style=\"background:#fff\"></div>\n    <div class=\"swatch\" data-color=\"#ff3b30\" style=\"background:#ff3b30\"></div>\n    <div class=\"swatch\" data-color=\"#ff9500\" style=\"background:#ff9500\"></div>\n    <div class=\"swatch\" data-color=\"#ffcc00\" style=\"background:#ffcc00\"></div>\n    <div class=\"swatch\" data-color=\"#34c759\" style=\"background:#34c759\"></div>\n    <div class=\"swatch\" data-color=\"#007aff\" style=\"background:#007aff\"></div>\n    <div class=\"swatch\" data-color=\"#5856d6\" style=\"background:#5856d6\"></div>\n    <div class=\"swatch\" data-color=\"#af52de\" style=\"background:#af52de\"></div>\n    <div class=\"swatch\" data-color=\"#ff2d55\" style=\"background:#ff2d55\"></div>\n    <label class=\"cpw\" data-tip=\"Custom\"><input type=\"color\" id=\"dsaSkCp\" value=\"#000000\"/></label>\n  </div>\n</div>\n<div class=\"cw\" id=\"dsaSkCw\">\n  <div class=\"stage\" id=\"dsaSkStage\">\n    <canvas id=\"dsaSkCv\"></canvas>\n    <canvas id=\"dsaSkOv\"></canvas>\n    <textarea class=\"text-editor\" id=\"dsaSkTextEditor\" spellcheck=\"false\"></textarea>\n    <div class=\"grid-actions\" id=\"dsaSkGridActions\">\n      <button class=\"grid-btn done\" id=\"dsaSkGridDone\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"/></svg>Done</button>\n      <button class=\"grid-btn cancel\" id=\"dsaSkGridRemove\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"/><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"/></svg>Cancel</button>\n    </div>\n  </div>\n  <div class=\"pen-badge\" id=\"dsaSkPenBadge\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 19l7-7 3 3-7 7-3-3z\"/><path d=\"M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z\"/></svg><span>Pencil Connected</span></div>\n  <div class=\"fz\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"/></svg><span id=\"dsaSkZV\">100%</span></div>\n</div>\n<div class=\"status\">\n  <div class=\"srow\">\n    <span>Tool · <span class=\"pill\" id=\"dsaSkST\">Brush</span></span>\n    <span>Color · <span class=\"pill\"><span class=\"sdot\" id=\"dsaSkSCD\" style=\"background:#1d1d1f\"></span><span id=\"dsaSkSCT\">#1d1d1f</span></span></span>\n    <span>Size · <span class=\"pill\" id=\"dsaSkSS\">6 px</span></span>\n    <span id=\"dsaSkPressureWrap\" style=\"display:none\">Pressure · <span class=\"pill\" id=\"dsaSkSPr\">0.50</span></span>\n  </div>\n  <div class=\"srow\"><span class=\"pill\" id=\"dsaSkSP\">x: 0 · y: 0</span></div>\n</div>\n</div>\n<div class=\"toast\" id=\"dsaSkToast\"><span id=\"dsaSkTT\"></span></div>";
+    mount.innerHTML = "<div class=\"app\" id=\"dsaSkApp\">\n<header class=\"header\">\n  <div class=\"brand\">\n    <div class=\"logo dsa-sk-brand-mark\" id=\"dsaSkBrandMark\"><span id=\"dsaSkBrandMarkText\">D</span></div>\n    <div class=\"brand-text\"><h1 id=\"dsaSkBrandTitle\">DSA Patterns</h1><p id=\"dsaSkBrandSubtitle\">Learn DSA as a Connected System</p></div>\n  </div>\n  <div class=\"header-actions\">\n<button type=\"button\" class=\"btn-flat primary dsa-sketch-fs-back\" id=\"dsaSkBackBtn\" data-tip=\"Return to problem\" hidden><span class=\"dsa-sk-back-label\">Close</span></button>\n    <label class=\"btn-flat\" data-tip=\"Import image\" style=\"cursor:pointer\">\n      <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\"/><circle cx=\"8.5\" cy=\"8.5\" r=\"1.5\"/><polyline points=\"21 15 16 10 5 21\"/></svg>\n      <span>Import</span>\n      <input type=\"file\" id=\"dsaSkImgInput\" accept=\"image/*\" hidden/>\n    </label>\n    <button class=\"btn-flat danger\" id=\"dsaSkClearBtn\" data-tip=\"Clear canvas\">\n      <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"3 6 5 6 21 6\"/><path d=\"M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6\"/></svg>\n    </button>\n  </div>\n</header>\n<div class=\"toolbar\">\n  <div class=\"group\" data-group=\"view\" data-nocollapse>\n    <button class=\"btn\" id=\"dsaSkFsBtn\" data-tip=\"Fullscreen\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 8V5a2 2 0 0 1 2-2h3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M21 16v3a2 2 0 0 1-2 2h-3\"/></svg></button>\n    <button class=\"btn\" id=\"dsaSkZiBtn\" data-tip=\"Zoom In\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"/><line x1=\"11\" y1=\"8\" x2=\"11\" y2=\"14\"/><line x1=\"8\" y1=\"11\" x2=\"14\" y2=\"11\"/></svg></button>\n    <button class=\"btn\" id=\"dsaSkZoBtn\" data-tip=\"Zoom Out\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"/><line x1=\"8\" y1=\"11\" x2=\"14\" y2=\"11\"/></svg></button>\n    <button class=\"btn\" id=\"dsaSkZrBtn\" data-tip=\"Reset zoom\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 12a9 9 0 0 1 15-6.7L21 8\"/><path d=\"M21 3v5h-5\"/><path d=\"M21 12a9 9 0 0 1-15 6.7L3 16\"/><path d=\"M3 21v-5h5\"/></svg></button>\n  </div>\n  <div class=\"group\" data-group=\"history\" data-nocollapse>\n    <button class=\"btn\" id=\"dsaSkUndoBtn\" data-tip=\"Undo (⌘Z)\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 7v6h6\"/><path d=\"M21 17a9 9 0 0 0-15-6.7L3 13\"/></svg></button>\n    <button class=\"btn\" id=\"dsaSkRedoBtn\" data-tip=\"Redo (⌘⇧Z)\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M21 7v6h-6\"/><path d=\"M3 17a9 9 0 0 1 15-6.7L21 13\"/></svg></button>\n  </div>\n  <div class=\"group\" data-group=\"draw\">\n    <button class=\"btn active\" data-tool=\"brush\" data-tip=\"Brush\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 19l7-7 3 3-7 7-3-3z\"/><path d=\"M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z\"/></svg></button>\n    <button class=\"btn\" data-tool=\"pencil\" data-tip=\"Pencil\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 20h9\"/><path d=\"M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z\"/></svg></button>\n    <button class=\"btn\" data-tool=\"marker\" data-tip=\"Highlighter\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9 11l-6 6v3h3l6-6\"/><path d=\"M22 12l-4.6 4.6a2 2 0 0 1-2.8 0L9 11l5-5 8 6z\"/></svg></button>\n    <button class=\"btn\" data-tool=\"eraser\" data-tip=\"Eraser\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 20H7l-4-4 11-11 8 8-7 7\"/><line x1=\"14\" y1=\"6\" x2=\"20\" y2=\"12\"/></svg></button>\n  </div>\n  <div class=\"group\" data-group=\"laser\" data-nocollapse>\n    <button class=\"btn\" data-tool=\"laser\" data-tip=\"Laser Pointer\">\n      <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">\n        <circle cx=\"12\" cy=\"12\" r=\"2.5\" fill=\"currentColor\"/>\n        <path d=\"M12 4v2\"/><path d=\"M12 18v2\"/><path d=\"M4 12h2\"/><path d=\"M18 12h2\"/>\n        <path d=\"M6.34 6.34l1.41 1.41\"/><path d=\"M16.24 16.24l1.41 1.41\"/>\n        <path d=\"M6.34 17.66l1.41-1.41\"/><path d=\"M16.24 7.76l1.41-1.41\"/>\n      </svg>\n    </button>\n  </div>\n  <div class=\"group\" data-group=\"shapes\">\n    <button class=\"btn\" data-tool=\"line\" data-tip=\"Line\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><line x1=\"4\" y1=\"20\" x2=\"20\" y2=\"4\"/></svg></button>\n    <button class=\"btn\" data-tool=\"rect\" data-tip=\"Rectangle\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect x=\"4\" y=\"4\" width=\"16\" height=\"16\" rx=\"2\"/></svg></button>\n    <button class=\"btn\" data-tool=\"circle\" data-tip=\"Circle\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"9\"/></svg></button>\n    <button class=\"btn\" data-tool=\"arrow\" data-tip=\"Arrow\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"4\" y1=\"20\" x2=\"20\" y2=\"4\"/><polyline points=\"10 4 20 4 20 14\"/></svg></button>\n  </div>\n  <div class=\"group\" data-group=\"insert\">\n    <button class=\"btn\" data-tool=\"text\" data-tip=\"Text\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><polyline points=\"4 7 4 4 20 4 20 7\"/><line x1=\"9\" y1=\"20\" x2=\"15\" y2=\"20\"/><line x1=\"12\" y1=\"4\" x2=\"12\" y2=\"20\"/></svg></button>\n    <button class=\"btn\" data-tool=\"grid\" data-tip=\"Add Table\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\"/><line x1=\"3\" y1=\"9\" x2=\"21\" y2=\"9\"/><line x1=\"3\" y1=\"15\" x2=\"21\" y2=\"15\"/><line x1=\"9\" y1=\"3\" x2=\"9\" y2=\"21\"/><line x1=\"15\" y1=\"3\" x2=\"15\" y2=\"21\"/></svg></button>\n  </div>\n  <div class=\"sg\"><label>Size</label><input type=\"range\" id=\"dsaSkSizeR\" min=\"1\" max=\"80\" value=\"6\"/><span class=\"chip\" id=\"dsaSkSizeV\">6</span></div>\n  <div class=\"sg\"><label>Opacity</label><input type=\"range\" id=\"dsaSkOpR\" min=\"10\" max=\"100\" value=\"100\"/><span class=\"chip\" id=\"dsaSkOpV\">100</span></div>\n  <div class=\"gridCtl\" id=\"dsaSkGridCtl\">\n    <div class=\"sg\"><label>Rows</label><input type=\"number\" id=\"dsaSkGRows\" min=\"1\" max=\"50\" value=\"6\"/></div>\n    <div class=\"sg\"><label>Cols</label><input type=\"number\" id=\"dsaSkGCols\" min=\"1\" max=\"50\" value=\"6\"/></div>\n  </div>\n  <div class=\"colors\" id=\"dsaSkColors\">\n    <div class=\"swatch active\" data-color=\"#1d1d1f\" style=\"background:#1d1d1f\"></div>\n    <div class=\"swatch\" data-color=\"#ffffff\" style=\"background:#fff\"></div>\n    <div class=\"swatch\" data-color=\"#ff3b30\" style=\"background:#ff3b30\"></div>\n    <div class=\"swatch\" data-color=\"#ff9500\" style=\"background:#ff9500\"></div>\n    <div class=\"swatch\" data-color=\"#ffcc00\" style=\"background:#ffcc00\"></div>\n    <div class=\"swatch\" data-color=\"#34c759\" style=\"background:#34c759\"></div>\n    <div class=\"swatch\" data-color=\"#007aff\" style=\"background:#007aff\"></div>\n    <div class=\"swatch\" data-color=\"#5856d6\" style=\"background:#5856d6\"></div>\n    <div class=\"swatch\" data-color=\"#af52de\" style=\"background:#af52de\"></div>\n    <div class=\"swatch\" data-color=\"#ff2d55\" style=\"background:#ff2d55\"></div>\n    <label class=\"cpw\" data-tip=\"Custom\"><input type=\"color\" id=\"dsaSkCp\" value=\"#000000\"/></label>\n  </div>\n</div>\n<div class=\"cw\" id=\"dsaSkCw\">\n  <div class=\"stage\" id=\"dsaSkStage\">\n    <canvas id=\"dsaSkCv\"></canvas>\n    <canvas id=\"dsaSkOv\"></canvas>\n    <textarea class=\"text-editor\" id=\"dsaSkTextEditor\" spellcheck=\"false\"></textarea>\n    <div class=\"grid-actions\" id=\"dsaSkGridActions\">\n      <button class=\"grid-btn done\" id=\"dsaSkGridDone\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"/></svg>Done</button>\n      <button class=\"grid-btn cancel\" id=\"dsaSkGridRemove\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"/><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"/></svg>Cancel</button>\n    </div>\n  </div>\n  <div class=\"pen-badge\" id=\"dsaSkPenBadge\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 19l7-7 3 3-7 7-3-3z\"/><path d=\"M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z\"/></svg><span>Pencil Connected</span></div>\n  <div class=\"fz\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"/></svg><span id=\"dsaSkZV\">100%</span></div>\n</div>\n<div class=\"status\">\n  <div class=\"srow\">\n    <span>Tool · <span class=\"pill\" id=\"dsaSkST\">Brush</span></span>\n    <span>Color · <span class=\"pill\"><span class=\"sdot\" id=\"dsaSkSCD\" style=\"background:#1d1d1f\"></span><span id=\"dsaSkSCT\">#1d1d1f</span></span></span>\n    <span>Size · <span class=\"pill\" id=\"dsaSkSS\">6 px</span></span>\n    <span id=\"dsaSkPressureWrap\" style=\"display:none\">Pressure · <span class=\"pill\" id=\"dsaSkSPr\">0.50</span></span>\n  </div>\n  <div class=\"srow\"><span class=\"pill\" id=\"dsaSkSP\">x: 0 · y: 0</span></div>\n</div>\n</div>\n<div class=\"toast\" id=\"dsaSkToast\"><span id=\"dsaSkTT\"></span></div>";
     editorRoot.appendChild(mount);
 
     let hasInk = false;
@@ -69,6 +69,7 @@ function enterFakeFullscreen(){
   if(fsHideBackdrop)fsHideBackdrop.classList.add('dsa-sketch-fs-hide-dialog');
   if(fsHideDlg)fsHideDlg.classList.add('dsa-sketch-fs-hide-dialog');
   isFakeFs=true;
+  syncFsChrome();
   requestAnimationFrame(()=>setTimeout(resize,80));
 }
 function leaveFakeFullscreen(){
@@ -83,6 +84,7 @@ function leaveFakeFullscreen(){
     else fsParent.appendChild(editorRoot);
   }
   fsParent=null;fsNext=null;isFakeFs=false;
+  syncFsChrome();
   requestAnimationFrame(()=>setTimeout(resize,80));
 }
 function applySiteBrand(){
@@ -92,6 +94,35 @@ function applySiteBrand(){
   if(t&&b.title)t.textContent=b.title;
   if(s&&b.subtitle)s.textContent=b.subtitle;
   if(m&&b.markText)m.textContent=b.markText;
+}
+function syncFsChrome(){
+  const back=$('dsaSkBackBtn');
+  if(!back)return;
+  if(isFakeFs){
+    back.hidden=false;
+    syncInk();
+    const lab=back.querySelector('.dsa-sk-back-label');
+    if(lab)lab.textContent=hasInk?'Done':'Close';
+    back.dataset.tip=hasInk?'Save sketch and return':'Return without saving';
+  }else{back.hidden=true;}
+}
+function flushSketchDone(){
+  if(T.editing!==null)commitTextEdit();
+  if(G.current)gridDone();
+  syncInk();
+  onChange();
+  if(!hasInk){return false;}
+  if(typeof hooks.onPersist==='function'){hooks.onPersist();}
+  toast('Saved');
+  return true;
+}
+function exitFullscreenSmart(){
+  if(T.editing!==null)commitTextEdit();
+  if(G.current)gridDone();
+  syncInk();
+  onChange();
+  if(hasInk&&typeof hooks.onPersist==='function'){hooks.onPersist();toast('Saved');}
+  leaveFakeFullscreen();
 }
 function toast(msg){
   const t=$('dsaSkToast');
@@ -104,10 +135,10 @@ function toast(msg){
 /* ===== RESIZE: stage = canvas container ===== */
 function resize(){
   const r=cw.getBoundingClientRect();
-  const padding=48;
-  const w=Math.floor(r.width-padding);
-  const h=Math.floor(r.height-padding);
-  if(w<=0||h<=0)return;
+  const padding=isFakeFs?40:16;
+  let w=Math.max(120,Math.floor(r.width-padding));
+  let h=Math.max(120,Math.floor(r.height-padding));
+  if(r.width<4||r.height<4){if(!isFakeFs){w=320;h=220;}else return;}
   let tmp=null;
   if(cv.width&&cv.height){
     tmp=document.createElement('canvas');
@@ -838,16 +869,6 @@ function exportCanvas(){
   }
   return tmp.toDataURL('image/png');
 }
-function flushSketchDone(){
-  if(T.editing!==null)commitTextEdit();
-  if(G.current)gridDone();
-  syncInk();
-  onChange();
-  if(typeof hooks.onPersist==='function'){hooks.onPersist();}
-  toast('Saved');
-}
-$('dsaSkDoneBtn').addEventListener('click',()=>{flushSketchDone();});
-
 /* ===== IMAGE IMPORT ===== */
 $('dsaSkImgInput').addEventListener('change',e=>{
   const f=e.target.files[0];
@@ -892,7 +913,7 @@ function onDocKeyInner(e){
   if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
   if((e.ctrlKey||e.metaKey)&&e.key==='z'&&!e.shiftKey){e.preventDefault();undo();return;}
   if((e.ctrlKey||e.metaKey)&&(e.key==='y'||(e.shiftKey&&(e.key==='Z'||e.key==='z')))){e.preventDefault();redoFn();return;}
-  if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();$('dsaSkDoneBtn').click();return;}
+  
   if(e.key==='Delete' || e.key==='Backspace'){
     if(T.selected && S.tool==='text' && T.editing===null){
       e.preventDefault();
@@ -908,7 +929,7 @@ function onDocKeyInner(e){
   if(e.key===']'){sizeR.value=Math.min(80,+sizeR.value+1);sizeR.dispatchEvent(new Event('input'));}
   if(e.key==='Enter' && S.tool==='grid' && G.current){gridDone();}
   if(e.key==='Escape' && S.tool==='grid' && G.current){gridRemove();}
-if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();flushSketchDone();return;}
+if((e.ctrlKey||e.metaKey)&&e.key==='s'&&isFakeFs){e.preventDefault();if(flushSketchDone())return;}
 }
 
 /* ===== PEN BADGE AUTO-HIDE ===== */
@@ -924,17 +945,17 @@ setInterval(()=>{
     applySiteBrand();
 
     $('dsaSkFsBtn').addEventListener('click', () => {
-        if (isFakeFs) leaveFakeFullscreen();
+        if (isFakeFs) exitFullscreenSmart();
         else enterFakeFullscreen();
     });
     const backBtn = $('dsaSkBackBtn');
-    if (backBtn) backBtn.addEventListener('click', () => leaveFakeFullscreen());
+    if (backBtn) backBtn.addEventListener('click', () => exitFullscreenSmart());
 
     function onDocKey(e) {
         if (e.key === 'Escape' && isFakeFs) {
             e.preventDefault();
             e.stopPropagation();
-            leaveFakeFullscreen();
+            exitFullscreenSmart();
             return;
         }
         onDocKeyInner(e);
@@ -950,6 +971,7 @@ setInterval(()=>{
     resize();
     saveH();
     syncInk();
+    syncFsChrome();
     onChange();
     overlayLoop();
 

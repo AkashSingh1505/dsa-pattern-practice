@@ -6917,10 +6917,11 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     companyLabRow.innerHTML = "<span>Companies</span>";
     let companyHead = null;
     let companyIntro = null;
+    let btnCompanyInfo = null;
     if (!isEditProblem) {
         companyHead = document.createElement("div");
         companyHead.className = "dsa-q-company-field-head";
-        const btnCompanyInfo = dsaCreateResInfoButton();
+        btnCompanyInfo = dsaCreateResInfoButton();
         companyHead.appendChild(companyLabRow.cloneNode(true));
         companyHead.appendChild(btnCompanyInfo);
         companyIntro = document.createElement("div");
@@ -7664,8 +7665,12 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         if (companyApi) {
             companyApi.setDisabled(ro);
         }
-        btnCompanyInfo.disabled = ro;
-        noteDel.disabled = ro;
+        if (btnCompanyInfo) {
+            btnCompanyInfo.disabled = ro;
+        }
+        if (noteDel) {
+            noteDel.disabled = ro;
+        }
         sketchPanel.classList.toggle("dsa-q-sketch-panel--ro", ro);
         btnZoomOut.disabled = ro;
         btnZoomIn.disabled = ro;

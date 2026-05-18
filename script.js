@@ -7315,6 +7315,11 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         } else if (sketchEditorWired) {
             scratchApi.clear();
         }
+        const docTitleEl = sketchEditorRoot.querySelector("#dsaSkDocTitle");
+        if (docTitleEl) {
+            const label = ent && ent.name ? String(ent.name).trim() : nameIn.value.trim();
+            docTitleEl.value = label || "Untitled Sketch";
+        }
     }
 
     function syncNameToEntry() {

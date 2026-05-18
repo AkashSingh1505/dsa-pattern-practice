@@ -6926,13 +6926,18 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     if (typeof dsaMountCompanySelector === "function") {
         companyApi = dsaMountCompanySelector(companyMount, {
             presets: DSA_COMPANY_PRESETS,
+            layout: "compact",
             onChange(names) {
                 companyTagsList = names.slice();
             },
         });
     }
-    companyFieldGroup.appendChild(companyHead);
-    companyFieldGroup.appendChild(companyIntro);
+    if (isEditProblem) {
+        companyFieldGroup.appendChild(companyLabRow);
+    } else {
+        companyFieldGroup.appendChild(companyHead);
+        companyFieldGroup.appendChild(companyIntro);
+    }
     companyFieldGroup.appendChild(companyMount);
     renderCompanyPicker();
 
@@ -7337,112 +7342,85 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         };
         const hi = dsaMergeHintCommentFromEntry(ent);
         if (hi) {
-            addBlock("Hint / notes", hi, "quote");
+            addBlock("Hint", hi.length > 120 ? `${hi.slice(0, 117)}…` : hi, "quote");
         }
         const vid = ent.solutionVideoUrl && String(ent.solutionVideoUrl).trim();
         if (vid) {
-            addBlock("Video", vid.length > 120 ? `${vid.slice(0, 117)}…` : vid, "quote");
+            addBlock("Video", vid.length > 50 ? `${vid.slice(0, 47)}…` : vid, "quote");
         }
         const solsCard = dsaSolutionsFromEntry(ent);
-        if (solsCard.length) {
-            solsCard.forEach((sol, si) => {
-                const co = sol.code && String(sol.code).trim();
+        const solsWithMeta = solsCard.filter((sol) => {
+            const stc = sol.timeComplexity && String(sol.timeComplexity).trim();
+            const ssc = sol.spaceComplexity && String(sol.spaceComplexity).trim();
+            const scatLab = dsaSolutionCategoryLabel(dsaNormalizeSolutionCategory(sol.approach));
+            return !!(stc || ssc || scatLab);
+        });
+        if (solsWithMeta.length) {
+            const row = document.createElement("div");
+            row.className = "preview-row dsa-q-existing-block";
+            const tag = document.createElement("div");
+            tag.className = "preview-label dsa-q-existing-tag";
+            tag.textContent = "Solutions";
+            const val = document.createElement("div");
+            val.className = "preview-val dsa-q-existing-val";
+            solsWithMeta.forEach((sol) => {
+                const cat = dsaNormalizeSolutionCategory(sol.approach);
+                const solTagCls = cat === "brute_force" ? "brute" : cat;
+                const line = document.createElement("div");
+                line.className = "dsa-q-existing-sol-line";
+                const pill = document.createElement("span");
+                pill.className = `sol-tag ${solTagCls || ""}`;
+                pill.textContent = dsaSolutionCategoryLabel(cat) || "Approach";
+                line.appendChild(pill);
                 const stc = sol.timeComplexity && String(sol.timeComplexity).trim();
                 const ssc = sol.spaceComplexity && String(sol.spaceComplexity).trim();
-                const scatLab = dsaSolutionCategoryLabel(dsaNormalizeSolutionCategory(sol.approach));
-                if (!co && !stc && !ssc && !scatLab) {
-                    return;
+                if (stc) {
+                    const tc = document.createElement("span");
+                    tc.className = "sol-cx";
+                    tc.textContent = stc;
+                    line.appendChild(tc);
                 }
-                const row = document.createElement("div");
-                row.className = "dsa-q-existing-block";
-                const tag = document.createElement("span");
-                tag.className = "dsa-q-existing-tag";
-                tag.textContent = solsCard.length > 1 ? `Solution ${si + 1}` : "Solution";
-                row.appendChild(tag);
-                const body = document.createElement("div");
-                body.className = "dsa-q-existing-solution-wrap";
-                if (scatLab || stc || ssc) {
-                    const meta = document.createElement("div");
-                    meta.className = "dsa-q-existing-sol-meta";
-                    if (scatLab) {
-                        const p = document.createElement("span");
-                        p.className = "dsa-q-existing-sol-pill";
-                        p.textContent = scatLab;
-                        meta.appendChild(p);
-                    }
-                    if (stc) {
-                        const p = document.createElement("span");
-                        p.className = "dsa-q-existing-sol-pill dsa-q-existing-sol-pill--tc";
-                        p.textContent = `T: ${stc}`;
-                        meta.appendChild(p);
-                    }
-                    if (ssc) {
-                        const p = document.createElement("span");
-                        p.className = "dsa-q-existing-sol-pill dsa-q-existing-sol-pill--sp";
-                        p.textContent = `S: ${ssc}`;
-                        meta.appendChild(p);
-                    }
-                    body.appendChild(meta);
+                if (ssc) {
+                    const sc = document.createElement("span");
+                    sc.className = "sol-cx";
+                    sc.textContent = ssc;
+                    line.appendChild(sc);
                 }
-                if (co) {
-                    const pre = document.createElement("pre");
-                    pre.className = "dsa-q-existing-pre";
-                    pre.textContent = co.length > 400 ? `${co.slice(0, 397)}…` : co;
-                    body.appendChild(pre);
-                }
-                row.appendChild(body);
-                grid.appendChild(row);
+                val.appendChild(line);
             });
-        }
-        if (ent.drawing && String(ent.drawing).trim()) {
-            const row = document.createElement("div");
-            row.className = "dsa-q-existing-block";
-            const tag = document.createElement("span");
-            tag.className = "dsa-q-existing-tag";
-            tag.textContent = "Sketch";
-            const fig = document.createElement("figure");
-            fig.className = "dsa-q-existing-fig";
-            const img = document.createElement("img");
-            img.src = String(ent.drawing);
-            img.alt = "Sketch";
-            fig.appendChild(img);
             row.appendChild(tag);
-            row.appendChild(fig);
-            grid.appendChild(row);
-        }
-        if (ent.image && String(ent.image).trim()) {
-            const row = document.createElement("div");
-            row.className = "dsa-q-existing-block";
-            const tag = document.createElement("span");
-            tag.className = "dsa-q-existing-tag";
-            tag.textContent = "Image";
-            const fig = document.createElement("figure");
-            fig.className = "dsa-q-existing-fig";
-            const img = document.createElement("img");
-            img.src = String(ent.image);
-            img.alt = "Image";
-            fig.appendChild(img);
-            row.appendChild(tag);
-            row.appendChild(fig);
+            row.appendChild(val);
             grid.appendChild(row);
         }
         const compsPreview = dsaNormalizeCompaniesArray(ent && ent.companies);
         if (compsPreview.length) {
             const row = document.createElement("div");
-            row.className = "dsa-q-existing-block";
-            const tag = document.createElement("span");
-            tag.className = "dsa-q-existing-tag";
+            row.className = "preview-row dsa-q-existing-block";
+            const tag = document.createElement("div");
+            tag.className = "preview-label dsa-q-existing-tag";
             tag.textContent = "Companies";
-            const div = document.createElement("div");
-            div.className = "dsa-q-existing-companies";
+            const val = document.createElement("div");
+            val.className = "preview-val dsa-q-existing-val";
             compsPreview.forEach((c) => {
                 const pill = document.createElement("span");
-                pill.className = "dsa-q-existing-company-pill";
-                pill.textContent = c;
-                div.appendChild(pill);
+                pill.className = "co-tag";
+                const logoHtml =
+                    companyApi && typeof companyApi.getCompanyLogoHtml === "function"
+                        ? companyApi.getCompanyLogoHtml(c)
+                        : typeof dsaResolveCompanyLogoHtml === "function"
+                          ? dsaResolveCompanyLogoHtml(c, DSA_COMPANY_PRESETS)
+                          : "";
+                if (logoHtml) {
+                    const logo = document.createElement("span");
+                    logo.className = "co-tag-logo";
+                    logo.innerHTML = logoHtml;
+                    pill.appendChild(logo);
+                }
+                pill.appendChild(document.createTextNode(c));
+                val.appendChild(pill);
             });
             row.appendChild(tag);
-            row.appendChild(div);
+            row.appendChild(val);
             grid.appendChild(row);
         }
         existingCard.appendChild(grid);

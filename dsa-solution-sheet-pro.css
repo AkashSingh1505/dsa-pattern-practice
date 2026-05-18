@@ -11,7 +11,7 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
-    z-index: 600010;
+    z-index: 610000;
     padding: 20px;
 }
 
@@ -469,7 +469,7 @@
     opacity: 0;
     pointer-events: none;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    z-index: 600020;
+    z-index: 610010;
     display: flex;
     align-items: center;
     gap: 8px;

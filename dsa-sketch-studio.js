@@ -10,7 +10,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     if (!document.head.querySelector("link[data-dsa-sketch-studio-css]")) {
         const lk = document.createElement("link");
         lk.rel = "stylesheet";
-        lk.href = "./dsa-sketch-studio.css?v=6";
+        lk.href = "./dsa-sketch-studio.css?v=7";
         lk.dataset.dsaSketchStudioCss = "1";
         document.head.appendChild(lk);
     }
@@ -935,6 +935,66 @@ setInterval(()=>{
 
 
     applySiteBrand();
+
+    /* ===== Minimized-state UI sugar: move laser into draw group, add size dots, color dots ===== */
+    (function () {
+        const drawGroup = mount.querySelector('.group[data-group="draw"]');
+        const laserBtn = mount.querySelector('.btn[data-tool="laser"]');
+        if (drawGroup && laserBtn) {
+            // Insert laser before the eraser so order is: brush, pencil, marker, laser, eraser
+            const eraser = drawGroup.querySelector('.btn[data-tool="eraser"]');
+            if (eraser) drawGroup.insertBefore(laserBtn, eraser);
+            else drawGroup.appendChild(laserBtn);
+        }
+
+        // Add color dots to the strokes-tools (pen, pencil, marker) — visible in minimized
+        ['brush', 'pencil', 'marker'].forEach((tool) => {
+            const btn = mount.querySelector(`.btn[data-tool="${tool}"]`);
+            if (btn && !btn.querySelector('.dsa-sk-tool-color-dot')) {
+                const dot = document.createElement('span');
+                dot.className = 'dsa-sk-tool-color-dot';
+                btn.appendChild(dot);
+            }
+        });
+
+        function syncToolColorDots() {
+            mount.querySelectorAll('.dsa-sk-tool-color-dot').forEach((d) => {
+                d.style.background = S.color || '#1d1d1f';
+            });
+        }
+        syncToolColorDots();
+        mount.querySelectorAll('.swatch').forEach((sw) => sw.addEventListener('click', syncToolColorDots));
+        const cp = mount.querySelector('#dsaSkCp');
+        if (cp) cp.addEventListener('input', syncToolColorDots);
+
+        // Inject 5-step size dots in the toolbar — visible in minimized only (slider hidden via CSS)
+        const sizeSg = mount.querySelector('.toolbar .sg');
+        const sizeRange = mount.querySelector('#dsaSkSizeR');
+        if (sizeSg && sizeRange) {
+            const SIZE_MAP = { 1: 2, 2: 6, 3: 12, 4: 24, 5: 40 };
+            const sizeDots = document.createElement('div');
+            sizeDots.className = 'dsa-sk-size-dots';
+            sizeDots.id = 'dsaSkSizeDots';
+            for (let i = 1; i <= 5; i++) {
+                const dot = document.createElement('button');
+                dot.type = 'button';
+                dot.className = 'dsa-sk-size-dot';
+                dot.dataset.size = String(i);
+                if (i === 3) dot.classList.add('active');
+                const ring = document.createElement('span');
+                ring.className = 'dsa-sk-size-dot-ring';
+                dot.appendChild(ring);
+                dot.addEventListener('click', () => {
+                    sizeDots.querySelectorAll('.dsa-sk-size-dot').forEach((d) => d.classList.remove('active'));
+                    dot.classList.add('active');
+                    sizeRange.value = String(SIZE_MAP[i]);
+                    sizeRange.dispatchEvent(new Event('input'));
+                });
+                sizeDots.appendChild(dot);
+            }
+            sizeSg.parentNode.insertBefore(sizeDots, sizeSg);
+        }
+    })();
 
     $('dsaSkFsBtn').addEventListener('click', () => {
         if (isFakeFs) leaveFakeFullscreen();

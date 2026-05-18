@@ -148,34 +148,351 @@ input[type="range"]::-moz-range-thumb{width:16px;height:16px;background:#fff;bor
     opacity: 0.4; cursor: not-allowed; pointer-events: none;
 }
 
-/* ===== Minimized state (NOT fullscreen) — compact toolbar + visible canvas ===== */
-/* Toolbar tightens up */
-.dsa-sketch-studio-mount .app:not(.fs) .toolbar { padding: 10px 14px; gap: 8px; align-items: center; flex-wrap: nowrap; overflow-x: auto; }
-/* Hide opacity, shapes, insert, and the grid-cols control */
+/* =================================================================== */
+/* === MINIMIZED STATE (NOT fullscreen) — redesigned topbar + ribbon === */
+/* =================================================================== */
+.dsa-sketch-studio-mount {
+    --mini-bg: #f5f5f7;
+    --mini-surface: rgba(255, 255, 255, 0.72);
+    --mini-surface-solid: #ffffff;
+    --mini-border: rgba(0, 0, 0, 0.08);
+    --mini-text: #1d1d1f;
+    --mini-text-muted: #6e6e73;
+    --mini-accent: #7c5cff;
+    --mini-accent-2: #5b8def;
+    --mini-danger: #ff3b30;
+    --mini-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+    --mini-shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.06);
+    --mini-group-bg: rgba(0, 0, 0, 0.04);
+}
+@media (prefers-color-scheme: dark) {
+    .dsa-sketch-studio-mount {
+        --mini-bg: #000;
+        --mini-surface: rgba(28, 28, 30, 0.78);
+        --mini-surface-solid: #1c1c1e;
+        --mini-border: rgba(255, 255, 255, 0.1);
+        --mini-text: #f5f5f7;
+        --mini-text-muted: #98989d;
+        --mini-group-bg: rgba(255, 255, 255, 0.06);
+    }
+}
+
+/* Minimized title-block: only shown in non-fs */
+.dsa-sketch-studio-mount .dsa-sk-title-block { display: none; }
+.dsa-sketch-studio-mount .app:not(.fs) .dsa-sk-title-block { display: block; }
+.dsa-sketch-studio-mount .app.fs .dsa-sk-title-block { display: none !important; }
+.dsa-sketch-studio-mount .dsa-sk-title-block .dsa-sk-title-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--mini-text-muted);
+}
+.dsa-sketch-studio-mount .dsa-sk-title-block .dsa-sk-title-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--mini-text);
+    margin-top: 1px;
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Mini fullscreen button shown only in non-fs */
+.dsa-sketch-studio-mount .dsa-sk-mini-fs-btn { display: none; }
+.dsa-sketch-studio-mount .app:not(.fs) .dsa-sk-mini-fs-btn { display: inline-flex; }
+
+/* ===== TOPBAR (header restyle) ===== */
+.dsa-sketch-studio-mount .app:not(.fs) {
+    background: var(--mini-bg);
+    border-radius: 16px;
+}
+.dsa-sketch-studio-mount .app:not(.fs) .header {
+    padding: 14px 20px;
+    min-height: auto;
+    background: var(--mini-surface);
+    border-bottom: 1px solid var(--mini-border);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    backdrop-filter: saturate(180%) blur(20px);
+}
+.dsa-sketch-studio-mount .app:not(.fs) .brand-text { display: none; }
+.dsa-sketch-studio-mount .app:not(.fs) .brand { gap: 12px; }
+.dsa-sketch-studio-mount .app:not(.fs) .logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    background: linear-gradient(135deg, var(--mini-accent), var(--mini-accent-2)) !important;
+    box-shadow: 0 6px 16px rgba(124, 92, 255, 0.35);
+    color: #fff;
+}
+.dsa-sketch-studio-mount .app:not(.fs) .dsa-sk-brand-mark svg.dsa-sk-brand-mark-icon {
+    display: block;
+    width: 20px;
+    height: 20px;
+    color: #fff;
+}
+
+/* Header action buttons in minimized state */
+.dsa-sketch-studio-mount .app:not(.fs) .header-actions { gap: 8px; }
+.dsa-sketch-studio-mount .app:not(.fs) .header-actions .btn-flat {
+    height: 38px;
+    padding: 9px 14px;
+    border: 1px solid var(--mini-border);
+    border-radius: 11px;
+    background: var(--mini-surface-solid);
+    color: var(--mini-text);
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: none;
+    gap: 6px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.dsa-sketch-studio-mount .app:not(.fs) .header-actions .btn-flat:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--mini-shadow);
+}
+.dsa-sketch-studio-mount .app:not(.fs) .header-actions .btn-flat:active { transform: scale(0.96); }
+.dsa-sketch-studio-mount .app:not(.fs) .header-actions .btn-flat svg { width: 18px; height: 18px; }
+.dsa-sketch-studio-mount .app:not(.fs) .header-actions .dsa-sk-mini-fs-btn { padding: 9px; }
+.dsa-sketch-studio-mount .app:not(.fs) .header-actions .btn-flat.danger {
+    color: var(--mini-danger);
+    padding: 9px;
+}
+.dsa-sketch-studio-mount .app:not(.fs) .header-actions .btn-flat.danger:hover {
+    background: rgba(255, 59, 48, 0.08);
+    border-color: rgba(255, 59, 48, 0.3);
+}
+.dsa-sketch-studio-mount .app:not(.fs) .header-actions .btn-flat.primary {
+    background: linear-gradient(135deg, var(--mini-accent), var(--mini-accent-2)) !important;
+    color: #fff !important;
+    border-color: transparent;
+    padding: 10px 18px;
+    box-shadow: 0 6px 16px rgba(124, 92, 255, 0.35);
+}
+.dsa-sketch-studio-mount .app:not(.fs) .header-actions .btn-flat.primary:hover {
+    box-shadow: 0 8px 24px rgba(124, 92, 255, 0.45);
+}
+
+/* ===== TOOLBAR ribbon ===== */
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 14px;
+    background: var(--mini-surface);
+    border-bottom: 1px solid var(--mini-border);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    backdrop-filter: saturate(180%) blur(20px);
+    flex-wrap: nowrap;
+    overflow-x: auto;
+}
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar::-webkit-scrollbar { height: 4px; }
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.12); border-radius: 2px; }
+
+/* Hide opacity, shapes, insert, gridCtl, laser group in minimized */
 .dsa-sketch-studio-mount .app:not(.fs) .toolbar .sg:has(#dsaSkOpR),
 .dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="shapes"],
 .dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="insert"],
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="laser"],
 .dsa-sketch-studio-mount .app:not(.fs) .toolbar .gridCtl { display: none !important; }
-/* In view group, keep only the Fullscreen button (Zi/Zo/Zr are moved to the floating panel) */
-.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="view"] #dsaSkZiBtn,
-.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="view"] #dsaSkZoBtn,
-.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="view"] #dsaSkZrBtn { display: none !important; }
-/* Colors — horizontally scrollable, show ~4 swatches at a time */
-.dsa-sketch-studio-mount .app:not(.fs) .colors {
-    width: calc(24px * 4 + 8px * 3 + 20px); max-width: calc(24px * 4 + 8px * 3 + 20px);
-    overflow-x: auto; overflow-y: hidden;
-    flex-wrap: nowrap; flex-shrink: 0; scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
+/* Hide the view group entirely (fullscreen moved to topbar; zoom moved to floating .fz) */
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="view"] { display: none !important; }
+
+/* Tool-group styling (history + draw) */
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 4px;
+    background: var(--mini-group-bg);
+    border: none;
+    border-radius: 14px;
+    box-shadow: none;
+    flex-shrink: 0;
 }
-.dsa-sketch-studio-mount .app:not(.fs) .colors .swatch,
-.dsa-sketch-studio-mount .app:not(.fs) .colors .cpw { flex-shrink: 0; }
-.dsa-sketch-studio-mount .app:not(.fs) .colors::-webkit-scrollbar { height: 4px; }
-.dsa-sketch-studio-mount .app:not(.fs) .colors::-webkit-scrollbar-thumb { background: var(--bs); border-radius: 2px; }
-/* Canvas visibility in minimized state — fixed working area */
-.dsa-sketch-studio-mount .app:not(.fs) { min-height: 460px; }
-.dsa-sketch-studio-mount .app:not(.fs) .cw { min-height: 280px; padding: 18px; }
-/* Hide the Back button when not in our fake fullscreen (already handled), keep header tight */
-.dsa-sketch-studio-mount .app:not(.fs) .header { padding: 10px 16px; min-height: 52px; }
-.dsa-sketch-studio-mount .app:not(.fs) .logo { width: 36px; height: 36px; border-radius: 10px; }
-.dsa-sketch-studio-mount .app:not(.fs) .dsa-sk-brand-mark svg.dsa-sk-brand-mark-icon { width: 20px; height: 20px; }
-.dsa-sketch-studio-mount .app:not(.fs) .status { padding: 8px 16px; font-size: 11.5px; }
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group .btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--mini-text);
+    box-shadow: none;
+    transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group .btn:hover { background: rgba(0, 0, 0, 0.06); color: var(--mini-text); }
+@media (prefers-color-scheme: dark) {
+    .dsa-sketch-studio-mount .app:not(.fs) .toolbar .group .btn:hover { background: rgba(255, 255, 255, 0.08); }
+}
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group .btn:active { transform: scale(0.92); }
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group .btn.active {
+    background: var(--mini-surface-solid);
+    color: var(--mini-accent);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group .btn svg { width: 18px; height: 18px; }
+
+/* Reorder toolbar items visually: History | Drawing | Colors | Size */
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="history"] { order: 1; }
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="draw"] { order: 2; }
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .colors { order: 3; }
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .sg:has(#dsaSkSizeR) { order: 4; }
+
+/* Visual dividers between visible toolbar groups */
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="draw"],
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .colors,
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .sg:has(#dsaSkSizeR) {
+    position: relative;
+    margin-left: 12px;
+}
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .group[data-group="draw"]::before,
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .colors::before,
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .sg:has(#dsaSkSizeR)::before {
+    content: "";
+    position: absolute;
+    left: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 24px;
+    background: var(--mini-border);
+}
+
+/* Colors — restyled like the new mock (rounded squares, swatches 26x26) */
+.dsa-sketch-studio-mount .app:not(.fs) .colors {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    background: var(--mini-group-bg);
+    border: none;
+    border-radius: 14px;
+    box-shadow: none;
+    flex-shrink: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-width: calc(26px * 5 + 4px * 4 + 8px);
+}
+.dsa-sketch-studio-mount .app:not(.fs) .colors::-webkit-scrollbar { height: 3px; }
+.dsa-sketch-studio-mount .app:not(.fs) .colors::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.15); border-radius: 2px; }
+.dsa-sketch-studio-mount .app:not(.fs) .colors .swatch {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    transition: all 0.15s;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+    flex-shrink: 0;
+    transform: none;
+}
+.dsa-sketch-studio-mount .app:not(.fs) .colors .swatch:hover { transform: scale(1.1); }
+.dsa-sketch-studio-mount .app:not(.fs) .colors .swatch.active {
+    transform: none;
+    border-color: #fff;
+    box-shadow: 0 0 0 2px var(--mini-accent), 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+.dsa-sketch-studio-mount .app:not(.fs) .colors .cpw {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+/* Size control — pill with label / range / value */
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .sg {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 12px;
+    height: 38px;
+    background: var(--mini-group-bg);
+    border: none;
+    border-radius: 14px;
+    box-shadow: none;
+    flex-shrink: 0;
+}
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .sg label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--mini-text-muted);
+    letter-spacing: 0.06em;
+}
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .sg input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 110px;
+    height: 4px;
+    background: var(--mini-border);
+    border-radius: 2px;
+    outline: none;
+}
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .sg input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: var(--mini-shadow);
+    transition: transform 0.15s;
+}
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .sg input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+.dsa-sketch-studio-mount .app:not(.fs) .toolbar .sg .chip {
+    background: transparent;
+    color: var(--mini-text);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 0;
+    min-width: 18px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Canvas wrapper redesign */
+.dsa-sketch-studio-mount .app:not(.fs) { min-height: 520px; }
+.dsa-sketch-studio-mount .app:not(.fs) .cw {
+    min-height: 320px;
+    padding: 24px;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(124, 92, 255, 0.06), transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(91, 141, 239, 0.06), transparent 50%),
+        var(--mini-bg);
+    background-size: auto, auto, auto;
+}
+.dsa-sketch-studio-mount .app:not(.fs) .stage {
+    background: var(--mini-surface-solid);
+    border-radius: 20px;
+    box-shadow: var(--mini-shadow-lg);
+    overflow: hidden;
+}
+/* Grid pattern shows through transparent canvas pixels (empty area) */
+.dsa-sketch-studio-mount .app:not(.fs) #dsaSkCv {
+    background-color: var(--mini-surface-solid);
+    background-image:
+        linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+    border-radius: 20px;
+}
+
+/* Status bar tightens up in minimized */
+.dsa-sketch-studio-mount .app:not(.fs) .status {
+    padding: 10px 20px;
+    background: var(--mini-surface);
+    border-top: 1px solid var(--mini-border);
+    font-size: 12px;
+}
+
+/* Floating zoom pill in minimized — match new design */
+.dsa-sketch-studio-mount .app:not(.fs) .fz {
+    bottom: 16px;
+    right: 16px;
+    background: var(--mini-surface-solid);
+    border: 1px solid var(--mini-border);
+    border-radius: 12px;
+    padding: 4px 6px;
+    box-shadow: var(--mini-shadow);
+}

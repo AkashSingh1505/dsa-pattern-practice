@@ -764,6 +764,22 @@ function exportCanvas(){
   }
   return tmp.toDataURL('image/png');
 }
+document.getElementById('doneBtn').addEventListener('click',()=>{
+  if(T.editing!==null)commitTextEdit();
+  if(G.current){gridDone();}
+  const dataUrl=exportCanvas();
+  const title=document.getElementById('docTitle').value || 'Untitled Sketch';
+
+  // ===== HOOK: Send to your database here =====
+  // Example:
+  //   fetch('/api/save', {method:'POST', body: JSON.stringify({title, dataUrl, texts:T.list})});
+  document.dispatchEvent(new CustomEvent('sketch:save',{
+    detail:{title, dataUrl, texts:T.list}
+  }));
+  console.log('[sketch:save]',{title, size:dataUrl.length, texts:T.list.length});
+  toast('Saved ✓');
+});
+
 /* ===== IMAGE IMPORT ===== */
 document.getElementById('imgInput').addEventListener('change',e=>{
   const f=e.target.files[0];

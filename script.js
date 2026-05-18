@@ -5515,11 +5515,22 @@ function attachDsaMindCanvas(panel, buildTreeFragment, scheduleRedraw, mindOpts)
 }
 
 
+/** Brand copy for embedded Sketch Studio (reads site navbar when present). */
+function dsaGetSiteBrandForSketch() {
+    const markEl = document.querySelector(".dsa-shell-navbar .brand-mark");
+    const nameEl = document.querySelector(".dsa-shell-navbar .brand-name");
+    return {
+        title: nameEl && nameEl.textContent ? nameEl.textContent.trim() : "DSA Patterns",
+        subtitle: "Learn DSA as a Connected System",
+        markText: markEl && markEl.textContent ? markEl.textContent.trim() : "D",
+    };
+}
+
 /**
  * DSA problem sketch — Sketch Studio UI (dsa-sketch-studio.js) or native fallback (dsa-sketch-native.js). Load before script.js.
  * @param {HTMLElement} editorRoot
  * @param {() => void} onChange
- * @param {{ afterClear?: () => void; admin?: boolean }} [sketchOpts]
+ * @param {{ afterClear?: () => void; admin?: boolean; onPersist?: () => void }} [sketchOpts]
  */
 function dsaWireSketchEditor(editorRoot, onChange, sketchOpts) {
     if (typeof dsaWireSketchEditorStudio === "function") {
@@ -6401,6 +6412,79 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     let scratchApi = dsaStubSketchApi();
     let sketchEditorWired = false;
 
+    /** Save sketch only (JPEG) — used by Sketch Studio Done without closing the modal. */
+    function persistSketchDrawingQuick() {
+        if (!isAdmin) {
+            return;
+        }
+        ensureSketchEditor();
+        const name = nameIn.value.trim();
+        if (!name || parentKey === "__DSA_META__") {
+            return;
+        }
+        if (typeof scratchApi.syncHasInkFromPixels === "function") {
+            scratchApi.syncHasInkFromPixels();
+        }
+        let drawingPayload = "";
+        if (scratchApi.getHasInk()) {
+            drawingPayload =
+                typeof scratchApi.toPersistedSketchDataUrl === "function"
+                    ? scratchApi.toPersistedSketchDataUrl()
+                    : scratchApi.toDataUrl();
+        }
+        if (!drawingPayload && !userClearedSketch) {
+            const entKeep = dsaResolveQuestionForModal(parentKey, name, editUserNodeId);
+            if (entKeep && String(entKeep.drawing || "").trim()) {
+                drawingPayload = String(entKeep.drawing);
+            }
+        }
+        const entForId = dsaResolveQuestionForModal(parentKey, name, editUserNodeId);
+        const persistId =
+            (editUserNodeId && String(editUserNodeId).trim()) ||
+            (entForId && entForId.id ? String(entForId.id).trim() : "");
+        if (!persistId && !editQuestionName) {
+            return;
+        }
+        const solPayload = solutionsState
+            .map((s) => dsaNormalizeSolutionItem(s))
+            .filter(
+                (s) =>
+                    s &&
+                    (String(s.code || "").trim() ||
+                        s.timeComplexity ||
+                        s.spaceComplexity ||
+                        dsaNormalizeSolutionCategory(s.approach)),
+            );
+        const firstCode = solPayload.find((s) => String(s.code || "").trim());
+        const upsertPayload = {
+            id: persistId || undefined,
+            parentKey,
+            name,
+            url: urlIn.value.trim(),
+            comment: "",
+            hint: hintTa.value,
+            code: firstCode ? String(firstCode.code) : "",
+            solutions: solPayload,
+            drawing: drawingPayload,
+            image: imageDataUrl,
+            companies: dsaNormalizeCompaniesArray(companyTagsList),
+            solutionVideoUrl: solutionVideoIn.value.trim(),
+            solutionTimeComplexity: "",
+            solutionSpaceComplexity: "",
+            solutionCategory: "",
+            starred: importantInput.checked === true,
+            done: !!(entForId && entForId.done),
+            difficulty: dsaNormalizeProblemDifficulty(difficultySelect.value),
+            nodeCategorySlug: "PROBLEM",
+        };
+        if (graphBodyCats.length && graphBodyCatSelect && !graphBodyCatFs.hidden) {
+            upsertPayload.graphCategoryId = graphBodyCatSelect.value.trim();
+        }
+        dsaUpsertUserQuestionNode(upsertPayload);
+        userClearedSketch = false;
+        void dsaFlushDsaCmsSync();
+    }
+
     function ensureSketchEditor() {
         if (sketchEditorWired) {
             return;
@@ -6411,6 +6495,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
                 userClearedSketch = true;
             },
             admin: isAdmin,
+            onPersist: persistSketchDrawingQuick,
         });
     }
 
@@ -7229,6 +7314,11 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             scratchApi.loadDataUrl(String(ent.drawing).trim());
         } else if (sketchEditorWired) {
             scratchApi.clear();
+        }
+        const docTitleEl = sketchEditorRoot.querySelector("#dsaSkDocTitle");
+        if (docTitleEl) {
+            const label = ent && ent.name ? String(ent.name).trim() : nameIn.value.trim();
+            docTitleEl.value = label || "Untitled Sketch";
         }
     }
 

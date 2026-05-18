@@ -7799,16 +7799,59 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         });
     });
 
+    function showQToast(message, kind) {
+        try {
+            const root = document.body;
+            if (!root) {
+                return;
+            }
+            const existing = root.querySelector(".dsa-q-toast.dsa-q-toast--active");
+            if (existing && existing.parentNode) {
+                existing.parentNode.removeChild(existing);
+            }
+            const el = document.createElement("div");
+            el.className = `dsa-q-toast dsa-q-toast--active dsa-q-toast--${kind || "error"}`;
+            const icon = document.createElement("span");
+            icon.className = "dsa-q-toast-icon";
+            icon.setAttribute("aria-hidden", "true");
+            icon.innerHTML =
+                kind === "success"
+                    ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+                    : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16.5" x2="12.01" y2="16.5"/></svg>';
+            const text = document.createElement("span");
+            text.className = "dsa-q-toast-msg";
+            text.textContent = String(message || "");
+            el.appendChild(icon);
+            el.appendChild(text);
+            root.appendChild(el);
+            requestAnimationFrame(() => el.classList.add("dsa-q-toast--show"));
+            setTimeout(() => {
+                el.classList.remove("dsa-q-toast--show");
+                setTimeout(() => {
+                    if (el.parentNode) {
+                        el.parentNode.removeChild(el);
+                    }
+                }, 250);
+            }, 2600);
+        } catch (_e) {
+            /* no-op */
+        }
+    }
+
     async function performUnifiedSave(opts) {
         const fromFullscreen = !!(opts && opts.fromFullscreen);
         if (!isAdmin) {
             return;
         }
+        if (debounceTimer) {
+            clearTimeout(debounceTimer);
+            debounceTimer = 0;
+        }
         if (useMindTypePicker2) {
             const mk = dlg.querySelector('input[name="graphMindKind"]:checked');
             const kind = mk ? String(mk.value).toUpperCase() : "";
             if (!kind || !mindAllowedEff.includes(kind)) {
-                window.alert("Choose a node type allowed for this parent.");
+                showQToast("Choose a node type allowed for this parent.", "error");
                 return;
             }
             radQ.checked = kind === "PROBLEM";
@@ -7820,6 +7863,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             if (!nameRm) {
                 nodeIn.classList.add("dsa-field-control--error");
                 nodeIn.focus();
+                showQToast("Name is required.", "error");
                 return;
             }
             if (dsaRenameGraphNodeAtPath(renameTargetPathKey, nameRm)) {
@@ -7838,6 +7882,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             if (!name) {
                 nodeIn.classList.add("dsa-field-control--error");
                 nodeIn.focus();
+                showQToast("Name is required.", "error");
                 return;
             }
             const kf = dsaParentChildKindFlags(parentKey);
@@ -7858,6 +7903,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             ) {
                 graphBodyCatSelect.classList.add("dsa-field-control--error");
                 graphBodyCatSelect.focus();
+                showQToast("Please choose a category.", "error");
                 return;
             }
             const nodeEntry = {
@@ -7892,7 +7938,9 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         const url = urlIn.value.trim();
         if (!name) {
             nameIn.classList.add("dsa-field-control--error");
+            activateDsaProblemTab("details");
             nameIn.focus();
+            showQToast("Problem name is required.", "error");
             return;
         }
         if (isEditProblem && editQuestionName && name.toLowerCase() !== editQuestionName.toLowerCase()) {
@@ -7904,28 +7952,31 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
                     return e && e.id ? String(e.id) : "";
                 })());
             if (existingOther && (!myId || existingOther.id !== myId)) {
-                alert(`Another problem named "${name}" already exists in this topic. Choose a different name.`);
                 nameIn.classList.add("dsa-field-control--error");
+                activateDsaProblemTab("details");
                 nameIn.focus();
+                showQToast(`Another problem named "${name}" already exists in this topic.`, "error");
                 return;
             }
         }
         const diffPick = difficultySelect.value.trim();
         if (!diffPick || !["easy", "medium", "hard"].includes(dsaNormalizeProblemDifficulty(diffPick))) {
             difficultySelect.classList.add("dsa-field-control--error");
-            difficultySelect.focus();
             activateDsaProblemTab("details");
+            difficultySelect.focus();
+            showQToast("Please choose a difficulty.", "error");
             return;
         }
         if (parentKey === "__DSA_META__") {
-            alert(
-                "Add problems under a data-structure topic (e.g. Arrays → Two pointers), not on DSA Patterns itself.",
+            showQToast(
+                "Add problems under a data-structure topic (e.g. Arrays → Two pointers).",
+                "error",
             );
             return;
         }
         const kfQ = dsaParentChildKindFlags(parentKey);
         if (kfQ.hasSubnodes) {
-            alert("This topic has subtopics. Remove or move them before adding problems here.");
+            showQToast("This topic has subtopics. Move them before adding problems here.", "error");
             return;
         }
         if (
@@ -7935,7 +7986,9 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             !graphBodyCatSelect.value.trim()
         ) {
             graphBodyCatSelect.classList.add("dsa-field-control--error");
+            activateDsaProblemTab("details");
             graphBodyCatSelect.focus();
+            showQToast("Please choose a category.", "error");
             return;
         }
         if (typeof scratchApi.syncHasInkFromPixels === "function") {
@@ -8006,8 +8059,22 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         }
         refresh();
         void dsaFlushDsaCmsSync();
+        showQToast(isEditProblem ? "Problem updated." : "Problem added.", "success");
     }
-    btnOk.addEventListener("click", () => performUnifiedSave({}));
+    let saveInFlight = false;
+    btnOk.addEventListener("click", () => {
+        if (saveInFlight) {
+            return;
+        }
+        saveInFlight = true;
+        try {
+            void performUnifiedSave({});
+        } finally {
+            setTimeout(() => {
+                saveInFlight = false;
+            }, 400);
+        }
+    });
 
     dlg.appendChild(header);
     if (adminNote) {

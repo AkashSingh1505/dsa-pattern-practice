@@ -36,7 +36,7 @@
 .dsa-sketch-studio-mount .header{display:flex;align-items:center;padding:12px 22px;border-bottom:1px solid var(--border);background:var(--p2);min-height:60px;position:relative}
 .dsa-sketch-studio-mount .brand-text{display:none}
 .dsa-sketch-studio-mount .app.fs .brand-text{display:block}
-.dsa-sketch-studio-mount .doc-name{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--text2);background:rgba(255,255,255,.55);padding:6px 14px;border-radius:8px;border:1px solid var(--border);max-width:50%}
+.dsa-sketch-studio-mount .doc-name{display:none !important}
 .dsa-sketch-studio-mount .doc-name input{border:none;background:transparent;outline:none;font:inherit;color:inherit;width:170px;text-align:center}
 .dsa-sketch-studio-mount .btn-flat.danger{color:var(--red)}
 .dsa-sketch-studio-mount .btn-flat.primary{background:linear-gradient(135deg,var(--green),#28a745);color:#fff;border:none;box-shadow:0 4px 12px rgba(52,199,89,.35)}

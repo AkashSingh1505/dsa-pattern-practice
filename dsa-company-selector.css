@@ -12,7 +12,7 @@
     --dsa-co-danger: #ff3b30;
     --dsa-co-shadow: 0 10px 40px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
     width: 100%;
-    max-width: 420px;
+    max-width: none;
     background: var(--dsa-co-panel);
     backdrop-filter: saturate(180%) blur(30px);
     -webkit-backdrop-filter: saturate(180%) blur(30px);
@@ -39,8 +39,15 @@
     }
 }
 .dsa-co-sel.is-disabled { opacity: 0.55; pointer-events: none; }
-.dsa-co-sel-header { padding: 16px 16px 12px; border-bottom: 1px solid var(--dsa-co-border); }
-.dsa-co-sel-title { font-size: 13px; font-weight: 600; color: var(--dsa-co-text-secondary); letter-spacing: 0.02em; text-transform: uppercase; margin-bottom: 10px; padding: 0 4px; }
+.dsa-co-sel-header { padding: 12px 14px; border-bottom: 1px solid var(--dsa-co-border); }
+.dsa-co-sel-hint {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--dsa-co-text-secondary);
+    line-height: 1.35;
+    margin-bottom: 10px;
+    padding: 0 2px;
+}
 .dsa-co-sel-search { position: relative; display: flex; align-items: center; }
 .dsa-co-sel-search svg.icon-search { position: absolute; left: 10px; width: 14px; height: 14px; color: var(--dsa-co-text-secondary); pointer-events: none; }
 .dsa-co-sel-search input { width: 100%; border: none; outline: none; background: rgba(0, 0, 0, 0.05); padding: 9px 32px; border-radius: 10px; font-size: 14px; color: var(--dsa-co-text); font-family: inherit; }
@@ -73,5 +80,21 @@
 .dsa-co-sel-footer button:hover { background: var(--dsa-co-hover); }
 .dsa-co-sel-empty { text-align: center; padding: 24px 16px; color: var(--dsa-co-text-secondary); font-size: 13px; }
 .dsa-co-sel-badge { font-size: 10px; padding: 2px 6px; border-radius: 5px; background: var(--dsa-co-selected); color: var(--dsa-co-accent); font-weight: 600; margin-left: 4px; }
-.graph-add-child-mock .dsa-q-company-field-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.graph-add-child-mock .dsa-q-company-field-head .field-label { margin: 0; }
+.graph-add-child-mock .dsa-q-company-field-group {
+    width: 100%;
+}
+
+.graph-add-child-mock .dsa-q-company-selector-mount {
+    width: 100%;
+}
+
+.graph-add-child-mock .dsa-q-company-field-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.graph-add-child-mock .dsa-q-company-field-head .field-label {
+    margin: 0;
+}

@@ -5706,16 +5706,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     subtitleEl.className = "";
     subtitleEl.hidden = true;
 
-    const btnInfo = document.createElement("button");
-    btnInfo.type = "button";
-    btnInfo.id = "infoBtn";
-    btnInfo.className = "icon-btn";
-    btnInfo.setAttribute("aria-label", "Info");
-    btnInfo.title = "Show description";
-    btnInfo.hidden = true;
-    btnInfo.innerHTML =
-        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
-
     let adminNote = null;
     if (!isAdmin) {
         adminNote = document.createElement("p");
@@ -5881,6 +5871,16 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             chk.innerHTML =
                 '<svg width="8" height="8" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6l3 3 5-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
             lab.appendChild(chk);
+            const cardInfoBtn = document.createElement("button");
+            cardInfoBtn.type = "button";
+            cardInfoBtn.className = "type-card-info-btn";
+            cardInfoBtn.setAttribute("aria-label", `About ${slugLabel.get(su) || su}`);
+            cardInfoBtn.title = "About this node type";
+            cardInfoBtn.setAttribute("aria-expanded", "false");
+            cardInfoBtn.innerHTML =
+                '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12.01" y2="16"/><path d="M12 8v4"/></svg>';
+            cardInfoBtn.addEventListener("click", toggleTypeCardInfoPanel);
+            lab.appendChild(cardInfoBtn);
             typeGrid.appendChild(lab);
         });
         mindTypeFs.appendChild(typeGrid);
@@ -6008,6 +6008,26 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         infoPanel.className = `info-panel ${slugVar}${wasShow ? " show" : ""}`;
     }
 
+    function syncTypeCardInfoBtnActive() {
+        const panelOn = infoPanel.classList.contains("show");
+        mindTypeFs.querySelectorAll(".type-card-info-btn").forEach((btn) => {
+            const onCard = btn.closest(".type-card");
+            btn.classList.toggle("active", panelOn && !!(onCard && onCard.classList.contains("selected")));
+            btn.setAttribute("aria-expanded", panelOn && onCard && onCard.classList.contains("selected") ? "true" : "false");
+        });
+    }
+
+    function toggleTypeCardInfoPanel(e) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        const on = !infoPanel.classList.contains("show");
+        infoPanel.classList.toggle("show", on);
+        infoPanel.setAttribute("aria-hidden", on ? "false" : "true");
+        syncTypeCardInfoBtnActive();
+    }
+
     function syncMindTypeCardVisual() {
         if (!useMindTypePicker2) {
             return;
@@ -6018,19 +6038,18 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         });
         const mk = dlg.querySelector('input[name="graphMindKind"]:checked');
         fillNodeTypeInfoFromCatalog(mk ? mk.value : "TOPIC");
+        syncTypeCardInfoBtnActive();
         syncNodeCategoryNameLabel();
     }
 
     function refreshAddChildChrome() {
         if (!useMindTypePicker2 || !addingNewItem || isRenameNode || editQuestionName || editUserNodeId) {
             subtitleEl.hidden = true;
-            btnInfo.hidden = true;
             dlg.classList.remove("expanded");
             syncNodeCategoryNameLabel();
             return;
         }
         subtitleEl.hidden = false;
-        btnInfo.hidden = false;
         const mk = dlg.querySelector('input[name="graphMindKind"]:checked');
         const slugU = mk ? String(mk.value).toUpperCase() : "TOPIC";
         const isProb = slugU === "PROBLEM";
@@ -7361,17 +7380,9 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     headerTitles.appendChild(subtitleEl);
     const headerActions = document.createElement("div");
     headerActions.className = "header-actions";
-    headerActions.appendChild(btnInfo);
     headerActions.appendChild(btnHeaderClose);
     header.appendChild(headerTitles);
     header.appendChild(headerActions);
-
-    btnInfo.addEventListener("click", () => {
-        const on = !infoPanel.classList.contains("show");
-        infoPanel.classList.toggle("show", on);
-        infoPanel.setAttribute("aria-hidden", on ? "false" : "true");
-        btnInfo.classList.toggle("active", on);
-    });
 
     function setAdminDisabled() {
         const ro = !isAdmin;

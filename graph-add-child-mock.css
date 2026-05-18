@@ -586,7 +586,7 @@
 .graph-add-child-mock .check-mark {
     position: absolute;
     top: 8px;
-    right: 8px;
+    left: 8px;
     width: 16px;
     height: 16px;
     border-radius: 50%;
@@ -597,6 +597,53 @@
     transition: 0.3s var(--ease);
     color: #fff;
     pointer-events: none;
+}
+
+.graph-add-child-mock .type-card-info-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 2;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    display: none;
+    place-items: center;
+    cursor: pointer;
+    color: var(--text-tertiary, #86868b);
+    background: rgba(120, 120, 128, 0.12);
+    transition: background 0.2s var(--ease), color 0.2s var(--ease), transform 0.2s var(--ease);
+}
+
+.graph-add-child-mock .type-card-info-btn:hover {
+    background: rgba(120, 120, 128, 0.22);
+    color: var(--text, #1d1d1f);
+}
+
+.graph-add-child-mock .type-card-info-btn.active {
+    background: rgba(0, 113, 227, 0.14);
+    color: var(--blue);
+}
+
+.graph-add-child-mock .type-card.selected .type-card-info-btn {
+    display: grid;
+}
+
+.graph-add-child-mock .type-card.selected.topic .type-card-info-btn.active {
+    background: rgba(0, 113, 227, 0.18);
+    color: var(--blue);
+}
+
+.graph-add-child-mock .type-card.selected.pattern .type-card-info-btn.active {
+    background: rgba(175, 82, 222, 0.18);
+    color: var(--purple);
+}
+
+.graph-add-child-mock .type-card.selected.problem .type-card-info-btn.active {
+    background: rgba(255, 59, 48, 0.15);
+    color: var(--red);
 }
 
 .graph-add-child-mock .type-card.selected .check-mark {

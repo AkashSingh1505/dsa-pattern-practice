@@ -75,9 +75,9 @@ function dsaMountCompanySelector(mountEl, opts) {
 
     const header = document.createElement("div");
     header.className = "dsa-co-sel-header";
-    const title = document.createElement("div");
-    title.className = "dsa-co-sel-title";
-    title.textContent = "COMPANIES";
+    const hint = document.createElement("p");
+    hint.className = "dsa-co-sel-hint";
+    hint.textContent = "Search and select companies that ask this type of problem.";
     const searchWrap = document.createElement("div");
     searchWrap.className = "dsa-co-sel-search";
     searchWrap.innerHTML =
@@ -105,7 +105,7 @@ function dsaMountCompanySelector(mountEl, opts) {
     footer.appendChild(countEl);
     footer.appendChild(clearAllBtn);
 
-    header.appendChild(title);
+    header.appendChild(hint);
     header.appendChild(searchWrap);
     root.appendChild(header);
     root.appendChild(list);

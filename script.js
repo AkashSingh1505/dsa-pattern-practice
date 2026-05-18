@@ -6081,6 +6081,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const nodeInputWrap = document.createElement("div");
     nodeInputWrap.className = "input-wrap";
     const nodeLead = document.createElement("span");
+    nodeLead.className = "input-wrap-lead";
     nodeLead.innerHTML =
         '<svg class="lead" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2"/><path d="M9 21h6M12 3v18"/></svg>';
     const nodeIn = document.createElement("input");
@@ -6478,247 +6479,47 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     solutionListRoot.className = "dsa-q-solution-list";
     solutionListRoot.setAttribute("aria-live", "polite");
 
-    const sheetBackdrop = document.createElement("div");
-    sheetBackdrop.className = "sheet-overlay dsa-q-sheet-backdrop graph-ac-solution-sheet";
-    sheetBackdrop.hidden = true;
-    const sheetPanel = document.createElement("div");
-    sheetPanel.className = "sheet dsa-q-sheet-panel graph-ac-solution-sheet-panel";
-    sheetPanel.id = "dsa-q-solution-sheet";
-    sheetPanel.setAttribute("role", "dialog");
-    sheetPanel.setAttribute("aria-modal", "true");
-    sheetPanel.setAttribute("aria-labelledby", "dsa-q-solution-sheet-title");
-
-    const sheetGrab = document.createElement("div");
-    sheetGrab.className = "dsa-q-sheet-grab graph-ac-sheet-grip sheet-grip";
-    sheetGrab.setAttribute("aria-hidden", "true");
-
-    const sheetTitle = document.createElement("h3");
-    sheetTitle.className = "dsa-q-sheet-title graph-ac-sheet-title";
-    sheetTitle.id = "dsa-q-solution-sheet-title";
-    sheetTitle.textContent = "Add solution";
-
-    const approachField = document.createElement("div");
-    approachField.className = "dsa-q-field field-group graph-ac-sheet-field";
-    const approachLabRow = document.createElement("div");
-    approachLabRow.className = "field-label";
-    approachLabRow.innerHTML = "<span>Approach<span class=\"req\">*</span></span>";
-    const sheetApproachSelect = document.createElement("select");
-    sheetApproachSelect.id = "dsa-q-sheet-approach";
-    sheetApproachSelect.required = true;
-    sheetApproachSelect.setAttribute("aria-required", "true");
-    sheetApproachSelect.setAttribute("aria-label", "Solution approach");
-    DSA_SOLUTION_APPROACH_OPTIONS.forEach((opt) => {
-        const o = document.createElement("option");
-        o.value = opt.id;
-        o.textContent = opt.label;
-        sheetApproachSelect.appendChild(o);
+    const solutionSheet = dsaCreateSolutionSheetPro({
+        isAdmin,
+        normalizeApproach: dsaNormalizeSolutionCategory,
+        onSave(data) {
+            const item = {
+                id:
+                    data.editIndex != null && data.editIndex >= 0
+                        ? solutionsState[data.editIndex].id
+                        : dsaNewSolutionId(),
+                approach: data.approach,
+                timeComplexity: data.timeComplexity,
+                spaceComplexity: data.spaceComplexity,
+                code: data.code,
+            };
+            if (data.editIndex != null && data.editIndex >= 0) {
+                solutionsState[data.editIndex] = item;
+            } else {
+                solutionsState.push(item);
+            }
+            renderSolutionsEditorList();
+        },
     });
-    const approachShell = document.createElement("div");
-    approachShell.className = "dsa-q-modern-select-shell select-wrap graph-ac-sheet-select";
-    approachShell.appendChild(sheetApproachSelect);
-    approachField.appendChild(approachLabRow);
-    approachField.appendChild(approachShell);
-
-    const timeField = document.createElement("div");
-    timeField.className = "dsa-q-field field-group graph-ac-sheet-field";
-    const timeLabRow = document.createElement("div");
-    timeLabRow.className = "field-label";
-    timeLabRow.innerHTML = "<span>Time complexity<span class=\"req\">*</span></span>";
-    const sheetTimeIn = document.createElement("input");
-    sheetTimeIn.type = "text";
-    sheetTimeIn.id = "dsa-q-sheet-time";
-    sheetTimeIn.className = "dsa-field-control field-input";
-    sheetTimeIn.placeholder = "e.g. O(n)";
-    sheetTimeIn.required = true;
-    sheetTimeIn.setAttribute("aria-required", "true");
-    sheetTimeIn.setAttribute("aria-label", "Time complexity (required)");
-    const timeInputWrap = document.createElement("div");
-    timeInputWrap.className = "input-wrap graph-ac-sheet-input-wrap";
-    timeInputWrap.appendChild(sheetTimeIn);
-    timeField.appendChild(timeLabRow);
-    timeField.appendChild(timeInputWrap);
-
-    const spaceField = document.createElement("div");
-    spaceField.className = "dsa-q-field field-group graph-ac-sheet-field";
-    const spaceLabRow = document.createElement("div");
-    spaceLabRow.className = "field-label";
-    spaceLabRow.innerHTML = "<span>Space complexity<span class=\"req\">*</span></span>";
-    const sheetSpaceIn = document.createElement("input");
-    sheetSpaceIn.type = "text";
-    sheetSpaceIn.id = "dsa-q-sheet-space";
-    sheetSpaceIn.className = "dsa-field-control field-input";
-    sheetSpaceIn.placeholder = "e.g. O(1)";
-    sheetSpaceIn.required = true;
-    sheetSpaceIn.setAttribute("aria-required", "true");
-    sheetSpaceIn.setAttribute("aria-label", "Space complexity (required)");
-    const spaceInputWrap = document.createElement("div");
-    spaceInputWrap.className = "input-wrap graph-ac-sheet-input-wrap";
-    spaceInputWrap.appendChild(sheetSpaceIn);
-    spaceField.appendChild(spaceLabRow);
-    spaceField.appendChild(spaceInputWrap);
-
-    const sheetCodeTa = document.createElement("textarea");
-    sheetCodeTa.id = "dsa-q-code";
-    sheetCodeTa.className = "dsa-field-control dsa-q-code dsa-q-code--sheet code-editor graph-ac-sheet-code";
-    sheetCodeTa.rows = 12;
-    sheetCodeTa.spellcheck = false;
-    sheetCodeTa.wrap = "off";
-    sheetCodeTa.placeholder = "Solution code (indentation preserved)";
-    sheetCodeTa.addEventListener("keydown", (e) => {
-        if (e.key === "Tab") {
-            e.preventDefault();
-            const start = sheetCodeTa.selectionStart;
-            const end = sheetCodeTa.selectionEnd;
-            const tab = "    ";
-            sheetCodeTa.value = sheetCodeTa.value.slice(0, start) + tab + sheetCodeTa.value.slice(end);
-            const pos = start + tab.length;
-            sheetCodeTa.selectionStart = sheetCodeTa.selectionEnd = pos;
-        }
-    });
-
-    const codeField = document.createElement("div");
-    codeField.className = "dsa-q-field field-group graph-ac-sheet-field";
-    const codeLabRow = document.createElement("div");
-    codeLabRow.className = "field-label";
-    codeLabRow.innerHTML = "<span>Solution code<span class=\"req\">*</span></span>";
-    sheetCodeTa.required = true;
-    sheetCodeTa.setAttribute("aria-required", "true");
-    sheetCodeTa.setAttribute("aria-label", "Solution code (required)");
-    const codeWrap = document.createElement("div");
-    codeWrap.className = "code-wrap";
-    codeWrap.appendChild(sheetCodeTa);
-    codeField.appendChild(codeLabRow);
-    codeField.appendChild(codeWrap);
-
-    const sheetActions = document.createElement("div");
-    sheetActions.className = "dsa-q-sheet-actions graph-ac-sheet-actions btn-row";
-    const sheetCancel = document.createElement("button");
-    sheetCancel.type = "button";
-    sheetCancel.className = "dsa-dialog-btn dsa-dialog-btn--ghost btn btn-secondary";
-    sheetCancel.textContent = "Cancel";
-    const sheetSave = document.createElement("button");
-    sheetSave.type = "button";
-    sheetSave.className = "dsa-dialog-btn dsa-dialog-btn--primary btn btn-primary";
-    sheetSave.textContent = "Save solution";
-    sheetActions.appendChild(sheetCancel);
-    sheetActions.appendChild(sheetSave);
-
-    function syncSolutionSheetSaveEnabled() {
-        const ro = !isAdmin;
-        const appr = dsaNormalizeSolutionCategory(sheetApproachSelect.value);
-        const ok =
-            !!appr &&
-            sheetTimeIn.value.trim().length > 0 &&
-            sheetSpaceIn.value.trim().length > 0 &&
-            sheetCodeTa.value.trim().length > 0;
-        sheetSave.disabled = ro || !ok;
-    }
-
-    [sheetApproachSelect, sheetTimeIn, sheetSpaceIn, sheetCodeTa].forEach((el) => {
-        el.addEventListener("input", syncSolutionSheetSaveEnabled);
-        el.addEventListener("change", syncSolutionSheetSaveEnabled);
-    });
-
-    sheetPanel.appendChild(sheetGrab);
-    sheetPanel.appendChild(sheetTitle);
-    sheetPanel.appendChild(approachField);
-    sheetPanel.appendChild(timeField);
-    sheetPanel.appendChild(spaceField);
-    sheetPanel.appendChild(codeField);
-    sheetPanel.appendChild(sheetActions);
-    sheetBackdrop.appendChild(sheetPanel);
-
-    let sheetEditIndex = null;
+    const sheetBackdrop = solutionSheet.backdrop;
 
     function closeSolutionSheet() {
-        sheetBackdrop.hidden = true;
-        sheetPanel.classList.remove("dsa-q-sheet-panel--open");
-        sheetEditIndex = null;
+        solutionSheet.close();
     }
 
     function openSolutionSheet(editIndex) {
-        sheetEditIndex = editIndex;
-        const isEdit = editIndex != null && editIndex >= 0;
-        sheetTitle.textContent = isEdit ? "Edit solution" : "Add solution";
-        const sol = isEdit ? solutionsState[editIndex] : null;
-        sheetApproachSelect.value = sol ? dsaNormalizeSolutionCategory(sol.approach) : "";
-        sheetTimeIn.value = sol && sol.timeComplexity ? String(sol.timeComplexity) : "";
-        sheetSpaceIn.value = sol && sol.spaceComplexity ? String(sol.spaceComplexity) : "";
-        sheetCodeTa.value = sol && sol.code != null ? String(sol.code) : "";
-        syncSolutionSheetSaveEnabled();
-        sheetBackdrop.hidden = false;
-        requestAnimationFrame(() => {
-            sheetPanel.classList.add("dsa-q-sheet-panel--open");
-            syncSolutionSheetSaveEnabled();
-            sheetCodeTa.focus();
-        });
+        const sol = editIndex != null && editIndex >= 0 ? solutionsState[editIndex] : null;
+        solutionSheet.open(editIndex, sol);
     }
-
-    function commitSolutionSheet() {
-        const approachRaw = sheetApproachSelect.value.trim();
-        const approach = dsaNormalizeSolutionCategory(approachRaw);
-        const timeComplexity = sheetTimeIn.value.trim();
-        const spaceComplexity = sheetSpaceIn.value.trim();
-        const code = sheetCodeTa.value.trim();
-        if (!approach) {
-            window.alert("Select an approach (Brute force, Better, or Optimal).");
-            sheetApproachSelect.focus();
-            return;
-        }
-        if (!timeComplexity) {
-            window.alert("Time complexity is required.");
-            sheetTimeIn.focus();
-            return;
-        }
-        if (!spaceComplexity) {
-            window.alert("Space complexity is required.");
-            sheetSpaceIn.focus();
-            return;
-        }
-        if (!code) {
-            window.alert("Solution code is required.");
-            sheetCodeTa.focus();
-            return;
-        }
-        const item = {
-            id:
-                sheetEditIndex != null && sheetEditIndex >= 0
-                    ? solutionsState[sheetEditIndex].id
-                    : dsaNewSolutionId(),
-            approach,
-            timeComplexity,
-            spaceComplexity,
-            code,
-        };
-        if (sheetEditIndex != null && sheetEditIndex >= 0) {
-            solutionsState[sheetEditIndex] = item;
-        } else {
-            solutionsState.push(item);
-        }
-        renderSolutionsEditorList();
-        closeSolutionSheet();
-    }
-
-    sheetBackdrop.addEventListener("click", (e) => {
-        if (e.target === sheetBackdrop) {
-            closeSolutionSheet();
-        }
-    });
-    sheetPanel.addEventListener("click", (e) => e.stopPropagation());
-    sheetCancel.addEventListener("click", () => closeSolutionSheet());
-    sheetSave.addEventListener("click", () => commitSolutionSheet());
 
     function renderSolutionsEditorList() {
         solutionListRoot.innerHTML = "";
         if (!solutionsState.length) {
             solutionsListExpanded = false;
-            const empty = document.createElement("div");
-            empty.className = "dsa-q-solution-empty empty-state";
-            empty.innerHTML =
-                "<strong>No solutions yet.</strong> Tap <strong>+</strong> to add approach, time &amp; space complexity, and code.";
-            solutionListRoot.appendChild(empty);
+            solutionListRoot.hidden = true;
             return;
         }
+        solutionListRoot.hidden = false;
 
         const delTrashSvg =
             '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>';
@@ -6847,106 +6648,44 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
 
     let companyTagsList = [];
 
-    function companyKey(label) {
-        return String(label || "")
-            .trim()
-            .toLowerCase();
-    }
-
-    function toggleCompany(label) {
-        const k = companyKey(label);
-        if (!k) {
-            return;
-        }
-        const idx = companyTagsList.findIndex((t) => companyKey(t) === k);
-        if (idx >= 0) {
-            companyTagsList.splice(idx, 1);
-        } else {
-            companyTagsList.push(label);
-        }
-        renderCompanyPicker();
-    }
-
     function renderCompanyPicker() {
-        const q = String(companySearchIn.value || "")
-            .trim()
-            .toLowerCase();
-        companyChipsEl.innerHTML = "";
-        companyTagsList.forEach((name) => {
-            const chip = document.createElement("span");
-            chip.className = "c-chip";
-            chip.appendChild(document.createTextNode(name));
-            const rm = document.createElement("button");
-            rm.type = "button";
-            rm.setAttribute("aria-label", `Remove ${name}`);
-            rm.textContent = "×";
-            rm.addEventListener("click", (e) => {
-                e.stopPropagation();
-                toggleCompany(name);
-            });
-            chip.appendChild(rm);
-            companyChipsEl.appendChild(chip);
-        });
-        companyListEl.innerHTML = "";
-        const selected = new Set(companyTagsList.map(companyKey));
-        const filtered = DSA_COMPANY_PRESETS.filter((p) => {
-            if (!q) {
-                return true;
-            }
-            return p.label.toLowerCase().includes(q) || p.id.toLowerCase().includes(q);
-        });
-        if (!filtered.length) {
-            const empty = document.createElement("div");
-            empty.className = "dsa-q-company-picker-empty";
-            empty.textContent = q ? "No companies match your search." : "No companies available.";
-            companyListEl.appendChild(empty);
-            return;
+        if (companyApi) {
+            companyApi.setSelected(companyTagsList);
         }
-        filtered.forEach((preset) => {
-            const on = selected.has(companyKey(preset.label));
-            const btn = document.createElement("button");
-            btn.type = "button";
-            btn.className = "dsa-q-company-picker-item" + (on ? " is-selected" : "");
-            btn.setAttribute("aria-pressed", on ? "true" : "false");
-            const check = document.createElement("span");
-            check.className = "dsa-q-company-picker-item-check";
-            check.setAttribute("aria-hidden", "true");
-            check.textContent = on ? "✓" : "";
-            btn.appendChild(check);
-            btn.appendChild(document.createTextNode(preset.label));
-            btn.addEventListener("click", () => toggleCompany(preset.label));
-            companyListEl.appendChild(btn);
-        });
     }
 
     const companyFieldGroup = document.createElement("div");
-    companyFieldGroup.className = "field-group";
+    companyFieldGroup.className = "field-group dsa-q-company-field-group";
+    const companyHead = document.createElement("div");
+    companyHead.className = "dsa-q-company-field-head";
     const companyLabRow = document.createElement("div");
     companyLabRow.className = "field-label";
     companyLabRow.innerHTML = "<span>Companies</span>";
-    const companyChipsEl = document.createElement("div");
-    companyChipsEl.className = "company-chips";
-    const companyPicker = document.createElement("div");
-    companyPicker.className = "dsa-q-company-picker";
-    const companySearchWrap = document.createElement("div");
-    companySearchWrap.className = "dsa-q-company-picker-search-wrap";
-    const companySearchIn = document.createElement("input");
-    companySearchIn.type = "search";
-    companySearchIn.className = "dsa-q-company-picker-search";
-    companySearchIn.placeholder = "Search companies…";
-    companySearchIn.setAttribute("aria-label", "Search companies");
-    companySearchIn.autocomplete = "off";
-    companySearchIn.addEventListener("input", renderCompanyPicker);
-    companySearchWrap.appendChild(companySearchIn);
-    const companyListEl = document.createElement("div");
-    companyListEl.className = "dsa-q-company-picker-list";
-    companyListEl.setAttribute("role", "listbox");
-    companyListEl.setAttribute("aria-label", "Company list");
-    companyPicker.appendChild(companySearchWrap);
-    companyPicker.appendChild(companyListEl);
-    companyFieldGroup.appendChild(companyLabRow);
-    companyFieldGroup.appendChild(companyChipsEl);
-    companyFieldGroup.appendChild(companyPicker);
+    const btnCompanyInfo = dsaCreateResInfoButton();
+    companyHead.appendChild(companyLabRow);
+    companyHead.appendChild(btnCompanyInfo);
+    const companyIntro = document.createElement("div");
+    companyIntro.className = "dsa-q-resource-intro dsa-q-company-intro";
+    const companyIntroBody = document.createElement("p");
+    companyIntroBody.className = "dsa-q-resource-intro-body";
+    companyIntroBody.textContent =
+        "Tag companies that have asked this problem (or similar). Helps you filter and prioritize practice by interview target.";
+    companyIntro.appendChild(companyIntroBody);
+    dsaWireResAddIntroToggle(companyIntro, btnCompanyInfo);
+    const companyMount = document.createElement("div");
+    companyMount.className = "dsa-q-company-selector-mount";
+    let companyApi = null;
+    if (typeof dsaMountCompanySelector === "function") {
+        companyApi = dsaMountCompanySelector(companyMount, {
+            presets: DSA_COMPANY_PRESETS,
+            onChange(names) {
+                companyTagsList = names.slice();
+            },
+        });
+    }
+    companyFieldGroup.appendChild(companyHead);
+    companyFieldGroup.appendChild(companyIntro);
+    companyFieldGroup.appendChild(companyMount);
     renderCompanyPicker();
 
     const sketchResGroup = document.createElement("div");
@@ -7647,12 +7386,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         importantInput.disabled = ro;
         hintTa.disabled = ro;
         solutionVideoIn.disabled = ro;
-        sheetApproachSelect.disabled = ro;
-        sheetTimeIn.disabled = ro;
-        sheetSpaceIn.disabled = ro;
-        sheetCodeTa.disabled = ro;
-        sheetCancel.disabled = ro;
-        syncSolutionSheetSaveEnabled();
         if (graphBodyCatSelect) {
             graphBodyCatSelect.disabled = ro;
         }
@@ -7670,13 +7403,10 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         btnSketchInfo.disabled = ro;
         btnSolutionsInfo.disabled = ro;
         btnUploadImage.disabled = ro;
-        companySearchIn.disabled = ro;
-        companyListEl.querySelectorAll(".dsa-q-company-picker-item").forEach((b) => {
-            b.disabled = ro;
-        });
-        companyChipsEl.querySelectorAll("button").forEach((b) => {
-            b.disabled = ro;
-        });
+        if (companyApi) {
+            companyApi.setDisabled(ro);
+        }
+        btnCompanyInfo.disabled = ro;
         noteDel.disabled = ro;
         sketchPanel.classList.toggle("dsa-q-sketch-panel--ro", ro);
         btnZoomOut.disabled = ro;
@@ -7707,6 +7437,9 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         if (sheetBackdrop.parentNode) {
             sheetBackdrop.parentNode.removeChild(sheetBackdrop);
         }
+        if (solutionSheet.toast && solutionSheet.toast.parentNode) {
+            solutionSheet.toast.parentNode.removeChild(solutionSheet.toast);
+        }
         if (backdrop.parentNode) {
             backdrop.parentNode.removeChild(backdrop);
         }
@@ -7720,7 +7453,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             if (typeof scratchApi.isFullscreen === "function" && scratchApi.isFullscreen()) {
                 return;
             }
-            if (!sheetBackdrop.hidden) {
+            if (solutionSheet.isOpen && solutionSheet.isOpen()) {
                 closeSolutionSheet();
                 e.preventDefault();
                 return;
@@ -7728,7 +7461,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             close();
             return;
         }
-        if (e.key === "Enter" && !e.repeat && isAdmin && !btnOk.hidden && sheetBackdrop.hidden) {
+        if (e.key === "Enter" && !e.repeat && isAdmin && !btnOk.hidden && !solutionSheet.isOpen()) {
             const t = e.target;
             const tag = t && t.tagName;
             if (tag !== "TEXTAREA" && tag !== "SELECT") {
@@ -8026,6 +7759,9 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     backdrop.appendChild(dlg);
     document.body.appendChild(backdrop);
     document.body.appendChild(sheetBackdrop);
+    if (solutionSheet.toast) {
+        document.body.appendChild(solutionSheet.toast);
+    }
     if (editQuestionName || editUserNodeId) {
         if (editUserNodeId) {
             const e0 = dsaFindUserQuestionById(editUserNodeId);

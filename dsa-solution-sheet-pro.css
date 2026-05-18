@@ -1,0 +1,492 @@
+/* Add Solution sheet — scoped Pro modal (from user mock) */
+.dsa-sol-pro-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 15, 20, 0.4);
+    backdrop-filter: blur(14px) saturate(150%);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 10050;
+    padding: 20px;
+}
+
+.dsa-sol-pro-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.dsa-sol-pro-overlay[hidden] {
+    display: none !important;
+}
+
+.dsa-sol-pro-modal {
+    --dsa-sol-bg: #f4f4f7;
+    --dsa-sol-surface: rgba(255, 255, 255, 0.78);
+    --dsa-sol-surface-solid: #fff;
+    --dsa-sol-border: rgba(60, 60, 67, 0.12);
+    --dsa-sol-border-strong: rgba(60, 60, 67, 0.2);
+    --dsa-sol-text: #0c0c0e;
+    --dsa-sol-text-secondary: #6e6e73;
+    --dsa-sol-text-tertiary: #98989f;
+    --dsa-sol-accent: #007aff;
+    --dsa-sol-accent-glow: rgba(0, 122, 255, 0.22);
+    --dsa-sol-danger: #ff3b30;
+    --dsa-sol-code-bg: #1a1b26;
+    --dsa-sol-code-toolbar: #15161e;
+    --dsa-sol-code-text: #c0caf5;
+    --dsa-sol-gutter: #565f89;
+    --dsa-sol-radius: 20px;
+    --dsa-sol-radius-md: 14px;
+    --dsa-sol-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.35), 0 0 0 0.5px rgba(0, 0, 0, 0.05);
+    --dsa-sol-spring: 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    width: min(620px, 100%);
+    max-height: 92vh;
+    background: var(--dsa-sol-surface);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 0.5px solid var(--dsa-sol-border);
+    border-radius: var(--dsa-sol-radius);
+    box-shadow: var(--dsa-sol-shadow);
+    transform: translateY(24px) scale(0.95);
+    opacity: 0;
+    transition: transform var(--dsa-sol-spring), opacity 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", system-ui, sans-serif;
+    color: var(--dsa-sol-text);
+}
+
+.dsa-sol-pro-overlay.open .dsa-sol-pro-modal {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+    .dsa-sol-pro-modal {
+        --dsa-sol-bg: #1c1c1e;
+        --dsa-sol-surface: rgba(40, 40, 43, 0.82);
+        --dsa-sol-surface-solid: #2c2c2e;
+        --dsa-sol-border: rgba(255, 255, 255, 0.1);
+        --dsa-sol-border-strong: rgba(255, 255, 255, 0.22);
+        --dsa-sol-text: #f5f5f7;
+        --dsa-sol-text-secondary: #aeaeb2;
+        --dsa-sol-text-tertiary: #8e8e93;
+        --dsa-sol-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.7), 0 0 0 0.5px rgba(255, 255, 255, 0.08);
+    }
+}
+
+.dsa-sol-pro-grabber {
+    width: 38px;
+    height: 5px;
+    border-radius: 99px;
+    background: var(--dsa-sol-border-strong);
+    margin: 10px auto 0;
+}
+
+.dsa-sol-pro-header {
+    padding: 14px 22px 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dsa-sol-pro-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+}
+
+.dsa-sol-pro-close {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(120, 120, 128, 0.16);
+    color: var(--dsa-sol-text-secondary);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+}
+
+.dsa-sol-pro-body {
+    padding: 6px 22px 18px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.dsa-sol-pro-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.dsa-sol-pro-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--dsa-sol-text-tertiary);
+}
+
+.dsa-sol-pro-label .req {
+    color: var(--dsa-sol-danger);
+}
+
+.dsa-sol-pro-input {
+    width: 100%;
+    font: inherit;
+    font-size: 15px;
+    color: var(--dsa-sol-text);
+    background: var(--dsa-sol-surface-solid);
+    border: 1px solid var(--dsa-sol-border);
+    border-radius: var(--dsa-sol-radius-md);
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.dsa-sol-pro-input:focus {
+    border-color: var(--dsa-sol-accent);
+    box-shadow: 0 0 0 4px var(--dsa-sol-accent-glow);
+}
+
+.dsa-sol-pro-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+@media (max-width: 520px) {
+    .dsa-sol-pro-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.dsa-sol-pro-approach-group {
+    display: flex;
+    gap: 8px;
+    background: rgba(120, 120, 128, 0.1);
+    padding: 4px;
+    border-radius: 14px;
+}
+
+.dsa-sol-pro-approach-pill {
+    flex: 1;
+    padding: 10px 12px;
+    border: none;
+    background: transparent;
+    border-radius: 10px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dsa-sol-text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.25s;
+}
+
+.dsa-sol-pro-approach-pill.active {
+    background: var(--dsa-sol-surface-solid);
+    color: var(--dsa-sol-text);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 0 0 0.5px var(--dsa-sol-border);
+}
+
+.dsa-sol-pro-approach-pill .num {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(120, 120, 128, 0.2);
+    font-size: 11px;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+}
+
+.dsa-sol-pro-approach-pill.active.brute .num {
+    background: #ff3b30;
+    color: #fff;
+}
+
+.dsa-sol-pro-approach-pill.active.better .num {
+    background: #ff9f0a;
+    color: #fff;
+}
+
+.dsa-sol-pro-approach-pill.active.optimal .num {
+    background: #34c759;
+    color: #fff;
+}
+
+.dsa-sol-pro-editor {
+    border-radius: var(--dsa-sol-radius-md);
+    background: var(--dsa-sol-code-bg);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15) inset;
+}
+
+.dsa-sol-pro-editor.focused {
+    border-color: var(--dsa-sol-accent);
+    box-shadow: 0 0 0 4px var(--dsa-sol-accent-glow), 0 2px 10px rgba(0, 0, 0, 0.2) inset;
+}
+
+.dsa-sol-pro-editor-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 12px;
+    background: var(--dsa-sol-code-toolbar);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.dsa-sol-pro-dots {
+    display: flex;
+    gap: 6px;
+}
+
+.dsa-sol-pro-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+}
+
+.dsa-sol-pro-dot.r {
+    background: #ff5f57;
+}
+
+.dsa-sol-pro-dot.y {
+    background: #febc2e;
+}
+
+.dsa-sol-pro-dot.g {
+    background: #28c840;
+}
+
+.dsa-sol-pro-lang-pick {
+    position: relative;
+}
+
+.dsa-sol-pro-lang-pick select {
+    appearance: none;
+    -webkit-appearance: none;
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 26px 5px 12px;
+    border-radius: 99px;
+    cursor: pointer;
+    outline: none;
+}
+
+.dsa-sol-pro-lang-pick::after {
+    content: "";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid rgba(255, 255, 255, 0.7);
+    border-bottom: 1.5px solid rgba(255, 255, 255, 0.7);
+    transform: translateY(-75%) rotate(45deg);
+    pointer-events: none;
+}
+
+.dsa-sol-pro-editor-body {
+    position: relative;
+    height: 260px;
+    overflow: hidden;
+    font-family: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+    font-size: 13.5px;
+    line-height: 1.6;
+}
+
+.dsa-sol-pro-gutter {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 44px;
+    padding: 14px 8px 14px 0;
+    text-align: right;
+    color: var(--dsa-sol-gutter);
+    background: rgba(0, 0, 0, 0.15);
+    user-select: none;
+    pointer-events: none;
+    font-variant-numeric: tabular-nums;
+    white-space: pre;
+    overflow: hidden;
+    border-right: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.dsa-sol-pro-editor-body pre,
+.dsa-sol-pro-editor-body textarea {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 44px;
+    margin: 0;
+    padding: 14px 14px 14px 12px;
+    border: 0;
+    width: calc(100% - 44px);
+    height: 100%;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    tab-size: 2;
+    white-space: pre;
+    overflow: auto;
+    background: transparent;
+    box-sizing: border-box;
+}
+
+.dsa-sol-pro-editor-body pre {
+    pointer-events: none;
+    color: var(--dsa-sol-code-text);
+}
+
+.dsa-sol-pro-editor-body pre code {
+    font-family: inherit !important;
+    background: transparent !important;
+    padding: 0 !important;
+    text-shadow: none !important;
+}
+
+.dsa-sol-pro-editor-body textarea {
+    color: transparent;
+    caret-color: #fff;
+    resize: none;
+    outline: none;
+    -webkit-text-fill-color: transparent;
+}
+
+.dsa-sol-pro-editor-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 14px;
+    background: var(--dsa-sol-code-toolbar);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.dsa-sol-pro-editor-status .left {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+}
+
+.dsa-sol-pro-dot-live {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #28c840;
+    box-shadow: 0 0 6px #28c840;
+    display: inline-block;
+}
+
+.dsa-sol-pro-footer {
+    padding: 14px 22px 18px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    border-top: 0.5px solid var(--dsa-sol-border);
+}
+
+.dsa-sol-pro-btn {
+    padding: 10px 22px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.dsa-sol-pro-btn-secondary {
+    background: rgba(120, 120, 128, 0.16);
+    color: var(--dsa-sol-text);
+}
+
+.dsa-sol-pro-btn-primary {
+    background: linear-gradient(135deg, #007aff, #5e5ce6);
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(0, 122, 255, 0.4);
+}
+
+.dsa-sol-pro-btn-primary:disabled {
+    background: rgba(120, 120, 128, 0.24);
+    color: var(--dsa-sol-text-tertiary);
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.dsa-sol-pro-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: dsa-sol-pro-spin 0.7s linear infinite;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+@keyframes dsa-sol-pro-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.dsa-sol-pro-toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(28, 28, 30, 0.95);
+    backdrop-filter: blur(20px);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 10060;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dsa-sol-pro-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.dsa-sol-pro-toast .check {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #34c759;
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    font-weight: bold;
+}

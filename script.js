@@ -6294,11 +6294,27 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     hintFieldGroup.appendChild(noteCard);
 
     const sketchEditorRoot = document.createElement("div");
-    sketchEditorRoot.className = "dsa-sketch-studio-host";
+
+    const sketchIntro = document.createElement("div");
+    sketchIntro.className = "dsa-q-sketch-intro";
+    const sketchIntroTitle = document.createElement("p");
+    sketchIntroTitle.className = "dsa-q-sketch-intro-title";
+    sketchIntroTitle.textContent = "Sketch your approach";
+    const sketchIntroBody = document.createElement("p");
+    sketchIntroBody.className = "dsa-q-sketch-intro-body";
+    sketchIntroBody.textContent =
+        "Draw trees, graphs, or pointers on a scratch pad attached to this problem. Use it to capture how you think through the solution before you code—helpful when revisiting problems or comparing approaches later.";
+    sketchIntro.appendChild(sketchIntroTitle);
+    sketchIntro.appendChild(sketchIntroBody);
+
+    const sketchPanel = document.createElement("div");
+    sketchPanel.className = "dsa-q-sketch-panel";
+    sketchPanel.hidden = true;
+    sketchPanel.appendChild(sketchEditorRoot);
 
     const drawRow = document.createElement("div");
     drawRow.className = "dsa-q-draw-row dsa-q-sketch-zoom-row zoom-row";
-    drawRow.hidden = !isEditProblem;
+    drawRow.hidden = true;
     const btnZoomOut = document.createElement("button");
     btnZoomOut.type = "button";
     btnZoomOut.className = "dsa-dialog-btn dsa-dialog-btn--ghost dsa-q-sketch-zoom tool-btn";
@@ -6307,7 +6323,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/></svg>';
     btnZoomOut.setAttribute("aria-label", "Zoom sketch out");
     btnZoomOut.title = "Zoom out";
-    btnZoomOut.hidden = !isEditProblem;
+    btnZoomOut.hidden = true;
     const btnZoomIn = document.createElement("button");
     btnZoomIn.type = "button";
     btnZoomIn.className = "dsa-dialog-btn dsa-dialog-btn--ghost dsa-q-sketch-zoom tool-btn";
@@ -6316,7 +6332,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
     btnZoomIn.setAttribute("aria-label", "Zoom sketch in");
     btnZoomIn.title = "Zoom in";
-    btnZoomIn.hidden = !isEditProblem;
+    btnZoomIn.hidden = true;
 
     const fileIn = document.createElement("input");
     fileIn.type = "file";
@@ -6330,21 +6346,47 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const imageUploadRow = document.createElement("div");
     imageUploadRow.className = "dsa-q-image-upload-row";
 
-    let scratchApi;
-    if (isEditProblem) {
+    let scratchApi = dsaStubSketchApi();
+    let sketchEditorWired = false;
+
+    function ensureSketchEditor() {
+        if (sketchEditorWired) {
+            return;
+        }
+        sketchEditorWired = true;
         scratchApi = dsaWireSketchEditor(sketchEditorRoot, () => {}, {
             afterClear() {
                 userClearedSketch = true;
             },
             admin: isAdmin,
         });
-    } else {
-        scratchApi = dsaStubSketchApi();
-        const sketchNote = document.createElement("p");
-        sketchNote.className = "dsa-q-sketch-add-note";
-        sketchNote.textContent =
-            "Save this problem first, then open Edit to use the sketch (pen, colors, eraser, undo).";
-        sketchEditorRoot.appendChild(sketchNote);
+    }
+
+    function openSketchPanel() {
+        ensureSketchEditor();
+        sketchIntro.hidden = true;
+        sketchPanel.hidden = false;
+        drawRow.hidden = false;
+        btnZoomOut.hidden = false;
+        btnZoomIn.hidden = false;
+        btnAddSketch.hidden = true;
+        requestAnimationFrame(() => {
+            sketchPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        });
+    }
+
+    function syncSketchUiFromEntry(ent) {
+        const hasDrawing = !!(ent && ent.drawing && String(ent.drawing).trim());
+        if (hasDrawing) {
+            openSketchPanel();
+        } else if (!sketchEditorWired) {
+            sketchIntro.hidden = false;
+            sketchPanel.hidden = true;
+            drawRow.hidden = true;
+            btnZoomOut.hidden = true;
+            btnZoomIn.hidden = true;
+            btnAddSketch.hidden = false;
+        }
     }
 
     let imageDataUrl = "";
@@ -6758,24 +6800,75 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
 
     let companyTagsList = [];
 
-    function syncCompaniesCsvFromList() {
-        companiesCsvIn.value = companyTagsList.join(", ");
+    function companyKey(label) {
+        return String(label || "")
+            .trim()
+            .toLowerCase();
     }
 
-    function parseCompaniesFromCsvInput() {
-        const raw = String(companiesCsvIn.value || "")
-            .split(",")
-            .map((s) => String(s || "").trim())
-            .filter(Boolean);
-        const seen = new Set();
-        companyTagsList = [];
-        raw.forEach((t) => {
-            const k = t.toLowerCase();
-            if (seen.has(k)) {
-                return;
+    function toggleCompany(label) {
+        const k = companyKey(label);
+        if (!k) {
+            return;
+        }
+        const idx = companyTagsList.findIndex((t) => companyKey(t) === k);
+        if (idx >= 0) {
+            companyTagsList.splice(idx, 1);
+        } else {
+            companyTagsList.push(label);
+        }
+        renderCompanyPicker();
+    }
+
+    function renderCompanyPicker() {
+        const q = String(companySearchIn.value || "")
+            .trim()
+            .toLowerCase();
+        companyChipsEl.innerHTML = "";
+        companyTagsList.forEach((name) => {
+            const chip = document.createElement("span");
+            chip.className = "c-chip";
+            chip.appendChild(document.createTextNode(name));
+            const rm = document.createElement("button");
+            rm.type = "button";
+            rm.setAttribute("aria-label", `Remove ${name}`);
+            rm.textContent = "×";
+            rm.addEventListener("click", (e) => {
+                e.stopPropagation();
+                toggleCompany(name);
+            });
+            chip.appendChild(rm);
+            companyChipsEl.appendChild(chip);
+        });
+        companyListEl.innerHTML = "";
+        const selected = new Set(companyTagsList.map(companyKey));
+        const filtered = DSA_COMPANY_PRESETS.filter((p) => {
+            if (!q) {
+                return true;
             }
-            seen.add(k);
-            companyTagsList.push(t);
+            return p.label.toLowerCase().includes(q) || p.id.toLowerCase().includes(q);
+        });
+        if (!filtered.length) {
+            const empty = document.createElement("div");
+            empty.className = "dsa-q-company-picker-empty";
+            empty.textContent = q ? "No companies match your search." : "No companies available.";
+            companyListEl.appendChild(empty);
+            return;
+        }
+        filtered.forEach((preset) => {
+            const on = selected.has(companyKey(preset.label));
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "dsa-q-company-picker-item" + (on ? " is-selected" : "");
+            btn.setAttribute("aria-pressed", on ? "true" : "false");
+            const check = document.createElement("span");
+            check.className = "dsa-q-company-picker-item-check";
+            check.setAttribute("aria-hidden", "true");
+            check.textContent = on ? "✓" : "";
+            btn.appendChild(check);
+            btn.appendChild(document.createTextNode(preset.label));
+            btn.addEventListener("click", () => toggleCompany(preset.label));
+            companyListEl.appendChild(btn);
         });
     }
 
@@ -6783,25 +6876,31 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     companyFieldGroup.className = "field-group";
     const companyLabRow = document.createElement("div");
     companyLabRow.className = "field-label";
-    companyLabRow.innerHTML = "<span>Companies <span class=\"opt\">(comma separated)</span></span>";
-    const companyInputWrap = document.createElement("div");
-    companyInputWrap.className = "input-wrap";
-    const companyLead = document.createElement("span");
-    companyLead.innerHTML =
-        '<svg class="lead" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg>';
-    const companiesCsvIn = document.createElement("input");
-    companiesCsvIn.type = "text";
-    companiesCsvIn.className = "dsa-field-control field-input";
-    companiesCsvIn.setAttribute("aria-label", "Companies (comma separated)");
-    companiesCsvIn.placeholder = "Google, Amazon, Meta";
-    companiesCsvIn.addEventListener("blur", () => {
-        parseCompaniesFromCsvInput();
-        syncCompaniesCsvFromList();
-    });
-    companyInputWrap.appendChild(companyLead);
-    companyInputWrap.appendChild(companiesCsvIn);
+    companyLabRow.innerHTML = "<span>Companies</span>";
+    const companyChipsEl = document.createElement("div");
+    companyChipsEl.className = "company-chips";
+    const companyPicker = document.createElement("div");
+    companyPicker.className = "dsa-q-company-picker";
+    const companySearchWrap = document.createElement("div");
+    companySearchWrap.className = "dsa-q-company-picker-search-wrap";
+    const companySearchIn = document.createElement("input");
+    companySearchIn.type = "search";
+    companySearchIn.className = "dsa-q-company-picker-search";
+    companySearchIn.placeholder = "Search companies…";
+    companySearchIn.setAttribute("aria-label", "Search companies");
+    companySearchIn.autocomplete = "off";
+    companySearchIn.addEventListener("input", renderCompanyPicker);
+    companySearchWrap.appendChild(companySearchIn);
+    const companyListEl = document.createElement("div");
+    companyListEl.className = "dsa-q-company-picker-list";
+    companyListEl.setAttribute("role", "listbox");
+    companyListEl.setAttribute("aria-label", "Company list");
+    companyPicker.appendChild(companySearchWrap);
+    companyPicker.appendChild(companyListEl);
     companyFieldGroup.appendChild(companyLabRow);
-    companyFieldGroup.appendChild(companyInputWrap);
+    companyFieldGroup.appendChild(companyChipsEl);
+    companyFieldGroup.appendChild(companyPicker);
+    renderCompanyPicker();
 
     const sketchResGroup = document.createElement("div");
     sketchResGroup.className = "field-group";
@@ -6815,14 +6914,15 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     btnAddSketch.innerHTML =
         '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Add sketch';
     btnAddSketch.addEventListener("click", () => {
-        sketchEditorRoot.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        openSketchPanel();
     });
-    sketchResGroup.appendChild(sketchResLab);
-    sketchResGroup.appendChild(btnAddSketch);
-    sketchResGroup.appendChild(sketchEditorRoot);
     drawRow.appendChild(btnZoomOut);
     drawRow.appendChild(btnZoomIn);
-    sketchResGroup.appendChild(drawRow);
+    sketchPanel.appendChild(drawRow);
+    sketchResGroup.appendChild(sketchResLab);
+    sketchResGroup.appendChild(btnAddSketch);
+    sketchResGroup.appendChild(sketchIntro);
+    sketchResGroup.appendChild(sketchPanel);
 
     const imageResGroup = document.createElement("div");
     imageResGroup.className = "field-group";
@@ -7296,7 +7396,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             hintTa.value = dsaMergeHintCommentFromEntry(ent);
             urlIn.value = ent.url != null ? String(ent.url).trim() : "";
             solutionVideoIn.value = ent.solutionVideoUrl != null ? String(ent.solutionVideoUrl).trim() : "";
-            scratchApi.loadDataUrl(ent.drawing || "");
             setImagePreview(ent.image && String(ent.image).trim() ? String(ent.image) : "");
             companyTagsList = dsaNormalizeCompaniesArray(ent.companies);
             solutionsState = dsaSolutionsFromEntry(ent).map((s) => ({ ...dsaNormalizeSolutionItem(s) }));
@@ -7306,7 +7405,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             hintTa.value = "";
             urlIn.value = "";
             solutionVideoIn.value = "";
-            scratchApi.clear();
             setImagePreview("");
             companyTagsList = [];
             solutionsState = [];
@@ -7314,9 +7412,16 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             importantInput.checked = false;
         }
         renderSolutionsEditorList();
-        syncCompaniesCsvFromList();
+        renderCompanyPicker();
         syncDifficultyPillsFromSelect();
         syncStarVisual();
+        syncSketchUiFromEntry(ent);
+        if (ent && ent.drawing && String(ent.drawing).trim()) {
+            ensureSketchEditor();
+            scratchApi.loadDataUrl(String(ent.drawing).trim());
+        } else if (sketchEditorWired) {
+            scratchApi.clear();
+        }
     }
 
     function syncNameToEntry() {
@@ -7341,7 +7446,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         if (graphBodyCatSelect) {
             graphBodyCatSelect.classList.remove("dsa-field-control--error");
         }
-        companiesCsvIn.classList.remove("dsa-field-control--error");
     }
 
     nameIn.addEventListener("input", () => {
@@ -7514,11 +7618,17 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         btnAddSolutionLink.hidden = ro;
         btnAddSketch.disabled = ro;
         btnUploadImage.disabled = ro;
-        companiesCsvIn.disabled = ro;
+        companySearchIn.disabled = ro;
+        companyListEl.querySelectorAll(".dsa-q-company-picker-item").forEach((b) => {
+            b.disabled = ro;
+        });
+        companyChipsEl.querySelectorAll("button").forEach((b) => {
+            b.disabled = ro;
+        });
         noteDel.disabled = ro;
-        sketchEditorRoot.classList.toggle("dsa-sketch-studio-host--ro", ro || !isEditProblem);
-        btnZoomOut.disabled = ro || !isEditProblem;
-        btnZoomIn.disabled = ro || !isEditProblem;
+        sketchPanel.classList.toggle("dsa-q-sketch-panel--ro", ro);
+        btnZoomOut.disabled = ro;
+        btnZoomIn.disabled = ro;
         imagePasteHint.classList.toggle("dsa-q-image-paste-hint--disabled", ro);
         btnOk.hidden = ro;
         kbdHint.hidden = ro;
@@ -7731,7 +7841,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             return;
         }
         clearFieldErrors();
-        parseCompaniesFromCsvInput();
         const name = nameIn.value.trim();
         const url = urlIn.value.trim();
         if (!name) {

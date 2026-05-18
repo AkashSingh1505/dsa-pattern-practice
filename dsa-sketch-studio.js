@@ -33,7 +33,10 @@ const cw=$('dsaSkCw'),app=$('dsaSkApp');
 const DPR=Math.max(window.devicePixelRatio||1,1);
 const S={tool:'brush',color:'#1d1d1f',size:6,opacity:1,drawing:false,sx:0,sy:0,snap:null,hist:[],redo:[],zoom:1,pts:[],laser:[],laserActive:false,laserStop:0};
 const FADE=900;
-function roBool(){return editorRoot.classList.contains('dsa-sketch-studio-host--ro');}
+function roBool(){
+  return editorRoot.classList.contains('dsa-sketch-studio-host--ro') ||
+    !!editorRoot.closest('.dsa-q-sketch-panel--ro');
+}
 function syncInk(){
   hasInk=false;
   try{

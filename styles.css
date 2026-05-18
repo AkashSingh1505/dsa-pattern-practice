@@ -1,4 +1,4 @@
-@import url("./graph-add-child-mock.css?v=13");
+@import url("./graph-add-child-mock.css?v=14");
 
 /* Global reset for margins and paddings */
 * {
@@ -772,10 +772,7 @@ body.nav-mobile-menu-open {
     background:
         radial-gradient(1200px 600px at 10% 0%, rgba(232, 239, 255, 0.35) 0%, transparent 60%),
         radial-gradient(900px 500px at 100% 100%, rgba(255, 233, 245, 0.3) 0%, transparent 55%),
-        rgba(245, 245, 247, 0.22);
-    background-color: rgba(255, 255, 255, 0.08);
-    backdrop-filter: saturate(180%) blur(28px);
-    -webkit-backdrop-filter: saturate(180%) blur(28px);
+        rgba(15, 23, 42, 0.32);
     padding: 24px;
 }
 

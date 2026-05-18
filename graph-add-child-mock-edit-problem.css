@@ -1,0 +1,678 @@
+/**
+ * Edit Problem modal — Apple-style UI (scoped under .graph-add-child-mock.modal)
+ * Loaded via graph-add-child-mock.css
+ */
+.graph-add-child-mock.modal.dsa-dialog--question {
+    --bg: #f5f5f7;
+    --panel: #ffffff;
+    --panel-2: #fbfbfd;
+    --border: rgba(0, 0, 0, 0.09);
+    --border-strong: rgba(0, 0, 0, 0.14);
+    --text: #1d1d1f;
+    --muted: #6e6e73;
+    --muted-2: #86868b;
+    --accent: #0071e3;
+    --accent-hover: #0077ed;
+    --easy: #34c759;
+    --medium: #ff9f0a;
+    --hard: #ff3b30;
+    --star: #ffcc00;
+    --chip: #f2f2f7;
+    --chip-hover: #e8e8ed;
+    --brute: #ff3b30;
+    --better: #ff9500;
+    --optimal: #34c759;
+    --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.22);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+    --radius: 14px;
+
+    max-width: min(640px, calc(100vw - 32px));
+    background: var(--panel);
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    animation: graph-ac-pop 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    align-items: center;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .header h2 {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .icon-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .icon-btn:hover {
+    background: var(--chip);
+    color: var(--text);
+    transform: none;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .tabs.show {
+    display: flex;
+    padding: 10px 18px 0;
+    gap: 4px;
+    margin: 0;
+    background: rgba(255, 255, 255, 0.6);
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    grid-template-columns: unset;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .tab {
+    padding: 9px 14px;
+    border-radius: 8px 8px 0 0;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    background: transparent;
+    box-shadow: none;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .tab.dsa-q-tab--active,
+.graph-add-child-mock.modal.dsa-dialog--question .tab.active {
+    color: var(--accent);
+    background: transparent;
+    font-weight: 500;
+    box-shadow: none;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .tab.dsa-q-tab--active::after,
+.graph-add-child-mock.modal.dsa-dialog--question .tab.active::after {
+    content: "";
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: -1px;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 2px;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .body {
+    padding: 18px;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .field,
+.graph-add-child-mock.modal.dsa-dialog--question .field-group,
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-field {
+    margin-bottom: 16px;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .field-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 7px;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .field-label .req,
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-req {
+    color: var(--hard);
+    margin-left: 3px;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .char-count,
+.graph-add-child-mock.modal.dsa-dialog--question .field-char-limit {
+    font-size: 10.5px;
+    color: var(--muted-2);
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 500;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .input,
+.graph-add-child-mock.modal.dsa-dialog--question .field-input,
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-field-control.field-input {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--text);
+    outline: none;
+    transition: 0.18s;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .input:focus,
+.graph-add-child-mock.modal.dsa-dialog--question .field-input:focus {
+    background: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.18);
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .input:read-only {
+    background: #f5f5f7;
+    color: var(--muted);
+    cursor: not-allowed;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .input-wrap {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--panel-2);
+    padding: 0;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .input-wrap .field-input {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .input-wrap:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.18);
+    background: #fff;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .input-wrap-lead {
+    padding-left: 10px;
+    color: var(--muted-2);
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .textarea,
+.graph-add-child-mock.modal.dsa-dialog--question .plain-textarea,
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-hint-note-ta {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--text);
+    outline: none;
+    resize: vertical;
+    min-height: 72px;
+    line-height: 1.5;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .textarea:focus,
+.graph-add-child-mock.modal.dsa-dialog--question .plain-textarea:focus {
+    background: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.18);
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .note-card {
+    border: none;
+    background: transparent;
+    padding: 0;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .note-head {
+    display: none;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .difficulty-pills .diff-pill {
+    flex: 1;
+    padding: 9px 12px;
+    background: var(--chip);
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    text-align: center;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .difficulty-pills .diff-pill .dot,
+.graph-add-child-mock.modal.dsa-dialog--question .difficulty-pills .diff-pill input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .difficulty-pills .diff-pill.selected[data-diff="easy"] {
+    background: rgba(52, 199, 89, 0.14);
+    border-color: rgba(52, 199, 89, 0.35);
+    color: var(--easy);
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .difficulty-pills .diff-pill.selected[data-diff="medium"] {
+    background: rgba(255, 159, 10, 0.16);
+    border-color: rgba(255, 159, 10, 0.4);
+    color: #cc7a00;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .difficulty-pills .diff-pill.selected[data-diff="hard"] {
+    background: rgba(255, 59, 48, 0.14);
+    border-color: rgba(255, 59, 48, 0.4);
+    color: var(--hard);
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .star-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .star-row.active {
+    background: rgba(255, 204, 0, 0.1);
+    border-color: rgba(255, 204, 0, 0.4);
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .star-row .switch {
+    display: none;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .star-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--muted-2);
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .star-row.active .star-icon {
+    color: var(--star);
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .star-text,
+.graph-add-child-mock.modal.dsa-dialog--question .star-row > div:not(.star-icon):not(.switch) {
+    flex: 1;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .star-title {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .star-sub {
+    font-size: 11.5px;
+    color: var(--muted);
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-co-sel {
+    max-width: none;
+    border-radius: 10px;
+    box-shadow: none;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-co-sel-header {
+    display: none;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-co-sel-footer {
+    border-top: 1px solid var(--border);
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 18px 0 12px;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .section-divider::before,
+.graph-add-child-mock.modal.dsa-dialog--question .section-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .section-divider span {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-existing {
+    background: linear-gradient(135deg, #fbfbfd, #f5f5f7);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    margin-top: 0;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-existing-head,
+.graph-add-child-mock.modal.dsa-dialog--question .preview-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 10px;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-existing-grid {
+    display: block;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-existing-block,
+.graph-add-child-mock.modal.dsa-dialog--question .preview-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-existing-tag,
+.graph-add-child-mock.modal.dsa-dialog--question .preview-label {
+    color: var(--muted);
+    font-weight: 500;
+    min-width: 78px;
+    flex-shrink: 0;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-existing-val,
+.graph-add-child-mock.modal.dsa-dialog--question .preview-val {
+    color: var(--text);
+    line-height: 1.4;
+    flex: 1;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .media-slot {
+    border: 1.5px dashed var(--border-strong);
+    border-radius: 10px;
+    padding: 16px 14px;
+    background: var(--panel-2);
+    text-align: center;
+    cursor: pointer;
+    transition: 0.18s;
+    outline: none;
+    width: 100%;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .media-slot:hover {
+    background: #fff;
+    border-color: var(--accent);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .media-slot .ic {
+    width: 30px;
+    height: 30px;
+    margin: 0 auto 8px;
+    color: var(--accent);
+    display: block;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .media-slot .ttl {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .media-slot .sub {
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-top: 3px;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .media-attached {
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .media-attached img {
+    display: block;
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .media-clear,
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-image-remove-on-thumb {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-solution-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-solution-list:empty {
+    display: none;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-solution-item {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-solution-item .sol-tag {
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 999px;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-solution-item .sol-tag.brute,
+.graph-add-child-mock.modal.dsa-dialog--question .sol-tag.brute_force {
+    background: rgba(255, 59, 48, 0.12);
+    color: var(--brute);
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-solution-item .sol-tag.better {
+    background: rgba(255, 159, 10, 0.16);
+    color: #cc7a00;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-solution-item .sol-tag.optimal {
+    background: rgba(52, 199, 89, 0.14);
+    color: var(--optimal);
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .sol-meta,
+.graph-add-child-mock.modal.dsa-dialog--question .sol-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    color: var(--muted);
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .sol-cx,
+.graph-add-child-mock.modal.dsa-dialog--question .sol-comp code {
+    background: var(--chip);
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .sol-actions {
+    display: flex;
+    gap: 2px;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .show-all-toggle,
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-solution-expand-toggle {
+    font-size: 11.5px;
+    color: var(--accent);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    font-weight: 500;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .add-more-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent);
+    cursor: pointer;
+    margin-top: 2px;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .add-more-btn:hover {
+    background: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12);
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .add-more-btn svg {
+    width: 12px;
+    height: 12px;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .footer {
+    padding: 12px 18px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .kbd-hint {
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .kbd {
+    display: inline-block;
+    padding: 2px 6px;
+    background: var(--chip);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 10px;
+    font-weight: 500;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .footer-actions,
+.graph-add-child-mock.modal.dsa-dialog--question .btn-row {
+    display: flex;
+    gap: 8px;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .btn,
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-dialog-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text);
+    cursor: pointer;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .btn.primary,
+.graph-add-child-mock.modal.dsa-dialog--question .btn-primary,
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-dialog-btn--primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .btn.primary:hover,
+.graph-add-child-mock.modal.dsa-dialog--question .btn-primary:hover {
+    background: var(--accent-hover);
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-resource-intro {
+    display: none;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .res-add-btn {
+    display: none;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    min-height: 380px;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel[hidden] {
+    display: none !important;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-image-upload-row {
+    display: none;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-image-preview-wrap {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-image-thumb {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    display: block;
+}

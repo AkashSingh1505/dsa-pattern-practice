@@ -5673,6 +5673,46 @@ function dsaWireResAddIntroToggle(introEl, infoBtn) {
     });
 }
 
+function dsaCreateMediaSlot({ title, sub, svgInner, onActivate }) {
+    const el = document.createElement("div");
+    el.className = "media-slot";
+    el.setAttribute("role", "button");
+    el.tabIndex = 0;
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", "ic");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("fill", "none");
+    svg.setAttribute("stroke", "currentColor");
+    svg.setAttribute("stroke-width", "1.7");
+    svg.setAttribute("stroke-linecap", "round");
+    svg.setAttribute("stroke-linejoin", "round");
+    svg.setAttribute("aria-hidden", "true");
+    svg.innerHTML = svgInner;
+    const ttl = document.createElement("div");
+    ttl.className = "ttl";
+    ttl.textContent = title;
+    const subEl = document.createElement("div");
+    subEl.className = "sub";
+    subEl.textContent = sub;
+    el.appendChild(svg);
+    el.appendChild(ttl);
+    el.appendChild(subEl);
+    const activate = (e) => {
+        if (e.type === "keydown" && e.key !== "Enter" && e.key !== " ") {
+            return;
+        }
+        if (e.type === "keydown") {
+            e.preventDefault();
+        }
+        if (typeof onActivate === "function") {
+            onActivate(e);
+        }
+    };
+    el.addEventListener("click", activate);
+    el.addEventListener("keydown", activate);
+    return el;
+}
+
 function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const isMetaRoot = parentKey === "__DSA_META__";
     /** Edit mode in customize UI: site admin (RSA) or Pro / practice-admin (see dsa-user-auth). */
@@ -6200,6 +6240,13 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     nameInputWrap.appendChild(nameIn);
     nameField.appendChild(nameLabelRow);
     nameField.appendChild(nameInputWrap);
+    if (isEditProblem) {
+        nameField.classList.add("field");
+        if (nameLead.parentNode) {
+            nameLead.remove();
+        }
+        nameIn.classList.add("input");
+    }
 
     const urlField = document.createElement("div");
     urlField.className = "dsa-q-field q-field-mock field-group";
@@ -6231,6 +6278,14 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     urlInputWrap.appendChild(urlIn);
     urlField.appendChild(urlLabelRow);
     urlField.appendChild(urlInputWrap);
+    if (isEditProblem) {
+        urlField.classList.add("field");
+        urlLabelRow.innerHTML = "<span>Link</span>";
+        if (urlLead.parentNode) {
+            urlLead.remove();
+        }
+        urlIn.classList.add("input");
+    }
 
     const problemSectionInner = document.createElement("div");
     problemSectionInner.id = "problemSection";
@@ -6359,6 +6414,12 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     noteCard.appendChild(noteBody);
     hintFieldGroup.appendChild(hintTopLabel);
     hintFieldGroup.appendChild(noteCard);
+    if (isEditProblem) {
+        hintTopLabel.innerHTML = "<span>Hint / Notes</span>";
+        hintTa.className = "textarea plain-textarea dsa-q-hint dsa-q-hint-note-ta";
+        hintTa.placeholder = "Write a short hint or notes for yourself…";
+        hintFieldGroup.replaceChildren(hintTopLabel, hintTa);
+    }
 
     const sketchEditorRoot = document.createElement("div");
 
@@ -6493,22 +6554,52 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         scratchApi = dsaWireSketchEditor(sketchEditorRoot, () => {}, {
             afterClear() {
                 userClearedSketch = true;
+                sketchPanel.hidden = true;
+                drawRow.hidden = true;
+                btnZoomOut.hidden = true;
+                btnZoomIn.hidden = true;
+                syncSketchSlotUi();
             },
             admin: isAdmin,
             onPersist: persistSketchDrawingQuick,
         });
     }
 
+    const sketchSlot = document.createElement("div");
+    sketchSlot.id = "sketchSlot";
+    sketchSlot.className = "dsa-q-sketch-slot";
+
+    const sketchEmptySlot = dsaCreateMediaSlot({
+        title: "Add sketch",
+        sub: "Open the sketch studio to draw a diagram",
+        svgInner:
+            '<path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/>',
+        onActivate: () => {
+            if (isAdmin) {
+                openSketchPanel();
+            }
+        },
+    });
+
+    function syncSketchSlotUi() {
+        sketchEmptySlot.hidden = !sketchPanel.hidden;
+    }
+
     function openSketchPanel() {
         ensureSketchEditor();
         sketchIntro.hidden = true;
-        btnSketchInfo.classList.remove("active");
-        btnSketchInfo.setAttribute("aria-expanded", "false");
+        if (btnSketchInfo) {
+            btnSketchInfo.classList.remove("active");
+            btnSketchInfo.setAttribute("aria-expanded", "false");
+        }
         sketchPanel.hidden = false;
         drawRow.hidden = false;
         btnZoomOut.hidden = false;
         btnZoomIn.hidden = false;
-        sketchAddRow.hidden = true;
+        if (sketchAddRow) {
+            sketchAddRow.hidden = true;
+        }
+        syncSketchSlotUi();
         requestAnimationFrame(() => {
             sketchPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
         });
@@ -6520,26 +6611,46 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             openSketchPanel();
         } else if (!sketchEditorWired) {
             sketchIntro.hidden = true;
-            btnSketchInfo.classList.remove("active");
-            btnSketchInfo.setAttribute("aria-expanded", "false");
+            if (btnSketchInfo) {
+                btnSketchInfo.classList.remove("active");
+                btnSketchInfo.setAttribute("aria-expanded", "false");
+            }
             sketchPanel.hidden = true;
             drawRow.hidden = true;
             btnZoomOut.hidden = true;
             btnZoomIn.hidden = true;
-            sketchAddRow.hidden = false;
+            if (sketchAddRow) {
+                sketchAddRow.hidden = true;
+            }
+            syncSketchSlotUi();
         }
     }
 
     let imageDataUrl = "";
 
-    function setImagePreview(url) {
-        imageDataUrl = url || "";
-        imagePreview.innerHTML = "";
+    const imageSlot = document.createElement("div");
+    imageSlot.id = "imageSlot";
+    imageSlot.className = "dsa-q-image-slot";
+
+    function renderImageSlotUi() {
+        imageSlot.innerHTML = "";
         if (!imageDataUrl) {
+            const empty = dsaCreateMediaSlot({
+                title: "Upload or paste image",
+                sub: "Drag, click to choose, or press ⌘+V",
+                svgInner:
+                    '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="1.6"/><path d="M21 15l-5-5L5 21"/>',
+                onActivate: () => {
+                    if (isAdmin) {
+                        fileIn.click();
+                    }
+                },
+            });
+            imageSlot.appendChild(empty);
             return;
         }
         const wrap = document.createElement("div");
-        wrap.className = "dsa-q-image-preview-wrap";
+        wrap.className = "media-attached dsa-q-image-preview-wrap";
         const im = document.createElement("img");
         im.src = imageDataUrl;
         im.alt = "Attached";
@@ -6548,14 +6659,23 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         if (isAdmin) {
             const rm = document.createElement("button");
             rm.type = "button";
-            rm.className = "dsa-q-image-remove-on-thumb";
+            rm.className = "media-clear dsa-q-image-remove-on-thumb";
             rm.setAttribute("aria-label", "Remove image");
             rm.title = "Remove image";
-            rm.textContent = "×";
-            rm.addEventListener("click", () => setImagePreview(""));
+            rm.innerHTML =
+                '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+            rm.addEventListener("click", (e) => {
+                e.stopPropagation();
+                setImagePreview("");
+            });
             wrap.appendChild(rm);
         }
-        imagePreview.appendChild(wrap);
+        imageSlot.appendChild(wrap);
+    }
+
+    function setImagePreview(url) {
+        imageDataUrl = url || "";
+        renderImageSlotUi();
     }
 
     function applyImageFileFromPaste(file) {
@@ -6579,6 +6699,9 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
 
     let solutionsState = [];
     let solutionsListExpanded = false;
+    const solutionsContainer = document.createElement("div");
+    solutionsContainer.id = "solutionsContainer";
+    solutionsContainer.className = "dsa-q-solutions-container";
     const solutionListRoot = document.createElement("div");
     solutionListRoot.className = "dsa-q-solution-list";
     solutionListRoot.setAttribute("aria-live", "polite");
@@ -6617,59 +6740,76 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     }
 
     function renderSolutionsEditorList() {
-        solutionListRoot.innerHTML = "";
+        solutionsContainer.innerHTML = "";
+        if (solCountEl) {
+            solCountEl.textContent = solutionsState.length ? `${solutionsState.length} added` : "";
+        }
+
         if (!solutionsState.length) {
             solutionsListExpanded = false;
-            solutionListRoot.hidden = true;
+            const empty = dsaCreateMediaSlot({
+                title: "Add solution",
+                sub: "Brute force, Better, or Optimal — with code & complexity",
+                svgInner:
+                    '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/><line x1="14" y1="4" x2="10" y2="20"/>',
+                onActivate: () => {
+                    if (isAdmin) {
+                        openSolutionSheet(null);
+                    }
+                },
+            });
+            solutionsContainer.appendChild(empty);
             return;
         }
-        solutionListRoot.hidden = false;
 
         const delTrashSvg =
-            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>';
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/></svg>';
+        const editSvg =
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 113 3L7 19l-4 1 1-4z"/></svg>';
+
+        solutionListRoot.innerHTML = "";
+        solutionsContainer.appendChild(solutionListRoot);
 
         function appendCard(origIdx) {
             const sol = solutionsState[origIdx];
             const cat = dsaNormalizeSolutionCategory(sol.approach);
             const solTagCls = cat === "brute_force" ? "brute" : cat;
 
-            const card = document.createElement("article");
+            const card = document.createElement("div");
             card.className = "dsa-q-solution-item solution-item";
 
             const tag = document.createElement("span");
             tag.className = `sol-tag ${solTagCls || "sol-tag--unknown"}`;
             tag.textContent = dsaSolutionCategoryLabel(cat) || "Approach";
 
-            const info = document.createElement("div");
-            info.className = "sol-info";
-            const comp = document.createElement("div");
-            comp.className = "sol-comp";
-            comp.appendChild(document.createTextNode("Time "));
-            const tc = document.createElement("code");
+            const meta = document.createElement("div");
+            meta.className = "sol-meta sol-info";
+            const tc = document.createElement("span");
+            tc.className = "sol-cx";
             tc.textContent = String(sol.timeComplexity || "").trim() || "—";
-            comp.appendChild(tc);
-            comp.appendChild(document.createTextNode(" · Space "));
-            const sc = document.createElement("code");
+            const sc = document.createElement("span");
+            sc.className = "sol-cx";
             sc.textContent = String(sol.spaceComplexity || "").trim() || "—";
-            comp.appendChild(sc);
-            info.appendChild(comp);
+            meta.appendChild(tc);
+            meta.appendChild(sc);
 
             card.appendChild(tag);
-            card.appendChild(info);
+            card.appendChild(meta);
 
             if (isAdmin) {
+                const actions = document.createElement("div");
+                actions.className = "sol-actions";
                 const btnEdit = document.createElement("button");
                 btnEdit.type = "button";
-                btnEdit.className = "section-btn dsa-q-solution-edit";
+                btnEdit.className = "icon-btn dsa-q-solution-edit";
                 btnEdit.setAttribute("aria-label", "Edit solution");
                 btnEdit.title = "Edit";
-                btnEdit.innerHTML =
-                    '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
+                btnEdit.innerHTML = editSvg;
                 btnEdit.addEventListener("click", () => openSolutionSheet(origIdx));
 
                 const btnDel = document.createElement("button");
                 btnDel.type = "button";
-                btnDel.className = "section-btn del";
+                btnDel.className = "icon-btn";
                 btnDel.setAttribute("aria-label", "Remove solution");
                 btnDel.title = "Remove";
                 btnDel.innerHTML = delTrashSvg;
@@ -6683,50 +6823,55 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
                     }
                     renderSolutionsEditorList();
                 });
-                card.appendChild(btnEdit);
-                card.appendChild(btnDel);
+                actions.appendChild(btnEdit);
+                actions.appendChild(btnDel);
+                card.appendChild(actions);
             }
             solutionListRoot.appendChild(card);
         }
 
         const orderIdx = dsaSortedSolutionIndicesForDisplay(solutionsState);
         const n = orderIdx.length;
-        if (n === 1) {
-            appendCard(orderIdx[0]);
-            return;
-        }
-
-        const limit = solutionsListExpanded ? n : 1;
+        const limit = n > 1 && !solutionsListExpanded ? 1 : n;
         for (let i = 0; i < limit; i++) {
             appendCard(orderIdx[i]);
         }
 
-        const toggle = document.createElement("button");
-        toggle.type = "button";
-        toggle.className = "dsa-q-solution-expand-toggle";
-        toggle.setAttribute("aria-expanded", solutionsListExpanded ? "true" : "false");
-        const chev = document.createElement("span");
-        chev.className = "dsa-q-solution-expand-toggle__chev";
-        chev.setAttribute("aria-hidden", "true");
-        chev.textContent = solutionsListExpanded ? "\u25B2" : "\u25BC";
-        const lab = document.createElement("span");
-        lab.className = "dsa-q-solution-expand-toggle__label";
-        lab.textContent = solutionsListExpanded ? "Show less" : `Show all ${n} solutions`;
-        toggle.appendChild(chev);
-        toggle.appendChild(lab);
-        toggle.addEventListener("click", () => {
-            solutionsListExpanded = !solutionsListExpanded;
-            renderSolutionsEditorList();
-        });
-        solutionListRoot.appendChild(toggle);
+        if (n > 1) {
+            const toggle = document.createElement("button");
+            toggle.type = "button";
+            toggle.className = "show-all-toggle dsa-q-solution-expand-toggle";
+            toggle.setAttribute("aria-expanded", solutionsListExpanded ? "true" : "false");
+            toggle.textContent = solutionsListExpanded ? "Show less" : `Show all ${n} solutions`;
+            toggle.addEventListener("click", () => {
+                solutionsListExpanded = !solutionsListExpanded;
+                renderSolutionsEditorList();
+            });
+            solutionsContainer.appendChild(toggle);
+        }
+
+        if (isAdmin) {
+            const addMore = document.createElement("button");
+            addMore.type = "button";
+            addMore.className = "add-more-btn";
+            addMore.innerHTML =
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> Add solution';
+            addMore.addEventListener("click", () => openSolutionSheet(null));
+            solutionsContainer.appendChild(addMore);
+        }
     }
 
     const solutionsResGroup = document.createElement("div");
     solutionsResGroup.className = "field-group";
     const solResLab = document.createElement("div");
     solResLab.className = "field-label";
-    solResLab.style.marginTop = "4px";
-    solResLab.textContent = "Solutions";
+    const solResLabSpan = document.createElement("span");
+    solResLabSpan.textContent = "Solutions";
+    const solCountEl = document.createElement("span");
+    solCountEl.className = "char-count";
+    solCountEl.id = "solCount";
+    solResLab.appendChild(solResLabSpan);
+    solResLab.appendChild(solCountEl);
     const btnAddSolutionLink = document.createElement("button");
     btnAddSolutionLink.type = "button";
     btnAddSolutionLink.className = "res-add-btn";
@@ -6745,9 +6890,8 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     dsaWireResAddIntroToggle(solutionsIntro, btnSolutionsInfo);
 
     solutionsResGroup.appendChild(solResLab);
-    solutionsResGroup.appendChild(solutionsAddRow);
     solutionsResGroup.appendChild(solutionsIntro);
-    solutionsResGroup.appendChild(solutionListRoot);
+    solutionsResGroup.appendChild(solutionsContainer);
     renderSolutionsEditorList();
 
     let companyTagsList = [];
@@ -6811,16 +6955,18 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     drawRow.appendChild(btnZoomOut);
     drawRow.appendChild(btnZoomIn);
     sketchPanel.appendChild(drawRow);
+    sketchSlot.appendChild(sketchEmptySlot);
+    sketchSlot.appendChild(sketchPanel);
+    syncSketchSlotUi();
     sketchResGroup.appendChild(sketchResLab);
-    sketchResGroup.appendChild(sketchAddRow);
     sketchResGroup.appendChild(sketchIntro);
-    sketchResGroup.appendChild(sketchPanel);
+    sketchResGroup.appendChild(sketchSlot);
 
     const imageResGroup = document.createElement("div");
     imageResGroup.className = "field-group";
     const imageResLab = document.createElement("div");
     imageResLab.className = "field-label";
-    imageResLab.textContent = "Image";
+    imageResLab.innerHTML = "<span>Image (upload or paste)</span>";
     const btnUploadImage = document.createElement("button");
     btnUploadImage.type = "button";
     btnUploadImage.className = "res-add-btn";
@@ -6841,15 +6987,15 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     imageUploadRow.appendChild(btnUploadImage);
     imageUploadRow.appendChild(imagePasteHint);
     imageResGroup.appendChild(imageResLab);
-    imageResGroup.appendChild(imageUploadRow);
     imageResGroup.appendChild(fileIn);
-    imageResGroup.appendChild(imagePreview);
+    imageResGroup.appendChild(imageSlot);
+    renderImageSlotUi();
 
     const videoFieldGroup = document.createElement("div");
     videoFieldGroup.className = "field-group";
     const videoLabRow = document.createElement("div");
     videoLabRow.className = "field-label";
-    videoLabRow.innerHTML = "<span>Video solution <span class=\"opt\">(optional)</span></span>";
+    videoLabRow.innerHTML = "<span>Video solution URL</span>";
     const videoInputWrap2 = document.createElement("div");
     videoInputWrap2.className = "input-wrap";
     const videoLead2 = document.createElement("span");
@@ -6869,7 +7015,8 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     headerTabsRow.setAttribute("aria-hidden", "true");
     const tabPanelsWrap = document.createElement("div");
     tabPanelsWrap.className = "dsa-q-tabs-shell dsa-q-tabs-shell--below-heading q-tab-shell-mock";
-    const btnTabDetails = document.createElement("div");
+    const btnTabDetails = document.createElement("button");
+    btnTabDetails.type = "button";
     btnTabDetails.className = "tab active dsa-q-tab dsa-q-tab--active";
     btnTabDetails.setAttribute("role", "tab");
     btnTabDetails.setAttribute("tabindex", "0");
@@ -6877,7 +7024,8 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     btnTabDetails.setAttribute("aria-selected", "true");
     btnTabDetails.id = "dsa-q-tab-details";
     btnTabDetails.textContent = "Details";
-    const btnTabResources = document.createElement("div");
+    const btnTabResources = document.createElement("button");
+    btnTabResources.type = "button";
     btnTabResources.className = "tab dsa-q-tab";
     btnTabResources.setAttribute("role", "tab");
     btnTabResources.setAttribute("tabindex", "0");
@@ -7024,15 +7172,15 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const starIcon = document.createElement("div");
     starIcon.className = "star-icon";
     starIcon.innerHTML =
-        '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>';
+        '<svg class="star-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
     const starText = document.createElement("div");
     starText.className = "star-text";
     const starTitle = document.createElement("div");
     starTitle.className = "star-title";
-    starTitle.textContent = "Mark as Starred";
+    starTitle.textContent = "Mark as starred";
     const starSub = document.createElement("div");
     starSub.className = "star-sub";
-    starSub.textContent = "Shown first in the default Starred tab";
+    starSub.textContent = "Add to your favorites for quick access";
     starText.appendChild(starTitle);
     starText.appendChild(starSub);
     const starSwitch = document.createElement("div");
@@ -7082,6 +7230,10 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
 
     detailsPanel.appendChild(nameField);
     detailsPanel.appendChild(problemSectionInner);
+    const savedDivider = document.createElement("div");
+    savedDivider.className = "section-divider";
+    savedDivider.innerHTML = "<span>Saved details</span>";
+    detailsPanel.appendChild(savedDivider);
     detailsPanel.appendChild(existingCard);
     resourcesPanel.appendChild(videoFieldGroup);
     resourcesPanel.appendChild(solutionsResGroup);
@@ -7095,6 +7247,9 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         existingCard.innerHTML = "";
         if (!ent) {
             existingCard.hidden = true;
+            if (typeof savedDivider !== "undefined" && savedDivider) {
+                savedDivider.hidden = true;
+            }
             return;
         }
         const solsPrev = dsaSolutionsFromEntry(ent);
@@ -7112,57 +7267,67 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             dsaProblemDifficultyLabel(ent.difficulty);
         if (!has) {
             existingCard.hidden = true;
+            if (typeof savedDivider !== "undefined" && savedDivider) {
+                savedDivider.hidden = true;
+            }
             return;
         }
         existingCard.hidden = false;
+        if (typeof savedDivider !== "undefined" && savedDivider) {
+            savedDivider.hidden = false;
+        }
         const head = document.createElement("div");
-        head.className = "dsa-q-existing-head";
-        head.textContent = "Saved for this problem";
+        head.className = "preview-header dsa-q-existing-head";
+        head.innerHTML =
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg> Saved';
         existingCard.appendChild(head);
         const grid = document.createElement("div");
         grid.className = "dsa-q-existing-grid";
+        const diffNorm = dsaNormalizeProblemDifficulty(ent.difficulty);
         const diffRow0 = document.createElement("div");
-        diffRow0.className = "dsa-q-existing-block";
-        const diffTag0 = document.createElement("span");
-        diffTag0.className = "dsa-q-existing-tag";
+        diffRow0.className = "preview-row dsa-q-existing-block";
+        const diffTag0 = document.createElement("div");
+        diffTag0.className = "preview-label dsa-q-existing-tag";
         diffTag0.textContent = "Difficulty";
-        const diffVal0 = document.createElement("span");
-        diffVal0.className =
-            "dsa-q-difficulty-pill dsa-q-difficulty-pill--" + dsaNormalizeProblemDifficulty(ent.difficulty);
-        diffVal0.textContent = dsaProblemDifficultyLabel(ent.difficulty);
+        const diffVal0 = document.createElement("div");
+        diffVal0.className = "preview-val dsa-q-existing-val";
+        const diffPill = document.createElement("span");
+        diffPill.className = `sol-tag ${diffNorm === "easy" ? "optimal" : diffNorm === "medium" ? "better" : "brute"}`;
+        diffPill.textContent = dsaProblemDifficultyLabel(ent.difficulty);
+        diffVal0.appendChild(diffPill);
         diffRow0.appendChild(diffTag0);
         diffRow0.appendChild(diffVal0);
         grid.appendChild(diffRow0);
         if (ent.starred === true) {
             const impRow = document.createElement("div");
-            impRow.className = "dsa-q-existing-block";
-            const impTag = document.createElement("span");
-            impTag.className = "dsa-q-existing-tag";
+            impRow.className = "preview-row dsa-q-existing-block";
+            const impTag = document.createElement("div");
+            impTag.className = "preview-label dsa-q-existing-tag";
             impTag.textContent = "Starred";
-            const impVal = document.createElement("span");
-            impVal.className = "dsa-q-existing-val";
-            impVal.textContent = "Yes";
+            const impVal = document.createElement("div");
+            impVal.className = "preview-val dsa-q-existing-val";
+            impVal.textContent = "Yes ⭐️";
             impRow.appendChild(impTag);
             impRow.appendChild(impVal);
             grid.appendChild(impRow);
         }
         const addBlock = (tagText, content, className) => {
             const row = document.createElement("div");
-            row.className = "dsa-q-existing-block";
-            const tag = document.createElement("span");
-            tag.className = "dsa-q-existing-tag";
+            row.className = "preview-row dsa-q-existing-block";
+            const tag = document.createElement("div");
+            tag.className = "preview-label dsa-q-existing-tag";
             tag.textContent = tagText;
             const el =
                 className === "pre"
                     ? (() => {
                           const pre = document.createElement("pre");
-                          pre.className = "dsa-q-existing-pre";
+                          pre.className = "dsa-q-existing-pre preview-val";
                           pre.textContent = content;
                           return pre;
                       })()
                     : (() => {
-                          const block = document.createElement("blockquote");
-                          block.className = "dsa-q-existing-comment";
+                          const block = document.createElement("div");
+                          block.className = "preview-val dsa-q-existing-val";
                           block.textContent = content.length > 280 ? `${content.slice(0, 277)}…` : content;
                           return block;
                       })();
@@ -7455,9 +7620,12 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     footer.className = "footer";
     const kbdHint = document.createElement("div");
     kbdHint.className = "kbd-hint";
-    kbdHint.innerHTML = "<kbd>↵</kbd> to save · <kbd>Esc</kbd> to close";
+    const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad|iPod/i.test(navigator.platform || "");
+    kbdHint.innerHTML = isMac
+        ? '<span class="kbd">⌘</span><span class="kbd">↵</span> save · <span class="kbd">Esc</span> close'
+        : '<span class="kbd">Ctrl</span><span class="kbd">↵</span> save · <span class="kbd">Esc</span> close';
     const footerBtns = document.createElement("div");
-    footerBtns.className = "btn-row";
+    footerBtns.className = "footer-actions btn-row";
     footerBtns.appendChild(btnFooterCancel);
     footerBtns.appendChild(btnOk);
     footer.appendChild(kbdHint);
@@ -7562,7 +7730,10 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             close();
             return;
         }
-        if (e.key === "Enter" && !e.repeat && isAdmin && !btnOk.hidden && !solutionSheet.isOpen()) {
+        if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && !e.repeat && isAdmin && !btnOk.hidden) {
+            if (solutionSheet.isOpen && solutionSheet.isOpen()) {
+                return;
+            }
             const t = e.target;
             const tag = t && t.tagName;
             if (tag !== "TEXTAREA" && tag !== "SELECT") {

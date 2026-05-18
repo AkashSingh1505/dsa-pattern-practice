@@ -540,12 +540,16 @@ function dsaMountCompanySelectorCompact(mountEl, opts) {
             const custom = document.createElement("div");
             custom.className = "co-option add-custom";
             custom.dataset.add = query;
+            const logo = document.createElement("span");
+            logo.className = "co-opt-logo";
+            logo.innerHTML = customLogo(query);
             const nameEl = document.createElement("span");
             nameEl.className = "co-opt-name";
             nameEl.textContent = '+ Add "' + query + '" as custom';
             const addBtn = document.createElement("span");
             addBtn.className = "co-opt-add";
             addBtn.innerHTML = plusIconSvg;
+            custom.appendChild(logo);
             custom.appendChild(nameEl);
             custom.appendChild(addBtn);
             custom.addEventListener("mousedown", (e) => {

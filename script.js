@@ -6238,15 +6238,19 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     nameField.appendChild(nameLabelRow);
     nameField.appendChild(nameInputWrap);
     if (isEditProblem) {
-        nameField.classList.add("field");
+        nameField.classList.add("field", "dsa-q-name-field");
+        nameLabelRow.className = "field-label dsa-q-name-label-row";
         nameLabelRow.innerHTML = "";
         const nameLabText = document.createElement("span");
+        nameLabText.className = "dsa-q-name-label-text";
         nameLabText.appendChild(document.createTextNode("Problem Name "));
         const nameReqInline = document.createElement("span");
         nameReqInline.className = "req";
         nameReqInline.setAttribute("aria-hidden", "true");
         nameReqInline.textContent = "*";
         nameLabText.appendChild(nameReqInline);
+        nameCountWrap.className = "char-count";
+        nameCountWrap.id = "nameCount";
         nameLabelRow.appendChild(nameLabText);
         nameLabelRow.appendChild(nameCountWrap);
         if (nameLead.parentNode) {
@@ -6301,6 +6305,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
 
     const existingCard = document.createElement("div");
     existingCard.className = "dsa-q-existing q-existing-mock";
+    existingCard.id = "existingPreview";
     existingCard.hidden = true;
     existingCard.setAttribute("aria-live", "polite");
 
@@ -6386,48 +6391,15 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const hintTopLabel = document.createElement("div");
     hintTopLabel.className = "field-label";
     hintTopLabel.innerHTML = "<span>Hint / Notes <span class=\"opt\">(optional)</span></span>";
-    const noteCard = document.createElement("div");
-    noteCard.className = "note-card";
-    const noteHead = document.createElement("div");
-    noteHead.className = "note-head";
-    const noteHeadIcon = document.createElement("div");
-    noteHeadIcon.className = "note-head-icon";
-    noteHeadIcon.innerHTML =
-        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>';
-    const noteTitle = document.createElement("div");
-    noteTitle.className = "note-title";
-    noteTitle.textContent = "Hint / notes";
-    const noteDel = document.createElement("button");
-    noteDel.type = "button";
-    noteDel.className = "note-del";
-    noteDel.setAttribute("aria-label", "Delete");
-    noteDel.innerHTML =
-        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>';
-    noteDel.addEventListener("click", () => {
-        if (!isAdmin) {
-            return;
-        }
-        if (!window.confirm("Clear all text in Hint / notes?")) {
-            return;
-        }
-        hintTa.value = "";
-    });
-    noteHead.appendChild(noteHeadIcon);
-    noteHead.appendChild(noteTitle);
-    noteHead.appendChild(noteDel);
-    const noteBody = document.createElement("div");
-    noteBody.className = "note-body";
-    noteBody.appendChild(hintTa);
-    noteCard.appendChild(noteHead);
-    noteCard.appendChild(noteBody);
+    hintTopLabel.innerHTML = isEditProblem
+        ? "<span>Hint / Notes</span>"
+        : "<span>Hint / Notes <span class=\"opt\">(optional)</span></span>";
+    hintTa.className = "textarea plain-textarea dsa-q-hint dsa-q-hint-note-ta";
+    hintTa.placeholder = isEditProblem
+        ? "Write a short hint or notes for yourself…"
+        : "Write a short hint or notes for yourself…";
     hintFieldGroup.appendChild(hintTopLabel);
-    hintFieldGroup.appendChild(noteCard);
-    if (isEditProblem) {
-        hintTopLabel.innerHTML = "<span>Hint / Notes</span>";
-        hintTa.className = "textarea plain-textarea dsa-q-hint dsa-q-hint-note-ta";
-        hintTa.placeholder = "Write a short hint or notes for yourself…";
-        hintFieldGroup.replaceChildren(hintTopLabel, hintTa);
-    }
+    hintFieldGroup.appendChild(hintTa);
 
     const sketchEditorRoot = document.createElement("div");
 
@@ -6914,25 +6886,10 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     companyFieldGroup.className = "field field-group dsa-q-company-field-group";
     const companyLabRow = document.createElement("div");
     companyLabRow.className = "field-label";
-    companyLabRow.innerHTML = "<span>Companies</span>";
-    let companyHead = null;
-    let companyIntro = null;
-    let btnCompanyInfo = null;
-    if (!isEditProblem) {
-        companyHead = document.createElement("div");
-        companyHead.className = "dsa-q-company-field-head";
-        btnCompanyInfo = dsaCreateResInfoButton();
-        companyHead.appendChild(companyLabRow.cloneNode(true));
-        companyHead.appendChild(btnCompanyInfo);
-        companyIntro = document.createElement("div");
-        companyIntro.className = "dsa-q-resource-intro dsa-q-company-intro";
-        const companyIntroBody = document.createElement("p");
-        companyIntroBody.className = "dsa-q-resource-intro-body";
-        companyIntroBody.textContent =
-            "Tag companies that have asked this problem (or similar). Helps you filter and prioritize practice by interview target.";
-        companyIntro.appendChild(companyIntroBody);
-        dsaWireResAddIntroToggle(companyIntro, btnCompanyInfo);
-    }
+    companyLabRow.innerHTML = isEditProblem
+        ? "<span>Companies</span>"
+        : "<span>Companies <span class=\"opt\">(optional)</span></span>";
+    const btnCompanyInfo = null;
     const companyMount = document.createElement("div");
     companyMount.className = "dsa-q-company-selector-mount";
     let companyApi = null;
@@ -6945,12 +6902,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             },
         });
     }
-    if (isEditProblem) {
-        companyFieldGroup.appendChild(companyLabRow);
-    } else {
-        companyFieldGroup.appendChild(companyHead);
-        companyFieldGroup.appendChild(companyIntro);
-    }
+    companyFieldGroup.appendChild(companyLabRow);
     companyFieldGroup.appendChild(companyMount);
     renderCompanyPicker();
 
@@ -7086,6 +7038,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
 
     headerTabsRow.appendChild(btnTabDetails);
     headerTabsRow.appendChild(btnTabResources);
+    tabPanelsWrap.appendChild(headerTabsRow);
     tabPanelsWrap.appendChild(detailsPanel);
     tabPanelsWrap.appendChild(resourcesPanel);
 
@@ -7668,9 +7621,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         if (btnCompanyInfo) {
             btnCompanyInfo.disabled = ro;
         }
-        if (noteDel) {
-            noteDel.disabled = ro;
-        }
         sketchPanel.classList.toggle("dsa-q-sketch-panel--ro", ro);
         btnZoomOut.disabled = ro;
         btnZoomIn.disabled = ro;
@@ -7998,7 +7948,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     btnOk.addEventListener("click", () => performUnifiedSave({}));
 
     dlg.appendChild(header);
-    dlg.appendChild(headerTabsRow);
     if (adminNote) {
         scrollBody.appendChild(adminNote);
     }

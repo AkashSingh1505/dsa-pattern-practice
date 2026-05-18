@@ -275,35 +275,7 @@
 }
 
 .dsa-sol-pro-lang-pick {
-    position: relative;
-}
-
-.dsa-sol-pro-lang-pick select {
-    appearance: none;
-    -webkit-appearance: none;
-    background: rgba(255, 255, 255, 0.06);
-    color: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    font: inherit;
-    font-size: 12px;
-    font-weight: 500;
-    padding: 5px 26px 5px 12px;
-    border-radius: 99px;
-    cursor: pointer;
-    outline: none;
-}
-
-.dsa-sol-pro-lang-pick::after {
-    content: "";
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    width: 6px;
-    height: 6px;
-    border-right: 1.5px solid rgba(255, 255, 255, 0.7);
-    border-bottom: 1.5px solid rgba(255, 255, 255, 0.7);
-    transform: translateY(-75%) rotate(45deg);
-    pointer-events: none;
+    display: none !important;
 }
 
 .dsa-sol-pro-editor-body {
@@ -367,12 +339,15 @@
     text-shadow: none !important;
 }
 
-.dsa-sol-pro-editor-body textarea {
+.dsa-sol-pro-editor-body textarea,
+#dsaSolProCode {
     color: transparent;
     caret-color: #fff;
     resize: none;
     outline: none;
     -webkit-text-fill-color: transparent;
+    pointer-events: auto;
+    word-wrap: normal;
 }
 
 .dsa-sol-pro-editor-body textarea::placeholder {

@@ -348,7 +348,6 @@ function dsaMountCompanySelectorCompact(mountEl, opts) {
     });
 
     let customCompanies = [];
-    let isAddingOther = false;
     const selected = new Set((opts && opts.initialSelected) || []);
 
     const root = document.createElement("div");
@@ -448,67 +447,6 @@ function dsaMountCompanySelectorCompact(mountEl, opts) {
         dropdown.innerHTML = "";
         const query = String(q || "").trim();
         const ql = query.toLowerCase();
-
-        if (isAddingOther) {
-            const form = document.createElement("div");
-            form.className = "co-add-other-form";
-            const logo = document.createElement("span");
-            logo.className = "co-opt-logo";
-            logo.innerHTML =
-                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-            const input = document.createElement("input");
-            input.type = "text";
-            input.placeholder = "Enter company name…";
-            input.maxLength = 40;
-            input.autocomplete = "off";
-            const cancelBtn = document.createElement("button");
-            cancelBtn.type = "button";
-            cancelBtn.className = "co-add-other-cancel";
-            cancelBtn.title = "Cancel";
-            cancelBtn.textContent = "✕";
-            const okBtn = document.createElement("button");
-            okBtn.type = "button";
-            okBtn.className = "co-add-other-ok";
-            okBtn.title = "Add";
-            okBtn.textContent = "✓";
-            okBtn.disabled = true;
-            form.appendChild(logo);
-            form.appendChild(input);
-            form.appendChild(cancelBtn);
-            form.appendChild(okBtn);
-            dropdown.appendChild(form);
-            setTimeout(() => input.focus(), 0);
-            const validate = () => {
-                const v = input.value.trim();
-                const exists = getAll().some((c) => c.name.toLowerCase() === v.toLowerCase());
-                okBtn.disabled = !v || exists;
-            };
-            input.addEventListener("input", validate);
-            const submit = () => {
-                const v = input.value.trim();
-                if (!v || getAll().some((c) => c.name.toLowerCase() === v.toLowerCase())) return;
-                addCompany(v);
-                isAddingOther = false;
-            };
-            input.addEventListener("keydown", (e) => {
-                if (e.key === "Enter") submit();
-                if (e.key === "Escape") {
-                    isAddingOther = false;
-                    renderDropdown(searchInput.value);
-                }
-            });
-            okBtn.addEventListener("mousedown", (e) => {
-                e.preventDefault();
-                submit();
-            });
-            cancelBtn.addEventListener("mousedown", (e) => {
-                e.preventDefault();
-                isAddingOther = false;
-                renderDropdown(searchInput.value);
-            });
-            return;
-        }
-
         const opts = getAll().filter((c) => !selected.has(c.name) && (!ql || c.name.toLowerCase().includes(ql)));
 
         opts.slice(0, 8).forEach((c) => {
@@ -560,28 +498,12 @@ function dsaMountCompanySelectorCompact(mountEl, opts) {
             dropdown.appendChild(custom);
         }
 
-        const addOther = document.createElement("div");
-        addOther.className = "co-option co-option--add-other";
-        const addOtherLogo = document.createElement("span");
-        addOtherLogo.className = "co-opt-logo";
-        addOtherLogo.innerHTML =
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-        const addOtherName = document.createElement("span");
-        addOtherName.className = "co-opt-name";
-        addOtherName.textContent = "Add other company…";
-        const addOtherBtn = document.createElement("span");
-        addOtherBtn.className = "co-opt-add";
-        addOtherBtn.innerHTML = plusIconSvg;
-        addOther.appendChild(addOtherLogo);
-        addOther.appendChild(addOtherName);
-        addOther.appendChild(addOtherBtn);
-        addOther.addEventListener("mousedown", (e) => {
-            e.preventDefault();
-            if (disabled) return;
-            isAddingOther = true;
-            renderDropdown(searchInput.value);
-        });
-        dropdown.appendChild(addOther);
+        if (!opts.length && !query) {
+            const empty = document.createElement("div");
+            empty.className = "co-dropdown-empty";
+            empty.textContent = "No more companies — type to add custom";
+            dropdown.appendChild(empty);
+        }
     }
 
     function refresh() {

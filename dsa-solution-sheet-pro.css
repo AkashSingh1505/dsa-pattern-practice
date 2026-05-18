@@ -36,10 +36,10 @@
     --dsa-sol-accent: #007aff;
     --dsa-sol-accent-glow: rgba(0, 122, 255, 0.22);
     --dsa-sol-danger: #ff3b30;
-    --dsa-sol-code-bg: #1a1b26;
-    --dsa-sol-code-toolbar: #15161e;
-    --dsa-sol-code-text: #c0caf5;
-    --dsa-sol-gutter: #565f89;
+    --dsa-sol-code-bg: #000000;
+    --dsa-sol-code-toolbar: #0a0a0a;
+    --dsa-sol-code-text: #e5e7eb;
+    --dsa-sol-gutter: #6b7280;
     --dsa-sol-radius: 20px;
     --dsa-sol-radius-md: 14px;
     --dsa-sol-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.35), 0 0 0 0.5px rgba(0, 0, 0, 0.05);

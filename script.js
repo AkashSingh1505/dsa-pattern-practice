@@ -7436,14 +7436,8 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             scratchApi.clear();
         }
         const docTitleEl = sketchEditorRoot.querySelector("#dsaSkDocTitle");
-        const titleNameEl = sketchEditorRoot.querySelector("#dsaSkTitleName");
-        const label = ent && ent.name ? String(ent.name).trim() : nameIn.value.trim();
-        const labelOrDefault = label || "Untitled Sketch";
         if (docTitleEl) {
-            docTitleEl.value = labelOrDefault;
-        }
-        if (titleNameEl) {
-            titleNameEl.textContent = labelOrDefault;
+            docTitleEl.value = "Sketch";
         }
     }
 

@@ -177,29 +177,99 @@ input[type="range"]::-moz-range-thumb{width:16px;height:16px;background:#fff;bor
     }
 }
 
-/* Minimized title-block: only shown in non-fs (logo + title only, NO subtitle/label) */
-.dsa-sketch-studio-mount .dsa-sk-title-block { display: none; }
-.dsa-sketch-studio-mount .app:not(.fs) .dsa-sk-title-block { display: flex; flex-direction: column; min-width: 0; flex: 1; }
-.dsa-sketch-studio-mount .app.fs .dsa-sk-title-block { display: none !important; }
+/* Title-block (logo + Sketch / Sketch your problem solution) — shown in BOTH modes */
+.dsa-sketch-studio-mount .dsa-sk-title-block {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
 .dsa-sketch-studio-mount .dsa-sk-title-block .dsa-sk-title-label { display: none !important; }
 .dsa-sketch-studio-mount .dsa-sk-title-block .dsa-sk-title-name {
     font-size: 15px;
     font-weight: 600;
     color: var(--mini-text);
     line-height: 1.25;
-    max-width: 260px;
+    max-width: 320px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    padding: 2px 6px;
-    margin-left: -6px;
-    border: 1px solid transparent;
-    border-radius: 6px;
 }
+.dsa-sketch-studio-mount .dsa-sk-title-block .dsa-sk-title-sub {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--mini-text-muted);
+    line-height: 1.2;
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+/* Hide the original DSA brand-text in BOTH modes (we use our own title-block now) */
+.dsa-sketch-studio-mount .brand-text { display: none !important; }
+.dsa-sketch-studio-mount .app.fs .brand-text { display: none !important; }
+/* Use the same gradient logo in fullscreen */
+.dsa-sketch-studio-mount .app.fs .dsa-sk-brand-mark {
+    background: linear-gradient(135deg, var(--mini-accent, #7c5cff), var(--mini-accent-2, #5b8def)) !important;
+    box-shadow: 0 6px 16px rgba(124, 92, 255, 0.35);
+}
+.dsa-sketch-studio-mount .app.fs .dsa-sk-brand-mark svg.dsa-sk-brand-mark-icon {
+    display: block !important;
+    width: 22px;
+    height: 22px;
+    color: #fff;
+}
+.dsa-sketch-studio-mount .app.fs .dsa-sk-brand-mark #dsaSkBrandMarkText,
+.dsa-sketch-studio-mount .app.fs .dsa-sk-brand-mark span { display: none !important; }
+.dsa-sketch-studio-mount .app.fs .brand { gap: 12px; }
 
-/* Mini fullscreen button shown only in non-fs */
+/* Swap Fullscreen ↔ Minimize button based on state */
 .dsa-sketch-studio-mount .dsa-sk-mini-fs-btn { display: none; }
+.dsa-sketch-studio-mount .dsa-sk-mini-min-btn { display: none; }
 .dsa-sketch-studio-mount .app:not(.fs) .dsa-sk-mini-fs-btn { display: inline-flex; }
+.dsa-sketch-studio-mount .app.fs .dsa-sk-mini-min-btn { display: inline-flex; }
+.dsa-sketch-studio-mount .app.fs .dsa-sketch-fs-back { display: none !important; }
+/* In fullscreen, keep the same header-actions style on the right and push them to the right edge */
+.dsa-sketch-studio-mount .app.fs .header { justify-content: space-between; align-items: center; }
+.dsa-sketch-studio-mount .app.fs .header-actions { margin-left: auto; gap: 6px; align-items: center; }
+.dsa-sketch-studio-mount .app.fs .header-actions .btn-flat {
+    height: auto;
+    padding: 8px 13px;
+    border: 1px solid var(--mini-border, rgba(0,0,0,0.08));
+    border-radius: 11px;
+    background: var(--mini-surface-solid, #fff);
+    color: var(--mini-text, #1d1d1f);
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: none;
+    gap: 6px;
+}
+.dsa-sketch-studio-mount .app.fs .header-actions .btn-flat:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.dsa-sketch-studio-mount .app.fs .header-actions .btn-flat:active { transform: scale(0.95); }
+.dsa-sketch-studio-mount .app.fs .header-actions .btn-flat svg { width: 17px; height: 17px; }
+.dsa-sketch-studio-mount .app.fs .header-actions .dsa-sk-mini-min-btn { padding: 8px; }
+.dsa-sketch-studio-mount .app.fs .header-actions .btn-flat.danger {
+    color: var(--mini-danger, #ff3b30);
+    padding: 8px;
+}
+.dsa-sketch-studio-mount .app.fs .header-actions .btn-flat.danger:hover {
+    background: rgba(255, 59, 48, 0.08);
+    border-color: rgba(255, 59, 48, 0.3);
+}
+.dsa-sketch-studio-mount .app.fs .header-actions .btn-flat.primary {
+    background: linear-gradient(135deg, var(--mini-accent, #7c5cff), var(--mini-accent-2, #5b8def)) !important;
+    color: #fff !important;
+    border-color: transparent;
+    padding: 9px 16px;
+    box-shadow: 0 6px 16px rgba(124, 92, 255, 0.35);
+}
+.dsa-sketch-studio-mount .app.fs .header-actions .btn-flat.primary:hover {
+    box-shadow: 0 8px 24px rgba(124, 92, 255, 0.45);
+}
+.dsa-sketch-studio-mount .app.fs .header-actions .btn-flat.primary svg { width: 15px; height: 15px; }
 
 /* Propagate height through the layout chain so the canvas can fill available space */
 .dsa-sketch-studio-host:not(.dsa-sketch-studio-host--fullscreen) .dsa-sketch-studio-mount { flex: 1; min-height: 0; }

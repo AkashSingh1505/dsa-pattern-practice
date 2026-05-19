@@ -3158,6 +3158,97 @@ function appendPlatformIcon(container, url) {
     container.appendChild(img);
 }
 
+/**
+ * Inline branded platform mark for the practice-problems card.
+ * Returns a self-contained <span class="dsa-h-platform-icon"> with an SVG inside —
+ * no external image assets needed. Recognises LeetCode, GeeksforGeeks, Coding Ninjas;
+ * everything else falls back to a neutral link icon.
+ */
+function dsaCardPlatformIcon(url) {
+    const platform = dsaResolveProblemPlatform(url);
+    const key = platform ? platform.key : "";
+    const label = platform ? platform.label : "Link";
+
+    const wrap = document.createElement("span");
+    wrap.className = "dsa-h-platform-icon dsa-h-platform-icon--card";
+    wrap.setAttribute("aria-label", label);
+    wrap.title = label;
+    if (key) {
+        wrap.dataset.platform = key;
+    }
+
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("width", "18");
+    svg.setAttribute("height", "18");
+    svg.setAttribute("aria-hidden", "true");
+
+    function rect(x, y, w, h, rx, fill) {
+        const r = document.createElementNS(NS, "rect");
+        r.setAttribute("x", String(x));
+        r.setAttribute("y", String(y));
+        r.setAttribute("width", String(w));
+        r.setAttribute("height", String(h));
+        r.setAttribute("rx", String(rx));
+        r.setAttribute("fill", fill);
+        svg.appendChild(r);
+    }
+    function text(x, y, content, opts) {
+        const t = document.createElementNS(NS, "text");
+        t.setAttribute("x", String(x));
+        t.setAttribute("y", String(y));
+        t.setAttribute("text-anchor", "middle");
+        t.setAttribute("dominant-baseline", "central");
+        t.setAttribute("font-family", "-apple-system, BlinkMacSystemFont, 'SF Pro Display', Helvetica, Arial, sans-serif");
+        t.setAttribute("font-weight", "800");
+        t.setAttribute("font-size", String(opts && opts.fontSize ? opts.fontSize : 10));
+        t.setAttribute("fill", (opts && opts.fill) || "#ffffff");
+        t.setAttribute("letter-spacing", "-0.4");
+        t.textContent = content;
+        svg.appendChild(t);
+    }
+    function path(d, fill, stroke, sw) {
+        const p = document.createElementNS(NS, "path");
+        p.setAttribute("d", d);
+        if (fill) p.setAttribute("fill", fill);
+        if (stroke) {
+            p.setAttribute("stroke", stroke);
+            p.setAttribute("stroke-width", String(sw || 2));
+            p.setAttribute("stroke-linecap", "round");
+            p.setAttribute("stroke-linejoin", "round");
+            p.setAttribute("fill", "none");
+        }
+        svg.appendChild(p);
+    }
+
+    if (key === "leetcode.com" || key === "leetcode.cn") {
+        /* LeetCode — orange-yellow rounded square with white "LC" mark. */
+        rect(0, 0, 24, 24, 5, "#FFA116");
+        text(12, 13.2, "LC", { fontSize: 9.5, fill: "#FFFFFF" });
+    } else if (key === "geeksforgeeks.org") {
+        /* GeeksforGeeks — dark-green rounded square with a white "G" glyph. */
+        rect(0, 0, 24, 24, 5, "#2F8D46");
+        text(12, 13.4, "G", { fontSize: 14, fill: "#FFFFFF" });
+    } else if (key === "codingninjas.com") {
+        /* Coding Ninjas / Naukri Code360 — red-orange tile with "CN". */
+        rect(0, 0, 24, 24, 5, "#DD4124");
+        text(12, 13.2, "CN", { fontSize: 9.5, fill: "#FFFFFF" });
+    } else {
+        /* Unknown platform — neutral gray tile with a small link glyph. */
+        rect(0, 0, 24, 24, 5, "#C7C7CC");
+        path(
+            "M10 14a3 3 0 0 0 4.24 0l2.83-2.83a3 3 0 0 0-4.24-4.24l-1 1M14 10a3 3 0 0 0-4.24 0l-2.83 2.83a3 3 0 0 0 4.24 4.24l1-1",
+            null,
+            "#FFFFFF",
+            1.7,
+        );
+    }
+
+    wrap.appendChild(svg);
+    return wrap;
+}
+
 /** Building icon — company tags toggle (same size as other problem-row toggles). */
 function dsaSvgIconCompany() {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -4201,13 +4292,11 @@ function buildProblemListItem(prob, probCtx) {
     a.rel = "noopener noreferrer";
     a.title = `${prob.name} — ${getPlatformLabel(href)}`;
 
-    const icon = document.createElement("span");
-    appendPlatformIcon(icon, href);
+    a.appendChild(dsaCardPlatformIcon(href));
 
     const text = document.createElement("span");
     text.className = "dsa-h-problem-link-text";
     text.textContent = prob.name;
-    a.appendChild(icon);
     a.appendChild(text);
 
     mainRow.appendChild(a);
@@ -4378,7 +4467,18 @@ function buildProblemListItem(prob, probCtx) {
         pane.className = "dsa-h-prob-pane";
         pane.dataset.key = key;
         pane.hidden = true;
+        /* Mockup ships a small uppercase label above each pane's body — build it once and slot it in. */
+        const PANE_LABEL_BY_KEY = {
+            hint: "Hint",
+            companies: "Asked at",
+            solution: "Solution",
+            resources: "Resources",
+        };
+        const paneLabel = document.createElement("div");
+        paneLabel.className = "dsa-h-prob-pane-label";
+        paneLabel.textContent = PANE_LABEL_BY_KEY[key] || label;
         if (key === "companies") {
+            pane.appendChild(paneLabel);
             const box = document.createElement("div");
             box.className = "dsa-h-prob-companies";
             raw.forEach((tag) => {
@@ -4390,9 +4490,12 @@ function buildProblemListItem(prob, probCtx) {
             pane.appendChild(box);
         } else if (key === "solution") {
             dsaFillProblemSolutionPane(prob, pane);
+            pane.insertBefore(paneLabel, pane.firstChild);
         } else if (key === "resources") {
             dsaFillProblemResourcesPane(prob, pane);
+            pane.insertBefore(paneLabel, pane.firstChild);
         } else {
+            pane.appendChild(paneLabel);
             const div = document.createElement("div");
             div.className = "dsa-h-prob-hint";
             div.textContent = String(raw);
@@ -4404,6 +4507,28 @@ function buildProblemListItem(prob, probCtx) {
             e.stopPropagation();
             const wasOpen = btn.getAttribute("aria-expanded") === "true";
             const nowOpen = !wasOpen;
+            /* Mockup behaviour: only one pane is visible at a time — opening one closes the others. */
+            if (nowOpen) {
+                bar.querySelectorAll(".dsa-h-prob-toggle").forEach((otherBtn) => {
+                    if (otherBtn === btn) {
+                        return;
+                    }
+                    if (otherBtn.getAttribute("aria-expanded") === "true") {
+                        otherBtn.setAttribute("aria-expanded", "false");
+                        otherBtn.classList.remove("dsa-h-prob-toggle--open");
+                        otherBtn.setAttribute(
+                            "aria-label",
+                            `${otherBtn.dataset.probToggleLabel || "Extra"} — hidden, click to show`,
+                        );
+                        otherBtn.title = `${otherBtn.dataset.probToggleLabel || "Extra"} (hidden)`;
+                    }
+                });
+                reveal.querySelectorAll(".dsa-h-prob-pane").forEach((otherPane) => {
+                    if (otherPane !== pane) {
+                        otherPane.hidden = true;
+                    }
+                });
+            }
             btn.setAttribute("aria-expanded", String(nowOpen));
             btn.classList.toggle("dsa-h-prob-toggle--open", nowOpen);
             pane.hidden = !nowOpen;
@@ -4413,14 +4538,7 @@ function buildProblemListItem(prob, probCtx) {
                 nowOpen ? `${label} — visible, click to hide` : `${label} — hidden, click to show`,
             );
             btn.title = nowOpen ? `${label} (visible)` : `${label} (hidden)`;
-            if (nowOpen && key === "resources") {
-                requestAnimationFrame(() => {
-                    pane.querySelectorAll(".dsa-h-prob-code").forEach((preBlock) => {
-                        dsaHighlightProbSolutionCode(preBlock);
-                    });
-                });
-            }
-            if (nowOpen && key === "solution") {
+            if (nowOpen && (key === "resources" || key === "solution")) {
                 requestAnimationFrame(() => {
                     pane.querySelectorAll(".dsa-h-prob-code").forEach((preBlock) => {
                         dsaHighlightProbSolutionCode(preBlock);
@@ -4789,11 +4907,13 @@ function buildTreeNode(node, depth, panel, scheduleRedraw, theme, ctx) {
 
         const cardSubtitle = document.createElement("div");
         cardSubtitle.className = "dsa-h-problems-card-subtitle";
+        /* The card lists problems that belong to `node` — the leaf topic itself is the immediate
+           parent of those problems, so render its own name (e.g. "Two Pointers"). */
         const parentNameForSubtitle =
-            ctx && ctx.parentName && String(ctx.parentName).trim()
-                ? String(ctx.parentName).trim()
-                : node && node.name
-                  ? String(node.name).trim()
+            node && node.name && String(node.name).trim()
+                ? String(node.name).trim()
+                : ctx && ctx.parentName
+                  ? String(ctx.parentName).trim()
                   : "";
         const cardSubtitleParent = document.createElement("span");
         cardSubtitleParent.className = "dsa-h-problems-card-subtitle-parent";

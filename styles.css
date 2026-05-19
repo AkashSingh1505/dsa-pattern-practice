@@ -3477,35 +3477,44 @@ label.dsa-h-prob-done {
 }
 
 .dsa-h-prob-hint {
-    padding: 8px 10px;
-    border-radius: 8px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    font-size: 0.8125rem;
-    line-height: 1.45;
-    color: #334155;
+    padding: 0;
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #1d1d1f;
 }
 
 .dsa-h-prob-companies {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    padding: 8px 10px;
-    border-radius: 8px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    padding: 0;
+    background: transparent;
+    border: none;
     max-width: 100%;
 }
 
 .dsa-h-prob-company-pill {
     display: inline-block;
-    padding: 4px 10px;
+    padding: 4px 11px;
     border-radius: 999px;
-    background: #eef2ff;
-    border: 1px solid #c7d2fe;
-    font-size: 0.75rem;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    font-size: 12px;
     font-weight: 500;
-    color: #3730a3;
+    color: #1d1d1f;
+}
+
+@media (prefers-color-scheme: dark) {
+    .dsa-h-prob-hint {
+        color: #f5f5f7;
+    }
+    .dsa-h-prob-company-pill {
+        background: #1c1c1e;
+        border-color: rgba(255, 255, 255, 0.08);
+        color: #f5f5f7;
+    }
 }
 
 .dsa-h-prob-pane--resources {
@@ -4775,25 +4784,14 @@ label.dsa-h-prob-done {
     height: 32px;
     margin: 0;
     padding: 0;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    background: #fff;
-    color: #64748b;
+    border: none;
+    border-radius: 9px;
+    background: transparent;
+    color: #6e6e73;
     cursor: pointer;
     box-sizing: border-box;
-}
-
-.dsa-h-problems-card-close:hover,
-.dsa-h-problems-card-delete-all:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
-    color: #334155;
-}
-
-.dsa-h-problems-card-delete-all:hover {
-    color: #b45309;
-    border-color: #fcd34d;
-    background: #fffbeb;
+    outline: none;
+    box-shadow: none;
 }
 
 .dsa-h-problems-card-close svg,
@@ -7445,8 +7443,8 @@ body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
 .dsa-h-problems-card .dsa-h-problems-tools-search-input {
     flex: 1 1 auto;
     width: 100%;
-    height: 34px;
-    padding: 0 12px 0 30px;
+    height: auto;
+    padding: 8px 12px 8px 30px;
     border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 9px;
     background: #ffffff;
@@ -7457,6 +7455,7 @@ body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
     transition:
         border-color 0.15s ease,
         box-shadow 0.15s ease;
+    line-height: 1.4;
 }
 
 .dsa-h-problems-card .dsa-h-problems-tools-search-input:focus {
@@ -7949,6 +7948,36 @@ body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
     background: rgba(0, 0, 0, 0.015);
     margin: 0;
     animation: dsaProbPaneIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Pane label — small uppercase header above each pane's body. */
+.dsa-h-problems-card .dsa-h-prob-pane-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #86868b;
+    margin-bottom: 8px;
+}
+
+/* Card-scoped platform icon — keeps the rounded brand mark crisp. */
+.dsa-h-problems-card .dsa-h-platform-icon--card {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    overflow: hidden;
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.dsa-h-problems-card .dsa-h-platform-icon--card svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+    border-radius: 5px;
 }
 
 @keyframes dsaProbPaneIn {

@@ -1102,6 +1102,7 @@ body > .dsa-sol-pro-toast {
     box-shadow: none;
     overflow: visible;
     min-height: auto;
+    padding: 8px 0 16px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1124,20 +1125,25 @@ body > .dsa-sol-pro-toast {
     overflow: visible !important;
 }
 
+/* One elevated sketch card (rounded shadow follows this element only) */
 .graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel .sketch-studio {
     flex: none;
-    background: transparent;
-    box-shadow: none !important;
-    border-radius: 0;
-    filter: none;
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 0.5px solid rgba(60, 60, 67, 0.12);
+    box-shadow:
+        0 10px 32px rgba(0, 0, 0, 0.12),
+        0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-/* One card only: shadow + radius live here (not on wrappers) */
 .graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel .sketch-studio.minimized {
-    background: #fff;
-    border-radius: 22px;
-    overflow: hidden;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 620px;
+    height: 460px;
+    max-height: 460px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /* Canvas hairline looked like an inner card */
@@ -1149,7 +1155,13 @@ body > .dsa-sol-pro-toast {
     flex: 1;
     width: 100%;
     min-height: 420px;
+    max-width: 100%;
     align-self: stretch;
+}
+
+/* In problem dialog, Save persists sketch — Done is redundant (still shown in fullscreen) */
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel #dsaSkDoneBtn {
+    display: none !important;
 }
 
 .graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel .canvas-wrap {

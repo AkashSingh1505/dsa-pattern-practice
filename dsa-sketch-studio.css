@@ -376,38 +376,20 @@
     display: flex;
 }
 
-.dsa-sketch-studio-mount .done-btn {
-    background: var(--theme);
-    color: white;
-    border: none;
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 6px 18px rgba(0, 122, 255, 0.38);
-    transition: transform 0.2s var(--ease-spring);
-}
-
-.dsa-sketch-studio-mount .done-btn:hover {
-    transform: scale(1.06);
-}
-
-.dsa-sketch-studio-mount .done-btn:active {
-    transform: scale(0.9);
-}
-
-.dsa-sketch-studio-mount .done-btn svg {
-    width: 18px;
-    height: 18px;
-    stroke: white;
-    fill: none;
-}
-
 .dsa-sketch-studio-mount .minimize-btn {
     display: flex;
+}
+
+.dsa-sketch-studio-mount .minimize-btn .dsa-sk-icon-collapse {
+    display: none;
+}
+
+.dsa-sketch-studio-mount .minimize-btn.dsa-sk-min--expanded .dsa-sk-icon-expand {
+    display: none;
+}
+
+.dsa-sketch-studio-mount .minimize-btn.dsa-sk-min--expanded .dsa-sk-icon-collapse {
+    display: block;
 }
 
 .dsa-sketch-studio-mount .bottom-area {
@@ -1225,14 +1207,12 @@
     gap: 6px;
 }
 
-.dsa-sketch-studio-mount .sketch-studio.minimized .icon-btn,
-.dsa-sketch-studio-mount .sketch-studio.minimized .done-btn {
+.dsa-sketch-studio-mount .sketch-studio.minimized .icon-btn {
     width: 34px;
     height: 34px;
 }
 
-.dsa-sketch-studio-mount .sketch-studio.minimized .icon-btn svg,
-.dsa-sketch-studio-mount .sketch-studio.minimized .done-btn svg {
+.dsa-sketch-studio-mount .sketch-studio.minimized .icon-btn svg {
     width: 14px;
     height: 14px;
 }

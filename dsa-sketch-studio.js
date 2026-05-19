@@ -44,7 +44,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     if (!document.head.querySelector("link[data-dsa-sketch-studio-css]")) {
         const lk = document.createElement("link");
         lk.rel = "stylesheet";
-        lk.href = "./dsa-sketch-studio.css?v=22";
+        lk.href = "./dsa-sketch-studio.css?v=23";
         lk.dataset.dsaSketchStudioCss = "1";
         document.head.appendChild(lk);
     }
@@ -154,12 +154,9 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
         </button>
       </div>
 
-      <button class="icon-btn minimize-btn" type="button" id="dsaSkMinimizeBtn" title="Minimize">
-        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>
-      </button>
-
-      <button class="done-btn" type="button" id="dsaSkDoneBtn" title="Save sketch" aria-label="Save sketch">
-        <svg viewBox="0 0 24 24" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+      <button class="icon-btn minimize-btn" type="button" id="dsaSkMinimizeBtn" title="Expand" aria-label="Expand">
+        <svg class="dsa-sk-icon-expand" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>
+        <svg class="dsa-sk-icon-collapse" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3H4v5M15 3h5v5M9 21H4v-5M15 21h5v-5M3 10l7-7M21 14l-7 7M14 3l7 7M10 21l-7-7"/></svg>
       </button>
     </div>
   </div>
@@ -372,6 +369,17 @@ function syncToolbarUi() {
   mount.classList.toggle('dsa-sk-bottom-main', !isBigScreen() && state.tool !== 'pencil');
   /* iPad/PC: hide top back only when minimized (same toolbar as fullscreen otherwise) */
   mount.classList.toggle('dsa-sk-back-hidden', isBigScreen() && state.minimized && !isFullscreen());
+  syncMinimizeBtnUi();
+}
+
+function syncMinimizeBtnUi() {
+  const btn = $('dsaSkMinimizeBtn');
+  if (!btn) return;
+  const expanded = isFullscreen() || !state.minimized;
+  btn.classList.toggle('dsa-sk-min--expanded', expanded);
+  const label = expanded ? 'Minimize' : 'Expand';
+  btn.title = label;
+  btn.setAttribute('aria-label', label);
 }
 
 function enterFullscreen() {
@@ -456,16 +464,6 @@ function onNativeFullscreenChange() {
     syncToolbarUi();
     setTimeout(fitCanvas, 480);
   }
-}
-
-function flushSketchDone() {
-  if (roBool()) return;
-  if (textOverlay && textOverlay.classList.contains('show')) confirmText();
-  if (tableOverlay && tableOverlay.classList.contains('show')) confirmTable();
-  if (imageOverlay && imageOverlay.classList.contains('show')) confirmImage();
-  syncInkFlag();
-  notifyChange();
-  if (typeof hooks.onPersist === 'function') hooks.onPersist();
 }
 
 function addL(target, type, fn, opts) {
@@ -915,8 +913,8 @@ wrap.addEventListener('touchmove', (e) => {
 wrap.addEventListener('touchend', () => { pinchDist = null; pinchCenter = null; });
 
 wrap.addEventListener('wheel', (e) => {
+  if (!e.ctrlKey && !e.metaKey) return;
   e.preventDefault();
-  // ✅ Normal zoom: scroll up = bigger, scroll down = smaller (more empty area)
   const factor = e.deltaY > 0 ? 0.92 : 1.08;
   state.scale = Math.max(0.3, Math.min(4, state.scale * factor));
   applyCanvasTransform();
@@ -1681,8 +1679,6 @@ addL(document, 'webkitfullscreenchange', onNativeFullscreenChange);
 const minBtn = $('dsaSkMinimizeBtn');
 if (minBtn) addL(minBtn, 'click', () => toggleMinimize());
 
-addL($('dsaSkDoneBtn'), 'click', () => flushSketchDone());
-
 addL($('dsaSkUndoBtn'), 'click', () => undo());
 addL($('dsaSkRedoBtn'), 'click', () => redo());
 
@@ -1756,10 +1752,6 @@ function onDocKey(e) {
     return;
   }
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-    e.preventDefault();
-    flushSketchDone();
-  }
 }
 addL(document, 'keydown', onDocKey, true);
 

@@ -1159,11 +1159,6 @@ body > .dsa-sol-pro-toast {
     align-self: stretch;
 }
 
-/* In problem dialog, Save persists sketch — Done is redundant (still shown in fullscreen) */
-.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel #dsaSkDoneBtn {
-    display: none !important;
-}
-
 .graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel .canvas-wrap {
     background: #fff;
 }

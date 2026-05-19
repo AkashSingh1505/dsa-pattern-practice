@@ -6985,40 +6985,61 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     let scratchApi = dsaStubSketchApi();
     let sketchEditorWired = false;
 
-    /** Save sketch only (JPEG) — used by Sketch Studio Done without closing the modal. */
-    function persistSketchDrawingQuick() {
-        if (!isAdmin) {
-            return;
-        }
+    /** JPEG data URL for problem save — always wires editor if the sketch panel was used. */
+    function collectSketchDrawingPayload(lookupNameOverride) {
         ensureSketchEditor();
-        const name = nameIn.value.trim();
-        if (!name || parentKey === "__DSA_META__") {
-            return;
-        }
         if (typeof scratchApi.syncHasInkFromPixels === "function") {
             scratchApi.syncHasInkFromPixels();
         }
-        let drawingPayload = "";
-        if (scratchApi.getHasInk()) {
-            drawingPayload =
-                typeof scratchApi.toPersistedSketchDataUrl === "function"
-                    ? scratchApi.toPersistedSketchDataUrl()
-                    : scratchApi.toDataUrl();
+        if (userClearedSketch) {
+            return "";
         }
-        const lookupName = isEditProblem && editQuestionName ? editQuestionName : name;
-        if (!drawingPayload && !userClearedSketch) {
+        let drawingPayload = "";
+        if (sketchEditorWired) {
+            try {
+                const hasInk = typeof scratchApi.getHasInk === "function" && scratchApi.getHasInk();
+                if (hasInk) {
+                    drawingPayload =
+                        typeof scratchApi.toPersistedSketchDataUrl === "function"
+                            ? scratchApi.toPersistedSketchDataUrl()
+                            : typeof scratchApi.toDataUrl === "function"
+                              ? scratchApi.toDataUrl()
+                              : "";
+                }
+            } catch (err) {
+                console.warn("DSA: sketch export failed", err);
+            }
+        }
+        const lookupName =
+            lookupNameOverride != null && String(lookupNameOverride).trim()
+                ? String(lookupNameOverride).trim()
+                : isEditProblem && editQuestionName
+                  ? editQuestionName
+                  : nameIn.value.trim();
+        if (!drawingPayload && !userClearedSketch && lookupName) {
             const entKeep = dsaResolveQuestionForModal(parentKey, lookupName, editUserNodeId);
             if (entKeep && String(entKeep.drawing || "").trim()) {
                 drawingPayload = String(entKeep.drawing);
             }
         }
+        return drawingPayload;
+    }
+
+    /** Save sketch only (JPEG) — optional hook; problem Save uses collectSketchDrawingPayload. */
+    function persistSketchDrawingQuick() {
+        if (!isAdmin) {
+            return;
+        }
+        const name = nameIn.value.trim();
+        if (!name || parentKey === "__DSA_META__") {
+            return;
+        }
+        const drawingPayload = collectSketchDrawingPayload();
+        const lookupName = isEditProblem && editQuestionName ? editQuestionName : name;
         const entForId = dsaResolveQuestionForModal(parentKey, lookupName, editUserNodeId);
         const persistId =
             (editUserNodeId && String(editUserNodeId).trim()) ||
             (entForId && entForId.id ? String(entForId.id).trim() : "");
-        if (!persistId && !editQuestionName) {
-            return;
-        }
         const solPayload = solutionsState
             .map((s) => dsaNormalizeSolutionItem(s))
             .filter(
@@ -8505,23 +8526,8 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             showQToast("Please choose a category.", "error");
             return;
         }
-        if (typeof scratchApi.syncHasInkFromPixels === "function") {
-            scratchApi.syncHasInkFromPixels();
-        }
-        let drawingPayload = "";
-        if (scratchApi.getHasInk()) {
-            drawingPayload =
-                typeof scratchApi.toPersistedSketchDataUrl === "function"
-                    ? scratchApi.toPersistedSketchDataUrl()
-                    : scratchApi.toDataUrl();
-        }
         const lookupName = isEditProblem && editQuestionName ? editQuestionName : name;
-        if (!drawingPayload && !userClearedSketch) {
-            const entKeep = dsaResolveQuestionForModal(parentKey, lookupName, editUserNodeId);
-            if (entKeep && String(entKeep.drawing || "").trim()) {
-                drawingPayload = String(entKeep.drawing);
-            }
-        }
+        const drawingPayload = collectSketchDrawingPayload(lookupName);
         const entForId = dsaResolveQuestionForModal(parentKey, lookupName, editUserNodeId);
         const persistId =
             (editUserNodeId && String(editUserNodeId).trim()) ||

@@ -92,6 +92,17 @@ function syncToolbarUi() {
   mount.classList.toggle('dsa-sk-bottom-main', !isBigScreen() && state.tool !== 'pencil');
   /* iPad/PC: hide top back only when minimized (same toolbar as fullscreen otherwise) */
   mount.classList.toggle('dsa-sk-back-hidden', isBigScreen() && state.minimized && !isFullscreen());
+  syncMinimizeBtnUi();
+}
+
+function syncMinimizeBtnUi() {
+  const btn = $('dsaSkMinimizeBtn');
+  if (!btn) return;
+  const expanded = isFullscreen() || !state.minimized;
+  btn.classList.toggle('dsa-sk-min--expanded', expanded);
+  const label = expanded ? 'Minimize' : 'Expand';
+  btn.title = label;
+  btn.setAttribute('aria-label', label);
 }
 
 function enterFullscreen() {
@@ -176,16 +187,6 @@ function onNativeFullscreenChange() {
     syncToolbarUi();
     setTimeout(fitCanvas, 480);
   }
-}
-
-function flushSketchDone() {
-  if (roBool()) return;
-  if (textOverlay && textOverlay.classList.contains('show')) confirmText();
-  if (tableOverlay && tableOverlay.classList.contains('show')) confirmTable();
-  if (imageOverlay && imageOverlay.classList.contains('show')) confirmImage();
-  syncInkFlag();
-  notifyChange();
-  if (typeof hooks.onPersist === 'function') hooks.onPersist();
 }
 
 function addL(target, type, fn, opts) {
@@ -635,8 +636,8 @@ wrap.addEventListener('touchmove', (e) => {
 wrap.addEventListener('touchend', () => { pinchDist = null; pinchCenter = null; });
 
 wrap.addEventListener('wheel', (e) => {
+  if (!e.ctrlKey && !e.metaKey) return;
   e.preventDefault();
-  // ✅ Normal zoom: scroll up = bigger, scroll down = smaller (more empty area)
   const factor = e.deltaY > 0 ? 0.92 : 1.08;
   state.scale = Math.max(0.3, Math.min(4, state.scale * factor));
   applyCanvasTransform();
@@ -1401,8 +1402,6 @@ addL(document, 'webkitfullscreenchange', onNativeFullscreenChange);
 const minBtn = $('dsaSkMinimizeBtn');
 if (minBtn) addL(minBtn, 'click', () => toggleMinimize());
 
-addL($('dsaSkDoneBtn'), 'click', () => flushSketchDone());
-
 addL($('dsaSkUndoBtn'), 'click', () => undo());
 addL($('dsaSkRedoBtn'), 'click', () => redo());
 
@@ -1476,10 +1475,6 @@ function onDocKey(e) {
     return;
   }
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-    e.preventDefault();
-    flushSketchDone();
-  }
 }
 addL(document, 'keydown', onDocKey, true);
 

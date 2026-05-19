@@ -1101,37 +1101,50 @@ body > .dsa-sol-pro-toast {
     border-radius: 0;
     box-shadow: none;
     overflow: visible;
-    min-height: 520px;
+    min-height: auto;
     display: flex;
     flex-direction: column;
+    align-items: center;
 }
 
+/* Host/mount must not clip the card shadow (global mount uses overflow:hidden + min-height:460px) */
 .graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel > .dsa-sketch-studio-host,
 .graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel > .dsa-sketch-studio-host.dsa-sketch-studio-mount {
-    flex: 1;
+    flex: 0 0 auto;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    min-height: 0;
     width: 100%;
+    min-height: 0 !important;
+    height: auto;
     background: transparent !important;
     border: none;
     box-shadow: none;
-    overflow: visible;
+    overflow: visible !important;
 }
 
 .graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel .sketch-studio {
     flex: none;
     background: transparent;
-    box-shadow: none;
+    box-shadow: none !important;
     border-radius: 0;
+    filter: none;
 }
 
+/* One card only: shadow + radius live here (not on wrappers) */
 .graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel .sketch-studio.minimized {
     background: #fff;
     border-radius: 22px;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28), 0 6px 16px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+    box-shadow:
+        0 20px 48px rgba(0, 0, 0, 0.22),
+        0 4px 14px rgba(0, 0, 0, 0.1);
+}
+
+/* Canvas hairline looked like an inner card */
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel #dsaSkCanvas {
+    box-shadow: none;
 }
 
 .graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel .sketch-studio:not(.minimized) {

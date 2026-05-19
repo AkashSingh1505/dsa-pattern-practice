@@ -3621,6 +3621,59 @@ function dsaSvgIconClose() {
  * Practice-problems card icons — exact paths from the design mockup.
  * Centralised so every card surface (header, tabs, problem rows, toggles, panes) shares the same iconography.
  */
+/**
+ * Mockup-style JS syntax highlighter — emits `.tok-*` spans the card CSS knows about.
+ * Self-contained (no Prism / external library), so the IDE-style solution code block
+ * always renders with consistent colours.
+ */
+function dsaCardHighlightJsCode(code) {
+    const KW = new Set([
+        "const", "let", "var", "function", "return", "if", "else", "for", "while", "do",
+        "break", "continue", "new", "class", "extends", "import", "export", "from", "default",
+        "try", "catch", "finally", "throw", "typeof", "instanceof", "in", "of", "this",
+        "null", "undefined", "true", "false", "async", "await", "yield", "static", "switch", "case",
+    ]);
+    const BI = new Set([
+        "Map", "Set", "Array", "Object", "String", "Number", "Math", "console",
+        "Promise", "JSON", "Symbol", "RegExp", "Date",
+    ]);
+    function esc(s) {
+        return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+    const re =
+        /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)|(\b\d+(?:\.\d+)?\b)|([A-Za-z_$][\w$]*)|([+\-*/%=<>!&|^~?:]+)|([\(\)\[\]\{\},;.])|(\s+)/g;
+    let m;
+    let out = "";
+    while ((m = re.exec(code)) !== null) {
+        if (m[1]) {
+            out += `<span class="tok-com">${esc(m[1])}</span>`;
+        } else if (m[2]) {
+            out += `<span class="tok-str">${esc(m[2])}</span>`;
+        } else if (m[3]) {
+            out += `<span class="tok-num">${esc(m[3])}</span>`;
+        } else if (m[4]) {
+            const w = m[4];
+            const next = code[re.lastIndex];
+            if (KW.has(w)) {
+                out += `<span class="tok-kw">${w}</span>`;
+            } else if (BI.has(w)) {
+                out += `<span class="tok-bi">${w}</span>`;
+            } else if (next === "(") {
+                out += `<span class="tok-fn">${w}</span>`;
+            } else {
+                out += esc(w);
+            }
+        } else if (m[5]) {
+            out += `<span class="tok-op">${esc(m[5])}</span>`;
+        } else if (m[6]) {
+            out += `<span class="tok-pn">${esc(m[6])}</span>`;
+        } else if (m[7]) {
+            out += m[7];
+        }
+    }
+    return out;
+}
+
 function dsaCardIcon(name) {
     const NS = "http://www.w3.org/2000/svg";
     function svgEl(opts) {
@@ -3793,6 +3846,12 @@ function dsaCardIcon(name) {
         const s = svgEl({ size: 38, strokeWidth: 1.5 });
         addPolyline(s, "22 12 16 12 14 15 10 15 8 12 2 12");
         addPath(s, "M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z");
+        return s;
+    }
+    if (name === "copy") {
+        const s = svgEl({ size: 11 });
+        addRect(s, 9, 9, 13, 13, 2);
+        addPath(s, "M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1");
         return s;
     }
     return svgEl({});
@@ -4028,9 +4087,13 @@ function dsaSvgIconExternalVideo() {
 }
 
 /** Read-only: pick an approach (time/space shown), then reveal code + Prism. */
+/**
+ * Solution pane — mockup layout: pill-shaped chip row (approach dot + T/S complexity pills)
+ * on top, then a macOS-style code block (traffic-light dots + language label + copy button
+ * + gutter line numbers + JS syntax highlighting). First chip is selected by default.
+ */
 function dsaFillProblemSolutionPane(prob, pane) {
     pane.innerHTML = "";
-    pane.classList.add("dsa-h-prob-pane--solution");
     const solRows = [...dsaFilteredSolutionRows(prob)].sort(
         (a, b) => dsaSolutionApproachRank(a) - dsaSolutionApproachRank(b),
     );
@@ -4038,32 +4101,84 @@ function dsaFillProblemSolutionPane(prob, pane) {
         return;
     }
 
-    const root = document.createElement("div");
-    root.className = "dsa-h-sol-modern";
-
-    const heading = document.createElement("p");
-    heading.className = "dsa-h-sol-heading";
-    heading.textContent = "Select an approach to view the solution code.";
-
     const chipsRow = document.createElement("div");
-    chipsRow.className = "dsa-h-sol-chips";
+    chipsRow.className = "sol-chips";
     chipsRow.setAttribute("role", "tablist");
     chipsRow.setAttribute("aria-label", "Solution approaches");
 
-    const codeHost = document.createElement("div");
-    codeHost.className = "dsa-h-sol-code-host";
+    const codeWrap = document.createElement("div");
+    codeWrap.className = "sol-code-wrap";
 
-    const placeholder = document.createElement("div");
-    placeholder.className = "dsa-h-sol-code-placeholder";
-    placeholder.textContent = "Code will appear here.";
-    codeHost.appendChild(placeholder);
+    const codeHeader = document.createElement("div");
+    codeHeader.className = "sol-code-header";
 
-    function runPrismOnHost() {
-        const preBlock = codeHost.querySelector(".dsa-h-prob-code");
-        if (preBlock) {
-            requestAnimationFrame(() => dsaHighlightProbSolutionCode(preBlock));
-        }
+    const dots = document.createElement("div");
+    dots.className = "sol-code-dots";
+    dots.appendChild(document.createElement("span"));
+    dots.appendChild(document.createElement("span"));
+    dots.appendChild(document.createElement("span"));
+
+    const lang = document.createElement("div");
+    lang.className = "sol-code-lang";
+    lang.textContent = "JavaScript";
+
+    const copyBtn = document.createElement("button");
+    copyBtn.type = "button";
+    copyBtn.className = "sol-code-copy";
+    function renderCopyBtn(label) {
+        copyBtn.replaceChildren();
+        copyBtn.appendChild(dsaCardIcon("copy"));
+        copyBtn.appendChild(document.createTextNode(" " + label));
     }
+    renderCopyBtn("Copy");
+
+    codeHeader.appendChild(dots);
+    codeHeader.appendChild(lang);
+    codeHeader.appendChild(copyBtn);
+    codeWrap.appendChild(codeHeader);
+
+    const pre = document.createElement("pre");
+    pre.className = "sol-code";
+    const gutter = document.createElement("div");
+    gutter.className = "sol-code-gutter";
+    const codeBody = document.createElement("code");
+    codeBody.className = "sol-code-body";
+    pre.appendChild(gutter);
+    pre.appendChild(codeBody);
+    codeWrap.appendChild(pre);
+
+    let currentCode = "";
+    function setCode(code) {
+        currentCode = code || "";
+        if (!currentCode.trim()) {
+            gutter.textContent = "";
+            codeBody.innerHTML = "";
+            codeBody.textContent = "No code stored for this approach.";
+            codeBody.style.color = "rgba(245,245,247,0.5)";
+            codeBody.style.fontStyle = "italic";
+            return;
+        }
+        codeBody.removeAttribute("style");
+        const lines = currentCode.split("\n");
+        gutter.textContent = lines.map((_, i) => i + 1).join("\n");
+        codeBody.innerHTML = dsaCardHighlightJsCode(currentCode);
+    }
+
+    copyBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!currentCode || !navigator.clipboard) {
+            return;
+        }
+        navigator.clipboard.writeText(currentCode).then(() => {
+            copyBtn.classList.add("copied");
+            renderCopyBtn("Copied!");
+            setTimeout(() => {
+                copyBtn.classList.remove("copied");
+                renderCopyBtn("Copy");
+            }, 1400);
+        });
+    });
 
     function selectIndex(idx) {
         chipsRow.querySelectorAll(".dsa-h-sol-chip").forEach((chip, i) => {
@@ -4072,71 +4187,69 @@ function dsaFillProblemSolutionPane(prob, pane) {
             chip.setAttribute("aria-selected", on ? "true" : "false");
             chip.tabIndex = on ? 0 : -1;
         });
-        codeHost.innerHTML = "";
-        codeHost.classList.remove("dsa-h-sol-code-host--idle");
         const sol = solRows[idx];
         const codeStr = sol && sol.code != null ? String(sol.code).trim() : "";
-        if (!codeStr) {
-            const noCode = document.createElement("div");
-            noCode.className = "dsa-h-sol-no-code";
-            noCode.textContent = "No code stored for this approach.";
-            codeHost.appendChild(noCode);
-            return;
-        }
-        const pre = document.createElement("pre");
-        pre.className = "dsa-h-prob-code";
-        const codeEl = document.createElement("code");
-        codeEl.className = "dsa-h-prob-code-inner";
-        codeEl.textContent = codeStr;
-        pre.appendChild(codeEl);
-        codeHost.appendChild(pre);
-        runPrismOnHost();
+        setCode(codeStr);
     }
 
+    const APPROACH_LABEL_BY_KEY = { brute_force: "Brute Force", better: "Better", optimal: "Optimal" };
+
     solRows.forEach((sol, idx) => {
+        const approachKey = dsaNormalizeSolutionCategory(sol && sol.approach);
         const chip = document.createElement("button");
         chip.type = "button";
         chip.className = "dsa-h-sol-chip";
+        if (approachKey) {
+            chip.dataset.approach = approachKey;
+        }
         chip.setAttribute("role", "tab");
         chip.setAttribute("aria-selected", "false");
         chip.tabIndex = -1;
-        const apprLab = dsaSolutionCategoryLabel(dsaNormalizeSolutionCategory(sol.approach));
-        const title = apprLab || `Solution ${idx + 1}`;
+
+        const chipLabel = document.createElement("span");
+        chipLabel.className = "sol-chip-label";
+        const dot = document.createElement("span");
+        dot.className = "sol-chip-dot";
+        chipLabel.appendChild(dot);
+        const labelText = APPROACH_LABEL_BY_KEY[approachKey] || dsaSolutionCategoryLabel(approachKey) || `Solution ${idx + 1}`;
+        chipLabel.appendChild(document.createTextNode(labelText));
+        chip.appendChild(chipLabel);
+
         const tc = sol.timeComplexity ? String(sol.timeComplexity).trim() : "";
         const sc = sol.spaceComplexity ? String(sol.spaceComplexity).trim() : "";
-
-        const titleEl = document.createElement("span");
-        titleEl.className = "dsa-h-sol-chip__title";
-        titleEl.textContent = title;
-
-        const metaEl = document.createElement("div");
-        metaEl.className = "dsa-h-sol-chip__meta";
-        if (tc) {
-            const t = document.createElement("span");
-            t.className = "dsa-h-sol-chip__pill dsa-h-sol-chip__pill--time";
-            t.textContent = tc;
-            metaEl.appendChild(t);
+        if (tc || sc) {
+            const cxWrap = document.createElement("span");
+            cxWrap.className = "complexity-pills";
+            if (tc) {
+                const pill = document.createElement("span");
+                pill.className = "complexity-pill complexity-pill--time";
+                const pfx = document.createElement("span");
+                pfx.className = "pill-prefix";
+                pfx.textContent = "T";
+                pill.appendChild(pfx);
+                pill.appendChild(document.createTextNode(tc));
+                cxWrap.appendChild(pill);
+            }
+            if (sc) {
+                const pill = document.createElement("span");
+                pill.className = "complexity-pill complexity-pill--space";
+                const pfx = document.createElement("span");
+                pfx.className = "pill-prefix";
+                pfx.textContent = "S";
+                pill.appendChild(pfx);
+                pill.appendChild(document.createTextNode(sc));
+                cxWrap.appendChild(pill);
+            }
+            chip.appendChild(cxWrap);
         }
-        if (sc) {
-            const s = document.createElement("span");
-            s.className = "dsa-h-sol-chip__pill dsa-h-sol-chip__pill--space";
-            s.textContent = sc;
-            metaEl.appendChild(s);
-        }
 
-        chip.appendChild(titleEl);
-        if (metaEl.children.length) {
-            chip.appendChild(metaEl);
-        }
         chip.addEventListener("click", () => selectIndex(idx));
         chipsRow.appendChild(chip);
     });
 
-    codeHost.classList.add("dsa-h-sol-code-host--idle");
-    root.appendChild(heading);
-    root.appendChild(chipsRow);
-    root.appendChild(codeHost);
-    pane.appendChild(root);
+    pane.appendChild(chipsRow);
+    pane.appendChild(codeWrap);
+    selectIndex(0);
 }
 
 function dsaFillProblemResourcesPane(prob, pane) {

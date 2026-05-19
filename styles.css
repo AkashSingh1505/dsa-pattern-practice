@@ -7960,6 +7960,254 @@ body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
     margin-bottom: 8px;
 }
 
+/* ============================================================
+ * Solution pane — pill chips with approach dot + complexity pills,
+ * IDE-style code block with traffic-light dots / lang / copy / gutter.
+ * Source: design mockup (1:1 visual parity).
+ * ============================================================ */
+
+.dsa-h-problems-card .sol-chips {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.dsa-h-problems-card .dsa-h-sol-chip {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px 6px 12px;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1d1d1f;
+    cursor: pointer;
+    transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dsa-h-problems-card .dsa-h-sol-chip:hover {
+    border-color: rgba(0, 0, 0, 0.14);
+    transform: translateY(-1px);
+    box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.04),
+        0 1px 3px rgba(0, 0, 0, 0.06);
+    background: #ffffff;
+}
+
+.dsa-h-problems-card .sol-chip-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dsa-h-problems-card .sol-chip-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: #86868b;
+}
+
+.dsa-h-problems-card .dsa-h-sol-chip[data-approach="brute_force"] .sol-chip-dot {
+    background: #ff453a;
+}
+.dsa-h-problems-card .dsa-h-sol-chip[data-approach="better"] .sol-chip-dot {
+    background: #ff9f0a;
+}
+.dsa-h-problems-card .dsa-h-sol-chip[data-approach="optimal"] .sol-chip-dot {
+    background: #30d158;
+}
+
+.dsa-h-problems-card .complexity-pills {
+    display: inline-flex;
+    gap: 4px;
+}
+
+.dsa-h-problems-card .complexity-pill {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 7px;
+    border-radius: 6px;
+    font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    border: none;
+    letter-spacing: 0;
+}
+
+.dsa-h-problems-card .complexity-pill--time {
+    background: rgba(94, 92, 230, 0.15);
+    color: #5e5ce6;
+}
+
+.dsa-h-problems-card .complexity-pill--space {
+    background: rgba(48, 176, 199, 0.15);
+    color: #1a8a9e;
+}
+
+.dsa-h-problems-card .complexity-pill .pill-prefix {
+    opacity: 0.65;
+    font-weight: 700;
+}
+
+/* Active chip — invert to dark fill with light text (mockup look). */
+.dsa-h-problems-card .dsa-h-sol-chip.dsa-h-sol-chip--active {
+    background: #1d1d1f;
+    border-color: #1d1d1f;
+    color: #ffffff;
+    transform: none;
+    box-shadow: 0 4px 12px rgba(29, 29, 31, 0.18);
+}
+
+.dsa-h-problems-card .dsa-h-sol-chip.dsa-h-sol-chip--active .complexity-pill--time {
+    background: rgba(125, 123, 255, 0.28);
+    color: #c8c7ff;
+}
+
+.dsa-h-problems-card .dsa-h-sol-chip.dsa-h-sol-chip--active .complexity-pill--space {
+    background: rgba(93, 207, 228, 0.28);
+    color: #a3eaf6;
+}
+
+/* ----- Code block (IDE-style) ----- */
+.dsa-h-problems-card .sol-code-wrap {
+    position: relative;
+    background: #1d1d1f;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.dsa-h-problems-card .sol-code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    gap: 12px;
+}
+
+.dsa-h-problems-card .sol-code-dots {
+    display: inline-flex;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+.dsa-h-problems-card .sol-code-dots span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: block;
+}
+
+.dsa-h-problems-card .sol-code-dots span:nth-child(1) {
+    background: #ff5f57;
+}
+.dsa-h-problems-card .sol-code-dots span:nth-child(2) {
+    background: #ffbd2e;
+}
+.dsa-h-problems-card .sol-code-dots span:nth-child(3) {
+    background: #28ca42;
+}
+
+.dsa-h-problems-card .sol-code-lang {
+    font-size: 11px;
+    color: rgba(245, 245, 247, 0.6);
+    font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    flex: 1 1 auto;
+    text-align: center;
+}
+
+.dsa-h-problems-card .sol-code-copy {
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: rgba(245, 245, 247, 0.75);
+    font-size: 11px;
+    padding: 4px 9px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.dsa-h-problems-card .sol-code-copy:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+}
+
+.dsa-h-problems-card .sol-code-copy.copied {
+    background: #30d158;
+    color: #ffffff;
+}
+
+.dsa-h-problems-card .sol-code-copy svg {
+    width: 11px;
+    height: 11px;
+    display: block;
+}
+
+.dsa-h-problems-card .sol-code {
+    margin: 0;
+    color: #f5f5f7;
+    font-family: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+    font-size: 12.5px;
+    line-height: 1.65;
+    overflow-x: auto;
+    display: flex;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    white-space: pre;
+    tab-size: 4;
+}
+
+.dsa-h-problems-card .sol-code-gutter {
+    flex-shrink: 0;
+    padding: 14px 12px 14px 16px;
+    color: rgba(245, 245, 247, 0.3);
+    user-select: none;
+    text-align: right;
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    margin-right: 14px;
+    font-size: 12px;
+    white-space: pre;
+    font-family: inherit;
+}
+
+.dsa-h-problems-card .sol-code-body {
+    flex: 1 1 auto;
+    white-space: pre;
+    padding: 14px 16px 14px 0;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    background: transparent;
+    color: inherit;
+}
+
+/* Syntax highlighting tokens — used by `dsaCardHighlightJsCode`. */
+.dsa-h-problems-card .sol-code-body .tok-kw  { color: #ff79c6; font-weight: 500; }
+.dsa-h-problems-card .sol-code-body .tok-str { color: #f1fa8c; }
+.dsa-h-problems-card .sol-code-body .tok-num { color: #bd93f9; }
+.dsa-h-problems-card .sol-code-body .tok-com { color: #6272a4; font-style: italic; }
+.dsa-h-problems-card .sol-code-body .tok-fn  { color: #50fa7b; }
+.dsa-h-problems-card .sol-code-body .tok-op  { color: #ff9f0a; }
+.dsa-h-problems-card .sol-code-body .tok-bi  { color: #ffb86c; }
+.dsa-h-problems-card .sol-code-body .tok-pn  { color: #f8f8f2; }
+
 /* Card-scoped platform icon — keeps the rounded brand mark crisp. */
 .dsa-h-problems-card .dsa-h-platform-icon--card {
     width: 18px;

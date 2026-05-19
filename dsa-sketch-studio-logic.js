@@ -86,12 +86,12 @@ function syncToolbarUi() {
   const studio = $('dsaSkStudio');
   if (!studio) return;
 
-  mount.classList.toggle('dsa-sk-state-fullscreen', isFullscreen());
-  mount.classList.toggle('dsa-sk-state-minimized', !!state.minimized && !isFullscreen());
-  mount.classList.toggle('dsa-sk-bottom-draw', !isBigScreen() && state.tool === 'pencil');
-  mount.classList.toggle('dsa-sk-bottom-main', !isBigScreen() && state.tool !== 'pencil');
+  editorRoot.classList.toggle('dsa-sk-state-fullscreen', isFullscreen());
+  editorRoot.classList.toggle('dsa-sk-state-minimized', !!state.minimized && !isFullscreen());
+  editorRoot.classList.toggle('dsa-sk-bottom-draw', !isBigScreen() && state.tool === 'pencil');
+  editorRoot.classList.toggle('dsa-sk-bottom-main', !isBigScreen() && state.tool !== 'pencil');
   /* iPad/PC: hide top back only when minimized (same toolbar as fullscreen otherwise) */
-  mount.classList.toggle('dsa-sk-back-hidden', isBigScreen() && state.minimized && !isFullscreen());
+  editorRoot.classList.toggle('dsa-sk-back-hidden', isBigScreen() && state.minimized && !isFullscreen());
 }
 
 function enterFullscreen() {
@@ -1349,7 +1349,6 @@ document.addEventListener('touchend', () => { imgDrag = null; });
 /* ============ WIRE UI (no inline handlers) ============ */
 const studioEl = $('dsaSkStudio');
 studioEl.style.display = 'flex';
-mount.classList.add(device === 'pc' ? 'device-pc' : 'device-mobile');
 
 if (device === 'pc') {
   studioEl.classList.add('minimized');
@@ -1593,7 +1592,17 @@ const api = {
     listeners.length = 0;
     if (eraserCursor && eraserCursor.parentNode) eraserCursor.parentNode.removeChild(eraserCursor);
     editorRoot.innerHTML = '';
-    editorRoot.classList.remove('dsa-sketch-studio-host', 'dsa-sketch-studio-host--fullscreen');
+    editorRoot.classList.remove(
+      'dsa-sketch-studio-host',
+      'dsa-sketch-studio-host--fullscreen',
+      'device-pc',
+      'device-mobile',
+      'dsa-sk-state-fullscreen',
+      'dsa-sk-state-minimized',
+      'dsa-sk-bottom-draw',
+      'dsa-sk-bottom-main',
+      'dsa-sk-back-hidden'
+    );
   },
 };
 

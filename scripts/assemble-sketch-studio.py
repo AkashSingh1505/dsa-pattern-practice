@@ -55,23 +55,19 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     if (!document.head.querySelector("link[data-dsa-sketch-studio-css]")) {
         const lk = document.createElement("link");
         lk.rel = "stylesheet";
-        lk.href = "./dsa-sketch-studio.css?v=15";
+        lk.href = "./dsa-sketch-studio.css?v=16";
         lk.dataset.dsaSketchStudioCss = "1";
         document.head.appendChild(lk);
     }
 
     editorRoot.innerHTML = "";
-    editorRoot.classList.add("dsa-sketch-studio-host");
-
-    const mount = document.createElement("div");
-    mount.className = "dsa-sketch-studio-mount";
     const device = dsaDetectSketchDevice();
-    mount.classList.add(device === "pc" ? "device-pc" : "device-mobile");
-    mount.innerHTML = `'''
+    editorRoot.classList.add("dsa-sketch-studio-host", device === "pc" ? "device-pc" : "device-mobile");
+    const mount = editorRoot;
+    editorRoot.innerHTML = `'''
 
 footer = '''
 `;
-    editorRoot.appendChild(mount);
 
     const eraserCursor = document.createElement("div");
     eraserCursor.className = "eraser-cursor";

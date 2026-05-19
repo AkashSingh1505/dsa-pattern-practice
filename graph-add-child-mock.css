@@ -1417,7 +1417,7 @@
     display: none !important;
 }
 
-.graph-add-child-mock .dsa-q-sketch-panel--ro .dsa-sketch-studio-mount .app {
+.graph-add-child-mock .dsa-q-sketch-panel--ro .dsa-sketch-studio-host .app {
     pointer-events: none;
     opacity: 0.88;
 }

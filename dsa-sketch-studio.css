@@ -1,13 +1,4 @@
-/* Sketch Studio — embedded in DSA problem dialog (.dsa-sketch-studio-mount) */
-.dsa-sketch-studio-host {
-    position: relative;
-    min-height: 220px;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-width: 0;
-}
-
+/* Sketch Studio — embedded in DSA problem dialog (#dsaSkStudio inside .dsa-sketch-studio-host) */
 .dsa-sketch-studio-host--ro {
     opacity: 0.96;
     pointer-events: none;
@@ -31,15 +22,7 @@
     height: 100% !important;
 }
 
-.dsa-sketch-studio-host--fullscreen .dsa-sketch-studio-mount {
-    flex: 1;
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    max-width: none;
-}
-
-.dsa-sketch-studio-mount {
+.dsa-sketch-studio-host {
     --theme: #007aff;
     --theme-soft: rgba(0, 122, 255, 0.12);
     --bg: #f5f5f7;
@@ -55,7 +38,8 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 460px;
+    min-height: 220px;
+    min-width: 0;
     width: 100%;
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
     color: var(--text);
@@ -63,14 +47,14 @@
     overflow: hidden;
 }
 
-.dsa-sketch-studio-mount *,
-.dsa-sketch-studio-mount *::before,
-.dsa-sketch-studio-mount *::after {
+.dsa-sketch-studio-host *,
+.dsa-sketch-studio-host *::before,
+.dsa-sketch-studio-host *::after {
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
 }
 
-.dsa-sketch-studio-mount .sketch-studio {
+.dsa-sketch-studio-host .sketch-studio {
     position: relative;
     flex: 1;
     width: 100%;
@@ -82,7 +66,7 @@
     transition: height 0.45s var(--ease), box-shadow 0.45s var(--ease), border-radius 0.45s var(--ease);
 }
 
-.dsa-sketch-studio-mount .sketch-studio.minimized {
+.dsa-sketch-studio-host .sketch-studio.minimized {
     flex: none;
     width: 100%;
     max-width: 620px;
@@ -96,7 +80,8 @@
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28), 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
-.dsa-sketch-studio-host--fullscreen .dsa-sketch-studio-mount .sketch-studio {
+.dsa-sketch-studio-host--fullscreen > .sketch-studio,
+.dsa-sketch-studio-host--fullscreen .sketch-studio {
     position: relative;
     flex: 1;
     width: 100% !important;
@@ -109,7 +94,7 @@
     box-shadow: none;
 }
 
-.dsa-sketch-studio-mount .canvas-wrap {
+.dsa-sketch-studio-host .canvas-wrap {
     position: absolute;
     inset: 0;
     overflow: hidden;
@@ -120,7 +105,7 @@
         #ffffff;
 }
 
-.dsa-sketch-studio-mount .canvas-wrap::before {
+.dsa-sketch-studio-host .canvas-wrap::before {
     content: "";
     position: absolute;
     inset: 0;
@@ -129,7 +114,7 @@
     pointer-events: none;
 }
 
-.dsa-sketch-studio-mount #dsaSkCanvas {
+.dsa-sketch-studio-host #dsaSkCanvas {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -139,18 +124,18 @@
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04);
 }
 
-.dsa-sketch-studio-mount #dsaSkCanvas.eraser-mode {
+.dsa-sketch-studio-host #dsaSkCanvas.eraser-mode {
     cursor: none;
 }
 
-.dsa-sketch-studio-mount #dsaSkCanvas.show-grid {
+.dsa-sketch-studio-host #dsaSkCanvas.show-grid {
     background-image:
         linear-gradient(rgba(0, 0, 0, 0.06) 1px, transparent 1px),
         linear-gradient(90deg, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
     background-size: 24px 24px;
 }
 
-.dsa-sketch-studio-mount #dsaSkLaserCanvas {
+.dsa-sketch-studio-host #dsaSkLaserCanvas {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -159,7 +144,7 @@
     will-change: transform;
 }
 
-.dsa-sketch-studio-mount .top-toolbar {
+.dsa-sketch-studio-host .top-toolbar {
     position: absolute;
     top: 0;
     left: 0;
@@ -173,11 +158,11 @@
     pointer-events: none;
 }
 
-.dsa-sketch-studio-mount .top-toolbar > * {
+.dsa-sketch-studio-host .top-toolbar > * {
     pointer-events: auto;
 }
 
-.dsa-sketch-studio-mount .glass-pill {
+.dsa-sketch-studio-host .glass-pill {
     background: var(--float-bg);
     backdrop-filter: saturate(180%) blur(24px);
     -webkit-backdrop-filter: saturate(180%) blur(24px);
@@ -186,7 +171,7 @@
     border-radius: 999px;
 }
 
-.dsa-sketch-studio-mount .icon-btn {
+.dsa-sketch-studio-host .icon-btn {
     width: 42px;
     height: 42px;
     border-radius: 50%;
@@ -202,28 +187,28 @@
     transition: transform 0.2s var(--ease-spring), background 0.2s;
 }
 
-.dsa-sketch-studio-mount .icon-btn:hover {
+.dsa-sketch-studio-host .icon-btn:hover {
     background: #fff;
 }
 
-.dsa-sketch-studio-mount .icon-btn:active {
+.dsa-sketch-studio-host .icon-btn:active {
     transform: scale(0.88);
 }
 
-.dsa-sketch-studio-mount .icon-btn svg {
+.dsa-sketch-studio-host .icon-btn svg {
     width: 18px;
     height: 18px;
     stroke: #1c1c1e;
     fill: none;
 }
 
-.dsa-sketch-studio-mount .toolbar-right {
+.dsa-sketch-studio-host .toolbar-right {
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-.dsa-sketch-studio-mount .undo-redo-tab {
+.dsa-sketch-studio-host .undo-redo-tab {
     display: flex;
     padding: 4px;
     gap: 2px;
@@ -233,15 +218,15 @@
     transition: all 0.35s var(--ease-spring);
 }
 
-.dsa-sketch-studio-mount .undo-redo-tab.visible {
+.dsa-sketch-studio-host .undo-redo-tab.visible {
     opacity: 1;
     transform: translateX(0) scale(1);
     pointer-events: auto;
 }
 
-.dsa-sketch-studio-mount .undo-redo-tab button,
-.dsa-sketch-studio-mount .menu-tab button,
-.dsa-sketch-studio-mount .top-tools-tab button {
+.dsa-sketch-studio-host .undo-redo-tab button,
+.dsa-sketch-studio-host .menu-tab button,
+.dsa-sketch-studio-host .top-tools-tab button {
     width: 34px;
     height: 34px;
     border: none;
@@ -254,66 +239,66 @@
     transition: background 0.15s, transform 0.15s;
 }
 
-.dsa-sketch-studio-mount .undo-redo-tab button:disabled {
+.dsa-sketch-studio-host .undo-redo-tab button:disabled {
     opacity: 0.25;
     cursor: not-allowed;
 }
 
-.dsa-sketch-studio-mount .undo-redo-tab button:not(:disabled):hover,
-.dsa-sketch-studio-mount .menu-tab button:hover,
-.dsa-sketch-studio-mount .top-tools-tab button:hover {
+.dsa-sketch-studio-host .undo-redo-tab button:not(:disabled):hover,
+.dsa-sketch-studio-host .menu-tab button:hover,
+.dsa-sketch-studio-host .top-tools-tab button:hover {
     background: rgba(0, 0, 0, 0.05);
 }
 
-.dsa-sketch-studio-mount .undo-redo-tab button:not(:disabled):active,
-.dsa-sketch-studio-mount .menu-tab button:active,
-.dsa-sketch-studio-mount .top-tools-tab button:active {
+.dsa-sketch-studio-host .undo-redo-tab button:not(:disabled):active,
+.dsa-sketch-studio-host .menu-tab button:active,
+.dsa-sketch-studio-host .top-tools-tab button:active {
     transform: scale(0.85);
 }
 
-.dsa-sketch-studio-mount .undo-redo-tab svg,
-.dsa-sketch-studio-mount .menu-tab svg,
-.dsa-sketch-studio-mount .top-tools-tab svg {
+.dsa-sketch-studio-host .undo-redo-tab svg,
+.dsa-sketch-studio-host .menu-tab svg,
+.dsa-sketch-studio-host .top-tools-tab svg {
     width: 16px;
     height: 16px;
     stroke: #1c1c1e;
     fill: none;
 }
 
-.dsa-sketch-studio-mount .menu-tab {
+.dsa-sketch-studio-host .menu-tab {
     display: flex;
     padding: 4px;
     gap: 2px;
 }
 
-.dsa-sketch-studio-mount .top-tools-tab {
+.dsa-sketch-studio-host .top-tools-tab {
     display: none;
     padding: 4px;
     gap: 2px;
 }
 
-.dsa-sketch-studio-mount .top-tools-tab button.active {
+.dsa-sketch-studio-host .top-tools-tab button.active {
     background: var(--theme-soft);
 }
 
-.dsa-sketch-studio-mount .top-tools-tab button.active svg {
+.dsa-sketch-studio-host .top-tools-tab button.active svg {
     stroke: var(--theme);
 }
 
 /* iPad/PC top bar: [ back | tools centered | undo·menu·min·done ] */
-.dsa-sketch-studio-mount.device-pc .top-toolbar {
+.dsa-sketch-studio-host.device-pc .top-toolbar {
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
     justify-content: stretch;
 }
 
-.dsa-sketch-studio-mount.device-pc #dsaSkBackBtn {
+.dsa-sketch-studio-host.device-pc #dsaSkBackBtn {
     grid-column: 1;
     justify-self: start;
 }
 
-.dsa-sketch-studio-mount.device-pc .top-tools-tab {
+.dsa-sketch-studio-host.device-pc .top-tools-tab {
     display: flex;
     grid-column: 2;
     justify-self: center;
@@ -324,7 +309,7 @@
     z-index: 5;
 }
 
-.dsa-sketch-studio-mount.device-pc .toolbar-right {
+.dsa-sketch-studio-host.device-pc .toolbar-right {
     grid-column: 3;
     justify-self: end;
     display: flex;
@@ -334,49 +319,49 @@
 }
 
 /* Minimized (no back): empty left · tools center · controls right */
-.dsa-sketch-studio-mount.device-pc.dsa-sk-back-hidden .top-toolbar,
-.dsa-sketch-studio-mount.device-pc .sketch-studio.minimized .top-toolbar {
+.dsa-sketch-studio-host.device-pc.dsa-sk-back-hidden .top-toolbar,
+.dsa-sketch-studio-host.device-pc .sketch-studio.minimized .top-toolbar {
     grid-template-columns: 1fr auto 1fr;
 }
 
-.dsa-sketch-studio-mount.device-pc.dsa-sk-back-hidden #dsaSkBackBtn {
+.dsa-sketch-studio-host.device-pc.dsa-sk-back-hidden #dsaSkBackBtn {
     display: none !important;
 }
 
-.dsa-sketch-studio-mount.device-mobile .top-tools-tab {
+.dsa-sketch-studio-host.device-mobile .top-tools-tab {
     display: none !important;
 }
 
 /* Mobile keeps flex row with back on the left */
-.dsa-sketch-studio-mount.device-mobile .top-toolbar {
+.dsa-sketch-studio-host.device-mobile .top-toolbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
 /* Mobile: bottom bar — main tools vs brush tray (class toggled in JS) */
-.dsa-sketch-studio-mount.device-mobile.dsa-sk-bottom-main #dsaSkMainTab {
+.dsa-sketch-studio-host.device-mobile.dsa-sk-bottom-main #dsaSkMainTab {
     display: flex !important;
 }
 
-.dsa-sketch-studio-mount.device-mobile.dsa-sk-bottom-main #dsaSkDrawTab {
+.dsa-sketch-studio-host.device-mobile.dsa-sk-bottom-main #dsaSkDrawTab {
     display: none !important;
 }
 
-.dsa-sketch-studio-mount.device-mobile.dsa-sk-bottom-draw #dsaSkMainTab {
+.dsa-sketch-studio-host.device-mobile.dsa-sk-bottom-draw #dsaSkMainTab {
     display: none !important;
 }
 
-.dsa-sketch-studio-mount.device-mobile.dsa-sk-bottom-draw #dsaSkDrawTab {
+.dsa-sketch-studio-host.device-mobile.dsa-sk-bottom-draw #dsaSkDrawTab {
     display: flex !important;
 }
 
 /* Mobile: show laser in brush tray when drawing */
-.dsa-sketch-studio-mount.device-mobile.dsa-sk-bottom-draw #dsaSkBtnLaser2 {
+.dsa-sketch-studio-host.device-mobile.dsa-sk-bottom-draw #dsaSkBtnLaser2 {
     display: flex;
 }
 
-.dsa-sketch-studio-mount .done-btn {
+.dsa-sketch-studio-host .done-btn {
     background: var(--theme);
     color: white;
     border: none;
@@ -391,26 +376,26 @@
     transition: transform 0.2s var(--ease-spring);
 }
 
-.dsa-sketch-studio-mount .done-btn:hover {
+.dsa-sketch-studio-host .done-btn:hover {
     transform: scale(1.06);
 }
 
-.dsa-sketch-studio-mount .done-btn:active {
+.dsa-sketch-studio-host .done-btn:active {
     transform: scale(0.9);
 }
 
-.dsa-sketch-studio-mount .done-btn svg {
+.dsa-sketch-studio-host .done-btn svg {
     width: 18px;
     height: 18px;
     stroke: white;
     fill: none;
 }
 
-.dsa-sketch-studio-mount .minimize-btn {
+.dsa-sketch-studio-host .minimize-btn {
     display: flex;
 }
 
-.dsa-sketch-studio-mount .bottom-area {
+.dsa-sketch-studio-host .bottom-area {
     position: absolute;
     bottom: 28px;
     left: 50%;
@@ -423,7 +408,7 @@
     max-width: calc(100% - 32px);
 }
 
-.dsa-sketch-studio-mount .brushes-scroll {
+.dsa-sketch-studio-host .brushes-scroll {
     display: flex;
     align-items: flex-end;
     gap: 4px;
@@ -438,11 +423,11 @@
     -webkit-overflow-scrolling: touch;
 }
 
-.dsa-sketch-studio-mount .brushes-scroll::-webkit-scrollbar {
+.dsa-sketch-studio-host .brushes-scroll::-webkit-scrollbar {
     display: none;
 }
 
-.dsa-sketch-studio-mount .brush-settings {
+.dsa-sketch-studio-host .brush-settings {
     background: var(--float-bg);
     backdrop-filter: saturate(180%) blur(24px);
     -webkit-backdrop-filter: saturate(180%) blur(24px);
@@ -459,27 +444,27 @@
     transition: opacity 0.25s var(--ease), transform 0.3s var(--ease-spring);
 }
 
-.dsa-sketch-studio-mount .brush-settings.show {
+.dsa-sketch-studio-host .brush-settings.show {
     display: flex;
     opacity: 1;
     transform: translateY(0) scale(1);
 }
 
-.dsa-sketch-studio-mount .t-delete {
+.dsa-sketch-studio-host .t-delete {
     background: #ff3b30;
 }
 
-.dsa-sketch-studio-mount .t-delete svg {
+.dsa-sketch-studio-host .t-delete svg {
     stroke: #fff;
 }
 
-.dsa-sketch-studio-mount .settings-row {
+.dsa-sketch-studio-host .settings-row {
     display: flex;
     align-items: center;
     gap: 14px;
 }
 
-.dsa-sketch-studio-mount .settings-label {
+.dsa-sketch-studio-host .settings-label {
     font-size: 10px;
     font-weight: 700;
     color: var(--muted);
@@ -488,7 +473,7 @@
     letter-spacing: 0.8px;
 }
 
-.dsa-sketch-studio-mount .size-dots {
+.dsa-sketch-studio-host .size-dots {
     display: flex;
     align-items: center;
     gap: 4px;
@@ -498,7 +483,7 @@
     padding: 4px;
 }
 
-.dsa-sketch-studio-mount .size-dot {
+.dsa-sketch-studio-host .size-dot {
     flex: 1;
     height: 34px;
     display: flex;
@@ -509,25 +494,25 @@
     transition: all 0.2s var(--ease);
 }
 
-.dsa-sketch-studio-mount .size-dot:hover {
+.dsa-sketch-studio-host .size-dot:hover {
     background: rgba(255, 255, 255, 0.4);
 }
 
-.dsa-sketch-studio-mount .size-dot.active {
+.dsa-sketch-studio-host .size-dot.active {
     background: #fff;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
-.dsa-sketch-studio-mount .size-dot.active .size-dot-inner {
+.dsa-sketch-studio-host .size-dot.active .size-dot-inner {
     transform: scale(1.15);
 }
 
-.dsa-sketch-studio-mount .size-dot-inner {
+.dsa-sketch-studio-host .size-dot-inner {
     border-radius: 50%;
     transition: transform 0.25s var(--ease-spring);
 }
 
-.dsa-sketch-studio-mount .opacity-slider {
+.dsa-sketch-studio-host .opacity-slider {
     flex: 1;
     height: 30px;
     position: relative;
@@ -536,14 +521,14 @@
     align-items: center;
 }
 
-.dsa-sketch-studio-mount .opacity-track {
+.dsa-sketch-studio-host .opacity-track {
     width: 100%;
     height: 6px;
     background: linear-gradient(to right, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.7));
     border-radius: 3px;
 }
 
-.dsa-sketch-studio-mount .opacity-thumb {
+.dsa-sketch-studio-host .opacity-thumb {
     position: absolute;
     top: 50%;
     width: 22px;
@@ -555,11 +540,11 @@
     transition: transform 0.15s;
 }
 
-.dsa-sketch-studio-mount .opacity-thumb:active {
+.dsa-sketch-studio-host .opacity-thumb:active {
     transform: translate(-50%, -50%) scale(1.18);
 }
 
-.dsa-sketch-studio-mount .shape-options {
+.dsa-sketch-studio-host .shape-options {
     display: flex;
     gap: 6px;
     flex: 1;
@@ -568,7 +553,7 @@
     padding: 4px;
 }
 
-.dsa-sketch-studio-mount .shape-opt {
+.dsa-sketch-studio-host .shape-opt {
     flex: 1;
     height: 34px;
     display: flex;
@@ -579,16 +564,16 @@
     transition: all 0.2s var(--ease);
 }
 
-.dsa-sketch-studio-mount .shape-opt:hover {
+.dsa-sketch-studio-host .shape-opt:hover {
     background: rgba(255, 255, 255, 0.5);
 }
 
-.dsa-sketch-studio-mount .shape-opt.active {
+.dsa-sketch-studio-host .shape-opt.active {
     background: #fff;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
-.dsa-sketch-studio-mount .shape-opt svg {
+.dsa-sketch-studio-host .shape-opt svg {
     width: 18px;
     height: 18px;
     stroke: #1c1c1e;
@@ -598,11 +583,11 @@
     stroke-linejoin: round;
 }
 
-.dsa-sketch-studio-mount .shape-opt.active svg {
+.dsa-sketch-studio-host .shape-opt.active svg {
     stroke: var(--theme);
 }
 
-.dsa-sketch-studio-mount .bottom-tab {
+.dsa-sketch-studio-host .bottom-tab {
     background: var(--float-bg);
     backdrop-filter: saturate(180%) blur(24px);
     -webkit-backdrop-filter: saturate(180%) blur(24px);
@@ -616,7 +601,7 @@
     transition: all 0.3s var(--ease);
 }
 
-.dsa-sketch-studio-mount .tool-btn {
+.dsa-sketch-studio-host .tool-btn {
     width: 46px;
     height: 46px;
     border-radius: 50%;
@@ -629,23 +614,23 @@
     transition: all 0.2s var(--ease);
 }
 
-.dsa-sketch-studio-mount .tool-btn:hover {
+.dsa-sketch-studio-host .tool-btn:hover {
     background: rgba(0, 0, 0, 0.05);
 }
 
-.dsa-sketch-studio-mount .tool-btn:active {
+.dsa-sketch-studio-host .tool-btn:active {
     transform: scale(0.88);
 }
 
-.dsa-sketch-studio-mount .tool-btn.active {
+.dsa-sketch-studio-host .tool-btn.active {
     background: var(--theme-soft);
 }
 
-.dsa-sketch-studio-mount .tool-btn.active svg {
+.dsa-sketch-studio-host .tool-btn.active svg {
     stroke: var(--theme);
 }
 
-.dsa-sketch-studio-mount .tool-btn svg {
+.dsa-sketch-studio-host .tool-btn svg {
     width: 22px;
     height: 22px;
     stroke: #1c1c1e;
@@ -653,14 +638,14 @@
     stroke-width: 1.8;
 }
 
-.dsa-sketch-studio-mount .divider {
+.dsa-sketch-studio-host .divider {
     width: 1px;
     height: 28px;
     background: var(--separator);
     margin: 0 4px;
 }
 
-.dsa-sketch-studio-mount .brush-tray {
+.dsa-sketch-studio-host .brush-tray {
     background: var(--float-bg);
     backdrop-filter: saturate(180%) blur(24px);
     -webkit-backdrop-filter: saturate(180%) blur(24px);
@@ -675,7 +660,7 @@
     overflow: visible;
 }
 
-.dsa-sketch-studio-mount .brush {
+.dsa-sketch-studio-host .brush {
     width: 46px;
     height: 64px;
     flex: 0 0 46px;
@@ -692,15 +677,15 @@
     align-self: flex-end;
 }
 
-.dsa-sketch-studio-mount .brush:hover {
+.dsa-sketch-studio-host .brush:hover {
     transform: translateY(-4px);
 }
 
-.dsa-sketch-studio-mount .brush.active {
+.dsa-sketch-studio-host .brush.active {
     transform: translateY(-14px) scale(1.1);
 }
 
-.dsa-sketch-studio-mount .brush svg {
+.dsa-sketch-studio-host .brush svg {
     width: 100%;
     height: 100%;
     overflow: visible;
@@ -708,18 +693,18 @@
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.18));
 }
 
-.dsa-sketch-studio-mount .brush-tray .brushes-scroll {
+.dsa-sketch-studio-host .brush-tray .brushes-scroll {
     align-self: flex-end;
 }
 
-.dsa-sketch-studio-mount .brush-tray .divider {
+.dsa-sketch-studio-host .brush-tray .divider {
     height: 44px;
     margin: 0 8px;
     align-self: center;
     flex-shrink: 0;
 }
 
-.dsa-sketch-studio-mount .tray-btn {
+.dsa-sketch-studio-host .tray-btn {
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -735,19 +720,19 @@
     margin: 0 2px;
 }
 
-.dsa-sketch-studio-mount .tray-btn:hover {
+.dsa-sketch-studio-host .tray-btn:hover {
     background: rgba(0, 0, 0, 0.05);
 }
 
-.dsa-sketch-studio-mount .tray-btn:active {
+.dsa-sketch-studio-host .tray-btn:active {
     transform: scale(0.88);
 }
 
-.dsa-sketch-studio-mount .tray-btn.active {
+.dsa-sketch-studio-host .tray-btn.active {
     background: var(--theme-soft);
 }
 
-.dsa-sketch-studio-mount .color-btn {
+.dsa-sketch-studio-host .color-btn {
     width: 30px;
     height: 30px;
     border-radius: 50%;
@@ -761,15 +746,15 @@
     flex-shrink: 0;
 }
 
-.dsa-sketch-studio-mount .color-btn:hover {
+.dsa-sketch-studio-host .color-btn:hover {
     transform: scale(1.12);
 }
 
-.dsa-sketch-studio-mount .color-btn:active {
+.dsa-sketch-studio-host .color-btn:active {
     transform: scale(0.92);
 }
 
-.dsa-sketch-studio-mount .color-modal {
+.dsa-sketch-studio-host .color-modal {
     background: var(--float-bg);
     backdrop-filter: saturate(180%) blur(24px);
     -webkit-backdrop-filter: saturate(180%) blur(24px);
@@ -786,19 +771,19 @@
     transition: opacity 0.25s, transform 0.3s var(--ease-spring);
 }
 
-.dsa-sketch-studio-mount .color-modal.show {
+.dsa-sketch-studio-host .color-modal.show {
     display: flex;
     opacity: 1;
     transform: translateY(0) scale(1);
 }
 
-.dsa-sketch-studio-mount .swatches-grid {
+.dsa-sketch-studio-host .swatches-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: 10px;
 }
 
-.dsa-sketch-studio-mount .color-swatch {
+.dsa-sketch-studio-host .color-swatch {
     width: 30px;
     height: 30px;
     border-radius: 50%;
@@ -806,30 +791,30 @@
     transition: transform 0.2s var(--ease-spring);
 }
 
-.dsa-sketch-studio-mount .color-swatch:hover {
+.dsa-sketch-studio-host .color-swatch:hover {
     transform: scale(1.18);
 }
 
-.dsa-sketch-studio-mount .color-swatch.active {
+.dsa-sketch-studio-host .color-swatch.active {
     transform: scale(1.2);
     box-shadow: 0 0 0 2.5px #fff, 0 0 0 4.5px var(--theme);
 }
 
-.dsa-sketch-studio-mount .color-swatch.white-sw {
+.dsa-sketch-studio-host .color-swatch.white-sw {
     box-shadow: inset 0 0 0 1.5px rgba(0, 0, 0, 0.15);
 }
 
-.dsa-sketch-studio-mount .color-swatch.white-sw.active {
+.dsa-sketch-studio-host .color-swatch.white-sw.active {
     box-shadow: inset 0 0 0 1.5px rgba(0, 0, 0, 0.15), 0 0 0 2.5px #fff, 0 0 0 4.5px var(--theme);
 }
 
-.dsa-sketch-studio-mount .color-mixer {
+.dsa-sketch-studio-host .color-mixer {
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
-.dsa-sketch-studio-mount .mixer-label {
+.dsa-sketch-studio-host .mixer-label {
     font-size: 10px;
     font-weight: 700;
     color: var(--muted);
@@ -837,7 +822,7 @@
     text-transform: uppercase;
 }
 
-.dsa-sketch-studio-mount .hue-slider {
+.dsa-sketch-studio-host .hue-slider {
     width: 100%;
     height: 14px;
     border-radius: 7px;
@@ -855,7 +840,7 @@
     position: relative;
 }
 
-.dsa-sketch-studio-mount .hue-thumb {
+.dsa-sketch-studio-host .hue-thumb {
     position: absolute;
     top: 50%;
     width: 18px;
@@ -867,7 +852,7 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
-.dsa-sketch-studio-mount .native-color {
+.dsa-sketch-studio-host .native-color {
     width: 100%;
     height: 36px;
     border: none;
@@ -877,9 +862,9 @@
     padding: 0;
 }
 
-/* Eraser ring follows pointer on document.body (#dsaSkEraserCursor) — not inside .dsa-sketch-studio-mount */
+/* Eraser ring follows pointer on document.body (#dsaSkEraserCursor) — not inside .dsa-sketch-studio-host */
 #dsaSkEraserCursor.eraser-cursor,
-.dsa-sketch-studio-mount .eraser-cursor {
+.dsa-sketch-studio-host .eraser-cursor {
     position: fixed;
     border: 2px solid rgba(0, 0, 0, 0.75);
     background: rgba(255, 255, 255, 0.6);
@@ -893,12 +878,12 @@
 }
 
 #dsaSkEraserCursor.eraser-cursor.show,
-.dsa-sketch-studio-mount .eraser-cursor.show {
+.dsa-sketch-studio-host .eraser-cursor.show {
     display: block;
 }
 
-.dsa-sketch-studio-mount .image-overlay,
-.dsa-sketch-studio-mount .table-overlay {
+.dsa-sketch-studio-host .image-overlay,
+.dsa-sketch-studio-host .table-overlay {
     position: absolute;
     border: 2px dashed var(--theme);
     background: rgba(0, 122, 255, 0.04);
@@ -907,19 +892,19 @@
     display: none;
 }
 
-.dsa-sketch-studio-mount .image-overlay {
+.dsa-sketch-studio-host .image-overlay {
     min-width: 80px;
     min-height: 60px;
     border-radius: 6px;
     overflow: hidden;
 }
 
-.dsa-sketch-studio-mount .image-overlay.show,
-.dsa-sketch-studio-mount .table-overlay.show {
+.dsa-sketch-studio-host .image-overlay.show,
+.dsa-sketch-studio-host .table-overlay.show {
     display: block;
 }
 
-.dsa-sketch-studio-mount .image-overlay img {
+.dsa-sketch-studio-host .image-overlay img {
     width: 100%;
     height: 100%;
     object-fit: contain;
@@ -928,23 +913,23 @@
     display: block;
 }
 
-.dsa-sketch-studio-mount .table-overlay {
+.dsa-sketch-studio-host .table-overlay {
     min-width: 120px;
     min-height: 100px;
 }
 
-.dsa-sketch-studio-mount .table-grid {
+.dsa-sketch-studio-host .table-grid {
     width: 100%;
     height: 100%;
     display: grid;
     pointer-events: none;
 }
 
-.dsa-sketch-studio-mount .table-cell {
+.dsa-sketch-studio-host .table-cell {
     border: 1px solid #1c1c1e;
 }
 
-.dsa-sketch-studio-mount .resize-handle {
+.dsa-sketch-studio-host .resize-handle {
     position: absolute;
     width: 18px;
     height: 18px;
@@ -958,7 +943,7 @@
     z-index: 2;
 }
 
-.dsa-sketch-studio-mount .table-controls {
+.dsa-sketch-studio-host .table-controls {
     position: absolute;
     top: -52px;
     right: 0;
@@ -966,7 +951,7 @@
     gap: 8px;
 }
 
-.dsa-sketch-studio-mount .table-controls button {
+.dsa-sketch-studio-host .table-controls button {
     width: 38px;
     height: 38px;
     border-radius: 50%;
@@ -979,15 +964,15 @@
     transition: transform 0.15s var(--ease-spring);
 }
 
-.dsa-sketch-studio-mount .table-controls button:hover {
+.dsa-sketch-studio-host .table-controls button:hover {
     transform: scale(1.06);
 }
 
-.dsa-sketch-studio-mount .table-controls button:active {
+.dsa-sketch-studio-host .table-controls button:active {
     transform: scale(0.92);
 }
 
-.dsa-sketch-studio-mount .table-controls button svg {
+.dsa-sketch-studio-host .table-controls button svg {
     width: 18px;
     height: 18px;
     stroke-width: 2.6;
@@ -996,23 +981,23 @@
     fill: none;
 }
 
-.dsa-sketch-studio-mount .t-confirm {
+.dsa-sketch-studio-host .t-confirm {
     background: #34c759;
 }
 
-.dsa-sketch-studio-mount .t-confirm svg {
+.dsa-sketch-studio-host .t-confirm svg {
     stroke: #fff;
 }
 
-.dsa-sketch-studio-mount .t-cancel {
+.dsa-sketch-studio-host .t-cancel {
     background: #ff3b30;
 }
 
-.dsa-sketch-studio-mount .t-cancel svg {
+.dsa-sketch-studio-host .t-cancel svg {
     stroke: #fff;
 }
 
-.dsa-sketch-studio-mount .table-add {
+.dsa-sketch-studio-host .table-add {
     position: absolute;
     width: 26px;
     height: 26px;
@@ -1030,35 +1015,35 @@
     line-height: 1;
 }
 
-.dsa-sketch-studio-mount .table-add:active {
+.dsa-sketch-studio-host .table-add:active {
     transform: scale(0.9);
 }
 
-.dsa-sketch-studio-mount .t-add-col {
+.dsa-sketch-studio-host .t-add-col {
     right: -36px;
     top: calc(50% - 16px);
 }
 
-.dsa-sketch-studio-mount .t-del-col {
+.dsa-sketch-studio-host .t-del-col {
     right: -36px;
     top: calc(50% + 16px);
     border-color: #ff3b30;
     color: #ff3b30;
 }
 
-.dsa-sketch-studio-mount .t-add-row {
+.dsa-sketch-studio-host .t-add-row {
     bottom: -36px;
     left: calc(50% - 16px);
 }
 
-.dsa-sketch-studio-mount .t-del-row {
+.dsa-sketch-studio-host .t-del-row {
     bottom: -36px;
     left: calc(50% + 16px);
     border-color: #ff3b30;
     color: #ff3b30;
 }
 
-.dsa-sketch-studio-mount .text-overlay {
+.dsa-sketch-studio-host .text-overlay {
     position: absolute;
     background: rgba(255, 255, 255, 0.96);
     border: 2px dashed var(--theme);
@@ -1071,11 +1056,11 @@
     box-shadow: var(--shadow-float);
 }
 
-.dsa-sketch-studio-mount .text-overlay.show {
+.dsa-sketch-studio-host .text-overlay.show {
     display: block;
 }
 
-.dsa-sketch-studio-mount .text-overlay textarea {
+.dsa-sketch-studio-host .text-overlay textarea {
     width: 100%;
     min-height: 56px;
     padding: 12px 16px;
@@ -1093,7 +1078,7 @@
     -webkit-user-select: text;
 }
 
-.dsa-sketch-studio-mount .text-drag-handle {
+.dsa-sketch-studio-host .text-drag-handle {
     position: absolute;
     top: -22px;
     left: 0;
@@ -1107,7 +1092,7 @@
     justify-content: center;
 }
 
-.dsa-sketch-studio-mount .text-drag-handle::before {
+.dsa-sketch-studio-host .text-drag-handle::before {
     content: "";
     width: 20px;
     height: 3px;
@@ -1115,7 +1100,7 @@
     border-radius: 2px;
 }
 
-.dsa-sketch-studio-mount .menu-dropdown {
+.dsa-sketch-studio-host .menu-dropdown {
     position: absolute;
     top: 74px;
     right: 18px;
@@ -1134,13 +1119,13 @@
     transition: opacity 0.2s, transform 0.25s var(--ease-spring);
 }
 
-.dsa-sketch-studio-mount .menu-dropdown.show {
+.dsa-sketch-studio-host .menu-dropdown.show {
     display: block;
     opacity: 1;
     transform: translateY(0) scale(1);
 }
 
-.dsa-sketch-studio-mount .menu-item {
+.dsa-sketch-studio-host .menu-item {
     padding: 12px 16px;
     cursor: pointer;
     font-size: 14px;
@@ -1152,15 +1137,15 @@
     transition: background 0.12s;
 }
 
-.dsa-sketch-studio-mount .menu-item:hover {
+.dsa-sketch-studio-host .menu-item:hover {
     background: rgba(0, 0, 0, 0.05);
 }
 
-.dsa-sketch-studio-mount .menu-item:not(:last-child) {
+.dsa-sketch-studio-host .menu-item:not(:last-child) {
     border-bottom: 0.5px solid var(--separator);
 }
 
-.dsa-sketch-studio-mount .menu-item svg {
+.dsa-sketch-studio-host .menu-item svg {
     width: 16px;
     height: 16px;
     stroke: #555;
@@ -1168,121 +1153,121 @@
     stroke-width: 1.8;
 }
 
-.dsa-sketch-studio-mount .sketch-studio.minimized .top-toolbar {
+.dsa-sketch-studio-host .sketch-studio.minimized .top-toolbar {
     top: 18px;
     padding: 10px 14px;
 }
 
-.dsa-sketch-studio-mount.device-pc .sketch-studio.minimized .toolbar-right {
+.dsa-sketch-studio-host.device-pc .sketch-studio.minimized .toolbar-right {
     gap: 6px;
 }
 
-.dsa-sketch-studio-mount .sketch-studio.minimized .icon-btn,
-.dsa-sketch-studio-mount .sketch-studio.minimized .done-btn {
+.dsa-sketch-studio-host .sketch-studio.minimized .icon-btn,
+.dsa-sketch-studio-host .sketch-studio.minimized .done-btn {
     width: 34px;
     height: 34px;
 }
 
-.dsa-sketch-studio-mount .sketch-studio.minimized .icon-btn svg,
-.dsa-sketch-studio-mount .sketch-studio.minimized .done-btn svg {
+.dsa-sketch-studio-host .sketch-studio.minimized .icon-btn svg,
+.dsa-sketch-studio-host .sketch-studio.minimized .done-btn svg {
     width: 14px;
     height: 14px;
 }
 
-.dsa-sketch-studio-mount .sketch-studio.minimized .menu-tab button,
-.dsa-sketch-studio-mount .sketch-studio.minimized .undo-redo-tab button,
-.dsa-sketch-studio-mount .sketch-studio.minimized .top-tools-tab button {
+.dsa-sketch-studio-host .sketch-studio.minimized .menu-tab button,
+.dsa-sketch-studio-host .sketch-studio.minimized .undo-redo-tab button,
+.dsa-sketch-studio-host .sketch-studio.minimized .top-tools-tab button {
     width: 28px;
     height: 28px;
 }
 
-.dsa-sketch-studio-mount .sketch-studio.minimized .menu-tab svg,
-.dsa-sketch-studio-mount .sketch-studio.minimized .undo-redo-tab svg,
-.dsa-sketch-studio-mount .sketch-studio.minimized .top-tools-tab svg {
+.dsa-sketch-studio-host .sketch-studio.minimized .menu-tab svg,
+.dsa-sketch-studio-host .sketch-studio.minimized .undo-redo-tab svg,
+.dsa-sketch-studio-host .sketch-studio.minimized .top-tools-tab svg {
     width: 13px;
     height: 13px;
 }
 
-.dsa-sketch-studio-mount .sketch-studio.minimized .bottom-area {
+.dsa-sketch-studio-host .sketch-studio.minimized .bottom-area {
     bottom: 14px;
     gap: 8px;
 }
 
-.dsa-sketch-studio-mount .sketch-studio.minimized .brush-tray {
+.dsa-sketch-studio-host .sketch-studio.minimized .brush-tray {
     min-height: 60px;
     padding: 4px 12px 0;
 }
 
-.dsa-sketch-studio-mount .sketch-studio.minimized .brush {
+.dsa-sketch-studio-host .sketch-studio.minimized .brush {
     width: 36px;
     height: 50px;
     flex: 0 0 36px;
 }
 
-.dsa-sketch-studio-mount .sketch-studio.minimized .tray-btn {
+.dsa-sketch-studio-host .sketch-studio.minimized .tray-btn {
     width: 32px;
     height: 32px;
     margin: 0 2px;
 }
 
-.dsa-sketch-studio-mount .sketch-studio.minimized .color-btn {
+.dsa-sketch-studio-host .sketch-studio.minimized .color-btn {
     width: 26px;
     height: 26px;
     margin: 0;
 }
 
-.dsa-sketch-studio-mount .sketch-studio.minimized .bottom-tab {
+.dsa-sketch-studio-host .sketch-studio.minimized .bottom-tab {
     padding: 6px;
     gap: 4px;
 }
 
-.dsa-sketch-studio-mount .sketch-studio.minimized .tool-btn {
+.dsa-sketch-studio-host .sketch-studio.minimized .tool-btn {
     width: 38px;
     height: 38px;
 }
 
-.dsa-sketch-studio-mount .sketch-studio.minimized .tool-btn svg {
+.dsa-sketch-studio-host .sketch-studio.minimized .tool-btn svg {
     width: 18px;
     height: 18px;
 }
 
-.dsa-sketch-studio-mount .sketch-studio.minimized .brush-settings {
+.dsa-sketch-studio-host .sketch-studio.minimized .brush-settings {
     min-width: 320px;
     padding: 12px 14px;
 }
 
-.dsa-sketch-studio-mount.device-pc #dsaSkMainTab {
+.dsa-sketch-studio-host.device-pc #dsaSkMainTab {
     display: none !important;
 }
 
-.dsa-sketch-studio-mount.device-pc #dsaSkDrawTab {
+.dsa-sketch-studio-host.device-pc #dsaSkDrawTab {
     display: flex !important;
 }
 
-.dsa-sketch-studio-mount.device-pc .brushes-scroll {
+.dsa-sketch-studio-host.device-pc .brushes-scroll {
     flex: 1;
     max-width: none;
 }
 
-.dsa-sketch-studio-mount.device-pc #dsaSkBackBtnTray,
-.dsa-sketch-studio-mount.device-pc #dsaSkBtnLaser2 {
+.dsa-sketch-studio-host.device-pc #dsaSkBackBtnTray,
+.dsa-sketch-studio-host.device-pc #dsaSkBtnLaser2 {
     display: none;
 }
 
-.dsa-sketch-studio-mount.device-mobile #dsaSkBackBtnTray {
+.dsa-sketch-studio-host.device-mobile #dsaSkBackBtnTray {
     display: flex;
 }
 
-.dsa-sketch-studio-mount.device-mobile #dsaSkBtnLaser2 {
+.dsa-sketch-studio-host.device-mobile #dsaSkBtnLaser2 {
     display: none;
 }
 
-.dsa-sketch-studio-mount.device-mobile.dsa-sk-bottom-draw #dsaSkBtnLaser2 {
+.dsa-sketch-studio-host.device-mobile.dsa-sk-bottom-draw #dsaSkBtnLaser2 {
     display: flex;
 }
 
 /* Mobile draw tray: 3 brushes visible, scroll for the other 2 */
-.dsa-sketch-studio-mount.device-mobile .brushes-scroll {
+.dsa-sketch-studio-host.device-mobile .brushes-scroll {
     --dsa-sk-brush-w: 46px;
     --dsa-sk-brush-gap: 4px;
     max-width: calc(var(--dsa-sk-brush-w) * 3 + var(--dsa-sk-brush-gap) * 2);
@@ -1290,20 +1275,20 @@
     scroll-snap-type: x proximity;
 }
 
-.dsa-sketch-studio-mount.device-mobile .brush {
+.dsa-sketch-studio-host.device-mobile .brush {
     scroll-snap-align: start;
 }
 
-.dsa-sketch-studio-mount.device-mobile .sketch-studio.minimized .brushes-scroll {
+.dsa-sketch-studio-host.device-mobile .sketch-studio.minimized .brushes-scroll {
     --dsa-sk-brush-w: 36px;
 }
 
 @media (max-width: 768px) {
-    .dsa-sketch-studio-mount .bottom-area {
+    .dsa-sketch-studio-host .bottom-area {
         bottom: 20px;
     }
 
-    .dsa-sketch-studio-mount .top-toolbar {
+    .dsa-sketch-studio-host .top-toolbar {
         padding: 12px 14px;
     }
 }

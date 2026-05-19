@@ -44,17 +44,21 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     if (!document.head.querySelector("link[data-dsa-sketch-studio-css]")) {
         const lk = document.createElement("link");
         lk.rel = "stylesheet";
-        lk.href = "./dsa-sketch-studio.css?v=17";
+        lk.href = "./dsa-sketch-studio.css?v=18";
         lk.dataset.dsaSketchStudioCss = "1";
         document.head.appendChild(lk);
     }
 
     editorRoot.innerHTML = "";
+    editorRoot.classList.add("dsa-sketch-studio-host");
+
+    const mount = document.createElement("div");
+    mount.className = "dsa-sketch-studio-mount";
     const device = dsaDetectSketchDevice();
-    editorRoot.id = "dsaSkStudio";
-    editorRoot.classList.add("dsa-sketch-studio-host", "sketch-studio", device === "pc" ? "device-pc" : "device-mobile");
-    const mount = editorRoot;
-    editorRoot.innerHTML = `  <div class="canvas-wrap" id="dsaSkCanvasWrap">
+    mount.classList.add(device === "pc" ? "device-pc" : "device-mobile");
+    mount.innerHTML = `<div class="sketch-studio" id="dsaSkStudio">
+
+  <div class="canvas-wrap" id="dsaSkCanvasWrap">
     <canvas id="dsaSkCanvas" width="2400" height="1800"></canvas>
     <canvas id="dsaSkLaserCanvas"></canvas>
 
@@ -261,8 +265,10 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
       </button>
     </div>
   </div>
+</div>
 
 `;
+    editorRoot.appendChild(mount);
 
     const eraserCursor = document.createElement("div");
     eraserCursor.className = "eraser-cursor";
@@ -357,12 +363,12 @@ function syncToolbarUi() {
   const studio = $('dsaSkStudio');
   if (!studio) return;
 
-  editorRoot.classList.toggle('dsa-sk-state-fullscreen', isFullscreen());
-  editorRoot.classList.toggle('dsa-sk-state-minimized', !!state.minimized && !isFullscreen());
-  editorRoot.classList.toggle('dsa-sk-bottom-draw', !isBigScreen() && state.tool === 'pencil');
-  editorRoot.classList.toggle('dsa-sk-bottom-main', !isBigScreen() && state.tool !== 'pencil');
+  mount.classList.toggle('dsa-sk-state-fullscreen', isFullscreen());
+  mount.classList.toggle('dsa-sk-state-minimized', !!state.minimized && !isFullscreen());
+  mount.classList.toggle('dsa-sk-bottom-draw', !isBigScreen() && state.tool === 'pencil');
+  mount.classList.toggle('dsa-sk-bottom-main', !isBigScreen() && state.tool !== 'pencil');
   /* iPad/PC: hide top back only when minimized (same toolbar as fullscreen otherwise) */
-  editorRoot.classList.toggle('dsa-sk-back-hidden', isBigScreen() && state.minimized && !isFullscreen());
+  mount.classList.toggle('dsa-sk-back-hidden', isBigScreen() && state.minimized && !isFullscreen());
 }
 
 function enterFullscreen() {
@@ -1863,17 +1869,7 @@ const api = {
     listeners.length = 0;
     if (eraserCursor && eraserCursor.parentNode) eraserCursor.parentNode.removeChild(eraserCursor);
     editorRoot.innerHTML = '';
-    editorRoot.classList.remove(
-      'dsa-sketch-studio-host',
-      'dsa-sketch-studio-host--fullscreen',
-      'device-pc',
-      'device-mobile',
-      'dsa-sk-state-fullscreen',
-      'dsa-sk-state-minimized',
-      'dsa-sk-bottom-draw',
-      'dsa-sk-bottom-main',
-      'dsa-sk-back-hidden'
-    );
+    editorRoot.classList.remove('dsa-sketch-studio-host', 'dsa-sketch-studio-host--fullscreen');
   },
 };
 

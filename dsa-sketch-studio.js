@@ -44,7 +44,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     if (!document.head.querySelector("link[data-dsa-sketch-studio-css]")) {
         const lk = document.createElement("link");
         lk.rel = "stylesheet";
-        lk.href = "./dsa-sketch-studio.css?v=20";
+        lk.href = "./dsa-sketch-studio.css?v=21";
         lk.dataset.dsaSketchStudioCss = "1";
         document.head.appendChild(lk);
     }
@@ -115,7 +115,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
   </div>
 
   <div class="top-toolbar">
-    <button class="icon-btn" type="button" id="dsaSkBackBtn" title="Back">
+    <button class="icon-btn" type="button" id="dsaSkBackBtn" title="Back" aria-label="Back">
       <svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
 
@@ -158,7 +158,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
         <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>
       </button>
 
-      <button class="done-btn" type="button" id="dsaSkDoneBtn" title="Done">
+      <button class="done-btn" type="button" id="dsaSkDoneBtn" title="Save sketch" aria-label="Save sketch">
         <svg viewBox="0 0 24 24" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
       </button>
     </div>
@@ -192,14 +192,17 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
         </div>
       </div>
       <div class="settings-row">
-        <span class="settings-label">Size</span>
-        <div class="size-dots" id="dsaSkSizeDots"></div>
+        <span class="settings-label" id="dsaSkSizeLabel">Stroke</span>
+        <div class="size-dots" id="dsaSkSizeDots" role="group" aria-labelledby="dsaSkSizeLabel"></div>
       </div>
       <div class="settings-row">
-        <span class="settings-label">Opacity</span>
-        <div class="opacity-slider" id="dsaSkOpacitySlider">
+        <span class="settings-label" id="dsaSkOpacityLabel">Opacity</span>
+        <div class="opacity-control">
+          <span class="opacity-value" id="dsaSkOpacityValue" aria-live="polite">100%</span>
+          <div class="opacity-slider" id="dsaSkOpacitySlider" role="slider" aria-valuemin="10" aria-valuemax="100" aria-valuenow="100" aria-labelledby="dsaSkOpacityLabel">
           <div class="opacity-track"></div>
           <div class="opacity-thumb" id="dsaSkOpacityThumb" style="left:100%"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -1096,33 +1099,47 @@ document.querySelectorAll('.shape-opt').forEach(opt => {
 });
 
 /* ============ BRUSH SETTINGS UI ============ */
+const STROKE_SIZE_PX = { 1: 6, 2: 8, 3: 10, 5: 14, 8: 18, 12: 22 };
+
 function buildSizeDots() {
   const c = $('dsaSkSizeDots');
+  if (!c) return;
   const sizes = [1, 2, 3, 5, 8, 12];
   c.innerHTML = '';
-  sizes.forEach(s => {
+  sizes.forEach((s) => {
     const dot = document.createElement('div');
     dot.className = 'size-dot';
     if (s === state.size) dot.classList.add('active');
+    dot.setAttribute('role', 'button');
+    dot.setAttribute('aria-label', `Stroke size ${s}`);
+    dot.title = String(s);
     const inner = document.createElement('div');
     inner.className = 'size-dot-inner';
-    const v = Math.min(s * 1.8 + 4, 22);
-    inner.style.width = v + 'px';
-    inner.style.height = v + 'px';
-    inner.style.background = state.brush === 'eraser' ? '#999' : state.color;
+    const v = STROKE_SIZE_PX[s] || 10;
+    inner.style.width = `${v}px`;
+    inner.style.height = `${v}px`;
+    inner.style.background = state.brush === 'eraser' ? '#8e8e93' : state.color;
     dot.appendChild(inner);
-    dot.onclick = () => { state.size = s; buildSizeDots(); };
+    dot.onclick = () => {
+      state.size = s;
+      buildSizeDots();
+    };
     c.appendChild(dot);
   });
 }
 const opSlider = $('dsaSkOpacitySlider');
 const opThumb = $('dsaSkOpacityThumb');
+const opValEl = $('dsaSkOpacityValue');
 let dragOp = false;
 function setOpacity(cx) {
+  if (!opSlider || !opThumb) return;
   const r = opSlider.getBoundingClientRect();
   let pct = Math.max(0.1, Math.min(1, (cx - r.left) / r.width));
   state.opacity = pct;
-  opThumb.style.left = (pct * 100) + '%';
+  const pctInt = Math.round(pct * 100);
+  opThumb.style.left = `${pctInt}%`;
+  if (opValEl) opValEl.textContent = `${pctInt}%`;
+  opSlider.setAttribute('aria-valuenow', String(pctInt));
 }
 opSlider.addEventListener('mousedown', (e) => { dragOp = true; setOpacity(e.clientX); });
 document.addEventListener('mousemove', (e) => { if (dragOp) setOpacity(e.clientX); });
@@ -1130,6 +1147,7 @@ document.addEventListener('mouseup', () => { dragOp = false; });
 opSlider.addEventListener('touchstart', (e) => { dragOp = true; setOpacity(e.touches[0].clientX); });
 opSlider.addEventListener('touchmove', (e) => { if (dragOp) { setOpacity(e.touches[0].clientX); e.preventDefault(); } }, { passive: false });
 opSlider.addEventListener('touchend', () => { dragOp = false; });
+if (opSlider) setOpacity(opSlider.getBoundingClientRect().right);
 
 /* ============ COLOR PALETTE ============ */
 const colors = ['#1c1c1e','#5a5a5a','#9b9b9b','#ffffff','#ff3b30','#ff9500','#ffcc00','#34c759','#00c7be','#007aff','#5856d6','#af52de','#ff2d55','#a2845e','#8e8e93','#5a3825'];

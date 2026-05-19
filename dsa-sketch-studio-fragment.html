@@ -56,7 +56,7 @@
   </div>
 
   <div class="top-toolbar">
-    <button class="icon-btn" type="button" id="dsaSkBackBtn" title="Back">
+    <button class="icon-btn" type="button" id="dsaSkBackBtn" title="Back" aria-label="Back">
       <svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
 
@@ -99,7 +99,7 @@
         <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>
       </button>
 
-      <button class="done-btn" type="button" id="dsaSkDoneBtn" title="Done">
+      <button class="done-btn" type="button" id="dsaSkDoneBtn" title="Save sketch" aria-label="Save sketch">
         <svg viewBox="0 0 24 24" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
       </button>
     </div>
@@ -133,14 +133,17 @@
         </div>
       </div>
       <div class="settings-row">
-        <span class="settings-label">Size</span>
-        <div class="size-dots" id="dsaSkSizeDots"></div>
+        <span class="settings-label" id="dsaSkSizeLabel">Stroke</span>
+        <div class="size-dots" id="dsaSkSizeDots" role="group" aria-labelledby="dsaSkSizeLabel"></div>
       </div>
       <div class="settings-row">
-        <span class="settings-label">Opacity</span>
-        <div class="opacity-slider" id="dsaSkOpacitySlider">
+        <span class="settings-label" id="dsaSkOpacityLabel">Opacity</span>
+        <div class="opacity-control">
+          <span class="opacity-value" id="dsaSkOpacityValue" aria-live="polite">100%</span>
+          <div class="opacity-slider" id="dsaSkOpacitySlider" role="slider" aria-valuemin="10" aria-valuemax="100" aria-valuenow="100" aria-labelledby="dsaSkOpacityLabel">
           <div class="opacity-track"></div>
           <div class="opacity-thumb" id="dsaSkOpacityThumb" style="left:100%"></div>
+          </div>
         </div>
       </div>
     </div>

@@ -1137,9 +1137,7 @@ body > .dsa-sol-pro-toast {
     background: #fff;
     border-radius: 22px;
     overflow: hidden;
-    box-shadow:
-        0 20px 48px rgba(0, 0, 0, 0.22),
-        0 4px 14px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
 /* Canvas hairline looked like an inner card */

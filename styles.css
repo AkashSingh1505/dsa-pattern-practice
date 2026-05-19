@@ -7793,13 +7793,12 @@ body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
     margin: 0 !important;
 }
 
-.dsa-h-problems-card .dsa-h-platform-icon svg,
-.dsa-h-problems-card .dsa-h-platform-icon--card svg,
 .dsa-h-problems-card .dsa-h-platform-icon .dsa-h-platform-icon-img {
     width: 18px !important;
     height: 18px !important;
     border-radius: 5px !important;
     display: block !important;
+    object-fit: contain !important;
 }
 
 .dsa-h-problems-card .dsa-h-problem-link-text {

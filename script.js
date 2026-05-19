@@ -2553,11 +2553,15 @@ function dsaResolveProblemPlatform(url) {
 }
 
 function getPlatformLabel(url) {
-    const r = dsaResolveProblemPlatform(url);
+    const raw = String(url || "").trim();
+    if (!raw) {
+        return "Link";
+    }
+    const r = dsaResolveProblemPlatform(raw);
     if (r) {
         return r.label;
     }
-    const h = getUrlHost(dsaNormalizeProblemUrlForPlatform(String(url || "").trim()));
+    const h = getUrlHost(dsaNormalizeProblemUrlForPlatform(raw));
     return h || "Link";
 }
 
@@ -2581,7 +2585,7 @@ function getDsaScriptBaseDir() {
 /** Local `res/dsa-platforms/*.svg` — no remote fetch; icons ship with the site. */
 function dsaStaticPlatformIconUrl(filename) {
     const path = `res/dsa-platforms/${filename}`;
-    const qs = "v=4";
+    const qs = "v=5";
     const dir = getDsaScriptBaseDir();
     if (dir) {
         try {
@@ -2594,27 +2598,30 @@ function dsaStaticPlatformIconUrl(filename) {
 }
 
 /**
- * Map problem URL → static filename (LeetCode, GfG, Coding Ninjas only; else generic link.svg).
- * LeetCode: `leetcode.png` (Wikimedia LeetCode_logo_black). GfG: `gfg.png` (GeeksforGeeks CDN mark, bundled in res).
+ * Map problem URL → bundled brand SVG under `res/dsa-platforms/`.
+ * LeetCode, GeeksforGeeks, Coding Ninjas; empty/unknown → link.svg.
  */
 function dsaStaticPlatformIconFilename(url) {
     const normalized = dsaNormalizeProblemUrlForPlatform(String(url || "").trim());
+    if (!normalized) {
+        return "link.svg";
+    }
     const host = getUrlHost(normalized);
     const s = normalized.toLowerCase();
 
     if (host) {
         if (dsaHostEndsWithSuffix(host, "leetcode.cn") || dsaHostEndsWithSuffix(host, "leetcode.com")) {
-            return "leetcode.png";
+            return "leetcode.svg";
         }
         if (dsaHostEndsWithSuffix(host, "geeksforgeeks.org")) {
-            return "gfg.png";
+            return "gfg.svg";
         }
         if (dsaHostEndsWithSuffix(host, "codingninjas.com")) {
             return "codingninjas.svg";
         }
     }
     if (s.includes("leetcode.cn") || s.includes("leetcode.com") || /\bleetcode\b/.test(s)) {
-        return "leetcode.png";
+        return "leetcode.svg";
     }
     if (
         s.includes("codingninjas.com") ||
@@ -2626,7 +2633,7 @@ function dsaStaticPlatformIconFilename(url) {
         return "codingninjas.svg";
     }
     if (s.includes("geeksforgeeks.org") || s.includes("geeksforgeeks")) {
-        return "gfg.png";
+        return "gfg.svg";
     }
     return "link.svg";
 }
@@ -3137,116 +3144,53 @@ function dsaHighlightProbSolutionCode(preEl) {
 }
 
 /**
- * Platform badge: local `<img src="…/res/dsa-platforms/*.svg">`.
- * Do not use `loading="lazy"`: problem rows often live under `.dsa-h-children--collapsed { display: none }`;
- * lazy-loaded images in hidden subtrees frequently never start loading, so users only see the gray box.
+ * Bundled brand mark from `res/dsa-platforms/*.svg` (LeetCode, GfG, Coding Ninjas, link fallback).
+ * Do not use `loading="lazy"`: rows in collapsed subtrees may never load lazy images.
  */
-function appendPlatformIcon(container, url) {
-    container.classList.add("dsa-h-platform-icon");
-    while (container.firstChild) {
-        container.removeChild(container.firstChild);
+function dsaBuildPlatformIconWrap(url, opts = {}) {
+    const raw = String(url || "").trim();
+    const card = !!opts.card;
+    const size = opts.size != null ? opts.size : card ? 18 : 22;
+    const label = getPlatformLabel(raw);
+    const platform = dsaResolveProblemPlatform(raw);
+
+    const wrap = document.createElement("span");
+    wrap.className = card ? "dsa-h-platform-icon dsa-h-platform-icon--card" : "dsa-h-platform-icon";
+    wrap.setAttribute("aria-label", label);
+    wrap.title = label;
+    if (platform && platform.key) {
+        wrap.dataset.platform = platform.key;
     }
-    const file = dsaStaticPlatformIconFilename(url);
+
+    const file = dsaStaticPlatformIconFilename(raw);
     const img = document.createElement("img");
     img.className = "dsa-h-platform-icon-img";
     img.alt = "";
-    img.width = 22;
-    img.height = 22;
+    img.width = size;
+    img.height = size;
     img.decoding = "async";
     img.setAttribute("aria-hidden", "true");
     img.src = dsaStaticPlatformIconUrl(file);
-    container.appendChild(img);
+    wrap.appendChild(img);
+    return wrap;
 }
 
-/**
- * Inline branded platform mark for the practice-problems card.
- * Returns a self-contained <span class="dsa-h-platform-icon"> with an SVG inside —
- * no external image assets needed. Recognises LeetCode, GeeksforGeeks, Coding Ninjas;
- * everything else falls back to a neutral link icon.
- */
-function dsaCardPlatformIcon(url) {
-    const platform = dsaResolveProblemPlatform(url);
-    const key = platform ? platform.key : "";
-    const label = platform ? platform.label : "Link";
-
-    const wrap = document.createElement("span");
-    wrap.className = "dsa-h-platform-icon dsa-h-platform-icon--card";
-    wrap.setAttribute("aria-label", label);
-    wrap.title = label;
-    if (key) {
-        wrap.dataset.platform = key;
-    }
-
-    const NS = "http://www.w3.org/2000/svg";
-    const svg = document.createElementNS(NS, "svg");
-    svg.setAttribute("viewBox", "0 0 24 24");
-    svg.setAttribute("width", "18");
-    svg.setAttribute("height", "18");
-    svg.setAttribute("aria-hidden", "true");
-
-    function rect(x, y, w, h, rx, fill) {
-        const r = document.createElementNS(NS, "rect");
-        r.setAttribute("x", String(x));
-        r.setAttribute("y", String(y));
-        r.setAttribute("width", String(w));
-        r.setAttribute("height", String(h));
-        r.setAttribute("rx", String(rx));
-        r.setAttribute("fill", fill);
-        svg.appendChild(r);
-    }
-    function text(x, y, content, opts) {
-        const t = document.createElementNS(NS, "text");
-        t.setAttribute("x", String(x));
-        t.setAttribute("y", String(y));
-        t.setAttribute("text-anchor", "middle");
-        t.setAttribute("dominant-baseline", "central");
-        t.setAttribute("font-family", "-apple-system, BlinkMacSystemFont, 'SF Pro Display', Helvetica, Arial, sans-serif");
-        t.setAttribute("font-weight", "800");
-        t.setAttribute("font-size", String(opts && opts.fontSize ? opts.fontSize : 10));
-        t.setAttribute("fill", (opts && opts.fill) || "#ffffff");
-        t.setAttribute("letter-spacing", "-0.4");
-        t.textContent = content;
-        svg.appendChild(t);
-    }
-    function path(d, fill, stroke, sw) {
-        const p = document.createElementNS(NS, "path");
-        p.setAttribute("d", d);
-        if (fill) p.setAttribute("fill", fill);
-        if (stroke) {
-            p.setAttribute("stroke", stroke);
-            p.setAttribute("stroke-width", String(sw || 2));
-            p.setAttribute("stroke-linecap", "round");
-            p.setAttribute("stroke-linejoin", "round");
-            p.setAttribute("fill", "none");
-        }
-        svg.appendChild(p);
-    }
-
-    if (key === "leetcode.com" || key === "leetcode.cn") {
-        /* LeetCode — orange-yellow rounded square with white "LC" mark. */
-        rect(0, 0, 24, 24, 5, "#FFA116");
-        text(12, 13.2, "LC", { fontSize: 9.5, fill: "#FFFFFF" });
-    } else if (key === "geeksforgeeks.org") {
-        /* GeeksforGeeks — dark-green rounded square with a white "G" glyph. */
-        rect(0, 0, 24, 24, 5, "#2F8D46");
-        text(12, 13.4, "G", { fontSize: 14, fill: "#FFFFFF" });
-    } else if (key === "codingninjas.com") {
-        /* Coding Ninjas / Naukri Code360 — red-orange tile with "CN". */
-        rect(0, 0, 24, 24, 5, "#DD4124");
-        text(12, 13.2, "CN", { fontSize: 9.5, fill: "#FFFFFF" });
+function appendPlatformIcon(container, url) {
+    const icon = dsaBuildPlatformIconWrap(url, { size: 22 });
+    container.className = icon.className;
+    container.replaceChildren(...icon.childNodes);
+    container.setAttribute("aria-label", icon.getAttribute("aria-label") || "");
+    container.title = icon.title || "";
+    if (icon.dataset.platform) {
+        container.dataset.platform = icon.dataset.platform;
     } else {
-        /* Unknown platform — neutral gray tile with a small link glyph. */
-        rect(0, 0, 24, 24, 5, "#C7C7CC");
-        path(
-            "M10 14a3 3 0 0 0 4.24 0l2.83-2.83a3 3 0 0 0-4.24-4.24l-1 1M14 10a3 3 0 0 0-4.24 0l-2.83 2.83a3 3 0 0 0 4.24 4.24l1-1",
-            null,
-            "#FFFFFF",
-            1.7,
-        );
+        delete container.dataset.platform;
     }
+}
 
-    wrap.appendChild(svg);
-    return wrap;
+/** Practice-problems card row — real platform logos from bundled SVGs. */
+function dsaCardPlatformIcon(url) {
+    return dsaBuildPlatformIconWrap(url, { card: true, size: 18 });
 }
 
 /** Building icon — company tags toggle (same size as other problem-row toggles). */
@@ -4412,9 +4356,9 @@ function buildProblemListItem(prob, probCtx) {
     a.href = href || "#";
     a.target = "_blank";
     a.rel = "noopener noreferrer";
-    a.title = `${prob.name} — ${getPlatformLabel(href)}`;
+    a.title = `${prob.name} — ${getPlatformLabel(rawUrl)}`;
 
-    a.appendChild(dsaCardPlatformIcon(href));
+    a.appendChild(dsaCardPlatformIcon(rawUrl));
 
     const text = document.createElement("span");
     text.className = "dsa-h-problem-link-text";

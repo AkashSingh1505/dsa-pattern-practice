@@ -1,475 +1,19 @@
-/**
- * DSA problem sketch — Sketch Studio (embedded, glass UI).
- */
-function dsaDetectSketchDevice() {
-    const ua = navigator.userAgent || "";
-    const isIPad =
-        /iPad/i.test(ua) ||
-        (navigator.platform === "MacIntel" && (navigator.maxTouchPoints || 0) > 1);
-    const isMobile = /Android|iPhone|iPod|Mobile/i.test(ua) && !isIPad;
-    return isMobile ? "mobile" : "pc";
-}
 
-function dsaWireSketchEditorStudioStub() {
-    return {
-        clear() {},
-        zoomIn() {},
-        zoomOut() {},
-        resetZoom() {},
-        loadDataUrl() {},
-        toDataUrl() {
-            return "";
-        },
-        toPersistedSketchDataUrl() {
-            return "";
-        },
-        getHasInk() {
-            return false;
-        },
-        syncHasInkFromPixels() {},
-        exitFullscreen() {},
-        isFullscreen() {
-            return false;
-        },
-        resize() {},
-        destroy() {},
-    };
-}
+const state = {
+  device: 'pc', minimized: false,
+  tool: null, brush: 'pen', shape: 'rectangle',
+  color: '#1c1c1e', size: 3, opacity: 1,
+  drawing: false, paths: [], redoStack: [],
+  currentPath: null, laser: false, showGrid: false,
+  scale: 1, panX: 0, panY: 0
+};
 
-function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
-    const hooks = sketchOpts || {};
-    if (!editorRoot) {
-        return dsaWireSketchEditorStudioStub();
-    }
-    if (!document.head.querySelector("link[data-dsa-sketch-studio-css]")) {
-        const lk = document.createElement("link");
-        lk.rel = "stylesheet";
-        lk.href = "./dsa-sketch-studio.css?v=9";
-        lk.dataset.dsaSketchStudioCss = "1";
-        document.head.appendChild(lk);
-    }
-
-    editorRoot.innerHTML = "";
-    editorRoot.classList.add("dsa-sketch-studio-host");
-
-    const mount = document.createElement("div");
-    mount.className = "dsa-sketch-studio-mount";
-    const device = dsaDetectSketchDevice();
-    mount.classList.add(device === "pc" ? "device-pc" : "device-mobile");
-    mount.innerHTML = `<div class="sketch-studio" id="dsaSkStudio">
-
-  <div class="restore-bar">
-    <span>Sketch</span>
-    <button type="button" id="dsaSkExpandBtn" title="Expand">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.2" stroke-linecap="round"><path d="M3 21l7-7M3 21h6M3 21v-6M21 3l-7 7M21 3h-6M21 3v6"/></svg>
-    </button>
-  </div>
-
-  <div class="canvas-wrap" id="dsaSkCanvasWrap">
-    <canvas id="dsaSkCanvas" width="2400" height="1800"></canvas>
-    <canvas id="dsaSkLaserCanvas"></canvas>
-
-    <!-- Table overlay -->
-    <div class="table-overlay" id="dsaSkTableOverlay">
-      <div class="table-grid" id="dsaSkTableGrid"></div>
-      <button class="table-add t-add-col" data-table="col" data-delta="1">+</button>
-      <button class="table-add t-del-col" data-table="col" data-delta="-1">−</button>
-      <button class="table-add t-add-row" data-table="row" data-delta="1">+</button>
-      <button class="table-add t-del-row" data-table="row" data-delta="-1">−</button>
-      <div class="resize-handle" id="dsaSkTableResize"></div>
-      <div class="table-controls">
-        <button class="t-cancel" data-action="table-cancel">
-          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
-        </button>
-        <button class="t-confirm" data-action="table-confirm">
-          <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
-        </button>
-      </div>
-    </div>
-
-<div class="image-overlay" id="dsaSkImageOverlay">
-  <img id="dsaSkImagePreview" />
-  <div class="resize-handle" id="dsaSkImageResize"></div>
-  <div class="table-controls">
-    <button class="t-cancel" data-action="table-cancel" title="Remove">
-      <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
-    </button>
-    <button class="t-confirm" data-action="image-confirm" title="Done">
-      <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
-    </button>
-  </div>
-</div>
-
-    <!-- Text overlay -->
-    <div class="text-overlay" id="dsaSkTextOverlay">
-      <div class="text-drag-handle" id="dsaSkTextHandle"></div>
-      <textarea id="dsaSkTextInput" placeholder="Type something..." rows="2"></textarea>
-
-      <div class="table-controls">
-  <button class="t-delete" id="dsaSkTextDeleteBtn" title="Delete" style="display:none;">
-    <svg viewBox="0 0 24 24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M3 6h18M19 6l-1.5 14a2 2 0 01-2 1.8H8.5a2 2 0 01-2-1.8L5 6M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
-  </button>
-  <button class="t-cancel" data-action="text-cancel" title="Cancel">
-    <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
-  </button>
-  <button class="t-confirm" data-action="text-confirm" title="Done">
-    <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
-  </button>
-</div>
-
-    </div>
-  </div>
-
-  <div class="top-toolbar">
-    <button class="icon-btn" type="button" id="dsaSkBackBtn" title="Back">
-      <svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-    </button>
-
-    <!-- Centered top tools (PC only) -->
-    <div class="top-tools-tab glass-pill" id="dsaSkTopToolsTab">
-      <button title="Text" id="dsaSkTtText">
-        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
-      </button>
-      <button title="Insert Table" id="dsaSkTtGrid">
-        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
-      </button>
-      <button title="Attach" id="dsaSkTtAttach">
-        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21.4 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
-      </button>
-      <button title="Laser" id="dsaSkBtnLaserTop">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="#ff3b30"/><circle cx="12" cy="12" r="8" fill="none" stroke="#ff3b30" stroke-width="1.6" opacity="0.45"/></svg>
-      </button>
-    </div>
-
-    <div class="toolbar-right">
-      <div class="undo-redo-tab glass-pill" id="dsaSkUndoRedoTab">
-        <button id="dsaSkUndoBtn" disabled>
-          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 00-15-6.7L3 13"/></svg>
-        </button>
-        <button id="dsaSkRedoBtn" disabled>
-          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0115-6.7L21 13"/></svg>
-        </button>
-      </div>
-
-      <div class="menu-tab glass-pill">
-        <button type="button" id="dsaSkMenuToggleBtn" title="More">
-          <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6" fill="#1c1c1e"/><circle cx="12" cy="12" r="1.6" fill="#1c1c1e"/><circle cx="19" cy="12" r="1.6" fill="#1c1c1e"/></svg>
-        </button>
-        <button type="button" id="dsaSkMenuClearBtn" title="Clear">
-          <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6l-1.5 14a2 2 0 01-2 1.8H8.5a2 2 0 01-2-1.8L5 6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
-        </button>
-      </div>
-
-      <button class="icon-btn minimize-btn" type="button" id="dsaSkMinimizeBtn" title="Minimize">
-        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>
-      </button>
-
-      <button class="done-btn" type="button" id="dsaSkDoneBtn" title="Done">
-        <svg viewBox="0 0 24 24" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
-      </button>
-    </div>
-  </div>
-
-  <div class="menu-dropdown" id="dsaSkMenuDropdown">
-    <div class="menu-item" id="dsaSkMenuExport">
-      <span>Export as PNG</span>
-      <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5-5 5 5"/><path d="M12 5v12"/></svg>
-    </div>
-    <div class="menu-item" id="dsaSkMenuGrid">
-      <span>Toggle Grid Canvas</span>
-      <svg viewBox="0 0 24 24" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
-    </div>
-    <div class="menu-item" id="dsaSkMenuResetZoom">
-      <span>Reset Zoom</span>
-      <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M8 11h6"/></svg>
-    </div>
-  </div>
-
-  <div class="bottom-area">
-    <div class="brush-settings" id="dsaSkBrushSettings">
-      <div class="settings-row" id="dsaSkShapeRow" style="display:none;">
-        <span class="settings-label">Shape</span>
-        <div class="shape-options" id="dsaSkShapeOptions">
-          <div class="shape-opt active" data-shape="rectangle"><svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="1"/></svg></div>
-          <div class="shape-opt" data-shape="circle"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg></div>
-          <div class="shape-opt" data-shape="triangle"><svg viewBox="0 0 24 24"><path d="M12 4l9 16H3z"/></svg></div>
-          <div class="shape-opt" data-shape="line"><svg viewBox="0 0 24 24"><path d="M4 20L20 4"/></svg></div>
-          <div class="shape-opt" data-shape="arrow"><svg viewBox="0 0 24 24"><path d="M4 20L20 4M20 4h-7M20 4v7"/></svg></div>
-        </div>
-      </div>
-      <div class="settings-row">
-        <span class="settings-label">Size</span>
-        <div class="size-dots" id="dsaSkSizeDots"></div>
-      </div>
-      <div class="settings-row">
-        <span class="settings-label">Opacity</span>
-        <div class="opacity-slider" id="dsaSkOpacitySlider">
-          <div class="opacity-track"></div>
-          <div class="opacity-thumb" id="dsaSkOpacityThumb" style="left:100%"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="color-modal" id="dsaSkColorModal">
-      <div class="swatches-grid" id="dsaSkSwatchesGrid"></div>
-      <div class="color-mixer">
-        <span class="mixer-label">Mixer</span>
-        <div class="hue-slider" id="dsaSkHueSlider"><div class="hue-thumb" id="dsaSkHueThumb" style="left:0%"></div></div>
-        <input type="color" class="native-color" id="dsaSkNativeColor" value="#1c1c1e">
-      </div>
-    </div>
-
-    <div class="bottom-tab" id="dsaSkMainTab">
-      <button class="tool-btn" id="dsaSkBtnPencil">
-        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
-      </button>
-      <button class="tool-btn">
-        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
-      </button>
-      <button class="tool-btn">
-        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
-      </button>
-      <button class="tool-btn">
-        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21.4 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
-      </button>
-      <div class="divider"></div>
-      <button class="tool-btn" id="dsaSkBtnLaser">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="#ff3b30" stroke="#ff3b30"/><circle cx="12" cy="12" r="8" stroke="#ff3b30" fill="none" stroke-width="1.6" opacity="0.45"/></svg>
-      </button>
-    </div>
-
-    <div class="brush-tray" id="dsaSkDrawTab" style="display:none;">
-<div class="brushes-scroll">
-      <div class="brush" data-brush="pen">
-        <svg viewBox="0 0 60 90"><polygon points="30,88 22,72 38,72" fill="var(--bc, #1c1c1e)"/><rect x="20" y="68" width="20" height="5" fill="#c4c4c6"/><rect x="18" y="20" width="24" height="48" fill="#2c2c2e" rx="3"/><rect x="18" y="20" width="24" height="48" fill="url(#penGrad)" rx="3"/><rect x="20" y="10" width="20" height="12" fill="#1c1c1e" rx="3"/><rect x="18" y="58" width="24" height="8" fill="var(--bc, #1c1c1e)"/><defs><linearGradient id="penGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="rgba(255,255,255,0.18)"/><stop offset="0.5" stop-color="rgba(255,255,255,0)"/><stop offset="1" stop-color="rgba(0,0,0,0.25)"/></linearGradient></defs></svg>
-
-      </div>
-      <div class="brush" data-brush="pencil">
-        <svg viewBox="0 0 60 90"><polygon points="30,88 24,78 36,78" fill="#2c2c2e"/><polygon points="22,70 38,70 36,78 24,78" fill="#f4d6a8"/><polygon points="30,72 36,78 24,78" fill="#dbb780" opacity="0.6"/><rect x="20" y="60" width="20" height="10" fill="#e8c547"/><rect x="20" y="62" width="20" height="1.5" fill="#a8881e"/><rect x="20" y="67" width="20" height="1.5" fill="#a8881e"/><rect x="20" y="14" width="20" height="46" fill="#f9c440"/><rect x="20" y="14" width="20" height="46" fill="url(#pcGrad)"/><rect x="20" y="10" width="20" height="6" fill="var(--bc, #ff3b30)" rx="2"/><defs><linearGradient id="pcGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="rgba(255,255,255,0.25)"/><stop offset="0.5" stop-color="rgba(255,255,255,0)"/><stop offset="1" stop-color="rgba(0,0,0,0.2)"/></linearGradient></defs></svg>
-
-      </div>
-      <div class="brush" data-brush="highlighter">
-        <svg viewBox="0 0 60 90"><polygon points="18,88 42,88 39,76 21,76" fill="var(--bc, #ffeb3b)"/><rect x="16" y="64" width="28" height="13" fill="#2c2c2e" rx="3"/><rect x="14" y="14" width="32" height="50" fill="var(--bc, #ffeb3b)" rx="4"/><rect x="14" y="14" width="32" height="50" fill="url(#hgGrad)" rx="4"/><rect x="14" y="32" width="32" height="14" fill="rgba(255,255,255,0.55)"/><rect x="18" y="8" width="24" height="8" fill="#2c2c2e" rx="3"/><defs><linearGradient id="hgGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="rgba(255,255,255,0.35)"/><stop offset="0.5" stop-color="rgba(255,255,255,0)"/><stop offset="1" stop-color="rgba(0,0,0,0.18)"/></linearGradient></defs></svg>
-
-      </div>
-      <div class="brush" data-brush="eraser">
-        <svg viewBox="0 0 60 90"><rect x="12" y="46" width="36" height="42" fill="#ffb3c1" rx="5"/><rect x="12" y="46" width="36" height="42" fill="url(#erGrad)" rx="5"/><rect x="12" y="14" width="36" height="34" fill="#f5f5f7" rx="5"/><rect x="12" y="14" width="36" height="34" fill="url(#erTop)" rx="5"/><polygon points="12,28 48,16 48,28 12,40" fill="#5ac8fa" opacity="0.85"/><defs><linearGradient id="erGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="rgba(255,255,255,0.35)"/><stop offset="0.5" stop-color="rgba(255,255,255,0)"/><stop offset="1" stop-color="rgba(0,0,0,0.18)"/></linearGradient><linearGradient id="erTop" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="rgba(0,0,0,0.06)"/><stop offset="0.5" stop-color="rgba(255,255,255,0.35)"/><stop offset="1" stop-color="rgba(0,0,0,0.12)"/></linearGradient></defs></svg>
-
-      </div>
-      <div class="brush" data-brush="shape">
-        <svg viewBox="0 0 60 90"><rect x="14" y="14" width="32" height="60" rx="6" fill="#5856d6"/><rect x="14" y="14" width="32" height="60" rx="6" fill="url(#shGrad)"/><circle cx="24" cy="34" r="7" fill="#fff" opacity="0.9"/><rect x="32" y="28" width="12" height="12" fill="#fff" opacity="0.9" rx="2"/><polygon points="30,50 38,64 22,64" fill="#fff" opacity="0.9"/><defs><linearGradient id="shGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="rgba(255,255,255,0.25)"/><stop offset="0.5" stop-color="rgba(255,255,255,0)"/><stop offset="1" stop-color="rgba(0,0,0,0.2)"/></linearGradient></defs></svg>
-
-      </div>
-</div>
-
-      <div class="divider"></div>
-      <button class="color-btn" id="dsaSkColorBtn"></button>
-      <button class="tray-btn" id="dsaSkBtnLaser2">
-        <svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="#ff3b30"/><circle cx="12" cy="12" r="8" fill="none" stroke="#ff3b30" stroke-width="1.6" opacity="0.45"/></svg>
-      </button>
-      <button class="tray-btn" id="dsaSkBackBtnTray">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1c1c1e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-      </button>
-    </div>
-  </div>
-</div>
-
-`;
-    editorRoot.appendChild(mount);
-
-    const eraserCursor = document.createElement("div");
-    eraserCursor.className = "eraser-cursor";
-    eraserCursor.id = "dsaSkEraserCursor";
-    document.body.appendChild(eraserCursor);
-
-function $(id) { return mount.querySelector('#' + id); }
-
-const canvas = $('dsaSkCanvas');
+const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 ctx.lineCap = 'round';
 ctx.lineJoin = 'round';
-const laserCanvas = $('dsaSkLaserCanvas');
+const laserCanvas = document.getElementById('laserCanvas');
 const lctx = laserCanvas.getContext('2d');
-
-const state = {
-  device: device,
-  minimized: false,
-  tool: null,
-  brush: 'pen',
-  shape: 'rectangle',
-  color: '#1c1c1e',
-  size: 3,
-  opacity: 1,
-  drawing: false,
-  paths: [],
-  redoStack: [],
-  currentPath: null,
-  laser: false,
-  showGrid: false,
-  scale: 1,
-  panX: 0,
-  panY: 0,
-};
-
-let destroyed = false;
-const listeners = [];
-
-function roBool() {
-  return editorRoot.classList.contains('dsa-sketch-studio-host--ro');
-}
-
-function notifyChange() {
-  onChange();
-}
-
-function getHasInk() {
-  return state.paths.length > 0;
-}
-
-function syncInkFlag() {
-  notifyChange();
-}
-
-let fsParent = null;
-let fsNext = null;
-let fsHideBackdrop = null;
-let fsHideDlg = null;
-
-function isFullscreen() {
-  return editorRoot.classList.contains('dsa-sketch-studio-host--fullscreen');
-}
-
-function enterFullscreen() {
-  if (isFullscreen() || roBool()) return;
-  fsParent = editorRoot.parentNode;
-  fsNext = editorRoot.nextSibling;
-  fsHideBackdrop = editorRoot.closest('.dsa-dialog-backdrop');
-  fsHideDlg = editorRoot.closest('.dsa-dialog');
-  document.body.appendChild(editorRoot);
-  editorRoot.classList.add('dsa-sketch-studio-host--fullscreen');
-  const studio = $('dsaSkStudio');
-  if (studio) studio.classList.remove('minimized');
-  state.minimized = false;
-  if (fsHideBackdrop) fsHideBackdrop.classList.add('dsa-sketch-fs-hide-dialog');
-  if (fsHideDlg) fsHideDlg.classList.add('dsa-sketch-fs-hide-dialog');
-  requestAnimationFrame(() => setTimeout(fitCanvas, 80));
-}
-
-function exitFullscreen() {
-  if (!isFullscreen()) return;
-  if (fsHideBackdrop) fsHideBackdrop.classList.remove('dsa-sketch-fs-hide-dialog');
-  if (fsHideDlg) fsHideDlg.classList.remove('dsa-sketch-fs-hide-dialog');
-  fsHideBackdrop = null;
-  fsHideDlg = null;
-  editorRoot.classList.remove('dsa-sketch-studio-host--fullscreen');
-  if (fsParent) {
-    if (fsNext) fsParent.insertBefore(editorRoot, fsNext);
-    else fsParent.appendChild(editorRoot);
-  }
-  fsParent = null;
-  fsNext = null;
-  requestAnimationFrame(() => setTimeout(fitCanvas, 80));
-}
-
-function toggleMinimize() {
-  if (roBool()) return;
-  const studio = $('dsaSkStudio');
-  if (!studio) return;
-  if (isFullscreen()) {
-    exitFullscreen();
-    return;
-  }
-  state.minimized = !state.minimized;
-  studio.classList.toggle('minimized', state.minimized);
-  setTimeout(fitCanvas, 480);
-}
-
-function flushSketchDone() {
-  if (roBool()) return;
-  if (textOverlay && textOverlay.classList.contains('show')) confirmText();
-  if (tableOverlay && tableOverlay.classList.contains('show')) confirmTable();
-  if (imageOverlay && imageOverlay.classList.contains('show')) confirmImage();
-  syncInkFlag();
-  notifyChange();
-  if (typeof hooks.onPersist === 'function') hooks.onPersist();
-}
-
-function addL(target, type, fn, opts) {
-  target.addEventListener(type, fn, opts);
-  listeners.push([target, type, fn, opts]);
-}
-
-
-function exportRenderedCanvas() {
-  const tmp = document.createElement('canvas');
-  tmp.width = canvas.width;
-  tmp.height = canvas.height;
-  const tctx = tmp.getContext('2d');
-  tctx.fillStyle = '#ffffff';
-  tctx.fillRect(0, 0, tmp.width, tmp.height);
-  if (state.showGrid) {
-    tctx.strokeStyle = 'rgba(0,0,0,0.07)';
-    tctx.lineWidth = 1;
-    for (let x = 0; x <= tmp.width; x += 50) {
-      tctx.beginPath();
-      tctx.moveTo(x, 0);
-      tctx.lineTo(x, tmp.height);
-      tctx.stroke();
-    }
-    for (let y = 0; y <= tmp.height; y += 50) {
-      tctx.beginPath();
-      tctx.moveTo(0, y);
-      tctx.lineTo(tmp.width, y);
-      tctx.stroke();
-    }
-  }
-  state.paths.forEach((p) => {
-    tctx.save();
-    if (p.type === 'image' && p.img) {
-      tctx.drawImage(p.img, p.x, p.y, p.w, p.h);
-    } else if (p.type === 'table') {
-      tctx.strokeStyle = p.color || '#1c1c1e';
-      tctx.lineWidth = p.size || 2;
-      tctx.lineCap = 'square';
-      tctx.strokeRect(p.x, p.y, p.w, p.h);
-      for (let i = 1; i < p.cols; i++) {
-        const x = p.x + (p.w / p.cols) * i;
-        tctx.beginPath();
-        tctx.moveTo(x, p.y);
-        tctx.lineTo(x, p.y + p.h);
-        tctx.stroke();
-      }
-      for (let i = 1; i < p.rows; i++) {
-        const y = p.y + (p.h / p.rows) * i;
-        tctx.beginPath();
-        tctx.moveTo(p.x, y);
-        tctx.lineTo(p.x + p.w, y);
-        tctx.stroke();
-      }
-    } else if (p.type === 'text') {
-      tctx.font = `${p.fontSize}px -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif`;
-      tctx.fillStyle = p.color;
-      tctx.textBaseline = 'top';
-      const lines = p.text.split('\\n');
-      lines.forEach((line, i) => tctx.fillText(line, p.x, p.y + i * p.fontSize * 1.35));
-    } else if (p.brush === 'shape') {
-      applyStyle(p);
-      drawShape(p);
-    } else {
-      applyStyle(p);
-      strokePath(p.points);
-    }
-    tctx.restore();
-  });
-  if (state.currentPath) {
-    tctx.save();
-    applyStyle(state.currentPath);
-    if (state.currentPath.brush === 'shape') drawShape(state.currentPath);
-    else strokePath(state.currentPath.points);
-    tctx.restore();
-  }
-  return tmp;
-}
 
 const pencilPatternCache = {};
 function getPencilPattern(color) {
@@ -492,7 +36,7 @@ function disableLaserIfOn() { if (state.laser) toggleLaser(); }
 
 /* ============ CANVAS FIT ============ */
 function fitCanvas() {
-  const wrap = $('dsaSkCanvasWrap');
+  const wrap = document.getElementById('canvasWrap');
   // ✅ Canvas always fills the full visible area — no padding, no aspect fit
   canvas.style.width  = wrap.clientWidth  + 'px';
   canvas.style.height = wrap.clientHeight + 'px';
@@ -511,15 +55,20 @@ function applyCanvasTransform() {
 }
 
 function syncLaserCanvas() {
+  laserCanvas.width  = canvas.width;
+  laserCanvas.height = canvas.height;
+  laserCanvas.style.width  = canvas.style.width;
+  laserCanvas.style.height = canvas.style.height;
+}
+
+function syncLaserCanvas() {
   laserCanvas.width = canvas.width;
   laserCanvas.height = canvas.height;
-  laserCanvas.style.width = canvas.style.width;
-  laserCanvas.style.height = canvas.style.height;
 }
 function resetZoom() {
   state.scale = 1; state.panX = 0; state.panY = 0;
   applyCanvasTransform();
-  $('dsaSkMenuDropdown').classList.remove('show');
+  document.getElementById('menuDropdown').classList.remove('show');
 }
 
 function getPoint(e, cv = canvas) {
@@ -531,7 +80,6 @@ function getPoint(e, cv = canvas) {
 
 /* ============ DRAWING ============ */
 function startDraw(e) {
-  if (roBool()) return;
   if (state.laser) { startLaserStroke(e); return; }
 
   // Text tool: edit existing OR create new text at click
@@ -542,7 +90,7 @@ function startDraw(e) {
     if (idx >= 0) { e.preventDefault(); startTextEdit(idx); }
     else if (!textOverlay.classList.contains('show')) {
       e.preventDefault();
-      const wrapEl = $('dsaSkCanvasWrap');
+      const wrapEl = document.getElementById('canvasWrap');
       const wrRect = wrapEl.getBoundingClientRect();
       const cx = e.touches ? e.touches[0].clientX : e.clientX;
       const cy = e.touches ? e.touches[0].clientY : e.clientY;
@@ -575,7 +123,6 @@ function startDraw(e) {
   };
 }
 function moveDraw(e) {
-  if (roBool()) return;
   if (state.laser) { continueLaserStroke(e); return; }
   if (!state.drawing) return;
   if (e.touches && e.touches.length > 1) { state.drawing = false; return; }
@@ -584,7 +131,6 @@ function moveDraw(e) {
   drawIncremental();
 }
 function endDraw() {
-  if (roBool()) { state.drawing = false; return; }
   if (state.laser) { endLaserStroke(); return; }
   if (!state.drawing) return;
   state.drawing = false;
@@ -592,7 +138,6 @@ function endDraw() {
     state.paths.push(state.currentPath);
     state.redoStack = [];
     updateUndoRedo();
-    syncInkFlag();
   }
   state.currentPath = null;
 }
@@ -780,16 +325,16 @@ function startLaserLoop() {
 }
 function toggleLaser() {
   state.laser = !state.laser;
-  ['dsaSkBtnLaser', 'dsaSkBtnLaser2', 'dsaSkBtnLaserTop'].forEach((id) => {
-    const el = $(id);
+  ['btnLaser', 'btnLaser2', 'btnLaserTop'].forEach(id => {
+    const el = document.getElementById(id);
     if (el) el.classList.toggle('active', state.laser);
   });
   if (state.laser) {
     cancelTable(); cancelText();
-    $('dsaSkBrushSettings').classList.remove('show');
-    document.querySelectorAll('#dsaSkTopToolsTab button').forEach(b => { if (b.id !== 'dsaSkBtnLaserTop') b.classList.remove('active'); });
+    document.getElementById('brushSettings').classList.remove('show');
+    document.querySelectorAll('#topToolsTab button').forEach(b => { if (b.id !== 'btnLaserTop') b.classList.remove('active'); });
     document.querySelectorAll('.brush').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('#dsaSkMainTab .tool-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#mainTab .tool-btn').forEach(b => b.classList.remove('active'));
     state.tool = null;
     syncLaserCanvas();
     laserLastActivity = performance.now();
@@ -804,7 +349,7 @@ function toggleLaser() {
 /* ============ ZOOM + PAN ============ */
 let pinchDist = null;
 let pinchCenter = null;
-const wrap = $('dsaSkCanvasWrap');
+const wrap = document.getElementById('canvasWrap');
 
 wrap.addEventListener('touchstart', (e) => {
   if (e.touches.length === 2) {
@@ -868,6 +413,8 @@ document.addEventListener('mousemove', (e) => {
 document.addEventListener('mouseup', () => { panDrag = null; });
 
 /* ============ ERASER CURSOR ============ */
+const eraserCursor = document.getElementById('eraserCursor');
+
 function eraserActive() {
   return state.tool === 'pencil' && state.brush === 'eraser' && !state.laser;
 }
@@ -911,13 +458,13 @@ function selectTool(tool) {
     if (tool === 'text') cancelText();
     if (tool === 'grid') cancelTable();
     if (tool === 'pencil' && state.device === 'mobile') {
-      $('dsaSkDrawTab').style.display = 'none';
-      $('dsaSkMainTab').style.display = 'flex';
+      document.getElementById('drawTab').style.display = 'none';
+      document.getElementById('mainTab').style.display = 'flex';
     }
-    $('dsaSkBrushSettings').classList.remove('show');
+    document.getElementById('brushSettings').classList.remove('show');
     document.querySelectorAll('.brush').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('#dsaSkTopToolsTab button').forEach(b => { if (b.id !== 'dsaSkBtnLaserTop') b.classList.remove('active'); });
-    document.querySelectorAll('#dsaSkMainTab .tool-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#topToolsTab button').forEach(b => { if (b.id !== 'btnLaserTop') b.classList.remove('active'); });
+    document.querySelectorAll('#mainTab .tool-btn').forEach(b => b.classList.remove('active'));
     state.tool = null;
     return;
   }
@@ -925,26 +472,26 @@ function selectTool(tool) {
   // Deactivate everything else
   cancelTable();
   cancelText();
-  $('dsaSkBrushSettings').classList.remove('show');
+  document.getElementById('brushSettings').classList.remove('show');
   document.querySelectorAll('.brush').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('#dsaSkMainTab .tool-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('#dsaSkTopToolsTab button').forEach(b => { if (b.id !== 'dsaSkBtnLaserTop') b.classList.remove('active'); });
+  document.querySelectorAll('#mainTab .tool-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#topToolsTab button').forEach(b => { if (b.id !== 'btnLaserTop') b.classList.remove('active'); });
 
   if (tool === 'pencil') {
-    $('dsaSkMainTab').style.display = 'none';
-    $('dsaSkDrawTab').style.display = 'flex';
+    document.getElementById('mainTab').style.display = 'none';
+    document.getElementById('drawTab').style.display = 'flex';
     state.tool = 'pencil';
     activateBrush(state.brush);
   } else if (tool === 'text') {
     state.tool = 'text';
-    $('dsaSkTtText')?.classList.add('active');
+    document.getElementById('ttText')?.classList.add('active');
     startText();
   } else if (tool === 'grid') {
     state.tool = 'grid';
-    $('dsaSkTtGrid')?.classList.add('active');
+    document.getElementById('ttGrid')?.classList.add('active');
     startTable();
   } else if (tool === 'attach') {
-  $('dsaSkTtAttach')?.classList.add('active');
+  document.getElementById('ttAttach')?.classList.add('active');
   const input = document.createElement('input');
   input.type = 'file'; input.accept = 'image/*';
   input.onchange = (ev) => {
@@ -958,10 +505,10 @@ function selectTool(tool) {
 }
 
 function backToMain() {
-  $('dsaSkDrawTab').style.display = 'none';
-  $('dsaSkMainTab').style.display = 'flex';
-  $('dsaSkBrushSettings').classList.remove('show');
-  $('dsaSkColorModal').classList.remove('show');
+  document.getElementById('drawTab').style.display = 'none';
+  document.getElementById('mainTab').style.display = 'flex';
+  document.getElementById('brushSettings').classList.remove('show');
+  document.getElementById('colorModal').classList.remove('show');
   document.querySelectorAll('.brush').forEach(b => b.classList.remove('active'));
   state.tool = null;
 }
@@ -970,7 +517,7 @@ function backToMain() {
 function activateBrush(brush) {
   state.brush = brush;
   document.querySelectorAll('.brush').forEach(b => b.classList.toggle('active', b.dataset.brush === brush));
-  $('dsaSkShapeRow').style.display = brush === 'shape' ? 'flex' : 'none';
+  document.getElementById('shapeRow').style.display = brush === 'shape' ? 'flex' : 'none';
   buildSizeDots();
   updateBrushColors();
   // ✅ refresh eraser cursor state
@@ -986,11 +533,11 @@ function selectBrush(brush) {
   disableLaserIfOn();
   state.tool = 'pencil';                                    // ✅ ensure drawing works
   // also clear top tools highlight
-  document.querySelectorAll('#dsaSkTopToolsTab button').forEach(b => {
-    if (b.id !== 'dsaSkBtnLaserTop') b.classList.remove('active');
+  document.querySelectorAll('#topToolsTab button').forEach(b => {
+    if (b.id !== 'btnLaserTop') b.classList.remove('active');
   });
 
-  const settings = $('dsaSkBrushSettings');
+  const settings = document.getElementById('brushSettings');
   const sameBrush = state.brush === brush &&
     document.querySelector(`.brush[data-brush="${brush}"]`)?.classList.contains('active');
   const wasVisible = settings.classList.contains('show');
@@ -1012,7 +559,7 @@ function updateBrushColors() {
       b.style.setProperty('--bc', state.color);
     }
   });
-  $('dsaSkColorBtn').style.background = state.color;
+  document.getElementById('colorBtn').style.background = state.color;
 }
 
 document.querySelectorAll('.shape-opt').forEach(opt => {
@@ -1025,7 +572,7 @@ document.querySelectorAll('.shape-opt').forEach(opt => {
 
 /* ============ BRUSH SETTINGS UI ============ */
 function buildSizeDots() {
-  const c = $('dsaSkSizeDots');
+  const c = document.getElementById('sizeDots');
   const sizes = [1, 2, 3, 5, 8, 12];
   c.innerHTML = '';
   sizes.forEach(s => {
@@ -1043,8 +590,8 @@ function buildSizeDots() {
     c.appendChild(dot);
   });
 }
-const opSlider = $('dsaSkOpacitySlider');
-const opThumb = $('dsaSkOpacityThumb');
+const opSlider = document.getElementById('opacitySlider');
+const opThumb = document.getElementById('opacityThumb');
 let dragOp = false;
 function setOpacity(cx) {
   const r = opSlider.getBoundingClientRect();
@@ -1062,7 +609,7 @@ opSlider.addEventListener('touchend', () => { dragOp = false; });
 /* ============ COLOR PALETTE ============ */
 const colors = ['#1c1c1e','#5a5a5a','#9b9b9b','#ffffff','#ff3b30','#ff9500','#ffcc00','#34c759','#00c7be','#007aff','#5856d6','#af52de','#ff2d55','#a2845e','#8e8e93','#5a3825'];
 function buildColorPicker() {
-  const m = $('dsaSkSwatchesGrid');
+  const m = document.getElementById('swatchesGrid');
   m.innerHTML = '';
   colors.forEach(c => {
     const sw = document.createElement('div');
@@ -1077,16 +624,16 @@ function buildColorPicker() {
 function applyColor(c) {
   state.color = c;
   buildColorPicker(); buildSizeDots(); updateBrushColors();
-  const nc = $('dsaSkNativeColor');
+  const nc = document.getElementById('nativeColor');
   if (nc) nc.value = c.length === 7 ? c : '#1c1c1e';
 }
 buildColorPicker();
 function toggleColorPicker(e) {
   if (e) e.stopPropagation();
-  $('dsaSkColorModal').classList.toggle('show');
+  document.getElementById('colorModal').classList.toggle('show');
 }
-const hueSlider = $('dsaSkHueSlider');
-const hueThumb = $('dsaSkHueThumb');
+const hueSlider = document.getElementById('hueSlider');
+const hueThumb = document.getElementById('hueThumb');
 let dragHue = false;
 function hslToHex(h, s, l) {
   s /= 100; l /= 100;
@@ -1108,17 +655,17 @@ document.addEventListener('mouseup', () => { dragHue = false; });
 hueSlider.addEventListener('touchstart', (e) => { dragHue = true; setHue(e.touches[0].clientX); });
 hueSlider.addEventListener('touchmove', (e) => { if (dragHue) { setHue(e.touches[0].clientX); e.preventDefault(); } }, { passive: false });
 hueSlider.addEventListener('touchend', () => { dragHue = false; });
-$('dsaSkNativeColor').addEventListener('input', (e) => applyColor(e.target.value));
+document.getElementById('nativeColor').addEventListener('input', (e) => applyColor(e.target.value));
 
 /* ============ TABLE TOOL ============ */
 const tableState = { rows: 3, cols: 3, x: 0, y: 0, w: 320, h: 220 };
-const tableOverlay = $('dsaSkTableOverlay');
-const tableGrid = $('dsaSkTableGrid');
-const tableResize = $('dsaSkTableResize');
+const tableOverlay = document.getElementById('tableOverlay');
+const tableGrid = document.getElementById('tableGrid');
+const tableResize = document.getElementById('tableResize');
 
 function startTable() {
   disableLaserIfOn();
-  const wrapEl = $('dsaSkCanvasWrap');
+  const wrapEl = document.getElementById('canvasWrap');
   tableState.w = 320; tableState.h = 220;
   tableState.x = (wrapEl.clientWidth - tableState.w) / 2;
   tableState.y = (wrapEl.clientHeight - tableState.h) / 2;
@@ -1147,11 +694,11 @@ function changeTable(kind, delta) {
 }
 function cancelTable() {
   tableOverlay.classList.remove('show');
-  $('dsaSkTtGrid')?.classList.remove('active');
+  document.getElementById('ttGrid')?.classList.remove('active');
   if (state.tool === 'grid') state.tool = null;
 }
 function confirmTable() {
-  const wrapEl = $('dsaSkCanvasWrap');
+  const wrapEl = document.getElementById('canvasWrap');
   const cvRect = canvas.getBoundingClientRect();
   const wrRect = wrapEl.getBoundingClientRect();
   const sx = canvas.width / cvRect.width;
@@ -1167,7 +714,6 @@ function confirmTable() {
   state.redoStack = [];
   updateUndoRedo();
   redrawAll();
-  syncInkFlag();
   cancelTable();
 }
 let tDrag = null;
@@ -1247,13 +793,13 @@ document.addEventListener('touchstart', (e) => {
 
 /* ============ TEXT TOOL ============ */
 const textState = { x: 100, y: 100, fontSize: 24, color: '#1c1c1e', editingIndex: -1 };
-const textOverlay = $('dsaSkTextOverlay');
-const textInput = $('dsaSkTextInput');
-const textHandle = $('dsaSkTextHandle');
+const textOverlay = document.getElementById('textOverlay');
+const textInput = document.getElementById('textInput');
+const textHandle = document.getElementById('textHandle');
 
 function startText(x, y) {
   disableLaserIfOn();
-  const wrapEl = $('dsaSkCanvasWrap');
+  const wrapEl = document.getElementById('canvasWrap');
   textState.x = (x !== undefined) ? x : (wrapEl.clientWidth/2 - 100);
   textState.y = (y !== undefined) ? y : (wrapEl.clientHeight/2 - 30);
   textState.fontSize = 24;
@@ -1262,7 +808,7 @@ function startText(x, y) {
   textInput.value = '';
   renderTextOverlay();
   textOverlay.classList.add('show');
-$('dsaSkTextDeleteBtn').style.display = 'none';   // 👈 ADD
+document.getElementById('textDeleteBtn').style.display = 'none';   // 👈 ADD
   setTimeout(() => textInput.focus(), 60);
 
 }
@@ -1278,7 +824,7 @@ function deleteText() {
 function startTextEdit(idx) {
   const p = state.paths[idx];
   if (!p || p.type !== 'text') return;
-  const wrapEl = $('dsaSkCanvasWrap');
+  const wrapEl = document.getElementById('canvasWrap');
   const cvRect = canvas.getBoundingClientRect();
   const wrRect = wrapEl.getBoundingClientRect();
   const sx = cvRect.width / canvas.width;
@@ -1291,7 +837,7 @@ function startTextEdit(idx) {
   textInput.value = p.text;
   renderTextOverlay();
   textOverlay.classList.add('show');
-$('dsaSkTextDeleteBtn').style.display = 'flex';   // 👈 ADD
+document.getElementById('textDeleteBtn').style.display = 'flex';   // 👈 ADD
   setTimeout(() => { textInput.focus(); textInput.select(); }, 60);
 }
 function renderTextOverlay() {
@@ -1302,7 +848,7 @@ function renderTextOverlay() {
 }
 function cancelText() {
   textOverlay.classList.remove('show');
-  $('dsaSkTtText')?.classList.remove('active');
+  document.getElementById('ttText')?.classList.remove('active');
   textState.editingIndex = -1;
   if (state.tool === 'text') state.tool = null;
 }
@@ -1310,7 +856,7 @@ function confirmText() {
   const txt = textInput.value.trim();
   if (!txt) { cancelText(); return; }
   if (textState.editingIndex >= 0) state.paths.splice(textState.editingIndex, 1);
-  const wrapEl = $('dsaSkCanvasWrap');
+  const wrapEl = document.getElementById('canvasWrap');
   const cvRect = canvas.getBoundingClientRect();
   const wrRect = wrapEl.getBoundingClientRect();
   const sx = canvas.width / cvRect.width;
@@ -1330,7 +876,6 @@ function confirmText() {
   state.redoStack = [];
   updateUndoRedo();
   redrawAll();
-  syncInkFlag();
   cancelText();
 }
 function findTextAt(x, y) {
@@ -1373,37 +918,37 @@ document.addEventListener('touchend', () => { textDrag = null; });
 function undo() {
   if (!state.paths.length) return;
   state.redoStack.push(state.paths.pop());
-  redrawAll(); updateUndoRedo(); syncInkFlag();
+  redrawAll(); updateUndoRedo();
 }
 function redo() {
   if (!state.redoStack.length) return;
   state.paths.push(state.redoStack.pop());
-  redrawAll(); updateUndoRedo(); syncInkFlag();
+  redrawAll(); updateUndoRedo();
 }
 function updateUndoRedo() {
-  const tab = $('dsaSkUndoRedoTab');
+  const tab = document.getElementById('undoRedoTab');
   tab.classList.toggle('visible', state.paths.length > 0 || state.redoStack.length > 0);
-  $('dsaSkUndoBtn').disabled = state.paths.length === 0;
-  $('dsaSkRedoBtn').disabled = state.redoStack.length === 0;
+  document.getElementById('undoBtn').disabled = state.paths.length === 0;
+  document.getElementById('redoBtn').disabled = state.redoStack.length === 0;
 }
 
 /* ============ MENU ============ */
 function toggleMenu(e) {
   e.stopPropagation();
-  $('dsaSkMenuDropdown').classList.toggle('show');
+  document.getElementById('menuDropdown').classList.toggle('show');
 }
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.menu-tab') && !e.target.closest('.menu-dropdown')) {
-    $('dsaSkMenuDropdown').classList.remove('show');
+    document.getElementById('menuDropdown').classList.remove('show');
   }
-  if (!e.target.closest('#dsaSkColorModal') && !e.target.closest('#dsaSkColorBtn')) {
-    $('dsaSkColorModal').classList.remove('show');
+  if (!e.target.closest('#colorModal') && !e.target.closest('#colorBtn')) {
+    document.getElementById('colorModal').classList.remove('show');
   }
 });
 function toggleGridBg() {
   state.showGrid = !state.showGrid;
   canvas.classList.toggle('show-grid', state.showGrid);   // ✅ CSS-based grid
-  $('dsaSkMenuDropdown').classList.remove('show');
+  document.getElementById('menuDropdown').classList.remove('show');
 }
 function exportImg() {
   // Build a temp canvas with grid (if on) + drawing
@@ -1428,21 +973,73 @@ function exportImg() {
   a.download = 'sketch.png';
   a.href = tmp.toDataURL('image/png');
   a.click();
-  $('dsaSkMenuDropdown').classList.remove('show');
+  document.getElementById('menuDropdown').classList.remove('show');
 }function clearCanvas() {
   if (!state.paths.length) return;
   if (!confirm('Clear all drawing?')) return;
   state.paths = []; state.redoStack = [];
-  redrawAll(); updateUndoRedo(); syncInkFlag();
-  if (typeof hooks.afterClear === 'function') hooks.afterClear();
+  redrawAll(); updateUndoRedo();
 }
 
+/* ============ OPEN / CLOSE / MINIMIZE ============ */
+function openSketch() {
+  document.getElementById('entryScreen').style.display = 'none';
+  document.getElementById('studio').style.display = 'flex';
+  setTimeout(() => {
+    fitCanvas();
+    if (state.device === 'pc') {
+      state.tool = 'pencil';
+      activateBrush(state.brush); // ✅ no settings shown by default
+    }
+  }, 60);
+}
+function closeSketch() {
+  document.getElementById('studio').style.display = 'none';
+  document.getElementById('entryScreen').style.display = 'flex';
+}
+function saveSketch() { alert('Sketch saved ✓'); closeSketch(); }
+function toggleMinimize() {
+  state.minimized = !state.minimized;
+  document.getElementById('studio').classList.toggle('minimized', state.minimized);
+  setTimeout(fitCanvas, 480);
+}
+
+/* ============ DEVICE TOGGLE ============ */
+document.getElementById('modeMobile').onclick = () => {
+  state.device = 'mobile';
+  document.body.classList.remove('device-pc');
+  document.body.classList.add('device-mobile');
+  document.getElementById('modeMobile').classList.add('active');
+  document.getElementById('modePC').classList.remove('active');
+  document.getElementById('drawTab').style.display = 'none';
+  document.getElementById('mainTab').style.display = 'flex';
+  document.getElementById('brushSettings').classList.remove('show');
+  document.querySelectorAll('.brush').forEach(b => b.classList.remove('active'));
+  state.tool = null;
+  if (state.minimized) toggleMinimize();
+};
+document.getElementById('modePC').onclick = () => {
+  state.device = 'pc';
+  document.body.classList.add('device-pc');
+  document.body.classList.remove('device-mobile');
+  document.getElementById('modePC').classList.add('active');
+  document.getElementById('modeMobile').classList.remove('active');
+  state.tool = 'pencil';
+  activateBrush(state.brush); // no settings shown
+};
+document.body.classList.add('device-pc');
+
+window.addEventListener('resize', () => {
+  if (document.getElementById('studio').style.display !== 'none') fitCanvas();
+});
+
+updateBrushColors();
 
 /* ============ IMAGE TOOL ============ */
 const imageState = { x: 0, y: 0, w: 300, h: 300, src: '' };
-const imageOverlay = $('dsaSkImageOverlay');
-const imagePreview = $('dsaSkImagePreview');
-const imageResize = $('dsaSkImageResize');
+const imageOverlay = document.getElementById('imageOverlay');
+const imagePreview = document.getElementById('imagePreview');
+const imageResize = document.getElementById('imageResize');
 
 function startImage(src) {
   disableLaserIfOn();
@@ -1450,7 +1047,7 @@ function startImage(src) {
   imagePreview.src = src;
   const img = new Image();
   img.onload = () => {
-    const wrapEl = $('dsaSkCanvasWrap');
+    const wrapEl = document.getElementById('canvasWrap');
     const maxW = wrapEl.clientWidth * 0.5;
     const maxH = wrapEl.clientHeight * 0.5;
     let w = img.width, h = img.height;
@@ -1472,10 +1069,10 @@ function renderImage() {
 }
 function cancelImage() {
   imageOverlay.classList.remove('show');
-  $('dsaSkTtAttach')?.classList.remove('active');
+  document.getElementById('ttAttach')?.classList.remove('active');
 }
 function confirmImage() {
-  const wrapEl = $('dsaSkCanvasWrap');
+  const wrapEl = document.getElementById('canvasWrap');
   const cvRect = canvas.getBoundingClientRect();
   const wrRect = wrapEl.getBoundingClientRect();
   const sx = canvas.width / cvRect.width;
@@ -1497,7 +1094,6 @@ function confirmImage() {
     state.redoStack = [];
     updateUndoRedo();
     redrawAll();
-    syncInkFlag();
     cancelImage();
   };
   img.onload = finalize;
@@ -1550,241 +1146,3 @@ document.addEventListener('touchmove', (e) => {
   renderImage();
 });
 document.addEventListener('touchend', () => { imgDrag = null; });
-
-/* ============ WIRE UI (no inline handlers) ============ */
-const studioEl = $('dsaSkStudio');
-studioEl.style.display = 'flex';
-mount.classList.add(device === 'pc' ? 'device-pc' : 'device-mobile');
-
-if (device === 'pc') {
-  studioEl.classList.add('minimized');
-  state.minimized = true;
-  state.tool = 'pencil';
-  $('dsaSkDrawTab').style.display = 'flex';
-  $('dsaSkMainTab').style.display = 'none';
-  activateBrush('pen');
-} else {
-  $('dsaSkDrawTab').style.display = 'none';
-  $('dsaSkMainTab').style.display = 'flex';
-}
-
-const backBtn = $('dsaSkBackBtn');
-if (backBtn) addL(backBtn, 'click', () => { if (device === 'pc') toggleMinimize(); });
-
-const expandBtn = $('dsaSkExpandBtn');
-if (expandBtn) addL(expandBtn, 'click', () => toggleMinimize());
-
-const minBtn = $('dsaSkMinimizeBtn');
-if (minBtn) addL(minBtn, 'click', () => toggleMinimize());
-
-addL($('dsaSkDoneBtn'), 'click', () => flushSketchDone());
-
-addL($('dsaSkUndoBtn'), 'click', () => undo());
-addL($('dsaSkRedoBtn'), 'click', () => redo());
-
-const menuToggle = $('dsaSkMenuToggleBtn');
-if (menuToggle) addL(menuToggle, 'click', (e) => toggleMenu(e));
-const menuClear = $('dsaSkMenuClearBtn');
-if (menuClear) addL(menuClear, 'click', () => clearCanvas());
-
-addL($('dsaSkMenuExport'), 'click', () => exportImg());
-addL($('dsaSkMenuGrid'), 'click', () => toggleGridBg());
-addL($('dsaSkMenuResetZoom'), 'click', () => resetZoom());
-
-addL($('dsaSkBtnPencil'), 'click', () => selectTool('pencil'));
-mount.querySelectorAll('#dsaSkMainTab .tool-btn').forEach((btn) => {
-  if (btn.id === 'dsaSkBtnPencil' || btn.id === 'dsaSkBtnLaser') return;
-  addL(btn, 'click', () => {
-    if (btn.id === 'dsaSkBtnLaser') toggleLaser();
-    else if (btn.querySelector('path[d="M4 7V4h16v3"]')) selectTool('text');
-    else if (btn.querySelector('rect')) selectTool('grid');
-    else selectTool('attach');
-  });
-});
-addL($('dsaSkBtnLaser'), 'click', () => toggleLaser());
-addL($('dsaSkTtText'), 'click', () => selectTool('text'));
-addL($('dsaSkTtGrid'), 'click', () => selectTool('grid'));
-addL($('dsaSkTtAttach'), 'click', () => selectTool('attach'));
-addL($('dsaSkBtnLaserTop'), 'click', () => toggleLaser());
-addL($('dsaSkBtnLaser2'), 'click', () => toggleLaser());
-addL($('dsaSkBackBtnTray'), 'click', () => backToMain());
-addL($('dsaSkColorBtn'), 'click', (e) => toggleColorPicker(e));
-
-mount.querySelectorAll('.brush[data-brush]').forEach((b) => {
-  addL(b, 'click', () => selectBrush(b.dataset.brush));
-});
-
-mount.querySelectorAll('#dsaSkTableOverlay .table-add').forEach((btn) => {
-  addL(btn, 'click', () => changeTable(btn.dataset.table, parseInt(btn.dataset.delta, 10)));
-});
-mount.querySelectorAll('[data-action="table-cancel"]').forEach((b) => addL(b, 'click', () => cancelTable()));
-mount.querySelectorAll('[data-action="table-confirm"]').forEach((b) => addL(b, 'click', () => confirmTable()));
-
-const imgOv = $('dsaSkImageOverlay');
-if (imgOv) {
-  imgOv.querySelectorAll('[data-action="image-confirm"]').forEach((b) => addL(b, 'click', () => confirmImage()));
-  imgOv.querySelectorAll('.t-cancel').forEach((b) => addL(b, 'click', () => cancelImage()));
-}
-const txtOv = $('dsaSkTextOverlay');
-if (txtOv) {
-  addL($('dsaSkTextDeleteBtn'), 'click', () => deleteText());
-  txtOv.querySelectorAll('[data-action="text-cancel"]').forEach((b) => addL(b, 'click', () => cancelText()));
-  txtOv.querySelectorAll('[data-action="text-confirm"]').forEach((b) => addL(b, 'click', () => confirmText()));
-}
-
-mount.querySelectorAll('.shape-opt').forEach((opt) => {
-  addL(opt, 'click', () => {
-    mount.querySelectorAll('.shape-opt').forEach((o) => o.classList.remove('active'));
-    opt.classList.add('active');
-    state.shape = opt.dataset.shape;
-  });
-});
-
-function onWinResize() {
-  if (studioEl && studioEl.style.display !== 'none') fitCanvas();
-}
-addL(window, 'resize', onWinResize);
-
-function onDocKey(e) {
-  if (e.key === 'Escape' && isFullscreen()) {
-    e.preventDefault();
-    exitFullscreen();
-    return;
-  }
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-    e.preventDefault();
-    flushSketchDone();
-  }
-}
-addL(document, 'keydown', onDocKey, true);
-
-const ro = new ResizeObserver(() => {
-  clearTimeout(ro._t);
-  ro._t = setTimeout(fitCanvas, 50);
-});
-ro.observe($('dsaSkCanvasWrap'));
-
-fitCanvas();
-updateBrushColors();
-buildColorPicker();
-buildSizeDots();
-updateUndoRedo();
-
-const api = {
-  clear() {
-    state.paths = [];
-    state.redoStack = [];
-    redrawAll();
-    updateUndoRedo();
-    syncInkFlag();
-    if (typeof hooks.afterClear === 'function') hooks.afterClear();
-  },
-  zoomIn() {
-    state.scale = Math.max(0.3, Math.min(4, state.scale * 1.08));
-    applyCanvasTransform();
-  },
-  zoomOut() {
-    state.scale = Math.max(0.3, Math.min(4, state.scale * 0.92));
-    applyCanvasTransform();
-  },
-  resetZoom() {
-    resetZoom();
-  },
-  loadDataUrl(url) {
-    if (!url || !String(url).trim()) {
-      api.clear();
-      return;
-    }
-    const im = new Image();
-    im.onload = () => {
-      const wrapEl = $('dsaSkCanvasWrap');
-      const maxW = wrapEl.clientWidth * 0.55;
-      const maxH = wrapEl.clientHeight * 0.55;
-      let w = im.width;
-      let h = im.height;
-      if (w > maxW) {
-        h *= maxW / w;
-        w = maxW;
-      }
-      if (h > maxH) {
-        w *= maxH / h;
-        h = maxH;
-      }
-      const cvRect = canvas.getBoundingClientRect();
-      const wrRect = wrapEl.getBoundingClientRect();
-      const sx = canvas.width / cvRect.width;
-      const sy = canvas.height / cvRect.height;
-      state.paths = [
-        {
-          type: 'image',
-          x: ((wrapEl.clientWidth - w) / 2 + wrRect.left - cvRect.left) * sx,
-          y: ((wrapEl.clientHeight - h) / 2 + wrRect.top - cvRect.top) * sy,
-          w: w * sx,
-          h: h * sy,
-          img: im,
-        },
-      ];
-      state.redoStack = [];
-      redrawAll();
-      updateUndoRedo();
-      syncInkFlag();
-    };
-    im.onerror = () => api.clear();
-    im.src = String(url).trim();
-  },
-  toDataUrl() {
-    try {
-      return exportRenderedCanvas().toDataURL('image/png');
-    } catch (_) {
-      return '';
-    }
-  },
-  toPersistedSketchDataUrl() {
-    try {
-      return exportRenderedCanvas().toDataURL('image/jpeg', 0.82);
-    } catch (_) {
-      return '';
-    }
-  },
-  getHasInk() {
-    return getHasInk();
-  },
-  syncHasInkFromPixels() {
-    syncInkFlag();
-  },
-  exitFullscreen() {
-    exitFullscreen();
-    const studio = $('dsaSkStudio');
-    if (studio && device === 'pc' && !state.minimized) {
-      studio.classList.add('minimized');
-      state.minimized = true;
-    }
-  },
-  resize() {
-    fitCanvas();
-  },
-  isFullscreen() {
-    return isFullscreen();
-  },
-  destroy() {
-    if (destroyed) return;
-    destroyed = true;
-    exitFullscreen();
-    try {
-      ro.disconnect();
-    } catch (_) {}
-    listeners.forEach(([t, ty, fn, opts]) => {
-      try {
-        t.removeEventListener(ty, fn, opts);
-      } catch (_) {}
-    });
-    listeners.length = 0;
-    if (eraserCursor && eraserCursor.parentNode) eraserCursor.parentNode.removeChild(eraserCursor);
-    editorRoot.innerHTML = '';
-    editorRoot.classList.remove('dsa-sketch-studio-host', 'dsa-sketch-studio-host--fullscreen');
-  },
-};
-
-return api;
-}

@@ -8277,40 +8277,51 @@ body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
     font-weight: 700 !important;
 }
 
-/* Active chip — inverted dark fill. */
+/* Active chip — light accent fill (not full dark invert). */
 .dsa-h-problems-card .dsa-h-sol-chip.dsa-h-sol-chip--active {
-    background: var(--pp-text) !important;
-    border-color: var(--pp-text) !important;
-    color: var(--pp-surface-solid) !important;
+    background: rgba(10, 132, 255, 0.1) !important;
+    border-color: rgba(10, 132, 255, 0.35) !important;
+    color: var(--pp-text) !important;
     transform: none !important;
-    box-shadow: 0 4px 12px rgba(29, 29, 31, 0.18) !important;
+    box-shadow: 0 2px 8px rgba(10, 132, 255, 0.12) !important;
 }
 
 .dsa-h-problems-card .dsa-h-sol-chip.dsa-h-sol-chip--active .complexity-pill--time {
-    background: rgba(125, 123, 255, 0.28) !important;
-    color: #c8c7ff !important;
+    background: rgba(94, 92, 230, 0.2) !important;
+    color: #5e5ce6 !important;
 }
 
 .dsa-h-problems-card .dsa-h-sol-chip.dsa-h-sol-chip--active .complexity-pill--space {
-    background: rgba(93, 207, 228, 0.28) !important;
-    color: #a3eaf6 !important;
+    background: rgba(48, 176, 199, 0.2) !important;
+    color: #1a8a9e !important;
 }
 
 @media (prefers-color-scheme: dark) {
     .dsa-h-problems-card .dsa-h-sol-chip.dsa-h-sol-chip--active {
-        background: var(--pp-surface-solid) !important;
-        border-color: var(--pp-surface-solid) !important;
+        background: rgba(10, 132, 255, 0.16) !important;
+        border-color: rgba(10, 132, 255, 0.45) !important;
         color: var(--pp-text) !important;
+        box-shadow: 0 2px 10px rgba(10, 132, 255, 0.18) !important;
+    }
+
+    .dsa-h-problems-card .dsa-h-sol-chip.dsa-h-sol-chip--active .complexity-pill--time {
+        color: #9d9bff !important;
+        background: rgba(125, 123, 255, 0.22) !important;
+    }
+
+    .dsa-h-problems-card .dsa-h-sol-chip.dsa-h-sol-chip--active .complexity-pill--space {
+        color: #5dcfe4 !important;
+        background: rgba(93, 207, 228, 0.22) !important;
     }
 }
 
-/* Code block (IDE-style) */
+/* Code block (IDE-style) — soft matte charcoal, not near-black */
 .dsa-h-problems-card .sol-code-wrap {
     position: relative !important;
-    background: #1d1d1f !important;
+    background: #2e2e32 !important;
     border-radius: 12px !important;
     overflow: hidden !important;
-    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 .dsa-h-problems-card .sol-code-header {
@@ -8318,8 +8329,8 @@ body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
     align-items: center !important;
     justify-content: space-between !important;
     padding: 8px 14px !important;
-    background: rgba(255, 255, 255, 0.04) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
     gap: 12px !important;
 }
 
@@ -8341,11 +8352,12 @@ body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
 .dsa-h-problems-card .sol-code-dots span:nth-child(3) { background: #28ca42 !important; }
 
 .dsa-h-problems-card .sol-code-lang {
-    font-size: 11px !important;
-    color: rgba(245, 245, 247, 0.6) !important;
-    font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.05em !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    color: rgba(245, 245, 247, 0.78) !important;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif !important;
+    text-transform: none !important;
+    letter-spacing: 0.01em !important;
     flex: 1 1 auto !important;
     text-align: center !important;
 }
@@ -8384,7 +8396,7 @@ body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
 
 .dsa-h-problems-card .sol-code {
     margin: 0 !important;
-    color: #f5f5f7 !important;
+    color: #ececef !important;
     font-family: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace !important;
     font-size: 12.5px !important;
     line-height: 1.65 !important;

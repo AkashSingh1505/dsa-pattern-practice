@@ -4120,7 +4120,6 @@ function dsaFillProblemSolutionPane(prob, pane) {
 
     const lang = document.createElement("div");
     lang.className = "sol-code-lang";
-    lang.textContent = "JavaScript";
 
     const copyBtn = document.createElement("button");
     copyBtn.type = "button";
@@ -4180,6 +4179,17 @@ function dsaFillProblemSolutionPane(prob, pane) {
         });
     });
 
+    const APPROACH_LABEL_BY_KEY = { brute_force: "Brute Force", better: "Better", optimal: "Optimal" };
+
+    function approachLabelForSol(sol) {
+        const approachKey = dsaNormalizeSolutionCategory(sol && sol.approach);
+        return (
+            APPROACH_LABEL_BY_KEY[approachKey] ||
+            dsaSolutionCategoryLabel(approachKey) ||
+            "Solution"
+        );
+    }
+
     function selectIndex(idx) {
         chipsRow.querySelectorAll(".dsa-h-sol-chip").forEach((chip, i) => {
             const on = i === idx;
@@ -4188,11 +4198,10 @@ function dsaFillProblemSolutionPane(prob, pane) {
             chip.tabIndex = on ? 0 : -1;
         });
         const sol = solRows[idx];
+        lang.textContent = approachLabelForSol(sol);
         const codeStr = sol && sol.code != null ? String(sol.code).trim() : "";
         setCode(codeStr);
     }
-
-    const APPROACH_LABEL_BY_KEY = { brute_force: "Brute Force", better: "Better", optimal: "Optimal" };
 
     solRows.forEach((sol, idx) => {
         const approachKey = dsaNormalizeSolutionCategory(sol && sol.approach);
@@ -4211,7 +4220,7 @@ function dsaFillProblemSolutionPane(prob, pane) {
         const dot = document.createElement("span");
         dot.className = "sol-chip-dot";
         chipLabel.appendChild(dot);
-        const labelText = APPROACH_LABEL_BY_KEY[approachKey] || dsaSolutionCategoryLabel(approachKey) || `Solution ${idx + 1}`;
+        const labelText = approachLabelForSol(sol) || `Solution ${idx + 1}`;
         chipLabel.appendChild(document.createTextNode(labelText));
         chip.appendChild(chipLabel);
 
@@ -5074,7 +5083,7 @@ function buildTreeNode(node, depth, panel, scheduleRedraw, theme, ctx) {
             requestAnimationFrame(scheduleRedraw);
         }
 
-        function resetProblemToolsUi() {
+        function clearProblemToolsFilters() {
             searchQuery = "";
             toolsUiOpen = false;
             activeDifficultyFilters.clear();
@@ -5083,6 +5092,10 @@ function buildTreeNode(node, depth, panel, scheduleRedraw, theme, ctx) {
             }
             if (toolsPanelEl) {
                 toolsPanelEl.hidden = true;
+                toolsPanelEl.querySelectorAll(".dsa-h-problems-diff-chip--active").forEach((chipBtn) => {
+                    chipBtn.classList.remove("dsa-h-problems-diff-chip--active");
+                    chipBtn.setAttribute("aria-pressed", "false");
+                });
             }
             if (toolsToggleBtn) {
                 toolsToggleBtn.classList.remove("dsa-h-problems-tools-tab--open");
@@ -5090,6 +5103,10 @@ function buildTreeNode(node, depth, panel, scheduleRedraw, theme, ctx) {
                 toolsToggleBtn.setAttribute("aria-expanded", "false");
                 toolsToggleBtn.title = "Search and filter";
             }
+        }
+
+        function resetProblemToolsUi() {
+            clearProblemToolsFilters();
             activeFilterMode = "important";
         }
 
@@ -5268,6 +5285,9 @@ function buildTreeNode(node, depth, panel, scheduleRedraw, theme, ctx) {
             }
             if (toolsToggleBtn) {
                 toolsToggleBtn.classList.toggle("dsa-h-problems-tools-tab--active", hasToolsActive);
+                toolsToggleBtn.title = hasToolsActive
+                    ? "Clear search and filters"
+                    : "Search and filter";
             }
             const resultList = byDifficulty;
             if (!resultList.length) {
@@ -5317,11 +5337,19 @@ function buildTreeNode(node, depth, panel, scheduleRedraw, theme, ctx) {
         toolsToggleBtn.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            toolsUiOpen = !toolsUiOpen;
-            toolsPanelEl.hidden = !toolsUiOpen;
-            toolsToggleBtn.classList.toggle("dsa-h-problems-tools-tab--open", toolsUiOpen);
-            toolsToggleBtn.setAttribute("aria-expanded", toolsUiOpen ? "true" : "false");
-            toolsToggleBtn.title = toolsUiOpen ? "Hide search and filter" : "Search and filter";
+            const q = searchQuery.trim();
+            const hasToolsActive =
+                toolsUiOpen || q.length > 0 || activeDifficultyFilters.size > 0;
+            if (hasToolsActive) {
+                clearProblemToolsFilters();
+                renderProblemListForFilter(activeFilterMode);
+                return;
+            }
+            toolsUiOpen = true;
+            toolsPanelEl.hidden = false;
+            toolsToggleBtn.classList.add("dsa-h-problems-tools-tab--open");
+            toolsToggleBtn.setAttribute("aria-expanded", "true");
+            toolsToggleBtn.title = "Clear search and filters";
             renderProblemListForFilter(activeFilterMode);
         });
         searchInputEl.addEventListener("input", () => {

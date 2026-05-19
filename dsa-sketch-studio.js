@@ -44,19 +44,20 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     if (!document.head.querySelector("link[data-dsa-sketch-studio-css]")) {
         const lk = document.createElement("link");
         lk.rel = "stylesheet";
-        lk.href = "./dsa-sketch-studio.css?v=18";
+        lk.href = "./dsa-sketch-studio.css?v=19";
         lk.dataset.dsaSketchStudioCss = "1";
         document.head.appendChild(lk);
     }
 
     editorRoot.innerHTML = "";
-    editorRoot.classList.add("dsa-sketch-studio-host");
-
-    const mount = document.createElement("div");
-    mount.className = "dsa-sketch-studio-mount";
     const device = dsaDetectSketchDevice();
-    mount.classList.add(device === "pc" ? "device-pc" : "device-mobile");
-    mount.innerHTML = `<div class="sketch-studio" id="dsaSkStudio">
+    editorRoot.classList.add(
+        "dsa-sketch-studio-host",
+        "dsa-sketch-studio-mount",
+        device === "pc" ? "device-pc" : "device-mobile"
+    );
+    const mount = editorRoot;
+    editorRoot.innerHTML = `<div class="sketch-studio" id="dsaSkStudio">
 
   <div class="canvas-wrap" id="dsaSkCanvasWrap">
     <canvas id="dsaSkCanvas" width="2400" height="1800"></canvas>
@@ -268,7 +269,6 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
 </div>
 
 `;
-    editorRoot.appendChild(mount);
 
     const eraserCursor = document.createElement("div");
     eraserCursor.className = "eraser-cursor";

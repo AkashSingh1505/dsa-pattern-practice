@@ -543,9 +543,8 @@ function dsaMindAllowedChildSlugs(parentSlug, cats) {
 }
 
 /**
- * Allowed child slugs from `graph_node_category`, then narrowed by branch-vs-problem exclusivity on this parent
- * (same rule as {@link dsaNormalizeExclusiveChildKindOnNode}: if the parent already has branch children, no new
- * PROBLEM nodes at that holder).
+ * Allowed child slugs for the add-child modal — from `graph_node_category` only (parent category → allowedChildSlugs).
+ * Branch vs practice-problem exclusivity is handled at save time with a confirm, not by hiding valid DB types.
  *
  * @param {string} parentKey mind-map path key (e.g. `rootId::Topic A`)
  * @param {{ slug?: string, allowedChildSlugs?: string[] }[]} cats `window.__dsaGraphNodeCategories`
@@ -553,15 +552,59 @@ function dsaMindAllowedChildSlugs(parentSlug, cats) {
  */
 function dsaMindAllowedChildSlugsRespectingParentState(parentKey, cats) {
     const slug = dsaMindParentCategorySlug(parentKey);
-    let allowed = dsaMindAllowedChildSlugs(slug, cats);
-    if (!allowed.length) {
-        return [];
+    return dsaMindAllowedChildSlugs(slug, cats);
+}
+
+/** Remove direct branch children on a parent so a practice problem can be added (after user confirms). */
+function dsaRecordRemovalsForDirectBranchChildren(parentKey) {
+    const merged = getDsaHierarchyMerged();
+    const r = dsaResolveParentNode(merged, parentKey);
+    if (!r || r.metaRoot) {
+        return;
     }
-    const kindFlags = dsaParentChildKindFlags(parentKey);
-    if (kindFlags.hasSubnodes) {
-        allowed = allowed.filter((s) => String(s).toUpperCase().trim() !== "PROBLEM");
+    const paths = [];
+    if (!r.parentNode) {
+        const ds = r.ds;
+        if (!ds) {
+            return;
+        }
+        const base = String(ds.id || "").trim();
+        if (!base) {
+            return;
+        }
+        (Array.isArray(ds.tree) ? ds.tree : []).forEach((c) => {
+            if (c && c.name) {
+                paths.push(`${base}::${String(c.name).trim()}`);
+            }
+        });
+        (Array.isArray(ds.patterns) ? ds.patterns : []).forEach((c) => {
+            if (c && c.name) {
+                paths.push(`${base}::${String(c.name).trim()}`);
+            }
+        });
+    } else {
+        const n = r.parentNode;
+        (Array.isArray(n.children) ? n.children : []).forEach((c) => {
+            if (c && c.name) {
+                paths.push(`${parentKey}::${String(c.name).trim()}`);
+            }
+        });
+        (Array.isArray(n.patterns) ? n.patterns : []).forEach((c) => {
+            if (c && c.name) {
+                paths.push(`${parentKey}::${String(c.name).trim()}`);
+            }
+        });
     }
-    return allowed;
+    paths.forEach((p) => dsaRecordRemoval({ type: "node", path: p }));
+    dsaUserPayload.nodes = (dsaUserPayload.nodes || []).filter((x) => {
+        if (!x || dsaUserPayloadIsProblemEntry(x)) {
+            return true;
+        }
+        const isBranch =
+            x.type === "branch" || x.type === "group" || x.type === "pattern" || x.type === "topic";
+        return !(isBranch && String(x.parentKey || "").trim() === String(parentKey || "").trim());
+    });
+    dsaPersistUserPayload();
 }
 
 /**
@@ -6330,10 +6373,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         catFs.hidden = true;
         catFs.setAttribute("aria-hidden", "true");
     }
-    if (!isMetaRoot && addingNewItem && kindFlags.hasSubnodes) {
-        radQ.hidden = true;
-        labQ.hidden = true;
-    }
     if (isRenameNode) {
         catFs.hidden = true;
         catFs.setAttribute("aria-hidden", "true");
@@ -6392,7 +6431,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
                 return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 10v6M4.22 4.22l4.24 4.24m7.07 7.07l4.24 4.24M1 12h6m10 0h6M4.22 19.78l4.24-4.24m7.07-7.07l4.24-4.24"/></svg>';
             }
             if (su === "PROBLEM") {
-                return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+                return "";
             }
             if (su === "TOPIC") {
                 return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>';
@@ -6419,7 +6458,14 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             lab.appendChild(inp);
             const icon = document.createElement("span");
             icon.className = slugIconClass(su);
-            icon.innerHTML = slugIconSvg(su);
+            if (su === "PROBLEM") {
+                const brainIc = dsaSvgIconBrain();
+                brainIc.setAttribute("width", "16");
+                brainIc.setAttribute("height", "16");
+                icon.appendChild(brainIc);
+            } else {
+                icon.innerHTML = slugIconSvg(su);
+            }
             lab.appendChild(icon);
             const nm = document.createElement("div");
             nm.className = "type-name";
@@ -8112,7 +8158,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     function setAdminDisabled() {
         const ro = !isAdmin;
         const addingNew = !editQuestionName && !editUserNodeId && !isRenameNode;
-        const problemHidden = addingNew && (isMetaRoot || kindFlags.hasSubnodes);
+        const problemHidden = addingNew && isMetaRoot;
         radQ.disabled = ro || problemHidden;
         radN.disabled = ro;
         nodeIn.disabled = ro;
@@ -8153,10 +8199,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             b.disabled = ro;
             b.hidden = ro;
         });
-    }
-    if (!isMetaRoot && !editQuestionName && !editUserNodeId && !isRenameNode && kindFlags.hasSubnodes && !useMindTypePicker2) {
-        radN.checked = true;
-        radQ.checked = false;
     }
     if (isRenameNode) {
         btnOk.textContent = "Save name";
@@ -8442,8 +8484,14 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         }
         const kfQ = dsaParentChildKindFlags(parentKey);
         if (kfQ.hasSubnodes) {
-            showQToast("This topic has subtopics. Move them before adding problems here.", "error");
-            return;
+            if (
+                !confirm(
+                    "This topic has subtopics. Adding a practice problem removes them from this level (they are not moved). Continue?",
+                )
+            ) {
+                return;
+            }
+            dsaRecordRemovalsForDirectBranchChildren(parentKey);
         }
         if (
             graphBodyCats.length &&

@@ -44,18 +44,17 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     if (!document.head.querySelector("link[data-dsa-sketch-studio-css]")) {
         const lk = document.createElement("link");
         lk.rel = "stylesheet";
-        lk.href = "./dsa-sketch-studio.css?v=16";
+        lk.href = "./dsa-sketch-studio.css?v=17";
         lk.dataset.dsaSketchStudioCss = "1";
         document.head.appendChild(lk);
     }
 
     editorRoot.innerHTML = "";
     const device = dsaDetectSketchDevice();
-    editorRoot.classList.add("dsa-sketch-studio-host", device === "pc" ? "device-pc" : "device-mobile");
+    editorRoot.id = "dsaSkStudio";
+    editorRoot.classList.add("dsa-sketch-studio-host", "sketch-studio", device === "pc" ? "device-pc" : "device-mobile");
     const mount = editorRoot;
-    editorRoot.innerHTML = `<div class="sketch-studio" id="dsaSkStudio">
-
-  <div class="canvas-wrap" id="dsaSkCanvasWrap">
+    editorRoot.innerHTML = `  <div class="canvas-wrap" id="dsaSkCanvasWrap">
     <canvas id="dsaSkCanvas" width="2400" height="1800"></canvas>
     <canvas id="dsaSkLaserCanvas"></canvas>
 
@@ -262,7 +261,6 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
       </button>
     </div>
   </div>
-</div>
 
 `;
 

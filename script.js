@@ -6956,6 +6956,8 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     hintFieldGroup.appendChild(hintTa);
 
     const sketchEditorRoot = document.createElement("div");
+    sketchEditorRoot.id = "dsaSkStudio";
+    sketchEditorRoot.className = "sketch-studio";
 
     const sketchIntro = document.createElement("div");
     sketchIntro.className = "dsa-q-resource-intro dsa-q-sketch-intro";

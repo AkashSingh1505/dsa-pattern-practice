@@ -7121,3 +7121,938 @@ body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
     display: block;
     width: 100%;
 }
+
+/* ============================================================
+ * Practice problems card — Apple-style redesign (v2)
+ * Overrides earlier .dsa-h-problems-card rules to apply
+ * the new mockup look without renaming existing class hooks.
+ * ============================================================ */
+.dsa-h-problems-card {
+    min-width: 320px;
+    max-width: min(560px, 92vw);
+    padding: 22px;
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 24px;
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.12),
+        0 8px 24px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    text-align: left;
+}
+
+/* ----- Card header: icon + (title + subtitle) + actions ----- */
+.dsa-h-problems-card-head {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.dsa-h-problems-card-head-icon {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    background: linear-gradient(135deg, #5e5ce6, #af52de);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(94, 92, 230, 0.35);
+}
+
+.dsa-h-problems-card-head-icon svg {
+    width: 20px;
+    height: 20px;
+    display: block;
+}
+
+.dsa-h-problems-card-head-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: left;
+}
+
+.dsa-h-problems-card .dsa-h-problems-card-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #1d1d1f;
+    line-height: 1.2;
+    text-transform: none;
+    margin: 0;
+}
+
+.dsa-h-problems-card-subtitle {
+    margin-top: 2px;
+    font-size: 12px;
+    color: #6e6e73;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.dsa-h-problems-card-subtitle-parent {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.dsa-h-problems-card-progress-chip {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6e6e73;
+    padding: 3px 8px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 999px;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+}
+
+.dsa-h-problems-card .dsa-h-problems-card-actions {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+/* Header action buttons (delete topic + close card) — match `.icon-btn` look from mockup */
+.dsa-h-problems-card .dsa-h-problems-card-close,
+.dsa-h-problems-card .dsa-h-problems-card-delete-all {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    border: none;
+    background: transparent;
+    color: #6e6e73;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+        background 0.15s ease,
+        color 0.15s ease,
+        transform 0.1s ease;
+}
+
+.dsa-h-problems-card .dsa-h-problems-card-close:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: #1d1d1f;
+    border-color: transparent;
+}
+
+.dsa-h-problems-card .dsa-h-problems-card-delete-all:hover {
+    background: rgba(255, 69, 58, 0.12);
+    color: #ff453a;
+    border-color: transparent;
+}
+
+.dsa-h-problems-card .dsa-h-problems-card-close:active,
+.dsa-h-problems-card .dsa-h-problems-card-delete-all:active {
+    transform: scale(0.92);
+}
+
+.dsa-h-problems-card .dsa-h-problems-card-close svg,
+.dsa-h-problems-card .dsa-h-problems-card-delete-all svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+}
+
+/* ----- Controls row: filter tabs + tools toggle ----- */
+.dsa-h-problems-card .dsa-h-problems-controls-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 12px;
+    justify-content: flex-start;
+}
+
+.dsa-h-problems-card .dsa-h-problems-filter-tabs {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: 9px;
+    padding: 2px;
+    flex: 1 1 auto;
+    max-width: 280px;
+    border: none;
+    box-shadow: none;
+    gap: 0;
+}
+
+.dsa-h-problems-card .dsa-h-problems-filter-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: calc(50% - 2px);
+    height: calc(100% - 4px);
+    background: #ffffff;
+    border-radius: 7px;
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.08),
+        0 0 0 0.5px rgba(0, 0, 0, 0.04);
+    transform: translateX(0);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 0;
+}
+
+.dsa-h-problems-card
+    .dsa-h-problems-filter-tabs[data-mode="all"]
+    .dsa-h-problems-filter-thumb {
+    transform: translateX(100%);
+}
+
+.dsa-h-problems-card .dsa-h-problems-filter-tab {
+    position: relative;
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6e6e73;
+    cursor: pointer;
+    z-index: 1;
+    border-radius: 7px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    letter-spacing: 0;
+    transition: color 0.2s ease;
+}
+
+.dsa-h-problems-card .dsa-h-problems-filter-tab--active {
+    color: #1d1d1f;
+    font-weight: 600;
+}
+
+.dsa-h-problems-card .dsa-h-problems-filter-tab--star .dsa-h-problems-filter-tab-icon {
+    color: #ffcc00;
+}
+
+.dsa-h-problems-card .dsa-h-problems-filter-tab--all .dsa-h-problems-filter-tab-icon {
+    color: inherit;
+}
+
+.dsa-h-problems-card
+    .dsa-h-problems-filter-tab--all.dsa-h-problems-filter-tab--active
+    .dsa-h-problems-filter-tab-icon {
+    color: #1d1d1f;
+}
+
+.dsa-h-problems-card .dsa-h-problems-tools-tab {
+    margin-left: auto;
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    border: none;
+    background: rgba(0, 0, 0, 0.06);
+    color: #6e6e73;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0;
+    cursor: pointer;
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
+    box-shadow: none;
+}
+
+.dsa-h-problems-card .dsa-h-problems-tools-tab:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #1d1d1f;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.dsa-h-problems-card .dsa-h-problems-tools-tab--open,
+.dsa-h-problems-card .dsa-h-problems-tools-tab--active {
+    background: #0071e3;
+    color: #fff;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.dsa-h-problems-card .dsa-h-problems-tools-tab-icon svg {
+    width: 14px;
+    height: 14px;
+    display: block;
+}
+
+/* When the search/filter button has BOTH icons, only show the funnel (mockup look) */
+.dsa-h-problems-card
+    .dsa-h-problems-tools-tab
+    .dsa-h-problems-tools-tab-icon:first-of-type {
+    display: none;
+}
+
+/* ----- Tools panel (search + diff chips) ----- */
+.dsa-h-problems-card .dsa-h-problems-tools-panel {
+    background: rgba(0, 0, 0, 0.03);
+    border: none;
+    border-radius: 12px;
+    padding: 12px;
+    margin: 0 0 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+    animation: dsaProbToolsSlideDown 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes dsaProbToolsSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dsa-h-problems-card .dsa-h-problems-tools-search-input {
+    flex: 1 1 auto;
+    width: 100%;
+    height: 34px;
+    padding: 0 12px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 9px;
+    background: #ffffff;
+    font: inherit;
+    font-size: 13px;
+    color: #1d1d1f;
+    outline: none;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.dsa-h-problems-card .dsa-h-problems-tools-search-input:focus {
+    border-color: #0071e3;
+    box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15);
+}
+
+.dsa-h-problems-card .dsa-h-problems-difficulty-filters {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.dsa-h-problems-card .dsa-h-problems-diff-chip {
+    height: auto;
+    padding: 5px 11px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+    color: #6e6e73;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.dsa-h-problems-card .dsa-h-problems-diff-chip:hover {
+    border-color: rgba(0, 0, 0, 0.14);
+    background: #ffffff;
+}
+
+.dsa-h-problems-card .dsa-h-problems-diff-chip--easy.dsa-h-problems-diff-chip--active {
+    background: #30d158;
+    border-color: #30d158;
+    color: #fff;
+}
+
+.dsa-h-problems-card .dsa-h-problems-diff-chip--medium.dsa-h-problems-diff-chip--active {
+    background: #ff9f0a;
+    border-color: #ff9f0a;
+    color: #fff;
+}
+
+.dsa-h-problems-card .dsa-h-problems-diff-chip--hard.dsa-h-problems-diff-chip--active {
+    background: #ff453a;
+    border-color: #ff453a;
+    color: #fff;
+}
+
+/* ----- Problem list ----- */
+.dsa-h-problems-card .dsa-h-problems-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: stretch;
+}
+
+.dsa-h-problems-card .dsa-h-problems-list li.dsa-h-problem-li {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    flex-wrap: nowrap;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.dsa-h-problems-card .dsa-h-problems-list li.dsa-h-problem-li:hover {
+    border-color: rgba(0, 0, 0, 0.14);
+    box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.04),
+        0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.dsa-h-problems-card .dsa-h-problem-main {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    width: 100%;
+    min-width: 0;
+    flex-wrap: nowrap;
+}
+
+/* Prefix cluster: done + star */
+.dsa-h-prob-prefix {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+/* Done — circle outline; fills green when checked */
+.dsa-h-problems-card .dsa-h-prob-done {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    margin: 0;
+    border-radius: 999px;
+    border: 1.5px solid rgba(0, 0, 0, 0.14);
+    background: transparent;
+    color: transparent;
+    box-shadow: none;
+    font-size: 0;
+    gap: 0;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dsa-h-problems-card .dsa-h-prob-done:hover {
+    border-color: #30d158;
+    background: transparent;
+}
+
+.dsa-h-problems-card .dsa-h-prob-done.dsa-h-prob-done--on {
+    background: #30d158;
+    border-color: #30d158;
+}
+
+.dsa-h-problems-card .dsa-h-prob-done .dsa-h-prob-done-input {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    border-radius: 999px;
+    cursor: inherit;
+    box-shadow: none;
+}
+
+.dsa-h-problems-card .dsa-h-prob-done .dsa-h-prob-done-input:checked {
+    background: transparent;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 12px 12px;
+    border: none;
+    box-shadow: none;
+}
+
+/* Star */
+.dsa-h-problems-card .dsa-h-prob-star-toggle {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    color: #86868b;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dsa-h-problems-card .dsa-h-prob-star-toggle:hover:not(:disabled) {
+    background: rgba(255, 214, 10, 0.12);
+    color: #ffcc00;
+    transform: scale(1.08);
+}
+
+.dsa-h-problems-card .dsa-h-prob-star-toggle--on,
+.dsa-h-problems-card .dsa-h-prob-star-toggle--on:hover:not(:disabled) {
+    color: #ffcc00;
+}
+
+.dsa-h-problems-card .dsa-h-prob-star-toggle svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+}
+
+/* Problem link (platform icon + name) */
+.dsa-h-problems-card .dsa-h-problem-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: #1d1d1f;
+    font-size: 14px;
+    font-weight: 500;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0;
+    margin: 0;
+    border-radius: 0;
+    border-left: none;
+    background: transparent;
+    transition: color 0.15s ease;
+}
+
+.dsa-h-problems-card .dsa-h-problem-link:hover {
+    background: transparent;
+    border-left-color: transparent;
+    color: #0071e3;
+}
+
+.dsa-h-problems-card .dsa-h-problem-link:hover .dsa-h-problem-link-text {
+    color: #0071e3;
+}
+
+.dsa-h-problems-card .dsa-h-platform-icon {
+    width: 18px;
+    height: 18px;
+    background: transparent;
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.dsa-h-problems-card .dsa-h-platform-icon .dsa-h-platform-icon-img {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+}
+
+.dsa-h-problems-card .dsa-h-problem-link-text {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: inherit;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dsa-h-problems-card .dsa-h-problem-li.dsa-h-problem-li--done .dsa-h-problem-link-text {
+    text-decoration: line-through;
+    color: #86868b;
+}
+
+/* Difficulty pill */
+.dsa-h-problems-card .dsa-h-prob-diff {
+    height: auto;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 999px;
+    text-transform: capitalize;
+    flex-shrink: 0;
+    line-height: 1.4;
+    border: none;
+    letter-spacing: 0;
+}
+
+.dsa-h-problems-card .dsa-h-prob-diff--easy {
+    background: rgba(48, 209, 88, 0.15);
+    color: #1f8a3b;
+    border: none;
+}
+
+.dsa-h-problems-card .dsa-h-prob-diff--medium {
+    background: rgba(255, 159, 10, 0.15);
+    color: #c2700a;
+    border: none;
+}
+
+.dsa-h-problems-card .dsa-h-prob-diff--hard {
+    background: rgba(255, 69, 58, 0.15);
+    color: #c8332a;
+    border: none;
+}
+
+/* ----- Extras: eye + actions bar + mod bar ----- */
+.dsa-h-problems-card .dsa-h-prob-extras-wrap {
+    position: relative;
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.dsa-h-problems-card .dsa-h-prob-eye-cluster {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.dsa-h-problems-card .dsa-h-prob-youtube {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: #ff453a;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+    box-shadow: none;
+}
+
+.dsa-h-problems-card .dsa-h-prob-youtube:hover {
+    background: rgba(255, 69, 58, 0.12);
+    border-color: transparent;
+    box-shadow: none;
+    transform: none;
+}
+
+.dsa-h-problems-card .dsa-h-prob-youtube svg {
+    width: 16px;
+    height: 16px;
+}
+
+.dsa-h-problems-card .dsa-h-prob-eye {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: #6e6e73;
+    cursor: pointer;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
+}
+
+.dsa-h-problems-card .dsa-h-prob-eye:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: #1d1d1f;
+    border-color: transparent;
+}
+
+.dsa-h-problems-card .dsa-h-prob-extras-wrap--pinned .dsa-h-prob-eye {
+    background: rgba(0, 0, 0, 0.06);
+    color: #1d1d1f;
+    border-color: transparent;
+}
+
+.dsa-h-problems-card .dsa-h-prob-eye svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Actions bar — inline, animated max-width expansion */
+.dsa-h-problems-card .dsa-h-prob-actions-bar {
+    position: static;
+    left: auto;
+    top: auto;
+    transform: none;
+    margin: 0;
+    padding: 2px;
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 2px;
+    background: rgba(0, 0, 0, 0.04);
+    border: none;
+    border-radius: 9px;
+    box-shadow: none;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    padding-left: 0;
+    padding-right: 0;
+    transition:
+        max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+        padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dsa-h-problems-card .dsa-h-prob-extras-wrap--pinned .dsa-h-prob-actions-bar {
+    max-width: 360px;
+    opacity: 1;
+    padding: 2px;
+    display: inline-flex;
+}
+
+/* Mod bar — separate edit + delete container, animates next to actions bar */
+.dsa-h-problems-card .dsa-h-prob-mod-bar {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 2px;
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 9px;
+    padding: 2px;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    margin-left: 4px;
+    padding-left: 0;
+    padding-right: 0;
+    transition:
+        max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+        padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dsa-h-problems-card .dsa-h-prob-extras-wrap--pinned .dsa-h-prob-mod-bar {
+    max-width: 200px;
+    opacity: 1;
+    padding: 2px;
+}
+
+/* Toggle buttons inside actions bar / mod bar */
+.dsa-h-problems-card .dsa-h-prob-toggle {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    border-radius: 7px;
+    color: #6e6e73;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    gap: 0;
+}
+
+.dsa-h-problems-card .dsa-h-prob-toggle:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: #1d1d1f;
+    border-color: transparent;
+}
+
+.dsa-h-problems-card .dsa-h-prob-toggle--open {
+    background: #ffffff;
+    color: #0071e3;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    border-color: transparent;
+}
+
+.dsa-h-problems-card .dsa-h-prob-mod-bar .dsa-h-prob-toggle--edit:hover {
+    color: #0071e3;
+    background: rgba(0, 113, 227, 0.12);
+}
+
+.dsa-h-problems-card .dsa-h-prob-mod-bar .dsa-h-prob-toggle--delete:hover {
+    color: #ff453a;
+    background: rgba(255, 69, 58, 0.12);
+}
+
+.dsa-h-problems-card .dsa-h-prob-toggle-ic {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dsa-h-problems-card .dsa-h-prob-toggle-ic svg {
+    width: 14px;
+    height: 14px;
+    display: block;
+}
+
+/* ----- Reveal pane (vertical, below main row) ----- */
+.dsa-h-problems-card .dsa-h-prob-reveal {
+    display: block;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    overflow: hidden;
+}
+
+.dsa-h-problems-card .dsa-h-prob-pane {
+    padding: 14px 14px 16px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(0, 0, 0, 0.015);
+    margin: 0;
+    animation: dsaProbPaneIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes dsaProbPaneIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ----- Empty state ----- */
+.dsa-h-problems-card .dsa-h-problems-empty {
+    margin: 4px 0 0;
+    padding: 32px 16px;
+    font-size: 13px;
+    color: #6e6e73;
+    text-align: center;
+}
+
+/* Dark mode tweaks */
+@media (prefers-color-scheme: dark) {
+    .dsa-h-problems-card {
+        background: rgba(28, 28, 30, 0.72);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .dsa-h-problems-card .dsa-h-problems-card-title {
+        color: #f5f5f7;
+    }
+
+    .dsa-h-problems-card-subtitle,
+    .dsa-h-problems-card-progress-chip {
+        color: #a1a1a6;
+    }
+
+    .dsa-h-problems-card-progress-chip {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .dsa-h-problems-card .dsa-h-problems-card-close:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: #f5f5f7;
+    }
+
+    .dsa-h-problems-card .dsa-h-problems-filter-tabs {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .dsa-h-problems-card .dsa-h-problems-filter-thumb {
+        background: #1c1c1e;
+    }
+
+    .dsa-h-problems-card .dsa-h-problems-filter-tab--active {
+        color: #f5f5f7;
+    }
+
+    .dsa-h-problems-card .dsa-h-problems-tools-tab {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .dsa-h-problems-card .dsa-h-problems-tools-tab:hover {
+        background: rgba(255, 255, 255, 0.14);
+        color: #f5f5f7;
+    }
+
+    .dsa-h-problems-card .dsa-h-problems-tools-panel {
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    .dsa-h-problems-card .dsa-h-problems-tools-search-input {
+        background: #1c1c1e;
+        border-color: rgba(255, 255, 255, 0.08);
+        color: #f5f5f7;
+    }
+
+    .dsa-h-problems-card .dsa-h-problems-diff-chip {
+        background: #1c1c1e;
+        border-color: rgba(255, 255, 255, 0.08);
+        color: #a1a1a6;
+    }
+
+    .dsa-h-problems-card .dsa-h-problems-list li.dsa-h-problem-li {
+        background: #1c1c1e;
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .dsa-h-problems-card .dsa-h-problem-link {
+        color: #f5f5f7;
+    }
+
+    .dsa-h-problems-card .dsa-h-prob-eye:hover,
+    .dsa-h-problems-card .dsa-h-prob-toggle:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: #f5f5f7;
+    }
+
+    .dsa-h-problems-card .dsa-h-prob-actions-bar,
+    .dsa-h-problems-card .dsa-h-prob-mod-bar {
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .dsa-h-problems-card .dsa-h-prob-toggle--open {
+        background: #2c2c2e;
+        color: #0a84ff;
+    }
+
+    .dsa-h-problems-card .dsa-h-prob-pane {
+        background: rgba(255, 255, 255, 0.02);
+        border-top-color: rgba(255, 255, 255, 0.08);
+    }
+}
+
+/* On narrow viewports, drop the connector pill and the absolute actions-bar positioning that conflicts with the new inline layout. */
+@media (max-width: 720px) {
+    .dsa-h-problems-card {
+        max-width: 100%;
+        width: 100%;
+        padding: 18px;
+    }
+}

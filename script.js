@@ -2226,6 +2226,12 @@ function dsaPatchProgressUiLive(panel, parentKey, scheduleEdgeRedraw) {
             dsaUpdateProgressChipElement(chip, stats);
         }
     }
+    /* Practice-problems card has its own done/total chip in the header — keep it in sync too. */
+    const leafBlock = panel.querySelector(`.dsa-h-leaf-block[data-dsa-path="${CSS.escape(String(parentKey))}"]`);
+    const cardChip = leafBlock && leafBlock.querySelector(".dsa-h-problems-card-progress-chip");
+    if (cardChip && primaryStats) {
+        cardChip.textContent = `${primaryStats.done}/${primaryStats.total}`;
+    }
     const rootsRow = document.querySelector(".dsa-graph-roots");
     if (rootsRow && !rootsRow.hidden) {
         const merged = getDsaHierarchyMerged();
@@ -3520,6 +3526,37 @@ function dsaSvgIconClose() {
     return svg;
 }
 
+/** Brain icon for the Practice problems card header. */
+function dsaSvgIconBrain() {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("width", "20");
+    svg.setAttribute("height", "20");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("fill", "none");
+    svg.setAttribute("aria-hidden", "true");
+    const left = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    left.setAttribute(
+        "d",
+        "M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z",
+    );
+    left.setAttribute("stroke", "currentColor");
+    left.setAttribute("stroke-width", "2");
+    left.setAttribute("stroke-linecap", "round");
+    left.setAttribute("stroke-linejoin", "round");
+    const right = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    right.setAttribute(
+        "d",
+        "M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z",
+    );
+    right.setAttribute("stroke", "currentColor");
+    right.setAttribute("stroke-width", "2");
+    right.setAttribute("stroke-linecap", "round");
+    right.setAttribute("stroke-linejoin", "round");
+    svg.appendChild(left);
+    svg.appendChild(right);
+    return svg;
+}
+
 function dsaSvgIconStar() {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("viewBox", "0 0 24 24");
@@ -3869,11 +3906,14 @@ function dsaFillProblemResourcesPane(prob, pane) {
 
 function buildProblemListItem(prob, probCtx) {
     const li = document.createElement("li");
-    li.className = "dsa-h-problem-li";
+    li.className = "dsa-h-problem-li" + (prob && prob.done ? " dsa-h-problem-li--done" : "");
 
     const mainRow = document.createElement("div");
     mainRow.className = "dsa-h-problem-main";
     const isAdminViewer = !!(probCtx && probCtx.isAdmin === true);
+
+    const prefix = document.createElement("div");
+    prefix.className = "dsa-h-prob-prefix";
 
     const isDone = !!(prob && prob.done);
     const canMarkDone =
@@ -3898,59 +3938,69 @@ function buildProblemListItem(prob, probCtx) {
                 prob.done = !!doneInput.checked;
             }
             doneWrap.classList.toggle("dsa-h-prob-done--on", !!doneInput.checked);
+            li.classList.toggle("dsa-h-problem-li--done", !!doneInput.checked);
             doneWrap.setAttribute("aria-label", doneInput.checked ? "Problem marked done" : "Mark problem done");
             doneInput.setAttribute("aria-label", doneInput.checked ? "Marked done" : "Mark done");
+            const topicNode = probCtx && probCtx.topicNode;
+            if (topicNode && Array.isArray(topicNode.problems)) {
+                const card = li.closest(".dsa-h-problems-card");
+                const chip = card && card.querySelector(".dsa-h-problems-card-progress-chip");
+                if (chip) {
+                    const stats = dsaCollectTreeNodeProblemStats(topicNode);
+                    chip.textContent = `${stats.done}/${stats.total}`;
+                }
+            }
             dsaToggleProblemDone(probCtx.parentKey, prob, probCtx.refresh);
         });
     }
     doneWrap.appendChild(doneInput);
-    mainRow.appendChild(doneWrap);
+    prefix.appendChild(doneWrap);
 
     const isStarred = dsaIsProblemMarkedImportant(prob);
     const canToggleStar =
-        isAdminViewer && probCtx && probCtx.parentKey && typeof probCtx.refresh === "function";
-    if (isAdminViewer) {
-        const starBtn = document.createElement("button");
-        starBtn.type = "button";
-        starBtn.className = "dsa-h-prob-star-toggle";
-        const setStarBtnState = (on) => {
-            starBtn.classList.toggle("dsa-h-prob-star-toggle--on", !!on);
-            starBtn.setAttribute("aria-pressed", on ? "true" : "false");
-            starBtn.setAttribute("aria-label", on ? "Starred problem. Click to unstar" : "Mark problem as starred");
-            starBtn.title = on ? "Starred (click to unstar)" : "Mark as starred";
-        };
-        setStarBtnState(isStarred);
-        if (!canToggleStar) {
-            starBtn.disabled = true;
-        }
-        starBtn.appendChild(dsaSvgIconStar());
-        if (canToggleStar) {
-            starBtn.addEventListener("click", (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const nowOn = !(prob && prob.starred === true);
-                if (prob) {
-                    prob.starred = nowOn;
-                }
-                setStarBtnState(nowOn);
-                dsaToggleProblemImportant(probCtx.parentKey, prob, probCtx.refresh);
-                const hostList = li.closest(".dsa-h-problems-list");
-                const emptyNote = hostList && hostList.parentElement
-                    ? hostList.parentElement.querySelector(".dsa-h-problems-empty")
-                    : null;
-                if (hostList && hostList.dataset.filterMode === "starred" && !nowOn) {
-                    li.remove();
-                    if (emptyNote && hostList.children.length === 0) {
-                        emptyNote.hidden = false;
-                        emptyNote.textContent = "No starred problems yet for this topic.";
-                    }
-                } else if (emptyNote) {
-                    emptyNote.hidden = true;
-                }
-            });
-        }
-        mainRow.appendChild(starBtn);
+        probCtx && probCtx.parentKey && typeof probCtx.refresh === "function";
+    const starBtn = document.createElement("button");
+    starBtn.type = "button";
+    starBtn.className = "dsa-h-prob-star-toggle" + (isStarred ? " dsa-h-prob-star-toggle--on" : "");
+    const setStarBtnState = (on) => {
+        starBtn.classList.toggle("dsa-h-prob-star-toggle--on", !!on);
+        starBtn.setAttribute("aria-pressed", on ? "true" : "false");
+        starBtn.setAttribute("aria-label", on ? "Starred problem. Click to unstar" : "Mark problem as starred");
+        starBtn.title = on ? "Starred (click to unstar)" : "Mark as starred";
+    };
+    setStarBtnState(isStarred);
+    if (!canToggleStar) {
+        starBtn.disabled = true;
     }
+    starBtn.appendChild(dsaSvgIconStar());
+    if (canToggleStar) {
+        starBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const nowOn = !(prob && prob.starred === true);
+            if (prob) {
+                prob.starred = nowOn;
+            }
+            setStarBtnState(nowOn);
+            dsaToggleProblemImportant(probCtx.parentKey, prob, probCtx.refresh);
+            const hostList = li.closest(".dsa-h-problems-list");
+            const emptyNote = hostList && hostList.parentElement
+                ? hostList.parentElement.querySelector(".dsa-h-problems-empty")
+                : null;
+            if (hostList && hostList.dataset.filterMode === "starred" && !nowOn) {
+                li.remove();
+                if (emptyNote && hostList.children.length === 0) {
+                    emptyNote.hidden = false;
+                    emptyNote.textContent = "No starred problems yet for this topic.";
+                }
+            } else if (emptyNote) {
+                emptyNote.hidden = true;
+            }
+        });
+    }
+    prefix.appendChild(starBtn);
+
+    mainRow.appendChild(prefix);
 
     const a = document.createElement("a");
     a.className = "dsa-h-problem-link";
@@ -3985,6 +4035,8 @@ function buildProblemListItem(prob, probCtx) {
         probCtx.parentKey &&
         typeof probCtx.refresh === "function";
 
+    /* Edit + Delete buttons (admin only) — built here, appended later inside the mod-bar of the extras wrap. */
+    let adminEditBtns = null;
     if (adminEdit) {
         const openOpts = {
             editQuestionName: prob && prob.name ? String(prob.name) : "",
@@ -3992,23 +4044,28 @@ function buildProblemListItem(prob, probCtx) {
         };
         const btnEdit = document.createElement("button");
         btnEdit.type = "button";
-        btnEdit.className = "dsa-h-prob-edit";
+        btnEdit.className = "dsa-h-prob-toggle dsa-h-prob-toggle--edit";
         btnEdit.setAttribute("aria-label", "Edit problem");
         btnEdit.title = "Edit problem";
-        btnEdit.appendChild(dsaSvgIconPencil());
+        const editIc = document.createElement("span");
+        editIc.className = "dsa-h-prob-toggle-ic";
+        editIc.appendChild(dsaSvgIconPencil());
+        btnEdit.appendChild(editIc);
         btnEdit.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
             dsaOpenCustomizeUnifiedModal(probCtx.parentKey, probCtx.refresh, openOpts);
         });
-        mainRow.appendChild(btnEdit);
 
         const btnDel = document.createElement("button");
         btnDel.type = "button";
-        btnDel.className = "dsa-h-prob-delete";
+        btnDel.className = "dsa-h-prob-toggle dsa-h-prob-toggle--delete";
         btnDel.setAttribute("aria-label", "Remove problem from this topic");
         btnDel.title = "Remove this problem from the map (asks for confirmation)";
-        btnDel.appendChild(dsaSvgIconTrashBin());
+        const delIc = document.createElement("span");
+        delIc.className = "dsa-h-prob-toggle-ic";
+        delIc.appendChild(dsaSvgIconTrashBin());
+        btnDel.appendChild(delIc);
         btnDel.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -4029,14 +4086,13 @@ function buildProblemListItem(prob, probCtx) {
             probCtx.refresh();
             void dsaFlushDsaCmsSync();
         });
-        mainRow.appendChild(btnDel);
+        adminEditBtns = { btnEdit, btnDel };
     }
 
     const readerExtras =
         probCtx &&
         probCtx.parentKey &&
-        !adminEdit &&
-        (probCtx.viewExtras === true || probCtx.isAdmin === false);
+        (probCtx.viewExtras === true || probCtx.isAdmin === false || adminEdit);
 
     const solutionVideoUrlRaw =
         prob && prob.solutionVideoUrl ? String(prob.solutionVideoUrl).trim() : "";
@@ -4103,9 +4159,6 @@ function buildProblemListItem(prob, probCtx) {
             }
         }
         if (!raw) {
-            return;
-        }
-        if (adminEdit) {
             return;
         }
         const btn = document.createElement("button");
@@ -4188,7 +4241,8 @@ function buildProblemListItem(prob, probCtx) {
         reveal.appendChild(pane);
     });
 
-    if (readerExtras && bar.children.length > 0) {
+    const hasExtrasContent = bar.children.length > 0 || adminEditBtns;
+    if (readerExtras && hasExtrasContent) {
         dsaInstallProbExtrasOutsideClose();
         const wrap = document.createElement("div");
         wrap.className = "dsa-h-prob-extras-wrap";
@@ -4259,6 +4313,14 @@ function buildProblemListItem(prob, probCtx) {
         eyeCluster.appendChild(btnEye);
         wrap.appendChild(eyeCluster);
         wrap.appendChild(bar);
+        if (adminEditBtns) {
+            const modBar = document.createElement("div");
+            modBar.className = "dsa-h-prob-mod-bar";
+            modBar.setAttribute("role", "toolbar");
+            modBar.appendChild(adminEditBtns.btnEdit);
+            modBar.appendChild(adminEditBtns.btnDel);
+            wrap.appendChild(modBar);
+        }
         mainRow.appendChild(wrap);
         li.appendChild(mainRow);
         li.appendChild(reveal);
@@ -4362,6 +4424,7 @@ function buildTreeNode(node, depth, panel, scheduleRedraw, theme, ctx) {
             ? {
                   customize: true,
                   pathKey: `${pathKey}::${ch.name}`,
+                  parentName: node && node.name ? String(node.name) : "",
                   refresh: ctx.refresh,
                   isAdmin: ctx.isAdmin,
               }
@@ -4369,6 +4432,7 @@ function buildTreeNode(node, depth, panel, scheduleRedraw, theme, ctx) {
               ? {
                     viewExtras: true,
                     pathKey: `${pathKey}::${ch.name}`,
+                    parentName: node && node.name ? String(node.name) : "",
                     refresh: ctx.refresh,
                 }
               : null;
@@ -4397,9 +4461,9 @@ function buildTreeNode(node, depth, panel, scheduleRedraw, theme, ctx) {
             ul.className = "dsa-h-problems-list dsa-h-problems-list--branch";
             dsaSortProblemsByDifficulty(node.problems).forEach((prob) => {
                 const probCtx = cuz
-                    ? { parentKey: pathKey, refresh: ctx.refresh, isAdmin: ctx.isAdmin }
+                    ? { parentKey: pathKey, refresh: ctx.refresh, isAdmin: ctx.isAdmin, topicNode: node }
                     : ve
-                      ? { viewExtras: true, parentKey: pathKey, refresh: ctx.refresh }
+                      ? { viewExtras: true, parentKey: pathKey, refresh: ctx.refresh, topicNode: node }
                       : null;
                 ul.appendChild(buildProblemListItem(prob, probCtx));
             });
@@ -4513,9 +4577,39 @@ function buildTreeNode(node, depth, panel, scheduleRedraw, theme, ctx) {
         card.className = "dsa-h-problems-card";
         const cardHead = document.createElement("div");
         cardHead.className = "dsa-h-problems-card-head";
+
+        const cardHeadIcon = document.createElement("div");
+        cardHeadIcon.className = "dsa-h-problems-card-head-icon";
+        cardHeadIcon.setAttribute("aria-hidden", "true");
+        cardHeadIcon.appendChild(dsaSvgIconBrain());
+
+        const cardHeadText = document.createElement("div");
+        cardHeadText.className = "dsa-h-problems-card-head-text";
+
         const cardTitle = document.createElement("div");
         cardTitle.className = "dsa-h-problems-card-title";
-        cardTitle.textContent = "Practice problems";
+        cardTitle.textContent = "Practice Problems";
+        cardHeadText.appendChild(cardTitle);
+
+        const cardSubtitle = document.createElement("div");
+        cardSubtitle.className = "dsa-h-problems-card-subtitle";
+        const parentNameForSubtitle =
+            ctx && ctx.parentName && String(ctx.parentName).trim()
+                ? String(ctx.parentName).trim()
+                : node && node.name
+                  ? String(node.name).trim()
+                  : "";
+        const cardSubtitleParent = document.createElement("span");
+        cardSubtitleParent.className = "dsa-h-problems-card-subtitle-parent";
+        cardSubtitleParent.textContent = parentNameForSubtitle;
+        cardSubtitle.appendChild(cardSubtitleParent);
+
+        const cardProgressChip = document.createElement("span");
+        cardProgressChip.className = "dsa-h-problems-card-progress-chip";
+        const initialProgressStats = dsaCollectTreeNodeProblemStats(node);
+        cardProgressChip.textContent = `${initialProgressStats.done}/${initialProgressStats.total}`;
+        cardSubtitle.appendChild(cardProgressChip);
+        cardHeadText.appendChild(cardSubtitle);
 
         const cardActions = document.createElement("div");
         cardActions.className = "dsa-h-problems-card-actions";
@@ -4615,7 +4709,8 @@ function buildTreeNode(node, depth, panel, scheduleRedraw, theme, ctx) {
             cardActions.insertBefore(btnDelAll, btnCloseCard);
         }
 
-        cardHead.appendChild(cardTitle);
+        cardHead.appendChild(cardHeadIcon);
+        cardHead.appendChild(cardHeadText);
         cardHead.appendChild(cardActions);
         card.appendChild(cardHead);
         const filterTabs = document.createElement("div");
@@ -4716,9 +4811,9 @@ function buildTreeNode(node, depth, panel, scheduleRedraw, theme, ctx) {
         emptyListNote.hidden = true;
         const allSortedProblems = dsaSortProblemsByDifficulty(node.problems || []);
         const probCtx = cuz
-            ? { parentKey: pathKey, refresh: ctx.refresh, isAdmin: ctx.isAdmin }
+            ? { parentKey: pathKey, refresh: ctx.refresh, isAdmin: ctx.isAdmin, topicNode: node }
             : ve
-              ? { viewExtras: true, parentKey: pathKey, refresh: ctx.refresh }
+              ? { viewExtras: true, parentKey: pathKey, refresh: ctx.refresh, topicNode: node }
               : null;
         function renderProblemListForFilter(mode) {
             activeFilterMode = mode === "all" ? "all" : "important";
@@ -5075,6 +5170,7 @@ function buildUnifiedMindmapTree(panel, scheduleRedraw, customizeCtx, graphRefre
             ? {
                   customize: true,
                   pathKey,
+                  parentName: metaRootLabel,
                   refresh: customizeCtx.refresh,
                   isDsRoot: !soloRoot,
                   isAdmin: customizeCtx.isAdmin,
@@ -5082,6 +5178,7 @@ function buildUnifiedMindmapTree(panel, scheduleRedraw, customizeCtx, graphRefre
             : {
                   viewExtras: true,
                   pathKey,
+                  parentName: metaRootLabel,
                   refresh: graphRefreshForView,
                   isDsRoot: !soloRoot,
               };

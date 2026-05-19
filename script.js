@@ -5320,10 +5320,6 @@ function buildTreeNode(node, depth, panel, scheduleRedraw, theme, ctx) {
             toolsToggleBtn.classList.toggle("dsa-h-problems-tools-tab--open", toolsUiOpen);
             toolsToggleBtn.setAttribute("aria-expanded", toolsUiOpen ? "true" : "false");
             toolsToggleBtn.title = toolsUiOpen ? "Hide search and filter" : "Search and filter";
-            if (toolsUiOpen) {
-                searchInputEl.focus();
-                searchInputEl.select();
-            }
             renderProblemListForFilter(activeFilterMode);
         });
         searchInputEl.addEventListener("input", () => {

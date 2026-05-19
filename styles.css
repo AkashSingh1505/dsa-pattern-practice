@@ -4855,12 +4855,12 @@ label.dsa-h-prob-done {
     flex-shrink: 0;
     width: 22px;
     height: 22px;
-    border-radius: 4px;
-    background: #f3f4f6;
+    border-radius: 0;
+    background: transparent;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    overflow: visible;
     box-sizing: border-box;
 }
 
@@ -4869,7 +4869,8 @@ label.dsa-h-prob-done {
     height: 22px;
     display: block;
     object-fit: contain;
-    border-radius: 4px;
+    border-radius: 0;
+    background: transparent;
 }
 
 .dsa-h-problem-link-text {
@@ -7783,22 +7784,25 @@ body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
     width: 18px !important;
     height: 18px !important;
     background: transparent !important;
-    border-radius: 5px !important;
-    overflow: hidden !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
     flex-shrink: 0 !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
     padding: 0 !important;
     margin: 0 !important;
+    box-shadow: none !important;
 }
 
 .dsa-h-problems-card .dsa-h-platform-icon .dsa-h-platform-icon-img {
     width: 18px !important;
     height: 18px !important;
-    border-radius: 5px !important;
+    border-radius: 0 !important;
     display: block !important;
     object-fit: contain !important;
+    background: transparent !important;
+    box-shadow: none !important;
 }
 
 .dsa-h-problems-card .dsa-h-problem-link-text {

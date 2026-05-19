@@ -2582,10 +2582,10 @@ function getDsaScriptBaseDir() {
     return _dsaScriptBaseDir;
 }
 
-/** Local `res/dsa-platforms/*.svg` — no remote fetch; icons ship with the site. */
+/** Local `res/dsa-platforms/*` — bundled PNG/SVG logos, no remote fetch. */
 function dsaStaticPlatformIconUrl(filename) {
     const path = `res/dsa-platforms/${filename}`;
-    const qs = "v=5";
+    const qs = "v=6";
     const dir = getDsaScriptBaseDir();
     if (dir) {
         try {
@@ -2598,8 +2598,8 @@ function dsaStaticPlatformIconUrl(filename) {
 }
 
 /**
- * Map problem URL → bundled brand SVG under `res/dsa-platforms/`.
- * LeetCode, GeeksforGeeks, Coding Ninjas; empty/unknown → link.svg.
+ * Map problem URL → bundled logo PNG under `res/dsa-platforms/`.
+ * LeetCode (black mark), GeeksforGeeks, Coding Ninjas; empty/unknown → link.svg.
  */
 function dsaStaticPlatformIconFilename(url) {
     const normalized = dsaNormalizeProblemUrlForPlatform(String(url || "").trim());
@@ -2611,17 +2611,17 @@ function dsaStaticPlatformIconFilename(url) {
 
     if (host) {
         if (dsaHostEndsWithSuffix(host, "leetcode.cn") || dsaHostEndsWithSuffix(host, "leetcode.com")) {
-            return "leetcode.svg";
+            return "leetcode.png";
         }
         if (dsaHostEndsWithSuffix(host, "geeksforgeeks.org")) {
-            return "gfg.svg";
+            return "gfg.png";
         }
         if (dsaHostEndsWithSuffix(host, "codingninjas.com")) {
-            return "codingninjas.svg";
+            return "codingninjas.png";
         }
     }
     if (s.includes("leetcode.cn") || s.includes("leetcode.com") || /\bleetcode\b/.test(s)) {
-        return "leetcode.svg";
+        return "leetcode.png";
     }
     if (
         s.includes("codingninjas.com") ||
@@ -2630,10 +2630,10 @@ function dsaStaticPlatformIconFilename(url) {
         s.includes("coding.ninjas") ||
         (s.includes("naukri.com") && s.includes("code360"))
     ) {
-        return "codingninjas.svg";
+        return "codingninjas.png";
     }
     if (s.includes("geeksforgeeks.org") || s.includes("geeksforgeeks")) {
-        return "gfg.svg";
+        return "gfg.png";
     }
     return "link.svg";
 }
@@ -3144,7 +3144,7 @@ function dsaHighlightProbSolutionCode(preEl) {
 }
 
 /**
- * Bundled brand mark from `res/dsa-platforms/*.svg` (LeetCode, GfG, Coding Ninjas, link fallback).
+ * Bundled brand mark from `res/dsa-platforms/` (PNG logos; link.svg fallback).
  * Do not use `loading="lazy"`: rows in collapsed subtrees may never load lazy images.
  */
 function dsaBuildPlatformIconWrap(url, opts = {}) {

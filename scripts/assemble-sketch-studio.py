@@ -38,6 +38,7 @@ function dsaWireSketchEditorStudioStub() {
             return false;
         },
         syncHasInkFromPixels() {},
+        flushForPersist() {},
         exitFullscreen() {},
         isFullscreen() {
             return false;
@@ -55,7 +56,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     if (!document.head.querySelector("link[data-dsa-sketch-studio-css]")) {
         const lk = document.createElement("link");
         lk.rel = "stylesheet";
-        lk.href = "./dsa-sketch-studio.css?v=23";
+        lk.href = "./dsa-sketch-studio.css?v=24";
         lk.dataset.dsaSketchStudioCss = "1";
         document.head.appendChild(lk);
     }

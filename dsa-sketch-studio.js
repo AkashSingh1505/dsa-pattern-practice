@@ -27,6 +27,7 @@ function dsaWireSketchEditorStudioStub() {
             return false;
         },
         syncHasInkFromPixels() {},
+        flushForPersist() {},
         exitFullscreen() {},
         isFullscreen() {
             return false;
@@ -44,7 +45,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     if (!document.head.querySelector("link[data-dsa-sketch-studio-css]")) {
         const lk = document.createElement("link");
         lk.rel = "stylesheet";
-        lk.href = "./dsa-sketch-studio.css?v=23";
+        lk.href = "./dsa-sketch-studio.css?v=24";
         lk.dataset.dsaSketchStudioCss = "1";
         document.head.appendChild(lk);
     }
@@ -316,7 +317,36 @@ function notifyChange() {
 }
 
 function getHasInk() {
-  return state.paths.length > 0;
+  return (
+    state.paths.length > 0 ||
+    !!(state.currentPath && state.currentPath.points && state.currentPath.points.length > 0)
+  );
+}
+
+function commitOpenStroke() {
+  if (!state.currentPath || !state.currentPath.points || !state.currentPath.points.length) {
+    state.currentPath = null;
+    state.drawing = false;
+    return;
+  }
+  if (state.currentPath.points.length < 2) {
+    const p0 = state.currentPath.points[0];
+    state.currentPath.points.push({ x: p0.x + 0.5, y: p0.y + 0.5 });
+  }
+  state.paths.push(state.currentPath);
+  state.redoStack = [];
+  state.currentPath = null;
+  state.drawing = false;
+  updateUndoRedo();
+  syncInkFlag();
+}
+
+function flushForPersist() {
+  if (textOverlay && textOverlay.classList.contains('show')) confirmText();
+  if (tableOverlay && tableOverlay.classList.contains('show')) confirmTable();
+  if (imageOverlay && imageOverlay.classList.contains('show')) confirmImage();
+  commitOpenStroke();
+  redrawAll();
 }
 
 function syncInkFlag() {
@@ -341,7 +371,18 @@ function isNativeFullscreen() {
   return el === editorRoot || (el && editorRoot.contains(el));
 }
 
+/** Safari/iOS native fullscreen adds gesture chrome and overlaps toolbar — use CSS overlay only. */
+function useCssFullscreenOnly() {
+  const ua = navigator.userAgent || '';
+  const isIOS =
+    /iPad|iPhone|iPod/i.test(ua) ||
+    (navigator.platform === 'MacIntel' && (navigator.maxTouchPoints || 0) > 1);
+  const isSafari = /Safari/i.test(ua) && !/Chrome|CriOS|Chromium|Edg|OPR|Firefox/i.test(ua);
+  return isIOS || isSafari;
+}
+
 function requestNativeFullscreen() {
+  if (useCssFullscreenOnly()) return;
   const req =
     editorRoot.requestFullscreen ||
     editorRoot.webkitRequestFullscreen ||
@@ -352,6 +393,7 @@ function requestNativeFullscreen() {
 }
 
 function exitNativeFullscreen() {
+  if (useCssFullscreenOnly()) return;
   const ex = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
   if (ex && isNativeFullscreen()) {
     Promise.resolve(ex.call(document)).catch(() => {});
@@ -473,6 +515,7 @@ function addL(target, type, fn, opts) {
 
 
 function exportRenderedCanvas() {
+  commitOpenStroke();
   const tmp = document.createElement('canvas');
   tmp.width = canvas.width;
   tmp.height = canvas.height;
@@ -497,49 +540,9 @@ function exportRenderedCanvas() {
   }
   state.paths.forEach((p) => {
     tctx.save();
-    if (p.type === 'image' && p.img) {
-      tctx.drawImage(p.img, p.x, p.y, p.w, p.h);
-    } else if (p.type === 'table') {
-      tctx.strokeStyle = p.color || '#1c1c1e';
-      tctx.lineWidth = p.size || 2;
-      tctx.lineCap = 'square';
-      tctx.strokeRect(p.x, p.y, p.w, p.h);
-      for (let i = 1; i < p.cols; i++) {
-        const x = p.x + (p.w / p.cols) * i;
-        tctx.beginPath();
-        tctx.moveTo(x, p.y);
-        tctx.lineTo(x, p.y + p.h);
-        tctx.stroke();
-      }
-      for (let i = 1; i < p.rows; i++) {
-        const y = p.y + (p.h / p.rows) * i;
-        tctx.beginPath();
-        tctx.moveTo(p.x, y);
-        tctx.lineTo(p.x + p.w, y);
-        tctx.stroke();
-      }
-    } else if (p.type === 'text') {
-      tctx.font = `${p.fontSize}px -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif`;
-      tctx.fillStyle = p.color;
-      tctx.textBaseline = 'top';
-      const lines = p.text.split('\\n');
-      lines.forEach((line, i) => tctx.fillText(line, p.x, p.y + i * p.fontSize * 1.35));
-    } else if (p.brush === 'shape') {
-      applyStyle(p);
-      drawShape(p);
-    } else {
-      applyStyle(p);
-      strokePath(p.points);
-    }
+    drawPathOn(tctx, p);
     tctx.restore();
   });
-  if (state.currentPath) {
-    tctx.save();
-    applyStyle(state.currentPath);
-    if (state.currentPath.brush === 'shape') drawShape(state.currentPath);
-    else strokePath(state.currentPath.points);
-    tctx.restore();
-  }
   return tmp;
 }
 
@@ -659,91 +662,129 @@ function endDraw() {
   if (roBool()) { state.drawing = false; return; }
   if (state.laser) { endLaserStroke(); return; }
   if (!state.drawing) return;
-  state.drawing = false;
-  if (state.currentPath && state.currentPath.points.length > 1) {
-    state.paths.push(state.currentPath);
-    state.redoStack = [];
-    updateUndoRedo();
-    syncInkFlag();
-  }
-  state.currentPath = null;
+  commitOpenStroke();
 }
 
-function applyStyle(p) {
-  ctx.globalCompositeOperation = 'source-over';
-  ctx.globalAlpha = p.opacity;
-  ctx.strokeStyle = p.color;
-  ctx.lineWidth = p.size * 2;
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
+function applyStyleOn(c, p) {
+  c.globalCompositeOperation = 'source-over';
+  c.globalAlpha = p.opacity;
+  c.strokeStyle = p.color;
+  c.lineWidth = p.size * 2;
+  c.lineCap = 'round';
+  c.lineJoin = 'round';
   if (p.brush === 'highlighter') {
-    ctx.globalAlpha = Math.min(p.opacity * 0.4, 0.4);
-    ctx.lineWidth = p.size * 7;
-    ctx.lineCap = 'butt';
-  }  else if (p.brush === 'pencil') {
-  ctx.globalAlpha = p.opacity;
-  ctx.strokeStyle = getPencilPattern(p.color);
-  ctx.lineWidth = p.size * 2.2;
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-} else if (p.brush === 'eraser') {
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.lineWidth = p.size * 5;
-    ctx.globalAlpha = 1;
+    c.globalAlpha = Math.min(p.opacity * 0.4, 0.4);
+    c.lineWidth = p.size * 7;
+    c.lineCap = 'butt';
+  } else if (p.brush === 'pencil') {
+    c.globalAlpha = p.opacity;
+    c.strokeStyle = getPencilPattern(p.color);
+    c.lineWidth = p.size * 2.2;
+    c.lineCap = 'round';
+    c.lineJoin = 'round';
+  } else if (p.brush === 'eraser') {
+    c.globalCompositeOperation = 'destination-out';
+    c.lineWidth = p.size * 5;
+    c.globalAlpha = 1;
   }
+}
+function applyStyle(p) {
+  applyStyleOn(ctx, p);
+}
+function strokePathOn(c, pts) {
+  if (pts.length < 2) return;
+  c.beginPath();
+  c.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length - 1; i++) {
+    const xc = (pts[i].x + pts[i + 1].x) / 2;
+    const yc = (pts[i].y + pts[i + 1].y) / 2;
+    c.quadraticCurveTo(pts[i].x, pts[i].y, xc, yc);
+  }
+  c.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
+  c.stroke();
 }
 function strokePath(pts) {
-  if (pts.length < 2) return;
-  ctx.beginPath();
-  ctx.moveTo(pts[0].x, pts[0].y);
-  for (let i = 1; i < pts.length - 1; i++) {
-    const xc = (pts[i].x + pts[i+1].x) / 2;
-    const yc = (pts[i].y + pts[i+1].y) / 2;
-    ctx.quadraticCurveTo(pts[i].x, pts[i].y, xc, yc);
+  strokePathOn(ctx, pts);
+}
+function drawShapeOn(c, p) {
+  if (p.points.length < 2) return;
+  const a = p.points[0];
+  const b = p.points[p.points.length - 1];
+  c.beginPath();
+  if (p.shape === 'rectangle') {
+    c.rect(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.abs(b.x - a.x), Math.abs(b.y - a.y));
+  } else if (p.shape === 'circle') {
+    c.ellipse((a.x + b.x) / 2, (a.y + b.y) / 2, Math.abs(b.x - a.x) / 2, Math.abs(b.y - a.y) / 2, 0, 0, Math.PI * 2);
+  } else if (p.shape === 'triangle') {
+    c.moveTo((a.x + b.x) / 2, a.y);
+    c.lineTo(a.x, b.y);
+    c.lineTo(b.x, b.y);
+    c.closePath();
+  } else if (p.shape === 'line') {
+    c.moveTo(a.x, a.y);
+    c.lineTo(b.x, b.y);
+  } else if (p.shape === 'arrow') {
+    c.moveTo(a.x, a.y);
+    c.lineTo(b.x, b.y);
+    const ang = Math.atan2(b.y - a.y, b.x - a.x);
+    const len = Math.max(14, p.size * 4);
+    c.moveTo(b.x, b.y);
+    c.lineTo(b.x - len * Math.cos(ang - Math.PI / 6), b.y - len * Math.sin(ang - Math.PI / 6));
+    c.moveTo(b.x, b.y);
+    c.lineTo(b.x - len * Math.cos(ang + Math.PI / 6), b.y - len * Math.sin(ang + Math.PI / 6));
   }
-  ctx.lineTo(pts[pts.length-1].x, pts[pts.length-1].y);
-  ctx.stroke();
+  c.stroke();
 }
 function drawShape(p) {
-  if (p.points.length < 2) return;
-  const a = p.points[0], b = p.points[p.points.length - 1];
-  ctx.beginPath();
-  if (p.shape === 'rectangle') ctx.rect(Math.min(a.x,b.x), Math.min(a.y,b.y), Math.abs(b.x-a.x), Math.abs(b.y-a.y));
-  else if (p.shape === 'circle') {
-    ctx.ellipse((a.x+b.x)/2, (a.y+b.y)/2, Math.abs(b.x-a.x)/2, Math.abs(b.y-a.y)/2, 0, 0, Math.PI*2);
-  } else if (p.shape === 'triangle') {
-    ctx.moveTo((a.x+b.x)/2, a.y); ctx.lineTo(a.x, b.y); ctx.lineTo(b.x, b.y); ctx.closePath();
-  } else if (p.shape === 'line') {
-    ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
-  } else if (p.shape === 'arrow') {
-    ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
-    const ang = Math.atan2(b.y-a.y, b.x-a.x);
-    const len = Math.max(14, p.size*4);
-    ctx.moveTo(b.x, b.y); ctx.lineTo(b.x-len*Math.cos(ang-Math.PI/6), b.y-len*Math.sin(ang-Math.PI/6));
-    ctx.moveTo(b.x, b.y); ctx.lineTo(b.x-len*Math.cos(ang+Math.PI/6), b.y-len*Math.sin(ang+Math.PI/6));
-  }
-  ctx.stroke();
+  drawShapeOn(ctx, p);
 }
-function drawTable(p) {
-  ctx.strokeStyle = p.color || '#1c1c1e';
-  ctx.lineWidth = p.size || 2;
-  ctx.lineCap = 'square';
-  ctx.strokeRect(p.x, p.y, p.w, p.h);
+function drawTableOn(c, p) {
+  c.strokeStyle = p.color || '#1c1c1e';
+  c.lineWidth = p.size || 2;
+  c.lineCap = 'square';
+  c.strokeRect(p.x, p.y, p.w, p.h);
   for (let i = 1; i < p.cols; i++) {
     const x = p.x + (p.w / p.cols) * i;
-    ctx.beginPath(); ctx.moveTo(x, p.y); ctx.lineTo(x, p.y + p.h); ctx.stroke();
+    c.beginPath();
+    c.moveTo(x, p.y);
+    c.lineTo(x, p.y + p.h);
+    c.stroke();
   }
   for (let i = 1; i < p.rows; i++) {
     const y = p.y + (p.h / p.rows) * i;
-    ctx.beginPath(); ctx.moveTo(p.x, y); ctx.lineTo(p.x + p.w, y); ctx.stroke();
+    c.beginPath();
+    c.moveTo(p.x, y);
+    c.lineTo(p.x + p.w, y);
+    c.stroke();
   }
 }
-function drawText(p) {
-  ctx.font = `${p.fontSize}px -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif`;
-  ctx.fillStyle = p.color;
-  ctx.textBaseline = 'top';
+function drawTable(p) {
+  drawTableOn(ctx, p);
+}
+function drawTextOn(c, p) {
+  c.font = `${p.fontSize}px -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif`;
+  c.fillStyle = p.color;
+  c.textBaseline = 'top';
   const lines = p.text.split('\n');
-  lines.forEach((line, i) => ctx.fillText(line, p.x, p.y + i * p.fontSize * 1.35));
+  lines.forEach((line, i) => c.fillText(line, p.x, p.y + i * p.fontSize * 1.35));
+}
+function drawText(p) {
+  drawTextOn(ctx, p);
+}
+function drawPathOn(c, p) {
+  if (p.type === 'image' && p.img) {
+    c.drawImage(p.img, p.x, p.y, p.w, p.h);
+  } else if (p.type === 'table') {
+    drawTableOn(c, p);
+  } else if (p.type === 'text') {
+    drawTextOn(c, p);
+  } else if (p.brush === 'shape') {
+    applyStyleOn(c, p);
+    drawShapeOn(c, p);
+  } else if (p.points && p.points.length) {
+    applyStyleOn(c, p);
+    strokePathOn(c, p.points);
+  }
 }
 function drawIncremental() {
   redrawAll();
@@ -761,14 +802,9 @@ function redrawAll() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   
   ctx.restore();
-  state.paths.forEach(p => {
+  state.paths.forEach((p) => {
     ctx.save();
- if (p.type === 'image') {
-    ctx.drawImage(p.img, p.x, p.y, p.w, p.h);
-  } else if (p.type === 'table') drawTable(p);
-    else if (p.type === 'text') drawText(p);
-    else if (p.brush === 'shape') { applyStyle(p); drawShape(p); }
-    else { applyStyle(p); strokePath(p.points); }
+    drawPathOn(ctx, p);
     ctx.restore();
   });
 }
@@ -1853,6 +1889,9 @@ const api = {
   },
   syncHasInkFromPixels() {
     syncInkFlag();
+  },
+  flushForPersist() {
+    flushForPersist();
   },
   exitFullscreen() {
     exitFullscreen();

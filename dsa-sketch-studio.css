@@ -17,12 +17,18 @@
     position: fixed !important;
     inset: 0;
     width: 100vw;
+    height: 100dvh;
     height: 100vh;
     max-width: none;
     z-index: 600020;
     background: #fff;
     display: flex;
     flex-direction: column;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-sizing: border-box;
 }
 
 .dsa-sketch-studio-host--fullscreen.dsa-sketch-studio-mount {
@@ -302,44 +308,47 @@
 
 /* iPad/PC top bar: [ back | tools centered | undo·menu·min·done ] */
 .dsa-sketch-studio-mount.device-pc .top-toolbar {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
+    display: flex;
     align-items: center;
-    justify-content: stretch;
+    justify-content: space-between;
+    position: relative;
 }
 
 .dsa-sketch-studio-mount.device-pc #dsaSkBackBtn {
-    grid-column: 1;
-    justify-self: start;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 7;
 }
 
 .dsa-sketch-studio-mount.device-pc .top-tools-tab {
     display: flex;
-    grid-column: 2;
-    justify-self: center;
-    position: static;
-    left: auto;
-    top: auto;
-    transform: none;
-    z-index: 5;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 6;
+    margin: 0;
 }
 
 .dsa-sketch-studio-mount.device-pc .toolbar-right {
-    grid-column: 3;
-    justify-self: end;
+    margin-left: auto;
     display: flex;
     align-items: center;
     flex-wrap: nowrap;
     gap: 8px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 7;
 }
 
-/* Minimized (no back): empty left · tools center · controls right */
-.dsa-sketch-studio-mount.device-pc.dsa-sk-back-hidden .top-toolbar,
-.dsa-sketch-studio-mount.device-pc .sketch-studio.minimized .top-toolbar {
-    grid-template-columns: 1fr auto 1fr;
+.dsa-sketch-studio-host--fullscreen.device-pc .top-toolbar {
+    padding-top: max(18px, calc(env(safe-area-inset-top, 0px) + 10px));
+    padding-left: max(22px, calc(env(safe-area-inset-left, 0px) + 12px));
+    padding-right: max(22px, calc(env(safe-area-inset-right, 0px) + 12px));
 }
 
-.dsa-sketch-studio-mount.device-pc.dsa-sk-back-hidden #dsaSkBackBtn {
+.dsa-sketch-studio-mount.device-pc.dsa-sk-back-hidden #dsaSkBackBtn,
+.dsa-sketch-studio-mount.device-pc .sketch-studio.minimized #dsaSkBackBtn {
     display: none !important;
 }
 

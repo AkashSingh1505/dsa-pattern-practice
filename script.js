@@ -6147,6 +6147,7 @@ function dsaStubSketchApi() {
             return false;
         },
         syncHasInkFromPixels() {},
+        flushForPersist() {},
         exitFullscreen() {},
         isFullscreen() {
             return false;
@@ -6988,15 +6989,17 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     /** JPEG data URL for problem save — always wires editor if the sketch panel was used. */
     function collectSketchDrawingPayload(lookupNameOverride) {
         ensureSketchEditor();
-        if (typeof scratchApi.syncHasInkFromPixels === "function") {
-            scratchApi.syncHasInkFromPixels();
-        }
         if (userClearedSketch) {
             return "";
         }
         let drawingPayload = "";
         if (sketchEditorWired) {
             try {
+                if (typeof scratchApi.flushForPersist === "function") {
+                    scratchApi.flushForPersist();
+                } else if (typeof scratchApi.syncHasInkFromPixels === "function") {
+                    scratchApi.syncHasInkFromPixels();
+                }
                 const hasInk = typeof scratchApi.getHasInk === "function" && scratchApi.getHasInk();
                 if (hasInk) {
                     drawingPayload =

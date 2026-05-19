@@ -1086,10 +1086,13 @@ body > .dsa-sol-pro-toast {
     display: none;
 }
 
+/* Panel is layout-only; studio (#dsaSkStudio) provides the visible chrome */
 .graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel {
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
     min-height: 520px;
     display: flex;
     flex-direction: column;
@@ -1101,6 +1104,14 @@ body > .dsa-sol-pro-toast {
     flex-direction: column;
     min-height: 0;
     width: 100%;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel > .dsa-sketch-studio-host > .sketch-studio {
+    flex: 1;
+    min-height: 420px;
 }
 
 .graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel[hidden] {

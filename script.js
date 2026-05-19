@@ -3526,6 +3526,187 @@ function dsaSvgIconClose() {
     return svg;
 }
 
+/**
+ * Practice-problems card icons — exact paths from the design mockup.
+ * Centralised so every card surface (header, tabs, problem rows, toggles, panes) shares the same iconography.
+ */
+function dsaCardIcon(name) {
+    const NS = "http://www.w3.org/2000/svg";
+    function svgEl(opts) {
+        const o = opts || {};
+        const s = document.createElementNS(NS, "svg");
+        s.setAttribute("width", String(o.size || 14));
+        s.setAttribute("height", String(o.size || 14));
+        s.setAttribute("viewBox", o.viewBox || "0 0 24 24");
+        s.setAttribute("fill", o.fill || "none");
+        if (!o.fill || o.fill === "none") {
+            s.setAttribute("stroke", "currentColor");
+            s.setAttribute("stroke-width", String(o.strokeWidth || 2));
+            s.setAttribute("stroke-linecap", "round");
+            s.setAttribute("stroke-linejoin", "round");
+        }
+        s.setAttribute("aria-hidden", "true");
+        return s;
+    }
+    function addPath(s, d) {
+        const p = document.createElementNS(NS, "path");
+        p.setAttribute("d", d);
+        s.appendChild(p);
+    }
+    function addPoly(s, pts) {
+        const p = document.createElementNS(NS, "polygon");
+        p.setAttribute("points", pts);
+        s.appendChild(p);
+    }
+    function addPolyline(s, pts) {
+        const p = document.createElementNS(NS, "polyline");
+        p.setAttribute("points", pts);
+        s.appendChild(p);
+    }
+    function addLine(s, x1, y1, x2, y2) {
+        const l = document.createElementNS(NS, "line");
+        l.setAttribute("x1", String(x1));
+        l.setAttribute("y1", String(y1));
+        l.setAttribute("x2", String(x2));
+        l.setAttribute("y2", String(y2));
+        s.appendChild(l);
+    }
+    function addCircle(s, cx, cy, r) {
+        const c = document.createElementNS(NS, "circle");
+        c.setAttribute("cx", String(cx));
+        c.setAttribute("cy", String(cy));
+        c.setAttribute("r", String(r));
+        s.appendChild(c);
+    }
+    function addRect(s, x, y, w, h, rx) {
+        const r = document.createElementNS(NS, "rect");
+        r.setAttribute("x", String(x));
+        r.setAttribute("y", String(y));
+        r.setAttribute("width", String(w));
+        r.setAttribute("height", String(h));
+        if (rx != null) {
+            r.setAttribute("rx", String(rx));
+        }
+        s.appendChild(r);
+    }
+
+    if (name === "brain") {
+        const s = svgEl({ size: 20 });
+        addPath(
+            s,
+            "M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z",
+        );
+        addPath(
+            s,
+            "M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z",
+        );
+        return s;
+    }
+    if (name === "star") {
+        const s = svgEl({ size: 16, fill: "currentColor" });
+        addPoly(s, "12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2");
+        return s;
+    }
+    if (name === "starOutline") {
+        const s = svgEl({ size: 16 });
+        addPoly(s, "12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2");
+        return s;
+    }
+    if (name === "search") {
+        const s = svgEl({ size: 14 });
+        addCircle(s, 11, 11, 8);
+        addLine(s, 21, 21, 16.65, 16.65);
+        return s;
+    }
+    if (name === "filter") {
+        const s = svgEl({ size: 14 });
+        addPoly(s, "22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3");
+        return s;
+    }
+    if (name === "trash") {
+        const s = svgEl({ size: 14 });
+        addPolyline(s, "3 6 5 6 21 6");
+        addPath(s, "M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6");
+        addPath(s, "M10 11v6M14 11v6");
+        return s;
+    }
+    if (name === "pencil") {
+        const s = svgEl({ size: 14 });
+        addPath(s, "M12 20h9");
+        addPath(s, "M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z");
+        return s;
+    }
+    if (name === "eye") {
+        const s = svgEl({ size: 14 });
+        addPath(s, "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z");
+        addCircle(s, 12, 12, 3);
+        return s;
+    }
+    if (name === "eyeOff") {
+        const s = svgEl({ size: 14 });
+        addPath(
+            s,
+            "M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24",
+        );
+        addLine(s, 1, 1, 23, 23);
+        return s;
+    }
+    if (name === "youtube") {
+        const s = svgEl({ size: 16, fill: "currentColor" });
+        addPath(
+            s,
+            "M23.498 6.186a2.997 2.997 0 0 0-2.108-2.124C19.55 3.5 12 3.5 12 3.5s-7.55 0-9.39.562A2.997 2.997 0 0 0 .502 6.186C0 8.04 0 12 0 12s0 3.96.502 5.814a2.997 2.997 0 0 0 2.108 2.124C4.45 20.5 12 20.5 12 20.5s7.55 0 9.39-.562a2.997 2.997 0 0 0 2.108-2.124C24 15.96 24 12 24 12s0-3.96-.502-5.814zM9.6 15.6V8.4l6.24 3.6L9.6 15.6z",
+        );
+        return s;
+    }
+    if (name === "bulb") {
+        const s = svgEl({ size: 14 });
+        addPath(s, "M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.74V17h8v-2.26A7 7 0 0 0 12 2z");
+        return s;
+    }
+    if (name === "building") {
+        const s = svgEl({ size: 14 });
+        addRect(s, 4, 2, 16, 20, 2);
+        addPath(
+            s,
+            "M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01",
+        );
+        return s;
+    }
+    if (name === "code") {
+        const s = svgEl({ size: 14 });
+        addPolyline(s, "16 18 22 12 16 6");
+        addPolyline(s, "8 6 2 12 8 18");
+        return s;
+    }
+    if (name === "paperclip") {
+        const s = svgEl({ size: 14 });
+        addPath(
+            s,
+            "M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48",
+        );
+        return s;
+    }
+    if (name === "close") {
+        const s = svgEl({ size: 14, strokeWidth: 2.2 });
+        addLine(s, 18, 6, 6, 18);
+        addLine(s, 6, 6, 18, 18);
+        return s;
+    }
+    if (name === "check") {
+        const s = svgEl({ size: 12, strokeWidth: 3 });
+        addPolyline(s, "20 6 9 17 4 12");
+        return s;
+    }
+    if (name === "inbox") {
+        const s = svgEl({ size: 38, strokeWidth: 1.5 });
+        addPolyline(s, "22 12 16 12 14 15 10 15 8 12 2 12");
+        addPath(s, "M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z");
+        return s;
+    }
+    return svgEl({});
+}
+
 /** Brain icon for the Practice problems card header. */
 function dsaSvgIconBrain() {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -3967,12 +4148,12 @@ function buildProblemListItem(prob, probCtx) {
         starBtn.setAttribute("aria-pressed", on ? "true" : "false");
         starBtn.setAttribute("aria-label", on ? "Starred problem. Click to unstar" : "Mark problem as starred");
         starBtn.title = on ? "Starred (click to unstar)" : "Mark as starred";
+        starBtn.replaceChildren(dsaCardIcon(on ? "star" : "starOutline"));
     };
     setStarBtnState(isStarred);
     if (!canToggleStar) {
         starBtn.disabled = true;
     }
-    starBtn.appendChild(dsaSvgIconStar());
     if (canToggleStar) {
         starBtn.addEventListener("click", (e) => {
             e.preventDefault();
@@ -3991,7 +4172,16 @@ function buildProblemListItem(prob, probCtx) {
                 li.remove();
                 if (emptyNote && hostList.children.length === 0) {
                     emptyNote.hidden = false;
-                    emptyNote.textContent = "No starred problems yet for this topic.";
+                    emptyNote.replaceChildren();
+                    emptyNote.appendChild(dsaCardIcon("inbox"));
+                    const titleEl = document.createElement("div");
+                    titleEl.className = "dsa-h-problems-empty-title";
+                    titleEl.textContent = "No starred problems";
+                    emptyNote.appendChild(titleEl);
+                    const detailEl = document.createElement("div");
+                    detailEl.className = "dsa-h-problems-empty-detail";
+                    detailEl.textContent = "Star problems to see them here.";
+                    emptyNote.appendChild(detailEl);
                 }
             } else if (emptyNote) {
                 emptyNote.hidden = true;
@@ -4049,7 +4239,7 @@ function buildProblemListItem(prob, probCtx) {
         btnEdit.title = "Edit problem";
         const editIc = document.createElement("span");
         editIc.className = "dsa-h-prob-toggle-ic";
-        editIc.appendChild(dsaSvgIconPencil());
+        editIc.appendChild(dsaCardIcon("pencil"));
         btnEdit.appendChild(editIc);
         btnEdit.addEventListener("click", (e) => {
             e.preventDefault();
@@ -4064,7 +4254,7 @@ function buildProblemListItem(prob, probCtx) {
         btnDel.title = "Remove this problem from the map (asks for confirmation)";
         const delIc = document.createElement("span");
         delIc.className = "dsa-h-prob-toggle-ic";
-        delIc.appendChild(dsaSvgIconTrashBin());
+        delIc.appendChild(dsaCardIcon("trash"));
         btnDel.appendChild(delIc);
         btnDel.addEventListener("click", (e) => {
             e.preventDefault();
@@ -4119,7 +4309,7 @@ function buildProblemListItem(prob, probCtx) {
             ? "Video solution (YouTube)"
             : "Video solution";
         probYoutubeLink.appendChild(
-            dsaIsLikelyYoutubeUrl(solutionVideoUrlRaw) ? dsaSvgIconYoutube() : dsaSvgIconExternalVideo(),
+            dsaIsLikelyYoutubeUrl(solutionVideoUrlRaw) ? dsaCardIcon("youtube") : dsaSvgIconExternalVideo(),
         );
     }
 
@@ -4172,10 +4362,16 @@ function buildProblemListItem(prob, probCtx) {
 
         const icWrap = document.createElement("span");
         icWrap.className = "dsa-h-prob-toggle-ic";
-        const setToggleGlyph = (expanded) => {
-            icWrap.replaceChildren(expanded ? dsaProbToggleIconRevealed(key) : dsaProbToggleIconHidden(key));
+        const TOGGLE_ICON_BY_KEY = {
+            hint: "bulb",
+            companies: "building",
+            solution: "code",
+            resources: "paperclip",
         };
-        setToggleGlyph(false);
+        const setToggleGlyph = () => {
+            icWrap.replaceChildren(dsaCardIcon(TOGGLE_ICON_BY_KEY[key] || "code"));
+        };
+        setToggleGlyph();
         btn.appendChild(icWrap);
 
         const pane = document.createElement("div");
@@ -4255,9 +4451,9 @@ function buildProblemListItem(prob, probCtx) {
             const anyPaneOpen = Array.from(bar.querySelectorAll(".dsa-h-prob-toggle")).some(
                 (b) => b.getAttribute("aria-expanded") === "true",
             );
-            const showOpenEye = anyPaneOpen;
-            btnEye.replaceChildren(showOpenEye ? dsaSvgIconEye() : dsaSvgIconEyeOff());
-            btnEye.classList.toggle("dsa-h-prob-eye--all-visible", showOpenEye);
+            const showOpenEye = anyPaneOpen || wrap.classList.contains("dsa-h-prob-extras-wrap--pinned");
+            btnEye.replaceChildren(dsaCardIcon(showOpenEye ? "eye" : "eyeOff"));
+            btnEye.classList.toggle("dsa-h-prob-eye--all-visible", anyPaneOpen);
             if (showOpenEye) {
                 btnEye.setAttribute(
                     "aria-label",
@@ -4581,7 +4777,7 @@ function buildTreeNode(node, depth, panel, scheduleRedraw, theme, ctx) {
         const cardHeadIcon = document.createElement("div");
         cardHeadIcon.className = "dsa-h-problems-card-head-icon";
         cardHeadIcon.setAttribute("aria-hidden", "true");
-        cardHeadIcon.appendChild(dsaSvgIconBrain());
+        cardHeadIcon.appendChild(dsaCardIcon("brain"));
 
         const cardHeadText = document.createElement("div");
         cardHeadText.className = "dsa-h-problems-card-head-text";
@@ -4667,7 +4863,7 @@ function buildTreeNode(node, depth, panel, scheduleRedraw, theme, ctx) {
         btnCloseCard.className = "dsa-h-problems-card-close";
         btnCloseCard.setAttribute("aria-label", "Close practice problems");
         btnCloseCard.title = "Close";
-        btnCloseCard.appendChild(dsaSvgIconClose());
+        btnCloseCard.appendChild(dsaCardIcon("close"));
         btnCloseCard.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -4681,7 +4877,7 @@ function buildTreeNode(node, depth, panel, scheduleRedraw, theme, ctx) {
             btnDelAll.className = "dsa-h-problems-card-delete-all";
             btnDelAll.setAttribute("aria-label", "Delete all practice problems in this list");
             btnDelAll.title = "Remove all problems in this list";
-            btnDelAll.appendChild(dsaSvgIconTrashBin());
+            btnDelAll.appendChild(dsaCardIcon("trash"));
             btnDelAll.addEventListener("click", (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -4729,10 +4925,10 @@ function buildTreeNode(node, depth, panel, scheduleRedraw, theme, ctx) {
         btnImportant.setAttribute("aria-selected", "true");
         const btnImportantIcon = document.createElement("span");
         btnImportantIcon.className = "dsa-h-problems-filter-tab-icon";
-        btnImportantIcon.appendChild(dsaSvgIconStar());
+        btnImportantIcon.appendChild(dsaCardIcon("star"));
         const btnImportantText = document.createElement("span");
         btnImportantText.className = "dsa-h-problems-filter-tab-text";
-        btnImportantText.textContent = "Star";
+        btnImportantText.textContent = "Starred";
         btnImportant.appendChild(btnImportantIcon);
         btnImportant.appendChild(btnImportantText);
         const btnAll = document.createElement("button");
@@ -4741,13 +4937,9 @@ function buildTreeNode(node, depth, panel, scheduleRedraw, theme, ctx) {
         btnAll.setAttribute("aria-label", "Show all problems");
         btnAll.setAttribute("role", "tab");
         btnAll.setAttribute("aria-selected", "false");
-        const btnAllIcon = document.createElement("span");
-        btnAllIcon.className = "dsa-h-problems-filter-tab-icon";
-        btnAllIcon.appendChild(dsaSvgIconListBullets());
         const btnAllText = document.createElement("span");
         btnAllText.className = "dsa-h-problems-filter-tab-text";
         btnAllText.textContent = "All";
-        btnAll.appendChild(btnAllIcon);
         btnAll.appendChild(btnAllText);
         const controlsRow = document.createElement("div");
         controlsRow.className = "dsa-h-problems-controls-row";
@@ -4757,13 +4949,9 @@ function buildTreeNode(node, depth, panel, scheduleRedraw, theme, ctx) {
         toolsToggleBtn.setAttribute("aria-label", "Search and filter problems");
         toolsToggleBtn.setAttribute("aria-expanded", "false");
         toolsToggleBtn.title = "Search and filter";
-        const toolsSearchIcon = document.createElement("span");
-        toolsSearchIcon.className = "dsa-h-problems-tools-tab-icon";
-        toolsSearchIcon.appendChild(dsaSvgIconSearch());
         const toolsFilterIcon = document.createElement("span");
         toolsFilterIcon.className = "dsa-h-problems-tools-tab-icon";
-        toolsFilterIcon.appendChild(dsaSvgIconFilterFunnel());
-        toolsToggleBtn.appendChild(toolsSearchIcon);
+        toolsFilterIcon.appendChild(dsaCardIcon("filter"));
         toolsToggleBtn.appendChild(toolsFilterIcon);
         filterTabs.appendChild(filterThumb);
         filterTabs.appendChild(btnImportant);
@@ -4774,12 +4962,16 @@ function buildTreeNode(node, depth, panel, scheduleRedraw, theme, ctx) {
         toolsPanelEl = document.createElement("div");
         toolsPanelEl.className = "dsa-h-problems-tools-panel";
         toolsPanelEl.hidden = true;
+        const searchWrap = document.createElement("div");
+        searchWrap.className = "dsa-h-problems-tools-search-wrap";
+        searchWrap.appendChild(dsaCardIcon("search"));
         searchInputEl = document.createElement("input");
         searchInputEl.type = "search";
         searchInputEl.className = "dsa-h-problems-tools-search-input";
-        searchInputEl.placeholder = "Search problem…";
+        searchInputEl.placeholder = "Search problems…";
         searchInputEl.setAttribute("aria-label", "Search practice problems");
-        toolsPanelEl.appendChild(searchInputEl);
+        searchWrap.appendChild(searchInputEl);
+        toolsPanelEl.appendChild(searchWrap);
         const diffWrap = document.createElement("div");
         diffWrap.className = "dsa-h-problems-difficulty-filters";
         [["easy", "Easy"], ["medium", "Medium"], ["hard", "Hard"]].forEach(([key, label]) => {
@@ -4845,15 +5037,31 @@ function buildTreeNode(node, depth, panel, scheduleRedraw, theme, ctx) {
             const resultList = byDifficulty;
             if (!resultList.length) {
                 emptyListNote.hidden = false;
+                let title;
+                let detail;
                 if (q) {
-                    emptyListNote.textContent = `No problems found for "${searchQuery.trim()}".`;
+                    title = "No results";
+                    detail = `No problems found for "${searchQuery.trim()}".`;
                 } else if (activeDifficultyFilters.size > 0) {
-                    emptyListNote.textContent = "No problems match selected difficulty filter(s).";
+                    title = "No matches";
+                    detail = "No problems match the selected difficulty filters.";
+                } else if (showImportant) {
+                    title = "No starred problems";
+                    detail = "Star problems to see them here.";
                 } else {
-                    emptyListNote.textContent = showImportant
-                        ? "No starred problems yet for this topic."
-                        : "No practice problems found.";
+                    title = "Nothing here yet";
+                    detail = "No practice problems found.";
                 }
+                emptyListNote.replaceChildren();
+                emptyListNote.appendChild(dsaCardIcon("inbox"));
+                const titleEl = document.createElement("div");
+                titleEl.className = "dsa-h-problems-empty-title";
+                titleEl.textContent = title;
+                emptyListNote.appendChild(titleEl);
+                const detailEl = document.createElement("div");
+                detailEl.className = "dsa-h-problems-empty-detail";
+                detailEl.textContent = detail;
+                emptyListNote.appendChild(detailEl);
                 return;
             }
             emptyListNote.hidden = true;

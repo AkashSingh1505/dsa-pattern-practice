@@ -314,12 +314,31 @@
     display: none !important;
 }
 
-.dsa-sketch-studio-mount.device-mobile #dsaSkBackBtn {
+/* iPad/PC only: no top back when minimized */
+.dsa-sketch-studio-mount.dsa-sk-back-hidden #dsaSkBackBtn {
     display: none !important;
 }
 
-.dsa-sketch-studio-mount .sketch-studio.minimized #dsaSkBackBtn {
+/* Mobile: bottom bar — main tools vs brush tray (class toggled in JS) */
+.dsa-sketch-studio-mount.device-mobile.dsa-sk-bottom-main #dsaSkMainTab {
+    display: flex !important;
+}
+
+.dsa-sketch-studio-mount.device-mobile.dsa-sk-bottom-main #dsaSkDrawTab {
     display: none !important;
+}
+
+.dsa-sketch-studio-mount.device-mobile.dsa-sk-bottom-draw #dsaSkMainTab {
+    display: none !important;
+}
+
+.dsa-sketch-studio-mount.device-mobile.dsa-sk-bottom-draw #dsaSkDrawTab {
+    display: flex !important;
+}
+
+/* Mobile: show laser in brush tray when drawing */
+.dsa-sketch-studio-mount.device-mobile.dsa-sk-bottom-draw #dsaSkBtnLaser2 {
+    display: flex;
 }
 
 .dsa-sketch-studio-mount .done-btn {
@@ -1102,32 +1121,8 @@
     stroke-width: 1.8;
 }
 
-/* PC/iPad minimized: two-row toolbar so center tools do not overlap undo/menu */
-.dsa-sketch-studio-mount.device-pc .sketch-studio.minimized .top-toolbar {
-    top: 18px;
-    padding: 8px 12px 10px;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    align-content: flex-start;
-    row-gap: 8px;
-    min-height: 88px;
-}
-
-.dsa-sketch-studio-mount.device-pc .sketch-studio.minimized .top-tools-tab {
-    position: static;
-    transform: none;
-    order: -1;
-    flex: 1 1 100%;
-    justify-content: center;
-    margin: 0 auto 2px;
-}
-
-.dsa-sketch-studio-mount.device-pc .sketch-studio.minimized .toolbar-right {
-    flex: 1 1 100%;
-    justify-content: flex-end;
-}
-
-.dsa-sketch-studio-mount.device-mobile .sketch-studio.minimized .top-toolbar {
+/* Minimized: same top-toolbar layout as fullscreen; only back hidden on iPad/PC via .dsa-sk-back-hidden */
+.dsa-sketch-studio-mount .sketch-studio.minimized .top-toolbar {
     top: 18px;
     padding: 10px 14px;
 }
@@ -1218,12 +1213,16 @@
     display: none;
 }
 
-.dsa-sketch-studio-mount.device-mobile #dsaSkMainTab {
-    display: flex !important;
+.dsa-sketch-studio-mount.device-mobile #dsaSkBackBtnTray {
+    display: flex;
 }
 
-.dsa-sketch-studio-mount.device-mobile #dsaSkDrawTab {
-    display: none !important;
+.dsa-sketch-studio-mount.device-mobile #dsaSkBtnLaser2 {
+    display: none;
+}
+
+.dsa-sketch-studio-mount.device-mobile.dsa-sk-bottom-draw #dsaSkBtnLaser2 {
+    display: flex;
 }
 
 @media (max-width: 768px) {

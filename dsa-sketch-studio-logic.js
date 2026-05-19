@@ -81,41 +81,17 @@ function exitNativeFullscreen() {
   }
 }
 
-/** PC/iPad: top tools pill. Mobile: bottom mainTab only. */
+/** PC/iPad: top tools pill + brush tray. Mobile: bottom mainTab or brush tray; top back always visible. */
 function syncToolbarUi() {
   const studio = $('dsaSkStudio');
-  const topTools = $('dsaSkTopToolsTab');
-  const mainTab = $('dsaSkMainTab');
-  const drawTab = $('dsaSkDrawTab');
-  const backBtn = $('dsaSkBackBtn');
   if (!studio) return;
 
   mount.classList.toggle('dsa-sk-state-fullscreen', isFullscreen());
   mount.classList.toggle('dsa-sk-state-minimized', !!state.minimized && !isFullscreen());
-
-  if (isBigScreen()) {
-    if (topTools) topTools.style.display = 'flex';
-    if (state.tool === 'pencil') {
-      if (mainTab) mainTab.style.display = 'none';
-      if (drawTab) drawTab.style.display = 'flex';
-    } else {
-      if (mainTab) mainTab.style.display = 'none';
-      if (drawTab) drawTab.style.display = 'flex';
-    }
-    if (backBtn) {
-      backBtn.style.display = state.minimized && !isFullscreen() ? 'none' : '';
-    }
-  } else {
-    if (topTools) topTools.style.display = 'none';
-    if (backBtn) backBtn.style.display = 'none';
-    if (state.tool === 'pencil') {
-      if (mainTab) mainTab.style.display = 'none';
-      if (drawTab) drawTab.style.display = 'flex';
-    } else {
-      if (mainTab) mainTab.style.display = 'flex';
-      if (drawTab) drawTab.style.display = 'none';
-    }
-  }
+  mount.classList.toggle('dsa-sk-bottom-draw', !isBigScreen() && state.tool === 'pencil');
+  mount.classList.toggle('dsa-sk-bottom-main', !isBigScreen() && state.tool !== 'pencil');
+  /* iPad/PC: hide top back only when minimized (same toolbar as fullscreen otherwise) */
+  mount.classList.toggle('dsa-sk-back-hidden', isBigScreen() && state.minimized && !isFullscreen());
 }
 
 function enterFullscreen() {
@@ -751,6 +727,7 @@ function selectTool(tool) {
 
   if (tool === 'pencil') {
     state.tool = 'pencil';
+    $('dsaSkBtnPencil')?.classList.add('active');
     activateBrush(state.brush);
   } else if (tool === 'text') {
     state.tool = 'text';
@@ -821,6 +798,7 @@ function selectBrush(brush) {
   } else {
     settings.classList.remove('show');
   }
+  syncToolbarUi();
 }
 
 function updateBrushColors() {
@@ -1385,6 +1363,10 @@ if (device === 'pc') {
 const backBtn = $('dsaSkBackBtn');
 if (backBtn) {
   addL(backBtn, 'click', () => {
+    if (!isBigScreen() && state.tool === 'pencil') {
+      backToMain();
+      return;
+    }
     if (isFullscreen()) {
       toggleMinimize();
       return;

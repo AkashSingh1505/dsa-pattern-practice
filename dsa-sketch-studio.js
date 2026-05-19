@@ -44,7 +44,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     if (!document.head.querySelector("link[data-dsa-sketch-studio-css]")) {
         const lk = document.createElement("link");
         lk.rel = "stylesheet";
-        lk.href = "./dsa-sketch-studio.css?v=11";
+        lk.href = "./dsa-sketch-studio.css?v=12";
         lk.dataset.dsaSketchStudioCss = "1";
         document.head.appendChild(lk);
     }
@@ -328,8 +328,71 @@ let fsNext = null;
 let fsHideBackdrop = null;
 let fsHideDlg = null;
 
+function isBigScreen() {
+  return device === 'pc';
+}
+
 function isFullscreen() {
   return editorRoot.classList.contains('dsa-sketch-studio-host--fullscreen');
+}
+
+function isNativeFullscreen() {
+  const el = document.fullscreenElement || document.webkitFullscreenElement;
+  return el === editorRoot || (el && editorRoot.contains(el));
+}
+
+function requestNativeFullscreen() {
+  const req =
+    editorRoot.requestFullscreen ||
+    editorRoot.webkitRequestFullscreen ||
+    editorRoot.msRequestFullscreen;
+  if (req) {
+    Promise.resolve(req.call(editorRoot)).catch(() => {});
+  }
+}
+
+function exitNativeFullscreen() {
+  const ex = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+  if (ex && isNativeFullscreen()) {
+    Promise.resolve(ex.call(document)).catch(() => {});
+  }
+}
+
+/** PC/iPad: top tools pill. Mobile: bottom mainTab only. */
+function syncToolbarUi() {
+  const studio = $('dsaSkStudio');
+  const topTools = $('dsaSkTopToolsTab');
+  const mainTab = $('dsaSkMainTab');
+  const drawTab = $('dsaSkDrawTab');
+  const backBtn = $('dsaSkBackBtn');
+  if (!studio) return;
+
+  mount.classList.toggle('dsa-sk-state-fullscreen', isFullscreen());
+  mount.classList.toggle('dsa-sk-state-minimized', !!state.minimized && !isFullscreen());
+
+  if (isBigScreen()) {
+    if (topTools) topTools.style.display = 'flex';
+    if (state.tool === 'pencil') {
+      if (mainTab) mainTab.style.display = 'none';
+      if (drawTab) drawTab.style.display = 'flex';
+    } else {
+      if (mainTab) mainTab.style.display = 'none';
+      if (drawTab) drawTab.style.display = 'flex';
+    }
+    if (backBtn) {
+      backBtn.style.display = state.minimized && !isFullscreen() ? 'none' : '';
+    }
+  } else {
+    if (topTools) topTools.style.display = 'none';
+    if (backBtn) backBtn.style.display = 'none';
+    if (state.tool === 'pencil') {
+      if (mainTab) mainTab.style.display = 'none';
+      if (drawTab) drawTab.style.display = 'flex';
+    } else {
+      if (mainTab) mainTab.style.display = 'flex';
+      if (drawTab) drawTab.style.display = 'none';
+    }
+  }
 }
 
 function enterFullscreen() {
@@ -341,15 +404,20 @@ function enterFullscreen() {
   document.body.appendChild(editorRoot);
   editorRoot.classList.add('dsa-sketch-studio-host--fullscreen');
   const studio = $('dsaSkStudio');
-  if (studio) studio.classList.remove('minimized');
-  state.minimized = false;
+  if (studio) {
+    studio.classList.remove('minimized');
+    state.minimized = false;
+  }
   if (fsHideBackdrop) fsHideBackdrop.classList.add('dsa-sketch-fs-hide-dialog');
   if (fsHideDlg) fsHideDlg.classList.add('dsa-sketch-fs-hide-dialog');
+  requestNativeFullscreen();
+  syncToolbarUi();
   requestAnimationFrame(() => setTimeout(fitCanvas, 80));
 }
 
 function exitFullscreen() {
   if (!isFullscreen()) return;
+  exitNativeFullscreen();
   if (fsHideBackdrop) fsHideBackdrop.classList.remove('dsa-sketch-fs-hide-dialog');
   if (fsHideDlg) fsHideDlg.classList.remove('dsa-sketch-fs-hide-dialog');
   fsHideBackdrop = null;
@@ -361,6 +429,7 @@ function exitFullscreen() {
   }
   fsParent = null;
   fsNext = null;
+  syncToolbarUi();
   requestAnimationFrame(() => setTimeout(fitCanvas, 80));
 }
 
@@ -370,10 +439,9 @@ function toggleMinimize() {
   if (!studio) return;
   if (isFullscreen()) {
     exitFullscreen();
-    if (device === 'pc') {
-      studio.classList.add('minimized');
-      state.minimized = true;
-    }
+    studio.classList.add('minimized');
+    state.minimized = true;
+    syncToolbarUi();
     setTimeout(fitCanvas, 480);
     return;
   }
@@ -383,7 +451,32 @@ function toggleMinimize() {
   }
   state.minimized = true;
   studio.classList.add('minimized');
+  syncToolbarUi();
   setTimeout(fitCanvas, 480);
+}
+
+function onNativeFullscreenChange() {
+  if (!isFullscreen()) return;
+  if (!isNativeFullscreen()) {
+    const studio = $('dsaSkStudio');
+    if (fsHideBackdrop) fsHideBackdrop.classList.remove('dsa-sketch-fs-hide-dialog');
+    if (fsHideDlg) fsHideDlg.classList.remove('dsa-sketch-fs-hide-dialog');
+    fsHideBackdrop = null;
+    fsHideDlg = null;
+    editorRoot.classList.remove('dsa-sketch-studio-host--fullscreen');
+    if (fsParent) {
+      if (fsNext) fsParent.insertBefore(editorRoot, fsNext);
+      else fsParent.appendChild(editorRoot);
+    }
+    fsParent = null;
+    fsNext = null;
+    if (studio) {
+      studio.classList.add('minimized');
+      state.minimized = true;
+    }
+    syncToolbarUi();
+    setTimeout(fitCanvas, 480);
+  }
 }
 
 function flushSketchDone() {
@@ -912,7 +1005,7 @@ function selectTool(tool) {
   if (state.tool === tool) {
     if (tool === 'text') cancelText();
     if (tool === 'grid') cancelTable();
-    if (tool === 'pencil' && state.device === 'mobile') {
+    if (tool === 'pencil' && !isBigScreen()) {
       $('dsaSkDrawTab').style.display = 'none';
       $('dsaSkMainTab').style.display = 'flex';
     }
@@ -921,6 +1014,7 @@ function selectTool(tool) {
     document.querySelectorAll('#dsaSkTopToolsTab button').forEach(b => { if (b.id !== 'dsaSkBtnLaserTop') b.classList.remove('active'); });
     document.querySelectorAll('#dsaSkMainTab .tool-btn').forEach(b => b.classList.remove('active'));
     state.tool = null;
+    syncToolbarUi();
     return;
   }
 
@@ -933,8 +1027,6 @@ function selectTool(tool) {
   document.querySelectorAll('#dsaSkTopToolsTab button').forEach(b => { if (b.id !== 'dsaSkBtnLaserTop') b.classList.remove('active'); });
 
   if (tool === 'pencil') {
-    $('dsaSkMainTab').style.display = 'none';
-    $('dsaSkDrawTab').style.display = 'flex';
     state.tool = 'pencil';
     activateBrush(state.brush);
   } else if (tool === 'text') {
@@ -957,15 +1049,15 @@ function selectTool(tool) {
   };
   input.click();
 }
+  syncToolbarUi();
 }
 
 function backToMain() {
-  $('dsaSkDrawTab').style.display = 'none';
-  $('dsaSkMainTab').style.display = 'flex';
   $('dsaSkBrushSettings').classList.remove('show');
   $('dsaSkColorModal').classList.remove('show');
   document.querySelectorAll('.brush').forEach(b => b.classList.remove('active'));
   state.tool = null;
+  syncToolbarUi();
 }
 
 /* Activate brush without showing settings */
@@ -1562,37 +1654,30 @@ if (device === 'pc') {
   studioEl.classList.add('minimized');
   state.minimized = true;
   state.tool = 'pencil';
-  $('dsaSkDrawTab').style.display = 'flex';
-  $('dsaSkMainTab').style.display = 'none';
   activateBrush('pen');
 } else {
-  $('dsaSkDrawTab').style.display = 'none';
-  $('dsaSkMainTab').style.display = 'flex';
+  state.tool = null;
 }
 
 const backBtn = $('dsaSkBackBtn');
 if (backBtn) {
   addL(backBtn, 'click', () => {
     if (isFullscreen()) {
-      exitFullscreen();
-      if (device === 'pc') {
-        const studio = $('dsaSkStudio');
-        if (studio) {
-          studio.classList.add('minimized');
-          state.minimized = true;
-        }
-      }
-      setTimeout(fitCanvas, 480);
+      toggleMinimize();
       return;
     }
-    if (device === 'pc' && !state.minimized) {
+    if (isBigScreen() && !state.minimized) {
       state.minimized = true;
       const studio = $('dsaSkStudio');
       if (studio) studio.classList.add('minimized');
+      syncToolbarUi();
       setTimeout(fitCanvas, 480);
     }
   });
 }
+
+addL(document, 'fullscreenchange', onNativeFullscreenChange);
+addL(document, 'webkitfullscreenchange', onNativeFullscreenChange);
 
 const minBtn = $('dsaSkMinimizeBtn');
 if (minBtn) addL(minBtn, 'click', () => toggleMinimize());
@@ -1666,9 +1751,9 @@ function onWinResize() {
 addL(window, 'resize', onWinResize);
 
 function onDocKey(e) {
-  if (e.key === 'Escape' && isFullscreen()) {
+  if (e.key === 'Escape' && isFullscreen() && isNativeFullscreen()) {
     e.preventDefault();
-    exitFullscreen();
+    toggleMinimize();
     return;
   }
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
@@ -1690,6 +1775,11 @@ updateBrushColors();
 buildColorPicker();
 buildSizeDots();
 updateUndoRedo();
+syncToolbarUi();
+
+if (device === 'mobile') {
+  setTimeout(() => enterFullscreen(), 100);
+}
 
 const api = {
   clear() {
@@ -1775,11 +1865,6 @@ const api = {
   },
   exitFullscreen() {
     exitFullscreen();
-    const studio = $('dsaSkStudio');
-    if (studio && device === 'pc' && !state.minimized) {
-      studio.classList.add('minimized');
-      state.minimized = true;
-    }
   },
   resize() {
     fitCanvas();
@@ -1790,10 +1875,11 @@ const api = {
   destroy() {
     if (destroyed) return;
     destroyed = true;
-    exitFullscreen();
-    try {
-      ro.disconnect();
-    } catch (_) {}
+        exitFullscreen();
+            exitNativeFullscreen();
+            try {
+                ro.disconnect();
+            } catch (_) {}
     listeners.forEach(([t, ty, fn, opts]) => {
       try {
         t.removeEventListener(ty, fn, opts);

@@ -25,6 +25,12 @@
     flex-direction: column;
 }
 
+.dsa-sketch-studio-host--fullscreen:fullscreen,
+.dsa-sketch-studio-host--fullscreen:-webkit-full-screen {
+    width: 100% !important;
+    height: 100% !important;
+}
+
 .dsa-sketch-studio-host--fullscreen .dsa-sketch-studio-mount {
     flex: 1;
     width: 100%;
@@ -294,6 +300,7 @@
     stroke: var(--theme);
 }
 
+/* Top tools pill: PC / iPad only (never on phone) */
 .dsa-sketch-studio-mount.device-pc .top-tools-tab {
     display: flex;
     position: absolute;
@@ -303,8 +310,12 @@
     z-index: 5;
 }
 
-.dsa-sketch-studio-mount .sketch-studio.minimized .top-tools-tab {
-    top: 18px !important;
+.dsa-sketch-studio-mount.device-mobile .top-tools-tab {
+    display: none !important;
+}
+
+.dsa-sketch-studio-mount.device-mobile #dsaSkBackBtn {
+    display: none !important;
 }
 
 .dsa-sketch-studio-mount .sketch-studio.minimized #dsaSkBackBtn {
@@ -342,10 +353,6 @@
 }
 
 .dsa-sketch-studio-mount .minimize-btn {
-    display: none;
-}
-
-.dsa-sketch-studio-mount.device-pc .minimize-btn {
     display: flex;
 }
 
@@ -1095,7 +1102,32 @@
     stroke-width: 1.8;
 }
 
-.dsa-sketch-studio-mount .sketch-studio.minimized .top-toolbar {
+/* PC/iPad minimized: two-row toolbar so center tools do not overlap undo/menu */
+.dsa-sketch-studio-mount.device-pc .sketch-studio.minimized .top-toolbar {
+    top: 18px;
+    padding: 8px 12px 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-content: flex-start;
+    row-gap: 8px;
+    min-height: 88px;
+}
+
+.dsa-sketch-studio-mount.device-pc .sketch-studio.minimized .top-tools-tab {
+    position: static;
+    transform: none;
+    order: -1;
+    flex: 1 1 100%;
+    justify-content: center;
+    margin: 0 auto 2px;
+}
+
+.dsa-sketch-studio-mount.device-pc .sketch-studio.minimized .toolbar-right {
+    flex: 1 1 100%;
+    justify-content: flex-end;
+}
+
+.dsa-sketch-studio-mount.device-mobile .sketch-studio.minimized .top-toolbar {
     top: 18px;
     padding: 10px 14px;
 }

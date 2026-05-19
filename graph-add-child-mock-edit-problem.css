@@ -1086,7 +1086,15 @@ body > .dsa-sol-pro-toast {
     display: none;
 }
 
-/* Panel is layout-only; studio (#dsaSkStudio) provides the visible chrome */
+/* Sketch stack in dialog: no wrapper cards — only #dsaSkStudio.minimized is the visible card */
+.graph-add-child-mock.modal.dsa-dialog--question #sketchSlot,
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-slot {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+}
+
 .graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel {
     background: transparent;
     border: none;
@@ -1098,20 +1106,43 @@ body > .dsa-sol-pro-toast {
     flex-direction: column;
 }
 
-.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel > .dsa-sketch-studio-host {
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel > .dsa-sketch-studio-host,
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel > .dsa-sketch-studio-host.dsa-sketch-studio-mount {
     flex: 1;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
     min-height: 0;
     width: 100%;
-    background: transparent;
+    background: transparent !important;
     border: none;
     box-shadow: none;
+    overflow: visible;
 }
 
-.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel > .dsa-sketch-studio-host > .sketch-studio {
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel .sketch-studio {
+    flex: none;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel .sketch-studio.minimized {
+    background: #fff;
+    border-radius: 22px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28), 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel .sketch-studio:not(.minimized) {
     flex: 1;
+    width: 100%;
     min-height: 420px;
+    align-self: stretch;
+}
+
+.graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel .canvas-wrap {
+    background: #fff;
 }
 
 .graph-add-child-mock.modal.dsa-dialog--question .dsa-q-sketch-panel[hidden] {

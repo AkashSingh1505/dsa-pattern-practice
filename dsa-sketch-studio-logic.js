@@ -93,10 +93,19 @@ function toggleMinimize() {
   if (!studio) return;
   if (isFullscreen()) {
     exitFullscreen();
+    if (device === 'pc') {
+      studio.classList.add('minimized');
+      state.minimized = true;
+    }
+    setTimeout(fitCanvas, 480);
     return;
   }
-  state.minimized = !state.minimized;
-  studio.classList.toggle('minimized', state.minimized);
+  if (state.minimized) {
+    enterFullscreen();
+    return;
+  }
+  state.minimized = true;
+  studio.classList.add('minimized');
   setTimeout(fitCanvas, 480);
 }
 
@@ -1285,10 +1294,28 @@ if (device === 'pc') {
 }
 
 const backBtn = $('dsaSkBackBtn');
-if (backBtn) addL(backBtn, 'click', () => { if (device === 'pc') toggleMinimize(); });
-
-const expandBtn = $('dsaSkExpandBtn');
-if (expandBtn) addL(expandBtn, 'click', () => toggleMinimize());
+if (backBtn) {
+  addL(backBtn, 'click', () => {
+    if (isFullscreen()) {
+      exitFullscreen();
+      if (device === 'pc') {
+        const studio = $('dsaSkStudio');
+        if (studio) {
+          studio.classList.add('minimized');
+          state.minimized = true;
+        }
+      }
+      setTimeout(fitCanvas, 480);
+      return;
+    }
+    if (device === 'pc' && !state.minimized) {
+      state.minimized = true;
+      const studio = $('dsaSkStudio');
+      if (studio) studio.classList.add('minimized');
+      setTimeout(fitCanvas, 480);
+    }
+  });
+}
 
 const minBtn = $('dsaSkMinimizeBtn');
 if (minBtn) addL(minBtn, 'click', () => toggleMinimize());

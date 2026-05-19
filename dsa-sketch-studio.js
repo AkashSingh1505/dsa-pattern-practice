@@ -44,7 +44,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     if (!document.head.querySelector("link[data-dsa-sketch-studio-css]")) {
         const lk = document.createElement("link");
         lk.rel = "stylesheet";
-        lk.href = "./dsa-sketch-studio.css?v=9";
+        lk.href = "./dsa-sketch-studio.css?v=11";
         lk.dataset.dsaSketchStudioCss = "1";
         document.head.appendChild(lk);
     }
@@ -57,13 +57,6 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     const device = dsaDetectSketchDevice();
     mount.classList.add(device === "pc" ? "device-pc" : "device-mobile");
     mount.innerHTML = `<div class="sketch-studio" id="dsaSkStudio">
-
-  <div class="restore-bar">
-    <span>Sketch</span>
-    <button type="button" id="dsaSkExpandBtn" title="Expand">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.2" stroke-linecap="round"><path d="M3 21l7-7M3 21h6M3 21v-6M21 3l-7 7M21 3h-6M21 3v6"/></svg>
-    </button>
-  </div>
 
   <div class="canvas-wrap" id="dsaSkCanvasWrap">
     <canvas id="dsaSkCanvas" width="2400" height="1800"></canvas>
@@ -377,10 +370,19 @@ function toggleMinimize() {
   if (!studio) return;
   if (isFullscreen()) {
     exitFullscreen();
+    if (device === 'pc') {
+      studio.classList.add('minimized');
+      state.minimized = true;
+    }
+    setTimeout(fitCanvas, 480);
     return;
   }
-  state.minimized = !state.minimized;
-  studio.classList.toggle('minimized', state.minimized);
+  if (state.minimized) {
+    enterFullscreen();
+    return;
+  }
+  state.minimized = true;
+  studio.classList.add('minimized');
   setTimeout(fitCanvas, 480);
 }
 
@@ -1569,10 +1571,28 @@ if (device === 'pc') {
 }
 
 const backBtn = $('dsaSkBackBtn');
-if (backBtn) addL(backBtn, 'click', () => { if (device === 'pc') toggleMinimize(); });
-
-const expandBtn = $('dsaSkExpandBtn');
-if (expandBtn) addL(expandBtn, 'click', () => toggleMinimize());
+if (backBtn) {
+  addL(backBtn, 'click', () => {
+    if (isFullscreen()) {
+      exitFullscreen();
+      if (device === 'pc') {
+        const studio = $('dsaSkStudio');
+        if (studio) {
+          studio.classList.add('minimized');
+          state.minimized = true;
+        }
+      }
+      setTimeout(fitCanvas, 480);
+      return;
+    }
+    if (device === 'pc' && !state.minimized) {
+      state.minimized = true;
+      const studio = $('dsaSkStudio');
+      if (studio) studio.classList.add('minimized');
+      setTimeout(fitCanvas, 480);
+    }
+  });
+}
 
 const minBtn = $('dsaSkMinimizeBtn');
 if (minBtn) addL(minBtn, 'click', () => toggleMinimize());
@@ -1787,4 +1807,6 @@ const api = {
 };
 
 return api;
+
+    return api;
 }

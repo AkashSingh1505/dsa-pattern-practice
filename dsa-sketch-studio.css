@@ -16,13 +16,21 @@
 .dsa-sketch-studio-host--fullscreen {
     position: fixed !important;
     inset: 0;
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
     z-index: 600020;
-    background: #f5f5f7;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
 }
 
 .dsa-sketch-studio-host--fullscreen .dsa-sketch-studio-mount {
+    flex: 1;
+    width: 100%;
     height: 100%;
-    min-height: 100%;
+    min-height: 0;
+    max-width: none;
 }
 
 .dsa-sketch-studio-mount {
@@ -70,19 +78,28 @@
 
 .dsa-sketch-studio-mount .sketch-studio.minimized {
     flex: none;
+    width: 100%;
+    max-width: 620px;
     height: 460px;
     max-height: 460px;
+    margin-left: auto;
+    margin-right: auto;
+    align-self: center;
     border-radius: 22px;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18), 0 6px 16px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28), 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .dsa-sketch-studio-host--fullscreen .dsa-sketch-studio-mount .sketch-studio {
-    position: fixed;
-    inset: 0;
+    position: relative;
+    flex: 1;
+    width: 100% !important;
     height: 100% !important;
+    min-height: 0 !important;
+    max-width: none !important;
     max-height: none !important;
+    margin: 0 !important;
     border-radius: 0;
-    z-index: 600021;
     box-shadow: none;
 }
 
@@ -287,7 +304,11 @@
 }
 
 .dsa-sketch-studio-mount .sketch-studio.minimized .top-tools-tab {
-    top: 46px !important;
+    top: 18px !important;
+}
+
+.dsa-sketch-studio-mount .sketch-studio.minimized #dsaSkBackBtn {
+    display: none !important;
 }
 
 .dsa-sketch-studio-mount .done-btn {
@@ -783,6 +804,8 @@
     padding: 0;
 }
 
+/* Eraser ring follows pointer on document.body (#dsaSkEraserCursor) — not inside .dsa-sketch-studio-mount */
+#dsaSkEraserCursor.eraser-cursor,
 .dsa-sketch-studio-mount .eraser-cursor {
     position: fixed;
     border: 2px solid rgba(0, 0, 0, 0.75);
@@ -796,6 +819,7 @@
     transition: width 0.12s ease, height 0.12s ease;
 }
 
+#dsaSkEraserCursor.eraser-cursor.show,
 .dsa-sketch-studio-mount .eraser-cursor.show {
     display: block;
 }
@@ -1071,41 +1095,8 @@
     stroke-width: 1.8;
 }
 
-.dsa-sketch-studio-mount .restore-bar {
-    display: none;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    padding: 8px 14px;
-    background: rgba(245, 245, 247, 0.95);
-    backdrop-filter: blur(10px);
-    border-bottom: 0.5px solid var(--separator);
-    align-items: center;
-    justify-content: space-between;
-    font-size: 13px;
-    font-weight: 600;
-    z-index: 100;
-}
-
-.dsa-sketch-studio-mount .restore-bar button {
-    width: 22px;
-    height: 22px;
-    border: none;
-    background: rgba(0, 0, 0, 0.06);
-    border-radius: 6px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.dsa-sketch-studio-mount .sketch-studio.minimized .restore-bar {
-    display: flex;
-}
-
 .dsa-sketch-studio-mount .sketch-studio.minimized .top-toolbar {
-    top: 36px;
+    top: 18px;
     padding: 10px 14px;
 }
 

@@ -7494,6 +7494,14 @@ body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
     animation: dsa-pp-slide-down 0.25s var(--pp-ease) !important;
 }
 
+.dsa-h-problems-card .dsa-h-problems-tools-panel[hidden] {
+    display: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    animation: none !important;
+}
+
 @media (prefers-color-scheme: dark) {
     .dsa-h-problems-card .dsa-h-problems-tools-panel {
         background: rgba(255, 255, 255, 0.04) !important;
@@ -7616,6 +7624,7 @@ body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
     flex-direction: column !important;
     align-items: stretch !important;
     flex-wrap: nowrap !important;
+    gap: 0 !important;
     transition:
         border-color 0.15s var(--pp-ease),
         box-shadow 0.15s var(--pp-ease) !important;
@@ -8077,6 +8086,11 @@ body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
     overflow: hidden !important;
     background: transparent !important;
     border: none !important;
+    min-height: 0 !important;
+}
+
+.dsa-h-problems-card .dsa-h-prob-reveal:not(:has(.dsa-h-prob-pane:not([hidden]))) {
+    display: none !important;
 }
 
 .dsa-h-problems-card .dsa-h-prob-pane {

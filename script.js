@@ -4750,7 +4750,9 @@ function buildProblemListItem(prob, probCtx) {
         }
         mainRow.appendChild(wrap);
         li.appendChild(mainRow);
-        li.appendChild(reveal);
+        if (reveal.childElementCount > 0) {
+            li.appendChild(reveal);
+        }
     } else {
         li.appendChild(mainRow);
     }

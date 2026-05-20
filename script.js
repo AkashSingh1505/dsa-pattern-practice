@@ -7090,6 +7090,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         }
         sketchEditorWired = true;
         scratchApi = dsaWireSketchEditor(sketchEditorRoot, () => {}, {
+            embedInDialog: true,
             afterClear() {
                 userClearedSketch = true;
                 sketchPanel.hidden = true;

@@ -46,7 +46,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     if (!document.head.querySelector("link[data-dsa-sketch-studio-css]")) {
         const lk = document.createElement("link");
         lk.rel = "stylesheet";
-        lk.href = "./dsa-sketch-studio.css?v=26";
+        lk.href = "./dsa-sketch-studio.css?v=27";
         lk.dataset.dsaSketchStudioCss = "1";
         document.head.appendChild(lk);
     }
@@ -146,17 +146,16 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
         </button>
       </div>
 
-      <button class="icon-btn minimize-btn" type="button" id="dsaSkMinimizeBtn" title="Expand" aria-label="Expand">
-        <svg class="dsa-sk-icon-expand" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 00-2 2v3M16 3h3a2 2 0 012 2v3M21 16v3a2 2 0 01-2 2h-3M8 21H5a2 2 0 01-2-2v-3"/></svg>
-        <svg class="dsa-sk-icon-collapse" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 9H4V4h5M15 4h5v5h-5M9 15H4v5h5M20 15v5h-5"/></svg>
-      </button>
     </div>
 
   </div>
 
 
 <div class="table-setup-panel" id="dsaSkTableSetupPanel" hidden>
-  <div class="table-setup-head">Table</div>
+  <div class="table-setup-head">
+    <span class="table-setup-title">Table</span>
+    <span class="table-setup-hint">Drag preview · tap ✓ to place</span>
+  </div>
   <div class="table-setup-fields">
     <label class="table-setup-field">
       <span class="table-setup-label">Rows</span>
@@ -168,13 +167,10 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     </label>
   </div>
   <div class="table-setup-actions">
-    <button type="button" class="table-setup-btn table-setup-btn--ghost" id="dsaSkTableDiscardBtn" title="Cancel" aria-label="Cancel">
-      <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    <button type="button" class="table-setup-btn table-setup-btn--ghost" id="dsaSkTableDiscardBtn">
+      <span>Cancel</span>
     </button>
-    <button type="button" class="table-setup-btn table-setup-btn--danger" id="dsaSkTableDeleteBtn" title="Remove table" aria-label="Remove table">
-      <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
-    </button>
-    <button type="button" class="table-setup-btn table-setup-btn--primary" id="dsaSkTableDoneBtn" title="Place on canvas" aria-label="Done">
+    <button type="button" class="table-setup-btn table-setup-btn--primary" id="dsaSkTableDoneBtn" title="Place on canvas" aria-label="Place table">
       <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
     </button>
   </div>
@@ -428,17 +424,6 @@ function syncToolbarUi() {
   mount.classList.toggle('dsa-sk-bottom-main', !isBigScreen() && state.tool !== 'pencil');
   /* iPad/PC: hide top back only when minimized (same toolbar as fullscreen otherwise) */
   mount.classList.toggle('dsa-sk-back-hidden', isBigScreen() && state.minimized && !isFullscreen());
-  syncMinimizeBtnUi();
-}
-
-function syncMinimizeBtnUi() {
-  const btn = $('dsaSkMinimizeBtn');
-  if (!btn) return;
-  const expanded = isFullscreen() || !state.minimized;
-  btn.classList.toggle('dsa-sk-min--expanded', expanded);
-  const label = expanded ? 'Minimize' : 'Expand';
-  btn.title = label;
-  btn.setAttribute('aria-label', label);
 }
 
 function enterFullscreen() {
@@ -1363,7 +1348,7 @@ function closeTableSetup() {
 }
 function toggleTableSetup() {
   if (tableSetupOpen) {
-    closeTableSetup();
+    cancelTable();
     return;
   }
   disableLaserIfOn();
@@ -1453,32 +1438,18 @@ document.addEventListener('touchmove', (e) => {
 });
 document.addEventListener('touchend', () => { tDrag = null; });
 
-/* ============ Click-outside to confirm overlays ============ */
+/* ============ Click-outside to confirm image overlay only (table uses Done in setup panel) ============ */
 document.addEventListener('mousedown', (e) => {
-  // Image overlay → confirm on outside click
   if (imageOverlay.classList.contains('show') &&
       !imageOverlay.contains(e.target)) {
     confirmImage();
-    return;
   }
-  // Table overlay → confirm on outside click
-  if (tableOverlay.classList.contains('show') &&
-      !tableOverlay.contains(e.target)) {
-    confirmTable();
-    return;
-  }
-}, true);  // ✅ capture phase — runs before canvas draw handler
+}, true);
 
 document.addEventListener('touchstart', (e) => {
   if (imageOverlay.classList.contains('show') &&
       !imageOverlay.contains(e.target)) {
     confirmImage();
-    return;
-  }
-  if (tableOverlay.classList.contains('show') &&
-      !tableOverlay.contains(e.target)) {
-    confirmTable();
-    return;
   }
 }, true);
 
@@ -1809,7 +1780,14 @@ if (backBtn) {
       return;
     }
     if (isFullscreen()) {
-      toggleMinimize();
+      exitFullscreen();
+      const studio = $('dsaSkStudio');
+      if (studio && !hooks.embedInDialog) {
+        studio.classList.add('minimized');
+        state.minimized = true;
+      }
+      syncToolbarUi();
+      setTimeout(fitCanvas, 80);
       return;
     }
     if (isBigScreen() && !state.minimized) {
@@ -1824,9 +1802,6 @@ if (backBtn) {
 
 addL(document, 'fullscreenchange', onNativeFullscreenChange);
 addL(document, 'webkitfullscreenchange', onNativeFullscreenChange);
-
-const minBtn = $('dsaSkMinimizeBtn');
-if (minBtn) addL(minBtn, 'click', () => toggleMinimize());
 
 addL($('dsaSkUndoBtn'), 'click', () => undo());
 addL($('dsaSkRedoBtn'), 'click', () => redo());
@@ -1866,33 +1841,29 @@ mount.querySelectorAll('.brush[data-brush]').forEach((b) => {
 
 if (tableRowsInput) {
   addL(tableRowsInput, 'input', applyTableInputs);
-  addL(tableRowsInput, 'change', applyTableInputs);
 }
 if (tableColsInput) {
   addL(tableColsInput, 'input', applyTableInputs);
-  addL(tableColsInput, 'change', applyTableInputs);
 }
 const tableDiscardBtn = $('dsaSkTableDiscardBtn');
-const tableDeleteBtn = $('dsaSkTableDeleteBtn');
 const tableDoneBtn = $('dsaSkTableDoneBtn');
-if (tableDiscardBtn) addL(tableDiscardBtn, 'click', () => cancelTable());
-if (tableDeleteBtn) addL(tableDeleteBtn, 'click', () => cancelTable());
+if (tableDiscardBtn) {
+  addL(tableDiscardBtn, 'click', (e) => {
+    e.stopPropagation();
+    cancelTable();
+  });
+}
 if (tableDoneBtn) {
-  addL(tableDoneBtn, 'click', () => {
+  addL(tableDoneBtn, 'click', (e) => {
+    e.stopPropagation();
     applyTableInputs();
     confirmTable();
-    closeTableSetup();
   });
 }
 if (tableSetupPanel) {
   addL(tableSetupPanel, 'click', (e) => e.stopPropagation());
+  addL(tableSetupPanel, 'mousedown', (e) => e.stopPropagation());
 }
-addL(document, 'click', (e) => {
-  if (!tableSetupOpen || !tableSetupPanel) return;
-  if (tableSetupPanel.contains(e.target) || e.target === tableGridBtn || e.target === tableGridBtnMobile) return;
-  if (tableGridBtn?.contains(e.target) || tableGridBtnMobile?.contains(e.target)) return;
-  closeTableSetup();
-});
 
 const imgOv = $('dsaSkImageOverlay');
 if (imgOv) {
@@ -1920,9 +1891,19 @@ function onWinResize() {
 addL(window, 'resize', onWinResize);
 
 function onDocKey(e) {
-  if (e.key === 'Escape' && isFullscreen() && isNativeFullscreen()) {
+  if (e.key === 'Escape' && tableSetupOpen && tableOverlay.classList.contains('show')) {
+    cancelTable();
+    return;
+  }
+  if (e.key === 'Escape' && isFullscreen()) {
     e.preventDefault();
-    toggleMinimize();
+    exitFullscreen();
+    const studio = $('dsaSkStudio');
+    if (studio && !hooks.embedInDialog) {
+      studio.classList.add('minimized');
+      state.minimized = true;
+    }
+    syncToolbarUi();
     return;
   }
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
@@ -1942,7 +1923,7 @@ buildSizeDots();
 updateUndoRedo();
 syncToolbarUi();
 
-if (device === 'mobile') {
+if (device === 'mobile' && !hooks.embedInDialog) {
   setTimeout(() => enterFullscreen(), 100);
 }
 
@@ -1967,12 +1948,6 @@ const api = {
     resetZoom();
   },
   prepareForSavedLoad() {
-    const studio = $('dsaSkStudio');
-    if (studio && studio.classList.contains('minimized')) {
-      studio.classList.remove('minimized');
-      state.minimized = false;
-      syncToolbarUi();
-    }
     fitCanvas();
   },
   loadDataUrl(url, attempt = 0) {

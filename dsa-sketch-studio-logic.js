@@ -1647,7 +1647,7 @@ buildSizeDots();
 updateUndoRedo();
 syncToolbarUi();
 
-if (device === 'mobile' && !hooks.embedInDialog) {
+if (device === 'mobile') {
   setTimeout(() => enterFullscreen(), 100);
 }
 
@@ -1672,6 +1672,12 @@ const api = {
     resetZoom();
   },
   prepareForSavedLoad() {
+    const studio = $('dsaSkStudio');
+    if (studio && studio.classList.contains('minimized')) {
+      studio.classList.remove('minimized');
+      state.minimized = false;
+      syncToolbarUi();
+    }
     fitCanvas();
   },
   loadDataUrl(url, attempt = 0) {

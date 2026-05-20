@@ -7097,7 +7097,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             },
             admin: isAdmin,
             onPersist: persistSketchDrawingQuick,
-            embedInDialog: true,
         });
     }
 

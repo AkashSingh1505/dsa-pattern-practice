@@ -1941,7 +1941,7 @@ buildSizeDots();
 updateUndoRedo();
 syncToolbarUi();
 
-if (device === 'mobile' && !hooks.embedInDialog) {
+if (device === 'mobile') {
   setTimeout(() => enterFullscreen(), 100);
 }
 

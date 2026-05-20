@@ -133,10 +133,17 @@ function syncToolbarUi() {
   mount.classList.toggle('dsa-sk-bottom-main', !isBigScreen() && state.tool !== 'pencil');
   /* iPad/PC: hide top back only when minimized (same toolbar as fullscreen otherwise) */
   mount.classList.toggle('dsa-sk-back-hidden', isBigScreen() && state.minimized && !isFullscreen());
-  const expandBtn = $('dsaSkExpandBtn');
-  if (expandBtn) {
-    expandBtn.hidden = !(state.minimized && !isFullscreen() && !roBool());
-  }
+  syncMinimizeBtnUi();
+}
+
+function syncMinimizeBtnUi() {
+  const btn = $('dsaSkMinimizeBtn');
+  if (!btn) return;
+  const expanded = isFullscreen() || !state.minimized;
+  btn.classList.toggle('dsa-sk-min--expanded', expanded);
+  const label = expanded ? 'Minimize' : 'Expand';
+  btn.title = label;
+  btn.setAttribute('aria-label', label);
 }
 
 function enterFullscreen() {
@@ -1027,35 +1034,32 @@ function positionTableSetupPanel() {
   const anchor =
     (tableGridBtn && tableGridBtn.offsetParent ? tableGridBtn : null) || tableGridBtnMobile;
   if (!anchor) return;
-  const r = anchor.getBoundingClientRect();
   const studio = $('dsaSkStudio');
-  const minimized = !!(studio && studio.classList.contains('minimized'));
-  const compact = minimized || !!hooks.embedInDialog;
-  const panelW = compact
-    ? Math.min(196, window.innerWidth - 20)
-    : Math.min(232, window.innerWidth - 20);
-  tableSetupPanel.classList.toggle('dsa-sk-table-setup--compact', compact);
-  tableSetupPanel.classList.add('dsa-sk-table-setup-fixed');
+  if (!studio) return;
+  const studioRect = studio.getBoundingClientRect();
+  const r = anchor.getBoundingClientRect();
+  const minimized = studio.classList.contains('minimized') && !isFullscreen();
+  const panelW = minimized
+    ? Math.min(210, studioRect.width - 16)
+    : Math.min(228, studioRect.width - 16);
+  tableSetupPanel.classList.toggle('dsa-sk-table-setup--row', minimized);
+  tableSetupPanel.style.position = 'absolute';
   tableSetupPanel.style.width = `${panelW}px`;
-  tableSetupPanel.style.position = 'fixed';
-  tableSetupPanel.style.transform = 'none';
-  tableSetupPanel.style.left = '';
-  tableSetupPanel.style.right = '';
-  tableSetupPanel.style.bottom = '';
-  const prevVis = tableSetupPanel.hidden;
-  tableSetupPanel.hidden = false;
-  const panelH = tableSetupPanel.offsetHeight || 130;
-  if (prevVis) tableSetupPanel.hidden = true;
-  let left = r.left + r.width / 2 - panelW / 2;
-  left = Math.max(8, Math.min(left, window.innerWidth - panelW - 8));
-  let top = r.bottom + 8;
-  if (minimized || top + panelH > window.innerHeight - 10) {
-    top = r.top - panelH - 8;
-  }
-  top = Math.max(8, Math.min(top, window.innerHeight - panelH - 8));
+  tableSetupPanel.style.transform = '';
+  tableSetupPanel.style.zIndex = '50';
+  let left = r.left + r.width / 2 - panelW / 2 - studioRect.left;
+  left = Math.max(8, Math.min(left, studioRect.width - panelW - 8));
   tableSetupPanel.style.left = `${left}px`;
+  tableSetupPanel.hidden = false;
+  const panelH = tableSetupPanel.offsetHeight || 120;
+  if (!tableSetupOpen) tableSetupPanel.hidden = true;
+  let top = r.bottom - studioRect.top + 8;
+  if (minimized || top + panelH > studioRect.height - 8) {
+    top = r.top - studioRect.top - panelH - 8;
+  }
+  top = Math.max(8, Math.min(top, studioRect.height - panelH - 8));
   tableSetupPanel.style.top = `${top}px`;
-  tableSetupPanel.style.zIndex = isFullscreen() ? '600050' : '600040';
+  tableSetupPanel.style.bottom = '';
 }
 function openTableSetup() {
   if (!tableSetupPanel) return;
@@ -1071,11 +1075,11 @@ function closeTableSetup() {
   if (!tableSetupPanel) return;
   tableSetupOpen = false;
   tableSetupPanel.hidden = true;
-  tableSetupPanel.classList.remove('dsa-sk-table-setup-fixed', 'dsa-sk-table-setup--compact');
+  tableSetupPanel.classList.remove('dsa-sk-table-setup--row');
   tableSetupPanel.style.position = '';
   tableSetupPanel.style.left = '';
   tableSetupPanel.style.top = '';
-  tableSetupPanel.style.bottom = '';
+  tableSetupPanel.style.width = '';
   tableSetupPanel.style.zIndex = '';
   mount.classList.remove('dsa-sk-table-setup-open');
   if (tableGridBtn) tableGridBtn.setAttribute('aria-expanded', 'false');
@@ -1514,14 +1518,7 @@ if (backBtn) {
       return;
     }
     if (isFullscreen()) {
-      exitFullscreen();
-      const studio = $('dsaSkStudio');
-      if (studio && !hooks.embedInDialog) {
-        studio.classList.add('minimized');
-        state.minimized = true;
-      }
-      syncToolbarUi();
-      setTimeout(fitCanvas, 80);
+      toggleMinimize();
       return;
     }
     if (isBigScreen() && !state.minimized) {
@@ -1573,12 +1570,16 @@ mount.querySelectorAll('.brush[data-brush]').forEach((b) => {
   addL(b, 'click', () => selectBrush(b.dataset.brush));
 });
 
-if (tableRowsInput) {
-  addL(tableRowsInput, 'input', applyTableInputs);
+function wireTableSetupInputs() {
+  if (!tableSetupPanel) return;
+  tableSetupPanel.querySelectorAll('.table-setup-input').forEach((inp) => {
+    addL(inp, 'input', applyTableInputs);
+    addL(inp, 'change', applyTableInputs);
+    addL(inp, 'mousedown', (e) => e.stopPropagation());
+    addL(inp, 'click', (e) => e.stopPropagation());
+  });
 }
-if (tableColsInput) {
-  addL(tableColsInput, 'input', applyTableInputs);
-}
+wireTableSetupInputs();
 const tableDiscardBtn = $('dsaSkTableDiscardBtn');
 const tableDoneBtn = $('dsaSkTableDoneBtn');
 if (tableDiscardBtn) {
@@ -1594,23 +1595,8 @@ if (tableDoneBtn) {
     confirmTable();
   });
 }
-if (tableSetupPanel) {
-  addL(tableSetupPanel, 'mousedown', (e) => {
-    if (e.target.closest('input, button, label, .table-setup-field')) return;
-    e.stopPropagation();
-  });
-  addL(tableSetupPanel, 'touchstart', (e) => {
-    if (e.target.closest('input, button, label, .table-setup-field')) return;
-    e.stopPropagation();
-  }, { passive: true });
-}
-const expandBtn = $('dsaSkExpandBtn');
-if (expandBtn) {
-  addL(expandBtn, 'click', (e) => {
-    e.stopPropagation();
-    if (state.minimized && !isFullscreen()) enterFullscreen();
-  });
-}
+const minBtn = $('dsaSkMinimizeBtn');
+if (minBtn) addL(minBtn, 'click', () => toggleMinimize());
 
 const imgOv = $('dsaSkImageOverlay');
 if (imgOv) {
@@ -1642,15 +1628,9 @@ function onDocKey(e) {
     cancelTable();
     return;
   }
-  if (e.key === 'Escape' && isFullscreen()) {
+  if (e.key === 'Escape' && isFullscreen() && isNativeFullscreen()) {
     e.preventDefault();
-    exitFullscreen();
-    const studio = $('dsaSkStudio');
-    if (studio && !hooks.embedInDialog) {
-      studio.classList.add('minimized');
-      state.minimized = true;
-    }
-    syncToolbarUi();
+    toggleMinimize();
     return;
   }
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;

@@ -7,10 +7,18 @@
     <!-- Table overlay -->
     <div class="table-overlay" id="dsaSkTableOverlay">
       <div class="table-grid" id="dsaSkTableGrid"></div>
-      <button class="table-add t-add-col" data-table="col" data-delta="1">+</button>
-      <button class="table-add t-del-col" data-table="col" data-delta="-1">−</button>
-      <button class="table-add t-add-row" data-table="row" data-delta="1">+</button>
-      <button class="table-add t-del-row" data-table="row" data-delta="-1">−</button>
+      <div class="table-dim-panel" id="dsaSkTableDimPanel">
+        <div class="table-dim-row">
+          <span class="table-dim-label">Rows</span>
+          <input type="range" class="table-dim-slider" id="dsaSkTableRowsSlider" min="1" max="12" value="3" step="1" aria-label="Table rows" />
+          <span class="table-dim-value" id="dsaSkTableRowsValue">3</span>
+        </div>
+        <div class="table-dim-row">
+          <span class="table-dim-label">Columns</span>
+          <input type="range" class="table-dim-slider" id="dsaSkTableColsSlider" min="1" max="12" value="3" step="1" aria-label="Table columns" />
+          <span class="table-dim-value" id="dsaSkTableColsValue">3</span>
+        </div>
+      </div>
       <div class="resize-handle" id="dsaSkTableResize"></div>
       <div class="table-controls">
         <button class="t-cancel" data-action="table-cancel">

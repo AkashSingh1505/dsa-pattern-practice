@@ -28,6 +28,7 @@ function dsaWireSketchEditorStudioStub() {
         },
         syncHasInkFromPixels() {},
         flushForPersist() {},
+        prepareForSavedLoad() {},
         exitFullscreen() {},
         isFullscreen() {
             return false;
@@ -45,7 +46,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     if (!document.head.querySelector("link[data-dsa-sketch-studio-css]")) {
         const lk = document.createElement("link");
         lk.rel = "stylesheet";
-        lk.href = "./dsa-sketch-studio.css?v=24";
+        lk.href = "./dsa-sketch-studio.css?v=25";
         lk.dataset.dsaSketchStudioCss = "1";
         document.head.appendChild(lk);
     }
@@ -67,10 +68,18 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     <!-- Table overlay -->
     <div class="table-overlay" id="dsaSkTableOverlay">
       <div class="table-grid" id="dsaSkTableGrid"></div>
-      <button class="table-add t-add-col" data-table="col" data-delta="1">+</button>
-      <button class="table-add t-del-col" data-table="col" data-delta="-1">−</button>
-      <button class="table-add t-add-row" data-table="row" data-delta="1">+</button>
-      <button class="table-add t-del-row" data-table="row" data-delta="-1">−</button>
+      <div class="table-dim-panel" id="dsaSkTableDimPanel">
+        <div class="table-dim-row">
+          <span class="table-dim-label">Rows</span>
+          <input type="range" class="table-dim-slider" id="dsaSkTableRowsSlider" min="1" max="12" value="3" step="1" aria-label="Table rows" />
+          <span class="table-dim-value" id="dsaSkTableRowsValue">3</span>
+        </div>
+        <div class="table-dim-row">
+          <span class="table-dim-label">Columns</span>
+          <input type="range" class="table-dim-slider" id="dsaSkTableColsSlider" min="1" max="12" value="3" step="1" aria-label="Table columns" />
+          <span class="table-dim-value" id="dsaSkTableColsValue">3</span>
+        </div>
+      </div>
       <div class="resize-handle" id="dsaSkTableResize"></div>
       <div class="table-controls">
         <button class="t-cancel" data-action="table-cancel">
@@ -1165,23 +1174,33 @@ const opSlider = $('dsaSkOpacitySlider');
 const opThumb = $('dsaSkOpacityThumb');
 const opValEl = $('dsaSkOpacityValue');
 let dragOp = false;
-function setOpacity(cx) {
+function syncOpacityUi() {
   if (!opSlider || !opThumb) return;
-  const r = opSlider.getBoundingClientRect();
-  let pct = Math.max(0.1, Math.min(1, (cx - r.left) / r.width));
+  const raw = typeof state.opacity === 'number' && !Number.isNaN(state.opacity) ? state.opacity : 1;
+  const pct = Math.max(0.1, Math.min(1, raw));
   state.opacity = pct;
   const pctInt = Math.round(pct * 100);
   opThumb.style.left = `${pctInt}%`;
   if (opValEl) opValEl.textContent = `${pctInt}%`;
   opSlider.setAttribute('aria-valuenow', String(pctInt));
 }
-opSlider.addEventListener('mousedown', (e) => { dragOp = true; setOpacity(e.clientX); });
+function setOpacity(cx) {
+  if (!opSlider || !opThumb) return;
+  const r = opSlider.getBoundingClientRect();
+  if (r.width < 1) return;
+  let pct = Math.max(0.1, Math.min(1, (cx - r.left) / r.width));
+  state.opacity = pct;
+  syncOpacityUi();
+}
+if (opSlider) {
+  opSlider.addEventListener('mousedown', (e) => { dragOp = true; setOpacity(e.clientX); });
+  opSlider.addEventListener('touchstart', (e) => { dragOp = true; setOpacity(e.touches[0].clientX); }, { passive: true });
+  opSlider.addEventListener('touchmove', (e) => { if (dragOp) { setOpacity(e.touches[0].clientX); e.preventDefault(); } }, { passive: false });
+  opSlider.addEventListener('touchend', () => { dragOp = false; });
+}
 document.addEventListener('mousemove', (e) => { if (dragOp) setOpacity(e.clientX); });
 document.addEventListener('mouseup', () => { dragOp = false; });
-opSlider.addEventListener('touchstart', (e) => { dragOp = true; setOpacity(e.touches[0].clientX); });
-opSlider.addEventListener('touchmove', (e) => { if (dragOp) { setOpacity(e.touches[0].clientX); e.preventDefault(); } }, { passive: false });
-opSlider.addEventListener('touchend', () => { dragOp = false; });
-if (opSlider) setOpacity(opSlider.getBoundingClientRect().right);
+syncOpacityUi();
 
 /* ============ COLOR PALETTE ============ */
 const colors = ['#1c1c1e','#5a5a5a','#9b9b9b','#ffffff','#ff3b30','#ff9500','#ffcc00','#34c759','#00c7be','#007aff','#5856d6','#af52de','#ff2d55','#a2845e','#8e8e93','#5a3825'];
@@ -1263,10 +1282,24 @@ function renderTable() {
     cell.className = 'table-cell';
     tableGrid.appendChild(cell);
   }
+  syncTableDimUi();
 }
-function changeTable(kind, delta) {
-  if (kind === 'col') tableState.cols = Math.max(1, Math.min(12, tableState.cols + delta));
-  else tableState.rows = Math.max(1, Math.min(12, tableState.rows + delta));
+function syncTableDimUi() {
+  const rowsSl = $('dsaSkTableRowsSlider');
+  const colsSl = $('dsaSkTableColsSlider');
+  const rowsVal = $('dsaSkTableRowsValue');
+  const colsVal = $('dsaSkTableColsValue');
+  if (rowsSl) rowsSl.value = String(tableState.rows);
+  if (colsSl) colsSl.value = String(tableState.cols);
+  if (rowsVal) rowsVal.textContent = String(tableState.rows);
+  if (colsVal) colsVal.textContent = String(tableState.cols);
+}
+function setTableRows(n) {
+  tableState.rows = Math.max(1, Math.min(12, Math.round(Number(n) || 1)));
+  renderTable();
+}
+function setTableCols(n) {
+  tableState.cols = Math.max(1, Math.min(12, Math.round(Number(n) || 1)));
   renderTable();
 }
 function cancelTable() {
@@ -1296,7 +1329,7 @@ function confirmTable() {
 }
 let tDrag = null;
 tableOverlay.addEventListener('mousedown', (e) => {
-  if (e.target === tableResize || e.target.closest('button')) return;
+  if (e.target === tableResize || e.target.closest('button, input')) return;
   tDrag = { mode: 'move', sx: e.clientX, sy: e.clientY, ox: tableState.x, oy: tableState.y };
   e.preventDefault();
 });
@@ -1317,7 +1350,7 @@ document.addEventListener('mousemove', (e) => {
 });
 document.addEventListener('mouseup', () => { tDrag = null; });
 tableOverlay.addEventListener('touchstart', (e) => {
-  if (e.target === tableResize || e.target.closest('button')) return;
+  if (e.target === tableResize || e.target.closest('button, input')) return;
   const t = e.touches[0];
   tDrag = { mode: 'move', sx: t.clientX, sy: t.clientY, ox: tableState.x, oy: tableState.y };
 }, { passive: true });
@@ -1750,9 +1783,14 @@ mount.querySelectorAll('.brush[data-brush]').forEach((b) => {
   addL(b, 'click', () => selectBrush(b.dataset.brush));
 });
 
-mount.querySelectorAll('#dsaSkTableOverlay .table-add').forEach((btn) => {
-  addL(btn, 'click', () => changeTable(btn.dataset.table, parseInt(btn.dataset.delta, 10)));
-});
+const tableRowsSlider = $('dsaSkTableRowsSlider');
+const tableColsSlider = $('dsaSkTableColsSlider');
+if (tableRowsSlider) {
+  addL(tableRowsSlider, 'input', () => setTableRows(tableRowsSlider.value));
+}
+if (tableColsSlider) {
+  addL(tableColsSlider, 'input', () => setTableCols(tableColsSlider.value));
+}
 mount.querySelectorAll('[data-action="table-cancel"]').forEach((b) => addL(b, 'click', () => cancelTable()));
 mount.querySelectorAll('[data-action="table-confirm"]').forEach((b) => addL(b, 'click', () => confirmTable()));
 
@@ -1828,47 +1866,78 @@ const api = {
   resetZoom() {
     resetZoom();
   },
-  loadDataUrl(url) {
+  prepareForSavedLoad() {
+    const studio = $('dsaSkStudio');
+    if (studio && studio.classList.contains('minimized')) {
+      studio.classList.remove('minimized');
+      state.minimized = false;
+      syncToolbarUi();
+    }
+    fitCanvas();
+  },
+  loadDataUrl(url, attempt = 0) {
     if (!url || !String(url).trim()) {
       api.clear();
       return;
     }
+    const src = String(url).trim();
     const im = new Image();
     im.onload = () => {
+      api.prepareForSavedLoad();
       const wrapEl = $('dsaSkCanvasWrap');
-      const maxW = wrapEl.clientWidth * 0.55;
-      const maxH = wrapEl.clientHeight * 0.55;
-      let w = im.width;
-      let h = im.height;
-      if (w > maxW) {
-        h *= maxW / w;
-        w = maxW;
-      }
-      if (h > maxH) {
-        w *= maxH / h;
-        h = maxH;
-      }
       const cvRect = canvas.getBoundingClientRect();
-      const wrRect = wrapEl.getBoundingClientRect();
-      const sx = canvas.width / cvRect.width;
-      const sy = canvas.height / cvRect.height;
-      state.paths = [
-        {
-          type: 'image',
-          x: ((wrapEl.clientWidth - w) / 2 + wrRect.left - cvRect.left) * sx,
-          y: ((wrapEl.clientHeight - h) / 2 + wrRect.top - cvRect.top) * sy,
-          w: w * sx,
-          h: h * sy,
-          img: im,
-        },
-      ];
+      if ((!wrapEl || wrapEl.clientWidth < 2 || cvRect.width < 1) && attempt < 10) {
+        setTimeout(() => api.loadDataUrl(src, attempt + 1), 60 + attempt * 40);
+        return;
+      }
+      const isFullCanvas =
+        Math.abs(im.naturalWidth - canvas.width) <= 4 &&
+        Math.abs(im.naturalHeight - canvas.height) <= 4;
+      if (isFullCanvas) {
+        state.paths = [
+          {
+            type: 'image',
+            x: 0,
+            y: 0,
+            w: canvas.width,
+            h: canvas.height,
+            img: im,
+          },
+        ];
+      } else {
+        const maxW = wrapEl.clientWidth * 0.55;
+        const maxH = wrapEl.clientHeight * 0.55;
+        let w = im.width;
+        let h = im.height;
+        if (w > maxW) {
+          h *= maxW / w;
+          w = maxW;
+        }
+        if (h > maxH) {
+          w *= maxH / h;
+          h = maxH;
+        }
+        const wrRect = wrapEl.getBoundingClientRect();
+        const sx = canvas.width / cvRect.width;
+        const sy = canvas.height / cvRect.height;
+        state.paths = [
+          {
+            type: 'image',
+            x: ((wrapEl.clientWidth - w) / 2 + wrRect.left - cvRect.left) * sx,
+            y: ((wrapEl.clientHeight - h) / 2 + wrRect.top - cvRect.top) * sy,
+            w: w * sx,
+            h: h * sy,
+            img: im,
+          },
+        ];
+      }
       state.redoStack = [];
       redrawAll();
       updateUndoRedo();
       syncInkFlag();
     };
     im.onerror = () => api.clear();
-    im.src = String(url).trim();
+    im.src = src;
   },
   toDataUrl() {
     try {

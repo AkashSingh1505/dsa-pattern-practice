@@ -6148,6 +6148,7 @@ function dsaStubSketchApi() {
         },
         syncHasInkFromPixels() {},
         flushForPersist() {},
+        prepareForSavedLoad() {},
         exitFullscreen() {},
         isFullscreen() {
             return false;
@@ -7141,6 +7142,33 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         });
     }
 
+    function loadSketchDrawingIntoEditor(drawingUrl) {
+        const url = drawingUrl != null ? String(drawingUrl).trim() : "";
+        if (!url) {
+            if (sketchEditorWired && typeof scratchApi.clear === "function") {
+                scratchApi.clear();
+            }
+            return;
+        }
+        openSketchPanel();
+        const applyLoad = () => {
+            ensureSketchEditor();
+            if (typeof scratchApi.prepareForSavedLoad === "function") {
+                scratchApi.prepareForSavedLoad();
+            }
+            if (typeof scratchApi.loadDataUrl === "function") {
+                scratchApi.loadDataUrl(url);
+            }
+            if (typeof scratchApi.resize === "function") {
+                scratchApi.resize();
+            }
+        };
+        requestAnimationFrame(() => {
+            requestAnimationFrame(applyLoad);
+        });
+        setTimeout(applyLoad, 150);
+    }
+
     function syncSketchUiFromEntry(ent) {
         const hasDrawing = !!(ent && ent.drawing && String(ent.drawing).trim());
         if (hasDrawing) {
@@ -8008,8 +8036,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         syncStarVisual();
         syncSketchUiFromEntry(ent);
         if (ent && ent.drawing && String(ent.drawing).trim()) {
-            ensureSketchEditor();
-            scratchApi.loadDataUrl(String(ent.drawing).trim());
+            loadSketchDrawingIntoEditor(String(ent.drawing).trim());
         } else if (sketchEditorWired) {
             scratchApi.clear();
         }

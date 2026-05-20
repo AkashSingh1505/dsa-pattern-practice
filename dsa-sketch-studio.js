@@ -151,33 +151,34 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
         <svg class="dsa-sk-icon-collapse" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 9H4V4h5M15 4h5v5h-5M9 15H4v5h5M20 15v5h-5"/></svg>
       </button>
     </div>
-        <div class="table-setup-panel" id="dsaSkTableSetupPanel" hidden>
-          <div class="table-setup-head">Table</div>
-          <div class="table-setup-fields">
-            <label class="table-setup-field">
-              <span class="table-setup-label">Rows</span>
-              <input type="number" class="table-setup-input" id="dsaSkTableRowsInput" min="1" max="100" inputmode="numeric" autocomplete="off" />
-            </label>
-            <label class="table-setup-field">
-              <span class="table-setup-label">Columns</span>
-              <input type="number" class="table-setup-input" id="dsaSkTableColsInput" min="1" max="100" inputmode="numeric" autocomplete="off" />
-            </label>
-          </div>
-          <div class="table-setup-actions">
-            <button type="button" class="table-setup-btn table-setup-btn--ghost" id="dsaSkTableDiscardBtn" title="Cancel" aria-label="Cancel">
-              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
-            </button>
-            <button type="button" class="table-setup-btn table-setup-btn--danger" id="dsaSkTableDeleteBtn" title="Remove table" aria-label="Remove table">
-              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
-            </button>
-            <button type="button" class="table-setup-btn table-setup-btn--primary" id="dsaSkTableDoneBtn" title="Place on canvas" aria-label="Done">
-              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
-            </button>
-          </div>
-        </div>
 
   </div>
 
+
+<div class="table-setup-panel" id="dsaSkTableSetupPanel" hidden>
+  <div class="table-setup-head">Table</div>
+  <div class="table-setup-fields">
+    <label class="table-setup-field">
+      <span class="table-setup-label">Rows</span>
+      <input type="number" class="table-setup-input" id="dsaSkTableRowsInput" min="1" max="100" inputmode="numeric" autocomplete="off" />
+    </label>
+    <label class="table-setup-field">
+      <span class="table-setup-label">Columns</span>
+      <input type="number" class="table-setup-input" id="dsaSkTableColsInput" min="1" max="100" inputmode="numeric" autocomplete="off" />
+    </label>
+  </div>
+  <div class="table-setup-actions">
+    <button type="button" class="table-setup-btn table-setup-btn--ghost" id="dsaSkTableDiscardBtn" title="Cancel" aria-label="Cancel">
+      <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <button type="button" class="table-setup-btn table-setup-btn--danger" id="dsaSkTableDeleteBtn" title="Remove table" aria-label="Remove table">
+      <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+    </button>
+    <button type="button" class="table-setup-btn table-setup-btn--primary" id="dsaSkTableDoneBtn" title="Place on canvas" aria-label="Done">
+      <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+    </button>
+  </div>
+</div>
   <div class="menu-dropdown" id="dsaSkMenuDropdown">
     <div class="menu-item" id="dsaSkMenuExport">
       <span>Export as PNG</span>
@@ -1299,7 +1300,7 @@ function renderTable() {
   syncTableDimUi();
 }
 function clampTableDim(n) {
-  return Math.max(TABLE_DIM_MIN, Math.min(TABLE_DIM_MAX, Math.round(Number(n) || TABLE_DIM_MIN));
+  return Math.max(TABLE_DIM_MIN, Math.min(TABLE_DIM_MAX, Math.round(Number(n) || TABLE_DIM_MIN)));
 }
 function syncTableDimUi() {
   if (tableRowsInput) {
@@ -1966,6 +1967,12 @@ const api = {
     resetZoom();
   },
   prepareForSavedLoad() {
+    const studio = $('dsaSkStudio');
+    if (studio && studio.classList.contains('minimized')) {
+      studio.classList.remove('minimized');
+      state.minimized = false;
+      syncToolbarUi();
+    }
     fitCanvas();
   },
   loadDataUrl(url, attempt = 0) {

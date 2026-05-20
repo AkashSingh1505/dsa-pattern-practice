@@ -1005,7 +1005,7 @@ function renderTable() {
   syncTableDimUi();
 }
 function clampTableDim(n) {
-  return Math.max(TABLE_DIM_MIN, Math.min(TABLE_DIM_MAX, Math.round(Number(n) || TABLE_DIM_MIN));
+  return Math.max(TABLE_DIM_MIN, Math.min(TABLE_DIM_MAX, Math.round(Number(n) || TABLE_DIM_MIN)));
 }
 function syncTableDimUi() {
   if (tableRowsInput) {

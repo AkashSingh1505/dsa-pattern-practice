@@ -133,6 +133,10 @@ function syncToolbarUi() {
   mount.classList.toggle('dsa-sk-bottom-main', !isBigScreen() && state.tool !== 'pencil');
   /* iPad/PC: hide top back only when minimized (same toolbar as fullscreen otherwise) */
   mount.classList.toggle('dsa-sk-back-hidden', isBigScreen() && state.minimized && !isFullscreen());
+  const expandBtn = $('dsaSkExpandBtn');
+  if (expandBtn) {
+    expandBtn.hidden = !(state.minimized && !isFullscreen() && !roBool());
+  }
 }
 
 function enterFullscreen() {
@@ -1020,23 +1024,38 @@ function applyTableInputs() {
 }
 function positionTableSetupPanel() {
   if (!tableSetupPanel) return;
-  const anchor = tableGridBtn && tableGridBtn.offsetParent ? tableGridBtn : tableGridBtnMobile;
+  const anchor =
+    (tableGridBtn && tableGridBtn.offsetParent ? tableGridBtn : null) || tableGridBtnMobile;
   if (!anchor) return;
   const r = anchor.getBoundingClientRect();
-  const host = editorRoot.getBoundingClientRect();
-  const panelW = Math.min(248, host.width - 24);
-  let left = r.left + r.width / 2 - panelW / 2 - host.left;
-  left = Math.max(8, Math.min(left, host.width - panelW - 8));
+  const studio = $('dsaSkStudio');
+  const minimized = !!(studio && studio.classList.contains('minimized'));
+  const compact = minimized || !!hooks.embedInDialog;
+  const panelW = compact
+    ? Math.min(196, window.innerWidth - 20)
+    : Math.min(232, window.innerWidth - 20);
+  tableSetupPanel.classList.toggle('dsa-sk-table-setup--compact', compact);
+  tableSetupPanel.classList.add('dsa-sk-table-setup-fixed');
   tableSetupPanel.style.width = `${panelW}px`;
-  if (!isBigScreen()) {
-    tableSetupPanel.style.left = `${left}px`;
-    tableSetupPanel.style.top = '';
-    tableSetupPanel.style.bottom = `${host.height - (r.top - host.top) + 10}px`;
-  } else {
-    tableSetupPanel.style.left = `${left}px`;
-    tableSetupPanel.style.top = `${r.bottom - host.top + 8}px`;
-    tableSetupPanel.style.bottom = '';
+  tableSetupPanel.style.position = 'fixed';
+  tableSetupPanel.style.transform = 'none';
+  tableSetupPanel.style.left = '';
+  tableSetupPanel.style.right = '';
+  tableSetupPanel.style.bottom = '';
+  const prevVis = tableSetupPanel.hidden;
+  tableSetupPanel.hidden = false;
+  const panelH = tableSetupPanel.offsetHeight || 130;
+  if (prevVis) tableSetupPanel.hidden = true;
+  let left = r.left + r.width / 2 - panelW / 2;
+  left = Math.max(8, Math.min(left, window.innerWidth - panelW - 8));
+  let top = r.bottom + 8;
+  if (minimized || top + panelH > window.innerHeight - 10) {
+    top = r.top - panelH - 8;
   }
+  top = Math.max(8, Math.min(top, window.innerHeight - panelH - 8));
+  tableSetupPanel.style.left = `${left}px`;
+  tableSetupPanel.style.top = `${top}px`;
+  tableSetupPanel.style.zIndex = isFullscreen() ? '600050' : '600040';
 }
 function openTableSetup() {
   if (!tableSetupPanel) return;
@@ -1052,6 +1071,12 @@ function closeTableSetup() {
   if (!tableSetupPanel) return;
   tableSetupOpen = false;
   tableSetupPanel.hidden = true;
+  tableSetupPanel.classList.remove('dsa-sk-table-setup-fixed', 'dsa-sk-table-setup--compact');
+  tableSetupPanel.style.position = '';
+  tableSetupPanel.style.left = '';
+  tableSetupPanel.style.top = '';
+  tableSetupPanel.style.bottom = '';
+  tableSetupPanel.style.zIndex = '';
   mount.classList.remove('dsa-sk-table-setup-open');
   if (tableGridBtn) tableGridBtn.setAttribute('aria-expanded', 'false');
 }
@@ -1570,8 +1595,21 @@ if (tableDoneBtn) {
   });
 }
 if (tableSetupPanel) {
-  addL(tableSetupPanel, 'click', (e) => e.stopPropagation());
-  addL(tableSetupPanel, 'mousedown', (e) => e.stopPropagation());
+  addL(tableSetupPanel, 'mousedown', (e) => {
+    if (e.target.closest('input, button, label, .table-setup-field')) return;
+    e.stopPropagation();
+  });
+  addL(tableSetupPanel, 'touchstart', (e) => {
+    if (e.target.closest('input, button, label, .table-setup-field')) return;
+    e.stopPropagation();
+  }, { passive: true });
+}
+const expandBtn = $('dsaSkExpandBtn');
+if (expandBtn) {
+  addL(expandBtn, 'click', (e) => {
+    e.stopPropagation();
+    if (state.minimized && !isFullscreen()) enterFullscreen();
+  });
 }
 
 const imgOv = $('dsaSkImageOverlay');
@@ -1624,6 +1662,10 @@ const ro = new ResizeObserver(() => {
   ro._t = setTimeout(fitCanvas, 50);
 });
 ro.observe($('dsaSkCanvasWrap'));
+
+addL(window, 'resize', () => {
+  if (tableSetupOpen) positionTableSetupPanel();
+});
 
 fitCanvas();
 updateBrushColors();

@@ -46,7 +46,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     if (!document.head.querySelector("link[data-dsa-sketch-studio-css]")) {
         const lk = document.createElement("link");
         lk.rel = "stylesheet";
-        lk.href = "./dsa-sketch-studio.css?v=27";
+        lk.href = "./dsa-sketch-studio.css?v=28";
         lk.dataset.dsaSketchStudioCss = "1";
         document.head.appendChild(lk);
     }
@@ -118,6 +118,30 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
         <button type="button" title="Table" id="dsaSkTtGrid" aria-expanded="false" aria-controls="dsaSkTableSetupPanel">
           <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
         </button>
+        <div class="table-setup-panel" id="dsaSkTableSetupPanel" hidden>
+          <div class="table-setup-head">
+            <span class="table-setup-title">Table</span>
+            <span class="table-setup-hint">Drag · tap ✓</span>
+          </div>
+          <div class="table-setup-fields">
+            <label class="table-setup-field">
+              <span class="table-setup-label">Rows</span>
+              <input type="number" class="table-setup-input" id="dsaSkTableRowsInput" min="1" max="100" inputmode="numeric" autocomplete="off" />
+            </label>
+            <label class="table-setup-field">
+              <span class="table-setup-label">Cols</span>
+              <input type="number" class="table-setup-input" id="dsaSkTableColsInput" min="1" max="100" inputmode="numeric" autocomplete="off" />
+            </label>
+          </div>
+          <div class="table-setup-actions">
+            <button type="button" class="table-setup-btn table-setup-btn--ghost" id="dsaSkTableDiscardBtn">
+              <span>Cancel</span>
+            </button>
+            <button type="button" class="table-setup-btn table-setup-btn--primary" id="dsaSkTableDoneBtn" title="Place on canvas" aria-label="Place table">
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>
+            </button>
+          </div>
+        </div>
       </div>
       <button title="Attach" id="dsaSkTtAttach">
         <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21.4 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
@@ -128,6 +152,9 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     </div>
 
     <div class="toolbar-right">
+      <button class="icon-btn expand-btn" type="button" id="dsaSkExpandBtn" title="Fullscreen" aria-label="Enter fullscreen" hidden>
+        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 00-2 2v3M16 3h3a2 2 0 012 2v3M21 16v3a2 2 0 01-2 2h-3M8 21H5a2 2 0 01-2-2v-3"/></svg>
+      </button>
       <div class="undo-redo-tab glass-pill" id="dsaSkUndoRedoTab">
         <button id="dsaSkUndoBtn" disabled>
           <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 00-15-6.7L3 13"/></svg>
@@ -151,30 +178,6 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
   </div>
 
 
-<div class="table-setup-panel" id="dsaSkTableSetupPanel" hidden>
-  <div class="table-setup-head">
-    <span class="table-setup-title">Table</span>
-    <span class="table-setup-hint">Drag preview · tap ✓ to place</span>
-  </div>
-  <div class="table-setup-fields">
-    <label class="table-setup-field">
-      <span class="table-setup-label">Rows</span>
-      <input type="number" class="table-setup-input" id="dsaSkTableRowsInput" min="1" max="100" inputmode="numeric" autocomplete="off" />
-    </label>
-    <label class="table-setup-field">
-      <span class="table-setup-label">Columns</span>
-      <input type="number" class="table-setup-input" id="dsaSkTableColsInput" min="1" max="100" inputmode="numeric" autocomplete="off" />
-    </label>
-  </div>
-  <div class="table-setup-actions">
-    <button type="button" class="table-setup-btn table-setup-btn--ghost" id="dsaSkTableDiscardBtn">
-      <span>Cancel</span>
-    </button>
-    <button type="button" class="table-setup-btn table-setup-btn--primary" id="dsaSkTableDoneBtn" title="Place on canvas" aria-label="Place table">
-      <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
-    </button>
-  </div>
-</div>
   <div class="menu-dropdown" id="dsaSkMenuDropdown">
     <div class="menu-item" id="dsaSkMenuExport">
       <span>Export as PNG</span>
@@ -424,6 +427,10 @@ function syncToolbarUi() {
   mount.classList.toggle('dsa-sk-bottom-main', !isBigScreen() && state.tool !== 'pencil');
   /* iPad/PC: hide top back only when minimized (same toolbar as fullscreen otherwise) */
   mount.classList.toggle('dsa-sk-back-hidden', isBigScreen() && state.minimized && !isFullscreen());
+  const expandBtn = $('dsaSkExpandBtn');
+  if (expandBtn) {
+    expandBtn.hidden = !(state.minimized && !isFullscreen() && !roBool());
+  }
 }
 
 function enterFullscreen() {
@@ -1311,23 +1318,38 @@ function applyTableInputs() {
 }
 function positionTableSetupPanel() {
   if (!tableSetupPanel) return;
-  const anchor = tableGridBtn && tableGridBtn.offsetParent ? tableGridBtn : tableGridBtnMobile;
+  const anchor =
+    (tableGridBtn && tableGridBtn.offsetParent ? tableGridBtn : null) || tableGridBtnMobile;
   if (!anchor) return;
   const r = anchor.getBoundingClientRect();
-  const host = editorRoot.getBoundingClientRect();
-  const panelW = Math.min(248, host.width - 24);
-  let left = r.left + r.width / 2 - panelW / 2 - host.left;
-  left = Math.max(8, Math.min(left, host.width - panelW - 8));
+  const studio = $('dsaSkStudio');
+  const minimized = !!(studio && studio.classList.contains('minimized'));
+  const compact = minimized || !!hooks.embedInDialog;
+  const panelW = compact
+    ? Math.min(196, window.innerWidth - 20)
+    : Math.min(232, window.innerWidth - 20);
+  tableSetupPanel.classList.toggle('dsa-sk-table-setup--compact', compact);
+  tableSetupPanel.classList.add('dsa-sk-table-setup-fixed');
   tableSetupPanel.style.width = `${panelW}px`;
-  if (!isBigScreen()) {
-    tableSetupPanel.style.left = `${left}px`;
-    tableSetupPanel.style.top = '';
-    tableSetupPanel.style.bottom = `${host.height - (r.top - host.top) + 10}px`;
-  } else {
-    tableSetupPanel.style.left = `${left}px`;
-    tableSetupPanel.style.top = `${r.bottom - host.top + 8}px`;
-    tableSetupPanel.style.bottom = '';
+  tableSetupPanel.style.position = 'fixed';
+  tableSetupPanel.style.transform = 'none';
+  tableSetupPanel.style.left = '';
+  tableSetupPanel.style.right = '';
+  tableSetupPanel.style.bottom = '';
+  const prevVis = tableSetupPanel.hidden;
+  tableSetupPanel.hidden = false;
+  const panelH = tableSetupPanel.offsetHeight || 130;
+  if (prevVis) tableSetupPanel.hidden = true;
+  let left = r.left + r.width / 2 - panelW / 2;
+  left = Math.max(8, Math.min(left, window.innerWidth - panelW - 8));
+  let top = r.bottom + 8;
+  if (minimized || top + panelH > window.innerHeight - 10) {
+    top = r.top - panelH - 8;
   }
+  top = Math.max(8, Math.min(top, window.innerHeight - panelH - 8));
+  tableSetupPanel.style.left = `${left}px`;
+  tableSetupPanel.style.top = `${top}px`;
+  tableSetupPanel.style.zIndex = isFullscreen() ? '600050' : '600040';
 }
 function openTableSetup() {
   if (!tableSetupPanel) return;
@@ -1343,6 +1365,12 @@ function closeTableSetup() {
   if (!tableSetupPanel) return;
   tableSetupOpen = false;
   tableSetupPanel.hidden = true;
+  tableSetupPanel.classList.remove('dsa-sk-table-setup-fixed', 'dsa-sk-table-setup--compact');
+  tableSetupPanel.style.position = '';
+  tableSetupPanel.style.left = '';
+  tableSetupPanel.style.top = '';
+  tableSetupPanel.style.bottom = '';
+  tableSetupPanel.style.zIndex = '';
   mount.classList.remove('dsa-sk-table-setup-open');
   if (tableGridBtn) tableGridBtn.setAttribute('aria-expanded', 'false');
 }
@@ -1861,8 +1889,21 @@ if (tableDoneBtn) {
   });
 }
 if (tableSetupPanel) {
-  addL(tableSetupPanel, 'click', (e) => e.stopPropagation());
-  addL(tableSetupPanel, 'mousedown', (e) => e.stopPropagation());
+  addL(tableSetupPanel, 'mousedown', (e) => {
+    if (e.target.closest('input, button, label, .table-setup-field')) return;
+    e.stopPropagation();
+  });
+  addL(tableSetupPanel, 'touchstart', (e) => {
+    if (e.target.closest('input, button, label, .table-setup-field')) return;
+    e.stopPropagation();
+  }, { passive: true });
+}
+const expandBtn = $('dsaSkExpandBtn');
+if (expandBtn) {
+  addL(expandBtn, 'click', (e) => {
+    e.stopPropagation();
+    if (state.minimized && !isFullscreen()) enterFullscreen();
+  });
 }
 
 const imgOv = $('dsaSkImageOverlay');
@@ -1915,6 +1956,10 @@ const ro = new ResizeObserver(() => {
   ro._t = setTimeout(fitCanvas, 50);
 });
 ro.observe($('dsaSkCanvasWrap'));
+
+addL(window, 'resize', () => {
+  if (tableSetupOpen) positionTableSetupPanel();
+});
 
 fitCanvas();
 updateBrushColors();

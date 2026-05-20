@@ -1042,8 +1042,10 @@
 .dsa-sketch-studio-mount .table-setup-panel {
     position: absolute;
     z-index: 45;
-    min-width: 240px;
+    min-width: 0;
+    max-width: calc(100vw - 20px);
     padding: 14px 16px;
+    pointer-events: auto;
     background: rgba(255, 255, 255, 0.97);
     backdrop-filter: saturate(180%) blur(20px);
     -webkit-backdrop-filter: saturate(180%) blur(20px);
@@ -1174,6 +1176,57 @@
 
 .dsa-sketch-studio-mount .table-setup-btn--primary:hover {
     filter: brightness(1.05);
+}
+
+.dsa-sketch-studio-mount .table-setup-panel.dsa-sk-table-setup-fixed {
+    position: fixed !important;
+}
+
+.dsa-sketch-studio-mount .table-setup-panel.dsa-sk-table-setup--compact {
+    padding: 10px 12px;
+    border-radius: 12px;
+}
+
+.dsa-sketch-studio-mount .table-setup-panel.dsa-sk-table-setup--compact .table-setup-head {
+    margin-bottom: 8px;
+}
+
+.dsa-sketch-studio-mount .table-setup-panel.dsa-sk-table-setup--compact .table-setup-hint {
+    font-size: 10px;
+}
+
+.dsa-sketch-studio-mount .table-setup-panel.dsa-sk-table-setup--compact .table-setup-fields {
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.dsa-sketch-studio-mount .table-setup-panel.dsa-sk-table-setup--compact .table-setup-field {
+    grid-template-columns: 44px 1fr;
+    gap: 6px;
+}
+
+.dsa-sketch-studio-mount .table-setup-panel.dsa-sk-table-setup--compact .table-setup-input {
+    height: 30px;
+    font-size: 13px;
+    padding: 0 8px;
+}
+
+.dsa-sketch-studio-mount .table-setup-panel.dsa-sk-table-setup--compact .table-setup-btn {
+    min-height: 32px;
+}
+
+.dsa-sketch-studio-mount .table-setup-panel.dsa-sk-table-setup--compact .table-setup-btn--primary {
+    width: 40px;
+}
+
+.dsa-sketch-studio-mount .table-tool-anchor .table-setup-panel {
+    left: 50%;
+    transform: translateX(-50%);
+    top: calc(100% + 8px);
+}
+
+.dsa-sketch-studio-mount .expand-btn[hidden] {
+    display: none !important;
 }
 
 .dsa-sketch-studio-mount.device-mobile .table-setup-panel {

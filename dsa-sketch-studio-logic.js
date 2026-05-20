@@ -139,7 +139,9 @@ function syncToolbarUi() {
 function syncMinimizeBtnUi() {
   const btn = $('dsaSkMinimizeBtn');
   if (!btn) return;
-  const expanded = isFullscreen() || !state.minimized;
+  btn.hidden = isFullscreen();
+  if (isFullscreen()) return;
+  const expanded = !state.minimized;
   btn.classList.toggle('dsa-sk-min--expanded', expanded);
   const label = expanded ? 'Minimize' : 'Expand';
   btn.title = label;
@@ -1008,13 +1010,15 @@ function clampTableDim(n) {
   return Math.max(TABLE_DIM_MIN, Math.min(TABLE_DIM_MAX, Math.round(Number(n) || TABLE_DIM_MIN)));
 }
 function syncTableDimUi() {
-  if (tableRowsInput) {
-    tableRowsInput.value = String(tableState.rows);
-    tableRowsInput.placeholder = String(tableState.rows);
+  const rowsEl = tableSetupPanel?.querySelector('#dsaSkTableRowsInput') || tableRowsInput;
+  const colsEl = tableSetupPanel?.querySelector('#dsaSkTableColsInput') || tableColsInput;
+  if (rowsEl) {
+    rowsEl.value = String(tableState.rows);
+    rowsEl.placeholder = String(tableState.rows);
   }
-  if (tableColsInput) {
-    tableColsInput.value = String(tableState.cols);
-    tableColsInput.placeholder = String(tableState.cols);
+  if (colsEl) {
+    colsEl.value = String(tableState.cols);
+    colsEl.placeholder = String(tableState.cols);
   }
 }
 function setTableRows(n) {
@@ -1026,8 +1030,10 @@ function setTableCols(n) {
   renderTable();
 }
 function applyTableInputs() {
-  if (tableRowsInput) setTableRows(tableRowsInput.value);
-  if (tableColsInput) setTableCols(tableColsInput.value);
+  const rowsEl = tableSetupPanel?.querySelector('#dsaSkTableRowsInput') || tableRowsInput;
+  const colsEl = tableSetupPanel?.querySelector('#dsaSkTableColsInput') || tableColsInput;
+  if (rowsEl) setTableRows(rowsEl.value);
+  if (colsEl) setTableCols(colsEl.value);
 }
 function positionTableSetupPanel() {
   if (!tableSetupPanel) return;
@@ -1035,29 +1041,28 @@ function positionTableSetupPanel() {
     (tableGridBtn && tableGridBtn.offsetParent ? tableGridBtn : null) || tableGridBtnMobile;
   if (!anchor) return;
   const studio = $('dsaSkStudio');
-  if (!studio) return;
-  const studioRect = studio.getBoundingClientRect();
-  const r = anchor.getBoundingClientRect();
-  const minimized = studio.classList.contains('minimized') && !isFullscreen();
+  const minimized = !!(studio && studio.classList.contains('minimized') && !isFullscreen());
   const panelW = minimized
-    ? Math.min(210, studioRect.width - 16)
-    : Math.min(228, studioRect.width - 16);
+    ? Math.min(220, window.innerWidth - 20)
+    : Math.min(228, window.innerWidth - 20);
   tableSetupPanel.classList.toggle('dsa-sk-table-setup--row', minimized);
-  tableSetupPanel.style.position = 'absolute';
+  tableSetupPanel.classList.add('dsa-sk-table-setup-floating');
+  tableSetupPanel.style.position = 'fixed';
   tableSetupPanel.style.width = `${panelW}px`;
-  tableSetupPanel.style.transform = '';
-  tableSetupPanel.style.zIndex = '50';
-  let left = r.left + r.width / 2 - panelW / 2 - studioRect.left;
-  left = Math.max(8, Math.min(left, studioRect.width - panelW - 8));
-  tableSetupPanel.style.left = `${left}px`;
+  tableSetupPanel.style.transform = 'none';
+  tableSetupPanel.style.zIndex = '600060';
+  const r = anchor.getBoundingClientRect();
   tableSetupPanel.hidden = false;
   const panelH = tableSetupPanel.offsetHeight || 120;
   if (!tableSetupOpen) tableSetupPanel.hidden = true;
-  let top = r.bottom - studioRect.top + 8;
-  if (minimized || top + panelH > studioRect.height - 8) {
-    top = r.top - studioRect.top - panelH - 8;
+  let left = r.left + r.width / 2 - panelW / 2;
+  left = Math.max(8, Math.min(left, window.innerWidth - panelW - 8));
+  let top = r.bottom + 8;
+  if (top + panelH > window.innerHeight - 10) {
+    top = r.top - panelH - 8;
   }
-  top = Math.max(8, Math.min(top, studioRect.height - panelH - 8));
+  top = Math.max(8, Math.min(top, window.innerHeight - panelH - 8));
+  tableSetupPanel.style.left = `${left}px`;
   tableSetupPanel.style.top = `${top}px`;
   tableSetupPanel.style.bottom = '';
 }
@@ -1069,13 +1074,27 @@ function openTableSetup() {
   mount.classList.add('dsa-sk-table-setup-open');
   if (tableGridBtn) tableGridBtn.setAttribute('aria-expanded', 'true');
   syncTableDimUi();
-  requestAnimationFrame(positionTableSetupPanel);
+  requestAnimationFrame(() => {
+    positionTableSetupPanel();
+    const colsEl = tableSetupPanel.querySelector('#dsaSkTableColsInput');
+    const rowsEl = tableSetupPanel.querySelector('#dsaSkTableRowsInput');
+    [rowsEl, colsEl].forEach((el) => {
+      if (!el || el.dataset.dsaSkTableWired === '1') return;
+      el.dataset.dsaSkTableWired = '1';
+      addL(el, 'input', applyTableInputs);
+      addL(el, 'change', applyTableInputs);
+      ['mousedown', 'click', 'touchstart', 'pointerdown'].forEach((ty) => {
+        const opts = ty === 'touchstart' ? { passive: true } : undefined;
+        addL(el, ty, (e) => e.stopPropagation(), opts);
+      });
+    });
+  });
 }
 function closeTableSetup() {
   if (!tableSetupPanel) return;
   tableSetupOpen = false;
   tableSetupPanel.hidden = true;
-  tableSetupPanel.classList.remove('dsa-sk-table-setup--row');
+  tableSetupPanel.classList.remove('dsa-sk-table-setup--row', 'dsa-sk-table-setup-floating');
   tableSetupPanel.style.position = '';
   tableSetupPanel.style.left = '';
   tableSetupPanel.style.top = '';
@@ -1570,16 +1589,6 @@ mount.querySelectorAll('.brush[data-brush]').forEach((b) => {
   addL(b, 'click', () => selectBrush(b.dataset.brush));
 });
 
-function wireTableSetupInputs() {
-  if (!tableSetupPanel) return;
-  tableSetupPanel.querySelectorAll('.table-setup-input').forEach((inp) => {
-    addL(inp, 'input', applyTableInputs);
-    addL(inp, 'change', applyTableInputs);
-    addL(inp, 'mousedown', (e) => e.stopPropagation());
-    addL(inp, 'click', (e) => e.stopPropagation());
-  });
-}
-wireTableSetupInputs();
 const tableDiscardBtn = $('dsaSkTableDiscardBtn');
 const tableDoneBtn = $('dsaSkTableDoneBtn');
 if (tableDiscardBtn) {

@@ -78,6 +78,7 @@
 
 .dsa-sketch-studio-mount .sketch-studio {
     position: relative;
+    isolation: isolate;
     flex: 1;
     width: 100%;
     min-height: 420px;
@@ -1049,49 +1050,139 @@
     stroke: #fff;
 }
 
-.dsa-sketch-studio-mount .table-dim-panel {
+.dsa-sketch-studio-mount .table-tool-anchor {
+    position: relative;
+    display: flex;
+}
+
+.dsa-sketch-studio-mount .table-setup-panel {
     position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -58px;
+    z-index: 45;
+    min-width: 220px;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border: 0.5px solid rgba(60, 60, 67, 0.14);
+    border-radius: 14px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.14), 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.dsa-sketch-studio-mount .table-setup-panel[hidden] {
+    display: none !important;
+}
+
+.dsa-sketch-studio-mount .table-setup-head {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+}
+
+.dsa-sketch-studio-mount .table-setup-fields {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding: 10px 12px;
-    background: rgba(255, 255, 255, 0.96);
-    border: 0.5px solid rgba(60, 60, 67, 0.14);
-    border-radius: 12px;
-    box-shadow: var(--shadow-float);
-    z-index: 28;
+    margin-bottom: 12px;
 }
 
-.dsa-sketch-studio-mount .table-dim-row {
+.dsa-sketch-studio-mount .table-setup-field {
     display: grid;
-    grid-template-columns: 56px 1fr 28px;
+    grid-template-columns: 64px 1fr;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
-.dsa-sketch-studio-mount .table-dim-label {
+.dsa-sketch-studio-mount .table-setup-label {
     font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+}
+
+.dsa-sketch-studio-mount .table-setup-input {
+    width: 100%;
+    height: 34px;
+    padding: 0 10px;
+    border: 0.5px solid rgba(60, 60, 67, 0.18);
+    border-radius: 8px;
+    background: rgba(120, 120, 128, 0.08);
+    font-size: 14px;
     font-weight: 600;
     color: var(--text);
-}
-
-.dsa-sketch-studio-mount .table-dim-value {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--theme);
-    text-align: right;
     font-variant-numeric: tabular-nums;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.dsa-sketch-studio-mount .table-dim-slider {
-    width: 100%;
-    height: 4px;
-    margin: 0;
-    accent-color: var(--theme);
+.dsa-sketch-studio-mount .table-setup-input:focus {
+    border-color: var(--theme);
+    box-shadow: 0 0 0 3px var(--theme-soft);
+    background: #fff;
+}
+
+.dsa-sketch-studio-mount .table-setup-input::placeholder {
+    color: var(--muted);
+    font-weight: 500;
+}
+
+.dsa-sketch-studio-mount .table-setup-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.dsa-sketch-studio-mount .table-setup-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
+    transition: transform 0.15s var(--ease-spring), background 0.15s;
+}
+
+.dsa-sketch-studio-mount .table-setup-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.dsa-sketch-studio-mount .table-setup-btn:active {
+    transform: scale(0.92);
+}
+
+.dsa-sketch-studio-mount .table-setup-btn--ghost {
+    background: rgba(120, 120, 128, 0.12);
+    color: #3c3c43;
+}
+
+.dsa-sketch-studio-mount .table-setup-btn--ghost:hover {
+    background: rgba(120, 120, 128, 0.18);
+}
+
+.dsa-sketch-studio-mount .table-setup-btn--danger {
+    background: rgba(255, 59, 48, 0.12);
+    color: #ff3b30;
+}
+
+.dsa-sketch-studio-mount .table-setup-btn--danger:hover {
+    background: rgba(255, 59, 48, 0.18);
+}
+
+.dsa-sketch-studio-mount .table-setup-btn--primary {
+    background: var(--theme);
+    color: #fff;
+}
+
+.dsa-sketch-studio-mount .table-setup-btn--primary:hover {
+    filter: brightness(1.05);
+}
+
+.dsa-sketch-studio-mount.device-mobile .table-setup-panel {
+    position: absolute;
 }
 
 .dsa-sketch-studio-mount .text-overlay {

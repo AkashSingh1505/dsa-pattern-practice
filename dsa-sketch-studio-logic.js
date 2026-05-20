@@ -770,9 +770,8 @@ function selectTool(tool) {
     $('dsaSkTtText')?.classList.add('active');
     startText();
   } else if (tool === 'grid') {
-    state.tool = 'grid';
-    $('dsaSkTtGrid')?.classList.add('active');
-    startTable();
+    toggleTableSetup();
+    return;
   } else if (tool === 'attach') {
   $('dsaSkTtAttach')?.classList.add('active');
   const input = document.createElement('input');
@@ -967,10 +966,18 @@ hueSlider.addEventListener('touchend', () => { dragHue = false; });
 $('dsaSkNativeColor').addEventListener('input', (e) => applyColor(e.target.value));
 
 /* ============ TABLE TOOL ============ */
+const TABLE_DIM_MIN = 1;
+const TABLE_DIM_MAX = 100;
 const tableState = { rows: 3, cols: 3, x: 0, y: 0, w: 320, h: 220 };
 const tableOverlay = $('dsaSkTableOverlay');
 const tableGrid = $('dsaSkTableGrid');
 const tableResize = $('dsaSkTableResize');
+const tableSetupPanel = $('dsaSkTableSetupPanel');
+const tableRowsInput = $('dsaSkTableRowsInput');
+const tableColsInput = $('dsaSkTableColsInput');
+const tableGridBtn = $('dsaSkTtGrid');
+const tableGridBtnMobile = $('dsaSkBtnGridMobile');
+let tableSetupOpen = false;
 
 function startTable() {
   disableLaserIfOn();
@@ -997,27 +1004,92 @@ function renderTable() {
   }
   syncTableDimUi();
 }
+function clampTableDim(n) {
+  return Math.max(TABLE_DIM_MIN, Math.min(TABLE_DIM_MAX, Math.round(Number(n) || TABLE_DIM_MIN));
+}
 function syncTableDimUi() {
-  const rowsSl = $('dsaSkTableRowsSlider');
-  const colsSl = $('dsaSkTableColsSlider');
-  const rowsVal = $('dsaSkTableRowsValue');
-  const colsVal = $('dsaSkTableColsValue');
-  if (rowsSl) rowsSl.value = String(tableState.rows);
-  if (colsSl) colsSl.value = String(tableState.cols);
-  if (rowsVal) rowsVal.textContent = String(tableState.rows);
-  if (colsVal) colsVal.textContent = String(tableState.cols);
+  if (tableRowsInput) {
+    tableRowsInput.value = String(tableState.rows);
+    tableRowsInput.placeholder = String(tableState.rows);
+  }
+  if (tableColsInput) {
+    tableColsInput.value = String(tableState.cols);
+    tableColsInput.placeholder = String(tableState.cols);
+  }
 }
 function setTableRows(n) {
-  tableState.rows = Math.max(1, Math.min(12, Math.round(Number(n) || 1)));
+  tableState.rows = clampTableDim(n);
   renderTable();
 }
 function setTableCols(n) {
-  tableState.cols = Math.max(1, Math.min(12, Math.round(Number(n) || 1)));
+  tableState.cols = clampTableDim(n);
   renderTable();
+}
+function applyTableInputs() {
+  if (tableRowsInput) setTableRows(tableRowsInput.value);
+  if (tableColsInput) setTableCols(tableColsInput.value);
+}
+function positionTableSetupPanel() {
+  if (!tableSetupPanel) return;
+  const anchor = tableGridBtn && tableGridBtn.offsetParent ? tableGridBtn : tableGridBtnMobile;
+  if (!anchor) return;
+  const r = anchor.getBoundingClientRect();
+  const host = editorRoot.getBoundingClientRect();
+  const panelW = Math.min(248, host.width - 24);
+  let left = r.left + r.width / 2 - panelW / 2 - host.left;
+  left = Math.max(8, Math.min(left, host.width - panelW - 8));
+  tableSetupPanel.style.width = `${panelW}px`;
+  if (!isBigScreen()) {
+    tableSetupPanel.style.left = `${left}px`;
+    tableSetupPanel.style.top = '';
+    tableSetupPanel.style.bottom = `${host.height - (r.top - host.top) + 10}px`;
+  } else {
+    tableSetupPanel.style.left = `${left}px`;
+    tableSetupPanel.style.top = `${r.bottom - host.top + 8}px`;
+    tableSetupPanel.style.bottom = '';
+  }
+}
+function openTableSetup() {
+  if (!tableSetupPanel) return;
+  if (!tableOverlay.classList.contains('show')) startTable();
+  tableSetupOpen = true;
+  tableSetupPanel.hidden = false;
+  mount.classList.add('dsa-sk-table-setup-open');
+  if (tableGridBtn) tableGridBtn.setAttribute('aria-expanded', 'true');
+  syncTableDimUi();
+  requestAnimationFrame(positionTableSetupPanel);
+}
+function closeTableSetup() {
+  if (!tableSetupPanel) return;
+  tableSetupOpen = false;
+  tableSetupPanel.hidden = true;
+  mount.classList.remove('dsa-sk-table-setup-open');
+  if (tableGridBtn) tableGridBtn.setAttribute('aria-expanded', 'false');
+}
+function toggleTableSetup() {
+  if (tableSetupOpen) {
+    closeTableSetup();
+    return;
+  }
+  disableLaserIfOn();
+  cancelText();
+  $('dsaSkBrushSettings')?.classList.remove('show');
+  document.querySelectorAll('.brush').forEach((b) => b.classList.remove('active'));
+  document.querySelectorAll('#dsaSkMainTab .tool-btn').forEach((b) => b.classList.remove('active'));
+  document.querySelectorAll('#dsaSkTopToolsTab button').forEach((b) => {
+    if (b.id !== 'dsaSkBtnLaserTop') b.classList.remove('active');
+  });
+  state.tool = 'grid';
+  tableGridBtn?.classList.add('active');
+  tableGridBtnMobile?.classList.add('active');
+  openTableSetup();
+  syncToolbarUi();
 }
 function cancelTable() {
   tableOverlay.classList.remove('show');
-  $('dsaSkTtGrid')?.classList.remove('active');
+  tableGridBtn?.classList.remove('active');
+  tableGridBtnMobile?.classList.remove('active');
+  closeTableSetup();
   if (state.tool === 'grid') state.tool = null;
 }
 function confirmTable() {
@@ -1485,7 +1557,8 @@ mount.querySelectorAll('#dsaSkMainTab .tool-btn').forEach((btn) => {
 });
 addL($('dsaSkBtnLaser'), 'click', () => toggleLaser());
 addL($('dsaSkTtText'), 'click', () => selectTool('text'));
-addL($('dsaSkTtGrid'), 'click', () => selectTool('grid'));
+addL($('dsaSkTtGrid'), 'click', (e) => { e.stopPropagation(); toggleTableSetup(); });
+if (tableGridBtnMobile) addL(tableGridBtnMobile, 'click', (e) => { e.stopPropagation(); toggleTableSetup(); });
 addL($('dsaSkTtAttach'), 'click', () => selectTool('attach'));
 addL($('dsaSkBtnLaserTop'), 'click', () => toggleLaser());
 addL($('dsaSkBtnLaser2'), 'click', () => toggleLaser());
@@ -1496,16 +1569,35 @@ mount.querySelectorAll('.brush[data-brush]').forEach((b) => {
   addL(b, 'click', () => selectBrush(b.dataset.brush));
 });
 
-const tableRowsSlider = $('dsaSkTableRowsSlider');
-const tableColsSlider = $('dsaSkTableColsSlider');
-if (tableRowsSlider) {
-  addL(tableRowsSlider, 'input', () => setTableRows(tableRowsSlider.value));
+if (tableRowsInput) {
+  addL(tableRowsInput, 'input', applyTableInputs);
+  addL(tableRowsInput, 'change', applyTableInputs);
 }
-if (tableColsSlider) {
-  addL(tableColsSlider, 'input', () => setTableCols(tableColsSlider.value));
+if (tableColsInput) {
+  addL(tableColsInput, 'input', applyTableInputs);
+  addL(tableColsInput, 'change', applyTableInputs);
 }
-mount.querySelectorAll('[data-action="table-cancel"]').forEach((b) => addL(b, 'click', () => cancelTable()));
-mount.querySelectorAll('[data-action="table-confirm"]').forEach((b) => addL(b, 'click', () => confirmTable()));
+const tableDiscardBtn = $('dsaSkTableDiscardBtn');
+const tableDeleteBtn = $('dsaSkTableDeleteBtn');
+const tableDoneBtn = $('dsaSkTableDoneBtn');
+if (tableDiscardBtn) addL(tableDiscardBtn, 'click', () => cancelTable());
+if (tableDeleteBtn) addL(tableDeleteBtn, 'click', () => cancelTable());
+if (tableDoneBtn) {
+  addL(tableDoneBtn, 'click', () => {
+    applyTableInputs();
+    confirmTable();
+    closeTableSetup();
+  });
+}
+if (tableSetupPanel) {
+  addL(tableSetupPanel, 'click', (e) => e.stopPropagation());
+}
+addL(document, 'click', (e) => {
+  if (!tableSetupOpen || !tableSetupPanel) return;
+  if (tableSetupPanel.contains(e.target) || e.target === tableGridBtn || e.target === tableGridBtnMobile) return;
+  if (tableGridBtn?.contains(e.target) || tableGridBtnMobile?.contains(e.target)) return;
+  closeTableSetup();
+});
 
 const imgOv = $('dsaSkImageOverlay');
 if (imgOv) {
@@ -1555,7 +1647,7 @@ buildSizeDots();
 updateUndoRedo();
 syncToolbarUi();
 
-if (device === 'mobile') {
+if (device === 'mobile' && !hooks.embedInDialog) {
   setTimeout(() => enterFullscreen(), 100);
 }
 
@@ -1580,12 +1672,6 @@ const api = {
     resetZoom();
   },
   prepareForSavedLoad() {
-    const studio = $('dsaSkStudio');
-    if (studio && studio.classList.contains('minimized')) {
-      studio.classList.remove('minimized');
-      state.minimized = false;
-      syncToolbarUi();
-    }
     fitCanvas();
   },
   loadDataUrl(url, attempt = 0) {

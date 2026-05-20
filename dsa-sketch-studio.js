@@ -46,7 +46,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     if (!document.head.querySelector("link[data-dsa-sketch-studio-css]")) {
         const lk = document.createElement("link");
         lk.rel = "stylesheet";
-        lk.href = "./dsa-sketch-studio.css?v=25";
+        lk.href = "./dsa-sketch-studio.css?v=26";
         lk.dataset.dsaSketchStudioCss = "1";
         document.head.appendChild(lk);
     }
@@ -68,27 +68,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     <!-- Table overlay -->
     <div class="table-overlay" id="dsaSkTableOverlay">
       <div class="table-grid" id="dsaSkTableGrid"></div>
-      <div class="table-dim-panel" id="dsaSkTableDimPanel">
-        <div class="table-dim-row">
-          <span class="table-dim-label">Rows</span>
-          <input type="range" class="table-dim-slider" id="dsaSkTableRowsSlider" min="1" max="12" value="3" step="1" aria-label="Table rows" />
-          <span class="table-dim-value" id="dsaSkTableRowsValue">3</span>
-        </div>
-        <div class="table-dim-row">
-          <span class="table-dim-label">Columns</span>
-          <input type="range" class="table-dim-slider" id="dsaSkTableColsSlider" min="1" max="12" value="3" step="1" aria-label="Table columns" />
-          <span class="table-dim-value" id="dsaSkTableColsValue">3</span>
-        </div>
-      </div>
       <div class="resize-handle" id="dsaSkTableResize"></div>
-      <div class="table-controls">
-        <button class="t-cancel" data-action="table-cancel">
-          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
-        </button>
-        <button class="t-confirm" data-action="table-confirm">
-          <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
-        </button>
-      </div>
     </div>
 
 <div class="image-overlay" id="dsaSkImageOverlay">
@@ -134,9 +114,11 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
       <button title="Text" id="dsaSkTtText">
         <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
       </button>
-      <button title="Insert Table" id="dsaSkTtGrid">
-        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
-      </button>
+      <div class="table-tool-anchor" id="dsaSkTableToolAnchor">
+        <button type="button" title="Table" id="dsaSkTtGrid" aria-expanded="false" aria-controls="dsaSkTableSetupPanel">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+        </button>
+      </div>
       <button title="Attach" id="dsaSkTtAttach">
         <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21.4 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
       </button>
@@ -165,10 +147,35 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
       </div>
 
       <button class="icon-btn minimize-btn" type="button" id="dsaSkMinimizeBtn" title="Expand" aria-label="Expand">
-        <svg class="dsa-sk-icon-expand" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>
-        <svg class="dsa-sk-icon-collapse" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3H4v5M15 3h5v5M9 21H4v-5M15 21h5v-5M3 10l7-7M21 14l-7 7M14 3l7 7M10 21l-7-7"/></svg>
+        <svg class="dsa-sk-icon-expand" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 00-2 2v3M16 3h3a2 2 0 012 2v3M21 16v3a2 2 0 01-2 2h-3M8 21H5a2 2 0 01-2-2v-3"/></svg>
+        <svg class="dsa-sk-icon-collapse" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 9H4V4h5M15 4h5v5h-5M9 15H4v5h5M20 15v5h-5"/></svg>
       </button>
     </div>
+        <div class="table-setup-panel" id="dsaSkTableSetupPanel" hidden>
+          <div class="table-setup-head">Table</div>
+          <div class="table-setup-fields">
+            <label class="table-setup-field">
+              <span class="table-setup-label">Rows</span>
+              <input type="number" class="table-setup-input" id="dsaSkTableRowsInput" min="1" max="100" inputmode="numeric" autocomplete="off" />
+            </label>
+            <label class="table-setup-field">
+              <span class="table-setup-label">Columns</span>
+              <input type="number" class="table-setup-input" id="dsaSkTableColsInput" min="1" max="100" inputmode="numeric" autocomplete="off" />
+            </label>
+          </div>
+          <div class="table-setup-actions">
+            <button type="button" class="table-setup-btn table-setup-btn--ghost" id="dsaSkTableDiscardBtn" title="Cancel" aria-label="Cancel">
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+            <button type="button" class="table-setup-btn table-setup-btn--danger" id="dsaSkTableDeleteBtn" title="Remove table" aria-label="Remove table">
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+            </button>
+            <button type="button" class="table-setup-btn table-setup-btn--primary" id="dsaSkTableDoneBtn" title="Place on canvas" aria-label="Done">
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+            </button>
+          </div>
+        </div>
+
   </div>
 
   <div class="menu-dropdown" id="dsaSkMenuDropdown">
@@ -230,7 +237,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
       <button class="tool-btn">
         <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
       </button>
-      <button class="tool-btn">
+      <button class="tool-btn" type="button" id="dsaSkBtnGridMobile" title="Table">
         <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
       </button>
       <button class="tool-btn">
@@ -1057,9 +1064,8 @@ function selectTool(tool) {
     $('dsaSkTtText')?.classList.add('active');
     startText();
   } else if (tool === 'grid') {
-    state.tool = 'grid';
-    $('dsaSkTtGrid')?.classList.add('active');
-    startTable();
+    toggleTableSetup();
+    return;
   } else if (tool === 'attach') {
   $('dsaSkTtAttach')?.classList.add('active');
   const input = document.createElement('input');
@@ -1254,10 +1260,18 @@ hueSlider.addEventListener('touchend', () => { dragHue = false; });
 $('dsaSkNativeColor').addEventListener('input', (e) => applyColor(e.target.value));
 
 /* ============ TABLE TOOL ============ */
+const TABLE_DIM_MIN = 1;
+const TABLE_DIM_MAX = 100;
 const tableState = { rows: 3, cols: 3, x: 0, y: 0, w: 320, h: 220 };
 const tableOverlay = $('dsaSkTableOverlay');
 const tableGrid = $('dsaSkTableGrid');
 const tableResize = $('dsaSkTableResize');
+const tableSetupPanel = $('dsaSkTableSetupPanel');
+const tableRowsInput = $('dsaSkTableRowsInput');
+const tableColsInput = $('dsaSkTableColsInput');
+const tableGridBtn = $('dsaSkTtGrid');
+const tableGridBtnMobile = $('dsaSkBtnGridMobile');
+let tableSetupOpen = false;
 
 function startTable() {
   disableLaserIfOn();
@@ -1284,27 +1298,92 @@ function renderTable() {
   }
   syncTableDimUi();
 }
+function clampTableDim(n) {
+  return Math.max(TABLE_DIM_MIN, Math.min(TABLE_DIM_MAX, Math.round(Number(n) || TABLE_DIM_MIN));
+}
 function syncTableDimUi() {
-  const rowsSl = $('dsaSkTableRowsSlider');
-  const colsSl = $('dsaSkTableColsSlider');
-  const rowsVal = $('dsaSkTableRowsValue');
-  const colsVal = $('dsaSkTableColsValue');
-  if (rowsSl) rowsSl.value = String(tableState.rows);
-  if (colsSl) colsSl.value = String(tableState.cols);
-  if (rowsVal) rowsVal.textContent = String(tableState.rows);
-  if (colsVal) colsVal.textContent = String(tableState.cols);
+  if (tableRowsInput) {
+    tableRowsInput.value = String(tableState.rows);
+    tableRowsInput.placeholder = String(tableState.rows);
+  }
+  if (tableColsInput) {
+    tableColsInput.value = String(tableState.cols);
+    tableColsInput.placeholder = String(tableState.cols);
+  }
 }
 function setTableRows(n) {
-  tableState.rows = Math.max(1, Math.min(12, Math.round(Number(n) || 1)));
+  tableState.rows = clampTableDim(n);
   renderTable();
 }
 function setTableCols(n) {
-  tableState.cols = Math.max(1, Math.min(12, Math.round(Number(n) || 1)));
+  tableState.cols = clampTableDim(n);
   renderTable();
+}
+function applyTableInputs() {
+  if (tableRowsInput) setTableRows(tableRowsInput.value);
+  if (tableColsInput) setTableCols(tableColsInput.value);
+}
+function positionTableSetupPanel() {
+  if (!tableSetupPanel) return;
+  const anchor = tableGridBtn && tableGridBtn.offsetParent ? tableGridBtn : tableGridBtnMobile;
+  if (!anchor) return;
+  const r = anchor.getBoundingClientRect();
+  const host = editorRoot.getBoundingClientRect();
+  const panelW = Math.min(248, host.width - 24);
+  let left = r.left + r.width / 2 - panelW / 2 - host.left;
+  left = Math.max(8, Math.min(left, host.width - panelW - 8));
+  tableSetupPanel.style.width = `${panelW}px`;
+  if (!isBigScreen()) {
+    tableSetupPanel.style.left = `${left}px`;
+    tableSetupPanel.style.top = '';
+    tableSetupPanel.style.bottom = `${host.height - (r.top - host.top) + 10}px`;
+  } else {
+    tableSetupPanel.style.left = `${left}px`;
+    tableSetupPanel.style.top = `${r.bottom - host.top + 8}px`;
+    tableSetupPanel.style.bottom = '';
+  }
+}
+function openTableSetup() {
+  if (!tableSetupPanel) return;
+  if (!tableOverlay.classList.contains('show')) startTable();
+  tableSetupOpen = true;
+  tableSetupPanel.hidden = false;
+  mount.classList.add('dsa-sk-table-setup-open');
+  if (tableGridBtn) tableGridBtn.setAttribute('aria-expanded', 'true');
+  syncTableDimUi();
+  requestAnimationFrame(positionTableSetupPanel);
+}
+function closeTableSetup() {
+  if (!tableSetupPanel) return;
+  tableSetupOpen = false;
+  tableSetupPanel.hidden = true;
+  mount.classList.remove('dsa-sk-table-setup-open');
+  if (tableGridBtn) tableGridBtn.setAttribute('aria-expanded', 'false');
+}
+function toggleTableSetup() {
+  if (tableSetupOpen) {
+    closeTableSetup();
+    return;
+  }
+  disableLaserIfOn();
+  cancelText();
+  $('dsaSkBrushSettings')?.classList.remove('show');
+  document.querySelectorAll('.brush').forEach((b) => b.classList.remove('active'));
+  document.querySelectorAll('#dsaSkMainTab .tool-btn').forEach((b) => b.classList.remove('active'));
+  document.querySelectorAll('#dsaSkTopToolsTab button').forEach((b) => {
+    if (b.id !== 'dsaSkBtnLaserTop') b.classList.remove('active');
+  });
+  state.tool = 'grid';
+  tableGridBtn?.classList.add('active');
+  tableGridBtnMobile?.classList.add('active');
+  openTableSetup();
+  syncToolbarUi();
 }
 function cancelTable() {
   tableOverlay.classList.remove('show');
-  $('dsaSkTtGrid')?.classList.remove('active');
+  tableGridBtn?.classList.remove('active');
+  tableGridBtnMobile?.classList.remove('active');
+  closeTableSetup();
   if (state.tool === 'grid') state.tool = null;
 }
 function confirmTable() {
@@ -1772,7 +1851,8 @@ mount.querySelectorAll('#dsaSkMainTab .tool-btn').forEach((btn) => {
 });
 addL($('dsaSkBtnLaser'), 'click', () => toggleLaser());
 addL($('dsaSkTtText'), 'click', () => selectTool('text'));
-addL($('dsaSkTtGrid'), 'click', () => selectTool('grid'));
+addL($('dsaSkTtGrid'), 'click', (e) => { e.stopPropagation(); toggleTableSetup(); });
+if (tableGridBtnMobile) addL(tableGridBtnMobile, 'click', (e) => { e.stopPropagation(); toggleTableSetup(); });
 addL($('dsaSkTtAttach'), 'click', () => selectTool('attach'));
 addL($('dsaSkBtnLaserTop'), 'click', () => toggleLaser());
 addL($('dsaSkBtnLaser2'), 'click', () => toggleLaser());
@@ -1783,16 +1863,35 @@ mount.querySelectorAll('.brush[data-brush]').forEach((b) => {
   addL(b, 'click', () => selectBrush(b.dataset.brush));
 });
 
-const tableRowsSlider = $('dsaSkTableRowsSlider');
-const tableColsSlider = $('dsaSkTableColsSlider');
-if (tableRowsSlider) {
-  addL(tableRowsSlider, 'input', () => setTableRows(tableRowsSlider.value));
+if (tableRowsInput) {
+  addL(tableRowsInput, 'input', applyTableInputs);
+  addL(tableRowsInput, 'change', applyTableInputs);
 }
-if (tableColsSlider) {
-  addL(tableColsSlider, 'input', () => setTableCols(tableColsSlider.value));
+if (tableColsInput) {
+  addL(tableColsInput, 'input', applyTableInputs);
+  addL(tableColsInput, 'change', applyTableInputs);
 }
-mount.querySelectorAll('[data-action="table-cancel"]').forEach((b) => addL(b, 'click', () => cancelTable()));
-mount.querySelectorAll('[data-action="table-confirm"]').forEach((b) => addL(b, 'click', () => confirmTable()));
+const tableDiscardBtn = $('dsaSkTableDiscardBtn');
+const tableDeleteBtn = $('dsaSkTableDeleteBtn');
+const tableDoneBtn = $('dsaSkTableDoneBtn');
+if (tableDiscardBtn) addL(tableDiscardBtn, 'click', () => cancelTable());
+if (tableDeleteBtn) addL(tableDeleteBtn, 'click', () => cancelTable());
+if (tableDoneBtn) {
+  addL(tableDoneBtn, 'click', () => {
+    applyTableInputs();
+    confirmTable();
+    closeTableSetup();
+  });
+}
+if (tableSetupPanel) {
+  addL(tableSetupPanel, 'click', (e) => e.stopPropagation());
+}
+addL(document, 'click', (e) => {
+  if (!tableSetupOpen || !tableSetupPanel) return;
+  if (tableSetupPanel.contains(e.target) || e.target === tableGridBtn || e.target === tableGridBtnMobile) return;
+  if (tableGridBtn?.contains(e.target) || tableGridBtnMobile?.contains(e.target)) return;
+  closeTableSetup();
+});
 
 const imgOv = $('dsaSkImageOverlay');
 if (imgOv) {
@@ -1842,7 +1941,7 @@ buildSizeDots();
 updateUndoRedo();
 syncToolbarUi();
 
-if (device === 'mobile') {
+if (device === 'mobile' && !hooks.embedInDialog) {
   setTimeout(() => enterFullscreen(), 100);
 }
 
@@ -1867,12 +1966,6 @@ const api = {
     resetZoom();
   },
   prepareForSavedLoad() {
-    const studio = $('dsaSkStudio');
-    if (studio && studio.classList.contains('minimized')) {
-      studio.classList.remove('minimized');
-      state.minimized = false;
-      syncToolbarUi();
-    }
     fitCanvas();
   },
   loadDataUrl(url, attempt = 0) {

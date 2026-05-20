@@ -1163,47 +1163,130 @@
     filter: brightness(1.05);
 }
 
-/* Minimized: compact horizontal row; fullscreen: stacked fields */
-.dsa-sketch-studio-mount .table-setup-panel.dsa-sk-table-setup--row {
+/* Minimized: smaller vertical panel */
+.dsa-sketch-studio-mount .table-setup-panel.dsa-sk-table-setup--compact,
+.table-setup-panel.dsa-sk-table-setup-portal.dsa-sk-table-setup--compact {
     padding: 8px 10px;
-    min-width: 0;
-    width: auto !important;
-    max-width: calc(100% - 16px);
+    min-width: 180px;
 }
 
-.dsa-sketch-studio-mount .table-setup-panel.dsa-sk-table-setup--row .table-setup-head {
-    display: none;
+.dsa-sketch-studio-mount .table-setup-panel.dsa-sk-table-setup--compact .table-setup-head,
+.table-setup-panel.dsa-sk-table-setup-portal.dsa-sk-table-setup--compact .table-setup-head {
+    margin-bottom: 6px;
+    font-size: 12px;
 }
 
-.dsa-sketch-studio-mount .table-setup-panel.dsa-sk-table-setup--row .table-setup-fields {
-    flex-direction: row;
-    flex-wrap: nowrap;
-    align-items: center;
-    gap: 8px;
+.dsa-sketch-studio-mount .table-setup-panel.dsa-sk-table-setup--compact .table-setup-fields,
+.table-setup-panel.dsa-sk-table-setup-portal.dsa-sk-table-setup--compact .table-setup-fields {
+    gap: 6px;
     margin-bottom: 8px;
 }
 
-.dsa-sketch-studio-mount .table-setup-panel.dsa-sk-table-setup--row .table-setup-field {
-    grid-template-columns: auto 52px;
-    gap: 4px;
-    margin: 0;
-}
-
-.dsa-sketch-studio-mount .table-setup-panel.dsa-sk-table-setup--row .table-setup-label {
-    font-size: 11px;
-}
-
-.dsa-sketch-studio-mount .table-setup-panel.dsa-sk-table-setup--row .table-setup-input,
-.dsa-sk-table-setup-floating.table-setup-panel.dsa-sk-table-setup--row .table-setup-input {
+.dsa-sketch-studio-mount .table-setup-panel.dsa-sk-table-setup--compact .table-setup-input,
+.table-setup-panel.dsa-sk-table-setup-portal.dsa-sk-table-setup--compact .table-setup-input {
     height: 30px;
-    width: 56px;
-    min-width: 56px;
-    padding: 0 6px;
     font-size: 13px;
 }
 
-.dsa-sketch-studio-mount .table-setup-panel.dsa-sk-table-setup--row .table-setup-actions {
-    margin-top: 0;
+/* Portal on body — full styles (not under .dsa-sketch-studio-mount) */
+.table-setup-panel.dsa-sk-table-setup-portal {
+    position: fixed;
+    z-index: 600060;
+    pointer-events: auto;
+    min-width: 200px;
+    padding: 12px 14px;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+    color: #1c1c1e;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border: 0.5px solid rgba(60, 60, 67, 0.14);
+    border-radius: 14px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.14), 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.table-setup-panel.dsa-sk-table-setup-portal[hidden] {
+    display: none !important;
+}
+
+.table-setup-panel.dsa-sk-table-setup-portal .table-setup-head {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.table-setup-panel.dsa-sk-table-setup-portal .table-setup-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.table-setup-panel.dsa-sk-table-setup-portal .table-setup-field {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    align-items: center;
+    gap: 8px;
+}
+
+.table-setup-panel.dsa-sk-table-setup-portal .table-setup-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #8e8e93;
+}
+
+.table-setup-panel.dsa-sk-table-setup-portal .table-setup-input {
+    width: 100%;
+    min-width: 0;
+    height: 34px;
+    padding: 0 10px;
+    border: 0.5px solid rgba(60, 60, 67, 0.18);
+    border-radius: 8px;
+    background: rgba(120, 120, 128, 0.08);
+    font-size: 14px;
+    font-weight: 600;
+    color: #1c1c1e;
+    pointer-events: auto;
+    -webkit-user-select: text;
+    user-select: text;
+    outline: none;
+}
+
+.table-setup-panel.dsa-sk-table-setup-portal .table-setup-input:focus {
+    border-color: #007aff;
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.12);
+    background: #fff;
+}
+
+.table-setup-panel.dsa-sk-table-setup-portal .table-setup-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.table-setup-panel.dsa-sk-table-setup-portal .table-setup-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.table-setup-panel.dsa-sk-table-setup-portal .table-setup-btn--ghost {
+    background: rgba(120, 120, 128, 0.12);
+}
+
+.table-setup-panel.dsa-sk-table-setup-portal .table-setup-btn--primary {
+    background: #007aff;
+    color: #fff;
+}
+
+.table-setup-panel.dsa-sk-table-setup-portal .table-setup-btn svg {
+    width: 16px;
+    height: 16px;
 }
 
 .dsa-sketch-studio-mount.dsa-sk-table-setup-open {

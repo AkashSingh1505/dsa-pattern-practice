@@ -991,7 +991,7 @@ function startTable() {
   renderTable();
   tableOverlay.classList.add('show');
 }
-function renderTable() {
+function renderTableGrid() {
   tableOverlay.style.left = tableState.x + 'px';
   tableOverlay.style.top = tableState.y + 'px';
   tableOverlay.style.width = tableState.w + 'px';
@@ -1004,7 +1004,9 @@ function renderTable() {
     cell.className = 'table-cell';
     tableGrid.appendChild(cell);
   }
-  syncTableDimUi();
+}
+function renderTable() {
+  renderTableGrid();
 }
 function clampTableDim(n) {
   return Math.max(TABLE_DIM_MIN, Math.min(TABLE_DIM_MAX, Math.round(Number(n) || TABLE_DIM_MIN)));
@@ -1021,19 +1023,39 @@ function syncTableDimUi() {
     colsEl.placeholder = String(tableState.cols);
   }
 }
-function setTableRows(n) {
-  tableState.rows = clampTableDim(n);
-  renderTable();
+function parseTableDimInput(raw) {
+  const s = String(raw ?? '').trim();
+  if (s === '') return null;
+  const n = parseInt(s, 10);
+  if (!Number.isFinite(n)) return null;
+  return Math.max(TABLE_DIM_MIN, Math.min(TABLE_DIM_MAX, n));
 }
-function setTableCols(n) {
-  tableState.cols = clampTableDim(n);
-  renderTable();
+function applyTableRowsInput() {
+  const rowsEl = tableSetupPanel?.querySelector('#dsaSkTableRowsInput');
+  if (!rowsEl) return;
+  const n = parseTableDimInput(rowsEl.value);
+  if (n === null) return;
+  tableState.rows = n;
+  renderTableGrid();
+}
+function applyTableColsInput() {
+  const colsEl = tableSetupPanel?.querySelector('#dsaSkTableColsInput');
+  if (!colsEl) return;
+  const n = parseTableDimInput(colsEl.value);
+  if (n === null) return;
+  tableState.cols = n;
+  renderTableGrid();
+}
+function commitTableDimInputs() {
+  const rowsEl = tableSetupPanel?.querySelector('#dsaSkTableRowsInput');
+  const colsEl = tableSetupPanel?.querySelector('#dsaSkTableColsInput');
+  if (rowsEl) tableState.rows = clampTableDim(rowsEl.value);
+  if (colsEl) tableState.cols = clampTableDim(colsEl.value);
+  renderTableGrid();
+  syncTableDimUi();
 }
 function applyTableInputs() {
-  const rowsEl = tableSetupPanel?.querySelector('#dsaSkTableRowsInput') || tableRowsInput;
-  const colsEl = tableSetupPanel?.querySelector('#dsaSkTableColsInput') || tableColsInput;
-  if (rowsEl) setTableRows(rowsEl.value);
-  if (colsEl) setTableCols(colsEl.value);
+  commitTableDimInputs();
 }
 function positionTableSetupPanel() {
   if (!tableSetupPanel) return;
@@ -1045,61 +1067,76 @@ function positionTableSetupPanel() {
   const panelW = minimized
     ? Math.min(220, window.innerWidth - 20)
     : Math.min(228, window.innerWidth - 20);
-  tableSetupPanel.classList.toggle('dsa-sk-table-setup--row', minimized);
-  tableSetupPanel.classList.add('dsa-sk-table-setup-floating');
+  tableSetupPanel.classList.toggle('dsa-sk-table-setup--compact', minimized);
+  tableSetupPanel.classList.add('dsa-sk-table-setup-portal');
   tableSetupPanel.style.position = 'fixed';
   tableSetupPanel.style.width = `${panelW}px`;
   tableSetupPanel.style.transform = 'none';
   tableSetupPanel.style.zIndex = '600060';
-  const r = anchor.getBoundingClientRect();
   tableSetupPanel.hidden = false;
   const panelH = tableSetupPanel.offsetHeight || 120;
   if (!tableSetupOpen) tableSetupPanel.hidden = true;
-  let left = r.left + r.width / 2 - panelW / 2;
-  left = Math.max(8, Math.min(left, window.innerWidth - panelW - 8));
-  let top = r.bottom + 8;
-  if (top + panelH > window.innerHeight - 10) {
-    top = r.top - panelH - 8;
+  const studioRect = studio.getBoundingClientRect();
+  if (minimized) {
+    tableSetupPanel.style.left = `${studioRect.left + 12}px`;
+    tableSetupPanel.style.top = `${studioRect.top + 52}px`;
+    tableSetupPanel.style.bottom = '';
+  } else {
+    const r = anchor.getBoundingClientRect();
+    let left = r.left + r.width / 2 - panelW / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - panelW - 8));
+    let top = r.bottom + 8;
+    if (top + panelH > window.innerHeight - 10) top = r.top - panelH - 8;
+    top = Math.max(8, Math.min(top, window.innerHeight - panelH - 8));
+    tableSetupPanel.style.left = `${left}px`;
+    tableSetupPanel.style.top = `${top}px`;
+    tableSetupPanel.style.bottom = '';
   }
-  top = Math.max(8, Math.min(top, window.innerHeight - panelH - 8));
-  tableSetupPanel.style.left = `${left}px`;
-  tableSetupPanel.style.top = `${top}px`;
-  tableSetupPanel.style.bottom = '';
+}
+let tablePanelHome = null;
+function mountTablePanelPortal() {
+  if (!tableSetupPanel || tableSetupPanel.parentNode === document.body) return;
+  if (!tablePanelHome) {
+    tablePanelHome = { parent: tableSetupPanel.parentNode, next: tableSetupPanel.nextSibling };
+  }
+  document.body.appendChild(tableSetupPanel);
+}
+function unmountTablePanelPortal() {
+  if (!tableSetupPanel || !tablePanelHome || tableSetupPanel.parentNode !== document.body) return;
+  tablePanelHome.parent.insertBefore(tableSetupPanel, tablePanelHome.next);
+}
+function wireTableDimInput(el, onInput) {
+  if (!el || el.dataset.dsaSkTableWired === '1') return;
+  el.dataset.dsaSkTableWired = '1';
+  addL(el, 'input', onInput);
+  addL(el, 'change', commitTableDimInputs);
+  addL(el, 'blur', commitTableDimInputs);
 }
 function openTableSetup() {
   if (!tableSetupPanel) return;
   if (!tableOverlay.classList.contains('show')) startTable();
   tableSetupOpen = true;
+  mountTablePanelPortal();
   tableSetupPanel.hidden = false;
   mount.classList.add('dsa-sk-table-setup-open');
   if (tableGridBtn) tableGridBtn.setAttribute('aria-expanded', 'true');
   syncTableDimUi();
-  requestAnimationFrame(() => {
-    positionTableSetupPanel();
-    const colsEl = tableSetupPanel.querySelector('#dsaSkTableColsInput');
-    const rowsEl = tableSetupPanel.querySelector('#dsaSkTableRowsInput');
-    [rowsEl, colsEl].forEach((el) => {
-      if (!el || el.dataset.dsaSkTableWired === '1') return;
-      el.dataset.dsaSkTableWired = '1';
-      addL(el, 'input', applyTableInputs);
-      addL(el, 'change', applyTableInputs);
-      ['mousedown', 'click', 'touchstart', 'pointerdown'].forEach((ty) => {
-        const opts = ty === 'touchstart' ? { passive: true } : undefined;
-        addL(el, ty, (e) => e.stopPropagation(), opts);
-      });
-    });
-  });
+  wireTableDimInput(tableSetupPanel.querySelector('#dsaSkTableRowsInput'), applyTableRowsInput);
+  wireTableDimInput(tableSetupPanel.querySelector('#dsaSkTableColsInput'), applyTableColsInput);
+  requestAnimationFrame(positionTableSetupPanel);
 }
 function closeTableSetup() {
   if (!tableSetupPanel) return;
   tableSetupOpen = false;
   tableSetupPanel.hidden = true;
-  tableSetupPanel.classList.remove('dsa-sk-table-setup--row', 'dsa-sk-table-setup-floating');
+  tableSetupPanel.classList.remove('dsa-sk-table-setup--compact', 'dsa-sk-table-setup-portal');
   tableSetupPanel.style.position = '';
   tableSetupPanel.style.left = '';
   tableSetupPanel.style.top = '';
+  tableSetupPanel.style.bottom = '';
   tableSetupPanel.style.width = '';
   tableSetupPanel.style.zIndex = '';
+  unmountTablePanelPortal();
   mount.classList.remove('dsa-sk-table-setup-open');
   if (tableGridBtn) tableGridBtn.setAttribute('aria-expanded', 'false');
 }
@@ -1168,7 +1205,7 @@ document.addEventListener('mousemove', (e) => {
     tableState.w = Math.max(120, tDrag.ow + (e.clientX - tDrag.sx));
     tableState.h = Math.max(100, tDrag.oh + (e.clientY - tDrag.sy));
   }
-  renderTable();
+  renderTableGrid();
 });
 document.addEventListener('mouseup', () => { tDrag = null; });
 tableOverlay.addEventListener('touchstart', (e) => {
@@ -1191,7 +1228,7 @@ document.addEventListener('touchmove', (e) => {
     tableState.w = Math.max(120, tDrag.ow + (t.clientX - tDrag.sx));
     tableState.h = Math.max(100, tDrag.oh + (t.clientY - tDrag.sy));
   }
-  renderTable();
+  renderTableGrid();
 });
 document.addEventListener('touchend', () => { tDrag = null; });
 
@@ -1600,7 +1637,7 @@ if (tableDiscardBtn) {
 if (tableDoneBtn) {
   addL(tableDoneBtn, 'click', (e) => {
     e.stopPropagation();
-    applyTableInputs();
+    commitTableDimInputs();
     confirmTable();
   });
 }

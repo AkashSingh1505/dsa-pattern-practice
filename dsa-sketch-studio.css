@@ -422,13 +422,13 @@
 .dsa-sketch-studio-mount .brushes-scroll {
     display: flex;
     align-items: flex-end;
-    gap: 4px;
+    gap: 6px;
     flex: 0 1 auto;
     min-width: 0;
     overflow-x: auto;
     overflow-y: visible;
-    padding: 22px 0 0;
-    margin: -22px 0 0;
+    padding: 28px 0 0;
+    margin: -28px 0 0;
     scrollbar-width: none;
     -ms-overflow-style: none;
     -webkit-overflow-scrolling: touch;
@@ -707,19 +707,19 @@
     -webkit-backdrop-filter: saturate(180%) blur(24px);
     border: 0.5px solid rgba(255, 255, 255, 0.6);
     border-radius: 999px;
-    padding: 6px 16px 0;
+    padding: 8px 20px 0;
     box-shadow: var(--shadow-float);
     display: flex;
     align-items: center;
-    gap: 4px;
-    min-height: 78px;
+    gap: 6px;
+    min-height: 96px;
     overflow: visible;
 }
 
 .dsa-sketch-studio-mount .brush {
-    width: 46px;
-    height: 64px;
-    flex: 0 0 46px;
+    width: 58px;
+    height: 82px;
+    flex: 0 0 58px;
     margin: 0;
     padding: 0;
     cursor: pointer;
@@ -749,20 +749,24 @@
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.18));
 }
 
+.dsa-sketch-studio-mount .brush--upright svg {
+    transform: none;
+}
+
 .dsa-sketch-studio-mount .brush-tray .brushes-scroll {
     align-self: flex-end;
 }
 
 .dsa-sketch-studio-mount .brush-tray .divider {
-    height: 44px;
-    margin: 0 8px;
+    height: 54px;
+    margin: 0 10px;
     align-self: center;
     flex-shrink: 0;
 }
 
 .dsa-sketch-studio-mount .tray-btn {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     border: none;
     background: transparent;
@@ -789,17 +793,25 @@
 }
 
 .dsa-sketch-studio-mount .color-btn {
-    width: 30px;
-    height: 30px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    border: 2.5px solid #fff;
-    box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.18), 0 3px 8px rgba(0, 0, 0, 0.15);
+    border: none;
+    box-shadow: none;
     cursor: pointer;
     transition: transform 0.2s var(--ease-spring);
-    background: #000;
+    background: transparent;
+    padding: 0;
     margin: 0;
     align-self: center;
     flex-shrink: 0;
+}
+
+.dsa-sketch-studio-mount .color-btn .dsa-sk-color-wheel {
+    width: 100%;
+    height: 100%;
+    display: block;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.14));
 }
 
 .dsa-sketch-studio-mount .color-btn:hover {
@@ -1494,14 +1506,14 @@
 }
 
 .dsa-sketch-studio-mount .sketch-studio.minimized .brush-tray {
-    min-height: 60px;
-    padding: 4px 12px 0;
+    min-height: 72px;
+    padding: 6px 14px 0;
 }
 
 .dsa-sketch-studio-mount .sketch-studio.minimized .brush {
-    width: 36px;
-    height: 50px;
-    flex: 0 0 36px;
+    width: 44px;
+    height: 62px;
+    flex: 0 0 44px;
 }
 
 .dsa-sketch-studio-mount .sketch-studio.minimized .tray-btn {
@@ -1511,8 +1523,8 @@
 }
 
 .dsa-sketch-studio-mount .sketch-studio.minimized .color-btn {
-    width: 26px;
-    height: 26px;
+    width: 40px;
+    height: 40px;
     margin: 0;
 }
 
@@ -1569,8 +1581,8 @@
 
 /* Mobile draw tray: 3 brushes visible, scroll for the other 2 */
 .dsa-sketch-studio-mount.device-mobile .brushes-scroll {
-    --dsa-sk-brush-w: 46px;
-    --dsa-sk-brush-gap: 4px;
+    --dsa-sk-brush-w: 58px;
+    --dsa-sk-brush-gap: 6px;
     max-width: calc(var(--dsa-sk-brush-w) * 3 + var(--dsa-sk-brush-gap) * 2);
     flex: 0 0 auto;
     scroll-snap-type: x proximity;
@@ -1581,7 +1593,7 @@
 }
 
 .dsa-sketch-studio-mount.device-mobile .sketch-studio.minimized .brushes-scroll {
-    --dsa-sk-brush-w: 36px;
+    --dsa-sk-brush-w: 44px;
 }
 
 @media (max-width: 768px) {

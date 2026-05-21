@@ -897,18 +897,40 @@ function selectBrush(brush) {
   syncToolbarUi();
 }
 
+function shadeHex(hex, amount) {
+  const h = (hex || '#1c1c1e').replace('#', '');
+  if (h.length !== 6) return hex || '#1c1c1e';
+  const n = parseInt(h, 16);
+  const r = Math.max(0, Math.min(255, ((n >> 16) & 255) + amount));
+  const g = Math.max(0, Math.min(255, ((n >> 8) & 255) + amount));
+  const b = Math.max(0, Math.min(255, (n & 255) + amount);
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+}
+
+function applyColorVars(el, color) {
+  if (!el) return;
+  const c = color || '#1c1c1e';
+  el.style.setProperty('--bc', c);
+  el.style.setProperty('--bc-light', shadeHex(c, 48));
+  el.style.setProperty('--bc-deep', shadeHex(c, -48));
+}
+
 function updateBrushColors() {
   document.querySelectorAll('.brush').forEach((b) => {
     const id = b.dataset.brush;
     if (!id || id === 'eraser') {
       b.style.removeProperty('--bc');
+      b.style.removeProperty('--bc-light');
+      b.style.removeProperty('--bc-deep');
       return;
     }
-    b.style.setProperty('--bc', getBrushColor(id));
+    applyColorVars(b, getBrushColor(id));
   });
   const colorBtn = $('dsaSkColorBtn');
   if (colorBtn) {
-    colorBtn.style.background = state.brush === 'eraser' ? '#8e8e93' : state.color;
+    const mixer = state.brush === 'eraser' ? '#8e8e93' : state.color;
+    applyColorVars(colorBtn, mixer);
+    colorBtn.style.background = 'transparent';
   }
 }
 

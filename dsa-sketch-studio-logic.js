@@ -134,6 +134,7 @@ function syncToolbarUi() {
   /* iPad/PC: hide top back only when minimized (same toolbar as fullscreen otherwise) */
   mount.classList.toggle('dsa-sk-back-hidden', isBigScreen() && state.minimized && !isFullscreen());
   syncMinimizeBtnUi();
+  if (tableSetupOpen) requestAnimationFrame(positionTableSetupPanel);
 }
 
 function syncMinimizeBtnUi() {
@@ -159,7 +160,7 @@ function enterFullscreen() {
   const studio = $('dsaSkStudio');
   if (studio) {
     studio.classList.remove('minimized');
-    state.minimized = false;
+  state.minimized = false;
   }
   if (fsHideBackdrop) fsHideBackdrop.classList.add('dsa-sketch-fs-hide-dialog');
   if (fsHideDlg) fsHideDlg.classList.add('dsa-sketch-fs-hide-dialog');
@@ -307,6 +308,7 @@ function applyCanvasTransform() {
   const t = `translate(calc(-50% + ${state.panX}px), calc(-50% + ${state.panY}px)) scale(${state.scale})`;
   canvas.style.transform = t;
   laserCanvas.style.transform = t;
+  if (eraserActive()) updateEraserCursorSize();
 }
 
 function syncLaserCanvas() {
@@ -406,7 +408,7 @@ function applyStyleOn(c, p) {
     c.lineWidth = p.size * 2.2;
     c.lineCap = 'round';
     c.lineJoin = 'round';
-  } else if (p.brush === 'eraser') {
+} else if (p.brush === 'eraser') {
     c.globalCompositeOperation = 'destination-out';
     c.lineWidth = p.size * 5;
     c.globalAlpha = 1;
@@ -707,8 +709,11 @@ function eraserActive() {
 function updateEraserCursorSize() {
   const cvRect = canvas.getBoundingClientRect();
   const ratio = cvRect.width / canvas.width;
-  const cssSize = state.size * 5 * ratio * state.scale;
-  eraserCursor.style.width  = cssSize + 'px';
+  let cssSize = state.size * 5 * ratio;
+  if (state.size >= 12) cssSize *= 1.22;
+  else if (state.size >= 8) cssSize *= 1.14;
+  else if (state.size >= 5) cssSize *= 1.08;
+  eraserCursor.style.width = cssSize + 'px';
   eraserCursor.style.height = cssSize + 'px';
 }
 
@@ -880,6 +885,7 @@ function buildSizeDots() {
     dot.onclick = () => {
       state.size = s;
       buildSizeDots();
+      updateEraserCursorSize();
     };
     c.appendChild(dot);
   });
@@ -907,10 +913,10 @@ function setOpacity(cx) {
   syncOpacityUi();
 }
 if (opSlider) {
-  opSlider.addEventListener('mousedown', (e) => { dragOp = true; setOpacity(e.clientX); });
+opSlider.addEventListener('mousedown', (e) => { dragOp = true; setOpacity(e.clientX); });
   opSlider.addEventListener('touchstart', (e) => { dragOp = true; setOpacity(e.touches[0].clientX); }, { passive: true });
-  opSlider.addEventListener('touchmove', (e) => { if (dragOp) { setOpacity(e.touches[0].clientX); e.preventDefault(); } }, { passive: false });
-  opSlider.addEventListener('touchend', () => { dragOp = false; });
+opSlider.addEventListener('touchmove', (e) => { if (dragOp) { setOpacity(e.touches[0].clientX); e.preventDefault(); } }, { passive: false });
+opSlider.addEventListener('touchend', () => { dragOp = false; });
 }
 document.addEventListener('mousemove', (e) => { if (dragOp) setOpacity(e.clientX); });
 document.addEventListener('mouseup', () => { dragOp = false; });
@@ -1030,9 +1036,20 @@ function parseTableDimInput(raw) {
   if (!Number.isFinite(n)) return null;
   return Math.max(TABLE_DIM_MIN, Math.min(TABLE_DIM_MAX, n));
 }
+function clampTableDimInputField(el) {
+  if (!el) return;
+  const digits = String(el.value).replace(/\D/g, '');
+  if (!digits) {
+    el.value = '';
+    return;
+  }
+  const n = Math.min(TABLE_DIM_MAX, parseInt(digits, 10));
+  el.value = String(Math.max(TABLE_DIM_MIN, n));
+}
 function applyTableRowsInput() {
   const rowsEl = tableSetupPanel?.querySelector('#dsaSkTableRowsInput');
   if (!rowsEl) return;
+  clampTableDimInputField(rowsEl);
   const n = parseTableDimInput(rowsEl.value);
   if (n === null) return;
   tableState.rows = n;
@@ -1041,6 +1058,7 @@ function applyTableRowsInput() {
 function applyTableColsInput() {
   const colsEl = tableSetupPanel?.querySelector('#dsaSkTableColsInput');
   if (!colsEl) return;
+  clampTableDimInputField(colsEl);
   const n = parseTableDimInput(colsEl.value);
   if (n === null) return;
   tableState.cols = n;
@@ -1076,22 +1094,15 @@ function positionTableSetupPanel() {
   tableSetupPanel.hidden = false;
   const panelH = tableSetupPanel.offsetHeight || 120;
   if (!tableSetupOpen) tableSetupPanel.hidden = true;
-  const studioRect = studio.getBoundingClientRect();
-  if (minimized) {
-    tableSetupPanel.style.left = `${studioRect.left + 12}px`;
-    tableSetupPanel.style.top = `${studioRect.top + 52}px`;
-    tableSetupPanel.style.bottom = '';
-  } else {
-    const r = anchor.getBoundingClientRect();
-    let left = r.left + r.width / 2 - panelW / 2;
-    left = Math.max(8, Math.min(left, window.innerWidth - panelW - 8));
-    let top = r.bottom + 8;
-    if (top + panelH > window.innerHeight - 10) top = r.top - panelH - 8;
-    top = Math.max(8, Math.min(top, window.innerHeight - panelH - 8));
-    tableSetupPanel.style.left = `${left}px`;
-    tableSetupPanel.style.top = `${top}px`;
-    tableSetupPanel.style.bottom = '';
-  }
+  const r = anchor.getBoundingClientRect();
+  let left = r.left + r.width / 2 - panelW / 2;
+  left = Math.max(8, Math.min(left, window.innerWidth - panelW - 8));
+  let top = r.bottom + 8;
+  if (top + panelH > window.innerHeight - 10) top = r.top - panelH - 8;
+  top = Math.max(8, Math.min(top, window.innerHeight - panelH - 8));
+  tableSetupPanel.style.left = `${left}px`;
+  tableSetupPanel.style.top = `${top}px`;
+  tableSetupPanel.style.bottom = '';
 }
 let tablePanelHome = null;
 function mountTablePanelPortal() {
@@ -1436,7 +1447,6 @@ function exportImg() {
   if (!confirm('Clear all drawing?')) return;
   state.paths = []; state.redoStack = [];
   redrawAll(); updateUndoRedo(); syncInkFlag();
-  if (typeof hooks.afterClear === 'function') hooks.afterClear();
 }
 
 
@@ -1711,7 +1721,6 @@ const api = {
     redrawAll();
     updateUndoRedo();
     syncInkFlag();
-    if (typeof hooks.afterClear === 'function') hooks.afterClear();
   },
   zoomIn() {
     state.scale = Math.max(0.3, Math.min(4, state.scale * 1.08));
@@ -1757,31 +1766,31 @@ const api = {
           },
         ];
       } else {
-        const maxW = wrapEl.clientWidth * 0.55;
-        const maxH = wrapEl.clientHeight * 0.55;
-        let w = im.width;
-        let h = im.height;
-        if (w > maxW) {
-          h *= maxW / w;
-          w = maxW;
-        }
-        if (h > maxH) {
-          w *= maxH / h;
-          h = maxH;
-        }
-        const wrRect = wrapEl.getBoundingClientRect();
-        const sx = canvas.width / cvRect.width;
-        const sy = canvas.height / cvRect.height;
-        state.paths = [
-          {
-            type: 'image',
-            x: ((wrapEl.clientWidth - w) / 2 + wrRect.left - cvRect.left) * sx,
-            y: ((wrapEl.clientHeight - h) / 2 + wrRect.top - cvRect.top) * sy,
-            w: w * sx,
-            h: h * sy,
-            img: im,
-          },
-        ];
+      const maxW = wrapEl.clientWidth * 0.55;
+      const maxH = wrapEl.clientHeight * 0.55;
+      let w = im.width;
+      let h = im.height;
+      if (w > maxW) {
+        h *= maxW / w;
+        w = maxW;
+      }
+      if (h > maxH) {
+        w *= maxH / h;
+        h = maxH;
+      }
+      const wrRect = wrapEl.getBoundingClientRect();
+      const sx = canvas.width / cvRect.width;
+      const sy = canvas.height / cvRect.height;
+      state.paths = [
+        {
+          type: 'image',
+          x: ((wrapEl.clientWidth - w) / 2 + wrRect.left - cvRect.left) * sx,
+          y: ((wrapEl.clientHeight - h) / 2 + wrRect.top - cvRect.top) * sy,
+          w: w * sx,
+          h: h * sy,
+          img: im,
+        },
+      ];
       }
       state.redoStack = [];
       redrawAll();
@@ -1826,11 +1835,11 @@ const api = {
   destroy() {
     if (destroyed) return;
     destroyed = true;
-        exitFullscreen();
+    exitFullscreen();
             exitNativeFullscreen();
-            try {
-                ro.disconnect();
-            } catch (_) {}
+    try {
+      ro.disconnect();
+    } catch (_) {}
     listeners.forEach(([t, ty, fn, opts]) => {
       try {
         t.removeEventListener(ty, fn, opts);

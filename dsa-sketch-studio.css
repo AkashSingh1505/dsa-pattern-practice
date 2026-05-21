@@ -180,6 +180,10 @@
     pointer-events: none;
 }
 
+.dsa-sketch-studio-mount.device-pc .sketch-studio.minimized .top-toolbar {
+    justify-content: center;
+}
+
 .dsa-sketch-studio-mount .top-toolbar > * {
     pointer-events: auto;
 }
@@ -329,6 +333,22 @@
     transform: translate(-50%, -50%);
     z-index: 6;
     margin: 0;
+}
+
+.dsa-sketch-studio-mount.device-pc .sketch-studio.minimized .top-tools-tab {
+    position: static;
+    left: auto;
+    top: auto;
+    transform: none;
+    flex-shrink: 0;
+}
+
+.dsa-sketch-studio-mount.device-pc .sketch-studio.minimized .toolbar-right {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 0;
 }
 
 .dsa-sketch-studio-mount.device-pc .toolbar-right {
@@ -902,15 +922,14 @@
 #dsaSkEraserCursor.eraser-cursor,
 .dsa-sketch-studio-mount .eraser-cursor {
     position: fixed;
-    border: 2px solid rgba(0, 0, 0, 0.75);
-    background: rgba(255, 255, 255, 0.6);
+    border: 2px solid rgba(174, 174, 178, 0.95);
+    background: rgba(255, 255, 255, 0.45);
     border-radius: 50%;
     pointer-events: none;
     transform: translate(-50%, -50%);
     display: none;
     z-index: 600030;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
-    transition: width 0.12s ease, height 0.12s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 #dsaSkEraserCursor.eraser-cursor.show,
@@ -1442,6 +1461,7 @@
 
 .dsa-sketch-studio-mount.device-pc .sketch-studio.minimized .toolbar-right {
     gap: 6px;
+    margin-left: 0;
 }
 
 .dsa-sketch-studio-mount .sketch-studio.minimized .icon-btn {

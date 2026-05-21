@@ -267,7 +267,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
 
       </div>
       <div class="brush" data-brush="shape">
-        <svg viewBox="0 0 60 90"><rect x="14" y="14" width="32" height="60" rx="6" fill="#5856d6"/><rect x="14" y="14" width="32" height="60" rx="6" fill="url(#shGrad)"/><circle cx="24" cy="34" r="7" fill="#fff" opacity="0.9"/><rect x="32" y="28" width="12" height="12" fill="#fff" opacity="0.9" rx="2"/><polygon points="30,50 38,64 22,64" fill="#fff" opacity="0.9"/><defs><linearGradient id="shGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="rgba(255,255,255,0.25)"/><stop offset="0.5" stop-color="rgba(255,255,255,0)"/><stop offset="1" stop-color="rgba(0,0,0,0.2)"/></linearGradient></defs></svg>
+        <svg viewBox="0 0 60 90"><rect x="14" y="14" width="32" height="60" rx="6" fill="var(--bc, #5856d6)"/><rect x="14" y="14" width="32" height="60" rx="6" fill="url(#shGrad)"/><circle cx="24" cy="34" r="7" fill="#fff" opacity="0.9"/><rect x="32" y="28" width="12" height="12" fill="#fff" opacity="0.9" rx="2"/><polygon points="30,50 38,64 22,64" fill="#fff" opacity="0.9"/><defs><linearGradient id="shGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="rgba(255,255,255,0.25)"/><stop offset="0.5" stop-color="rgba(255,255,255,0)"/><stop offset="1" stop-color="rgba(0,0,0,0.2)"/></linearGradient></defs></svg>
 
       </div>
 </div>
@@ -319,6 +319,38 @@ const state = {
   panX: 0,
   panY: 0,
 };
+
+const BRUSH_DEFAULT_COLORS = {
+  pen: '#1c1c1e',
+  pencil: '#ff3b30',
+  highlighter: '#ffeb3b',
+  shape: '#5856d6',
+};
+const brushColors = { ...BRUSH_DEFAULT_COLORS };
+
+function getBrushColor(brush) {
+  if (brush === 'eraser') return '#8e8e93';
+  return brushColors[brush] || BRUSH_DEFAULT_COLORS[brush] || '#1c1c1e';
+}
+
+function setBrushColor(brush, color) {
+  if (!brush || brush === 'eraser') return;
+  brushColors[brush] = color;
+}
+
+function syncColorMixerToActiveBrush() {
+  if (state.brush !== 'eraser') {
+    state.color = getBrushColor(state.brush);
+  }
+  buildColorPicker();
+  buildSizeDots();
+  const nc = $('dsaSkNativeColor');
+  if (nc && state.brush !== 'eraser') {
+    const c = state.color;
+    nc.value = c.length === 7 ? c : '#1c1c1e';
+  }
+  updateBrushColors();
+}
 
 let destroyed = false;
 const listeners = [];
@@ -1123,8 +1155,7 @@ function activateBrush(brush) {
   state.brush = brush;
   document.querySelectorAll('.brush').forEach(b => b.classList.toggle('active', b.dataset.brush === brush));
   $('dsaSkShapeRow').style.display = brush === 'shape' ? 'flex' : 'none';
-  buildSizeDots();
-  updateBrushColors();
+  syncColorMixerToActiveBrush();
   // ✅ refresh eraser cursor state
   if (!eraserActive()) {
     eraserCursor.classList.remove('show');
@@ -1160,12 +1191,18 @@ function selectBrush(brush) {
 }
 
 function updateBrushColors() {
-  document.querySelectorAll('.brush').forEach(b => {
-    if (b.dataset.brush !== 'eraser' && b.dataset.brush !== 'shape') {
-      b.style.setProperty('--bc', state.color);
+  document.querySelectorAll('.brush').forEach((b) => {
+    const id = b.dataset.brush;
+    if (!id || id === 'eraser') {
+      b.style.removeProperty('--bc');
+      return;
     }
+    b.style.setProperty('--bc', getBrushColor(id));
   });
-  $('dsaSkColorBtn').style.background = state.color;
+  const colorBtn = $('dsaSkColorBtn');
+  if (colorBtn) {
+    colorBtn.style.background = state.brush === 'eraser' ? '#8e8e93' : state.color;
+  }
 }
 
 document.querySelectorAll('.shape-opt').forEach(opt => {
@@ -1255,7 +1292,12 @@ function buildColorPicker() {
 }
 function applyColor(c) {
   state.color = c;
-  buildColorPicker(); buildSizeDots(); updateBrushColors();
+  if (state.brush && state.brush !== 'eraser') {
+    setBrushColor(state.brush, c);
+  }
+  buildColorPicker();
+  buildSizeDots();
+  updateBrushColors();
   const nc = $('dsaSkNativeColor');
   if (nc) nc.value = c.length === 7 ? c : '#1c1c1e';
 }

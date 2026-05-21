@@ -27,6 +27,38 @@ const state = {
   panY: 0,
 };
 
+const BRUSH_DEFAULT_COLORS = {
+  pen: '#1c1c1e',
+  pencil: '#ff3b30',
+  highlighter: '#ffeb3b',
+  shape: '#5856d6',
+};
+const brushColors = { ...BRUSH_DEFAULT_COLORS };
+
+function getBrushColor(brush) {
+  if (brush === 'eraser') return '#8e8e93';
+  return brushColors[brush] || BRUSH_DEFAULT_COLORS[brush] || '#1c1c1e';
+}
+
+function setBrushColor(brush, color) {
+  if (!brush || brush === 'eraser') return;
+  brushColors[brush] = color;
+}
+
+function syncColorMixerToActiveBrush() {
+  if (state.brush !== 'eraser') {
+    state.color = getBrushColor(state.brush);
+  }
+  buildColorPicker();
+  buildSizeDots();
+  const nc = $('dsaSkNativeColor');
+  if (nc && state.brush !== 'eraser') {
+    const c = state.color;
+    nc.value = c.length === 7 ? c : '#1c1c1e';
+  }
+  updateBrushColors();
+}
+
 let destroyed = false;
 const listeners = [];
 
@@ -830,8 +862,7 @@ function activateBrush(brush) {
   state.brush = brush;
   document.querySelectorAll('.brush').forEach(b => b.classList.toggle('active', b.dataset.brush === brush));
   $('dsaSkShapeRow').style.display = brush === 'shape' ? 'flex' : 'none';
-  buildSizeDots();
-  updateBrushColors();
+  syncColorMixerToActiveBrush();
   // ✅ refresh eraser cursor state
   if (!eraserActive()) {
     eraserCursor.classList.remove('show');
@@ -867,12 +898,18 @@ function selectBrush(brush) {
 }
 
 function updateBrushColors() {
-  document.querySelectorAll('.brush').forEach(b => {
-    if (b.dataset.brush !== 'eraser' && b.dataset.brush !== 'shape') {
-      b.style.setProperty('--bc', state.color);
+  document.querySelectorAll('.brush').forEach((b) => {
+    const id = b.dataset.brush;
+    if (!id || id === 'eraser') {
+      b.style.removeProperty('--bc');
+      return;
     }
+    b.style.setProperty('--bc', getBrushColor(id));
   });
-  $('dsaSkColorBtn').style.background = state.color;
+  const colorBtn = $('dsaSkColorBtn');
+  if (colorBtn) {
+    colorBtn.style.background = state.brush === 'eraser' ? '#8e8e93' : state.color;
+  }
 }
 
 document.querySelectorAll('.shape-opt').forEach(opt => {
@@ -962,7 +999,12 @@ function buildColorPicker() {
 }
 function applyColor(c) {
   state.color = c;
-  buildColorPicker(); buildSizeDots(); updateBrushColors();
+  if (state.brush && state.brush !== 'eraser') {
+    setBrushColor(state.brush, c);
+  }
+  buildColorPicker();
+  buildSizeDots();
+  updateBrushColors();
   const nc = $('dsaSkNativeColor');
   if (nc) nc.value = c.length === 7 ? c : '#1c1c1e';
 }

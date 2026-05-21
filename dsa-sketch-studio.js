@@ -344,7 +344,7 @@ function commitOpenStroke() {
     state.drawing = false;
     return;
   }
-  if (state.currentPath.points.length < 2) {
+  if (state.currentPath.points.length < 2 && state.currentPath.brush !== 'eraser') {
     const p0 = state.currentPath.points[0];
     state.currentPath.points.push({ x: p0.x + 0.5, y: p0.y + 0.5 });
   }
@@ -354,6 +354,7 @@ function commitOpenStroke() {
   state.drawing = false;
   updateUndoRedo();
   syncInkFlag();
+  redrawAll();
 }
 
 function flushForPersist() {
@@ -710,6 +711,17 @@ function applyStyleOn(c, p) {
 function applyStyle(p) {
   applyStyleOn(ctx, p);
 }
+function drawEraserDabOn(c, p, pt) {
+  const r = (p.size || 1) * 2.5;
+  c.save();
+  c.globalCompositeOperation = 'destination-out';
+  c.globalAlpha = 1;
+  c.beginPath();
+  c.arc(pt.x, pt.y, r, 0, Math.PI * 2);
+  c.fill();
+  c.restore();
+}
+
 function strokePathOn(c, pts) {
   if (pts.length < 2) return;
   c.beginPath();
@@ -801,17 +813,28 @@ function drawPathOn(c, p) {
     applyStyleOn(c, p);
     drawShapeOn(c, p);
   } else if (p.points && p.points.length) {
-    applyStyleOn(c, p);
-    strokePathOn(c, p.points);
+    if (p.brush === 'eraser' && p.points.length === 1) {
+      drawEraserDabOn(c, p, p.points[0]);
+    } else {
+      applyStyleOn(c, p);
+      strokePathOn(c, p.points);
+    }
   }
 }
 function drawIncremental() {
   redrawAll();
   if (!state.currentPath) return;
   ctx.save();
-  applyStyle(state.currentPath);
-  if (state.currentPath.brush === 'shape') drawShape(state.currentPath);
-  else strokePath(state.currentPath.points);
+  const cp = state.currentPath;
+  if (cp.brush === 'shape') {
+    applyStyle(cp);
+    drawShape(cp);
+  } else if (cp.brush === 'eraser' && cp.points.length === 1) {
+    drawEraserDabOn(ctx, cp, cp.points[0]);
+  } else {
+    applyStyle(cp);
+    strokePath(cp.points);
+  }
   ctx.restore();
 }
 function redrawAll() {

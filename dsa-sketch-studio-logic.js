@@ -907,8 +907,13 @@ function updateBrushColors() {
     b.style.setProperty('--bc', getBrushColor(id));
   });
   const colorBtn = $('dsaSkColorBtn');
-  if (colorBtn) {
-    colorBtn.style.background = state.brush === 'eraser' ? '#8e8e93' : state.color;
+  if (!colorBtn) return;
+  const wheelCore = colorBtn.querySelector('.dsa-sk-color-wheel-core');
+  const activeColor = state.brush === 'eraser' ? '#8e8e93' : state.color;
+  if (wheelCore) {
+    wheelCore.style.fill = activeColor;
+  } else {
+    colorBtn.style.background = activeColor;
   }
 }
 

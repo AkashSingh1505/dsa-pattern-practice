@@ -46,7 +46,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     if (!document.head.querySelector("link[data-dsa-sketch-studio-css]")) {
         const lk = document.createElement("link");
         lk.rel = "stylesheet";
-        lk.href = "./dsa-sketch-studio.css?v=36";
+        lk.href = "./dsa-sketch-studio.css?v=37";
         lk.dataset.dsaSketchStudioCss = "1";
         document.head.appendChild(lk);
     }
@@ -275,6 +275,14 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
       <div class="divider"></div>
       <button class="color-btn" id="dsaSkColorBtn"></button>
       <button class="tray-btn" id="dsaSkBtnLaser2">
+        <svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="#ff3b30"/><circle cx="12" cy="12" r="8" fill="none" stroke="#ff3b30" stroke-width="1.6" opacity="0.45"/></svg>
+      </button>
+      <button class="tray-btn" id="dsaSkBackBtnTray">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1c1c1e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
 `;
 
     const eraserCursor = document.createElement("div");

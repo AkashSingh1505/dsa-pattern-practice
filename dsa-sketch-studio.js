@@ -1300,7 +1300,7 @@ function shadeHex(hex, amount) {
   const n = parseInt(h, 16);
   const r = Math.max(0, Math.min(255, ((n >> 16) & 255) + amount));
   const g = Math.max(0, Math.min(255, ((n >> 8) & 255) + amount));
-  const b = Math.max(0, Math.min(255, (n & 255) + amount);
+  const b = Math.max(0, Math.min(255, (n & 255) + amount));
   return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 }
 

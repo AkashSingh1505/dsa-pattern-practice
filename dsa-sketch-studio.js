@@ -46,7 +46,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     if (!document.head.querySelector("link[data-dsa-sketch-studio-css]")) {
         const lk = document.createElement("link");
         lk.rel = "stylesheet";
-        lk.href = "./dsa-sketch-studio.css?v=34";
+        lk.href = "./dsa-sketch-studio.css?v=35";
         lk.dataset.dsaSketchStudioCss = "1";
         document.head.appendChild(lk);
     }
@@ -251,12 +251,12 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     <div class="brush-tray" id="dsaSkDrawTab" style="display:none;">
 <div class="brushes-scroll">
       <div class="brush" data-brush="pen" title="Pen">
-        <svg viewBox="0 0 90 300" aria-hidden="true"><defs>
-                <linearGradient id="skPen_b1Body" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="#b8b8be"/><stop offset="8%" stop-color="#e8e8ec"/>
-                  <stop offset="22%" stop-color="#ffffff"/><stop offset="38%" stop-color="#fcfcfd"/>
-                  <stop offset="55%" stop-color="#f4f4f6"/><stop offset="72%" stop-color="#fbfbfc"/>
-                  <stop offset="88%" stop-color="#e0e0e4"/><stop offset="100%" stop-color="#a8a8ae"/>
+        <svg viewBox="0 0 90 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
+                <linearGradient id="skPen_b1Ink" class="dsa-sk-ink-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="var(--bc-light, #e8e8ec)"/>
+                  <stop offset="33%" stop-color="var(--bc-mid, #5a5a5e)"/>
+                  <stop offset="66%" stop-color="var(--bc, #1c1c1e)"/>
+                  <stop offset="100%" stop-color="var(--bc-deep, #0a0a0a)"/>
                 </linearGradient>
                 <linearGradient id="skPen_b1Band" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stop-color="#0a0a0a"/><stop offset="50%" stop-color="#2c2c2e"/>
@@ -273,7 +273,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
               <path class="dsa-sk-ink" d="M 45 18 Q 47 20 48 24 L 60 80 Q 60 83 57 83 L 33 83 Q 30 83 30 80 L 42 24 Q 43 20 45 18 Z" fill="var(--bc, #1c1c1e)"/>
               <path d="M 45 20 L 41 80 L 44 80 Z" fill="rgba(255,255,255,0.4)"/>
               <ellipse cx="45" cy="83" rx="20" ry="3" fill="#f0f0f3"/>
-              <path d="M 25 83 L 25 282 Q 25 289 32 289 L 58 289 Q 65 289 65 282 L 65 83 Z" fill="url(#skPen_b1Body)"/>
+              <path class="dsa-sk-body" d="M 25 83 L 25 282 Q 25 289 32 289 L 58 289 Q 65 289 65 282 L 65 83 Z" fill="url(#skPen_b1Ink)"/>
               <rect x="25" y="152" width="40" height="10" fill="url(#skPen_b1Band)"/>
               <rect x="25" y="152" width="40" height="1.5" fill="rgba(255,255,255,0.15)"/>
               <path d="M 25 280 Q 25 289 32 289 L 58 289 Q 65 289 65 280 Z" fill="url(#skPen_b1Bottom)"/>
@@ -284,11 +284,12 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
       </div>
 
       <div class="brush" data-brush="pencil" title="Pencil">
-        <svg viewBox="0 0 90 300" aria-hidden="true"><defs>
-                <linearGradient id="skPc_pcWood" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="#8a6a3a"/><stop offset="15%" stop-color="#c9a878"/>
-                  <stop offset="35%" stop-color="#e8cfa6"/><stop offset="55%" stop-color="#d8b88a"/>
-                  <stop offset="80%" stop-color="#a88456"/><stop offset="100%" stop-color="#6a4e26"/>
+        <svg viewBox="0 0 90 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
+                <linearGradient id="skPc_pcInk" class="dsa-sk-ink-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="var(--bc-light, #e8e8ec)"/>
+                  <stop offset="33%" stop-color="var(--bc-mid, #5a5a5e)"/>
+                  <stop offset="66%" stop-color="var(--bc, #1c1c1e)"/>
+                  <stop offset="100%" stop-color="var(--bc-deep, #0a0a0a)"/>
                 </linearGradient>
                 <linearGradient id="skPc_pcLead" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" stop-color="#2c2c2e"/><stop offset="50%" stop-color="#5a5a5e"/>
@@ -320,11 +321,11 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
               <ellipse cx="45" cy="294" rx="32" ry="5" fill="url(#skPc_pcFloor)"/>
               <path d="M 45 14 L 41 42 L 49 42 Z" fill="url(#skPc_pcLead)"/>
               <path d="M 45 16 L 43 40 L 45 40 Z" fill="rgba(255,255,255,0.3)"/>
-              <path d="M 41 42 L 27 80 L 35 80 L 43 42 Z" fill="#a8814a"/>
-              <path d="M 43 42 L 35 80 L 55 80 L 47 42 Z" fill="url(#skPc_pcWood)"/>
-              <path d="M 47 42 L 55 80 L 63 80 L 49 42 Z" fill="#8a6332"/>
+              <path class="dsa-sk-ink" d="M 41 42 L 27 80 L 35 80 L 43 42 Z" fill="var(--bc, #ff3b30)"/>
+              <path class="dsa-sk-body" d="M 43 42 L 35 80 L 55 80 L 47 42 Z" fill="url(#skPc_pcInk)"/>
+              <path class="dsa-sk-ink" d="M 47 42 L 55 80 L 63 80 L 49 42 Z" fill="var(--bc, #ff3b30)"/>
               <path d="M 27 80 L 27 250 L 35 250 L 35 80 Z" fill="url(#skPc_pcFaceL)"/>
-              <path class="dsa-sk-ink" d="M 35 80 L 35 250 L 55 250 L 55 80 Z" fill="var(--bc, #ff3b30)"/>
+              <path class="dsa-sk-body" d="M 35 80 L 35 250 L 55 250 L 55 80 Z" fill="url(#skPc_pcInk)"/>
               <path d="M 55 80 L 55 250 L 63 250 L 63 80 Z" fill="url(#skPc_pcFaceR)"/>
               <rect x="43" y="82" width="3" height="166" rx="1.5" fill="rgba(255,255,255,0.5)"/>
               <rect x="26" y="250" width="38" height="22" fill="url(#skPc_pcFerrule)"/>
@@ -334,20 +335,20 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
       </div>
 
       <div class="brush" data-brush="highlighter" title="Highlighter">
-        <svg viewBox="0 0 110 300" aria-hidden="true"><defs>
-                <linearGradient id="skHl_hlBody" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="#a8a8ae"/><stop offset="10%" stop-color="#e0e0e4"/>
-                  <stop offset="25%" stop-color="#ffffff"/><stop offset="45%" stop-color="#fafafb"/>
-                  <stop offset="60%" stop-color="#f4f4f6"/><stop offset="78%" stop-color="#fcfcfd"/>
-                  <stop offset="92%" stop-color="#d8d8dc"/><stop offset="100%" stop-color="#989ea0"/>
+        <svg viewBox="0 0 110 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
+                <linearGradient id="skHl_hlInk" class="dsa-sk-ink-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="var(--bc-light, #e8e8ec)"/>
+                  <stop offset="33%" stop-color="var(--bc-mid, #5a5a5e)"/>
+                  <stop offset="66%" stop-color="var(--bc, #1c1c1e)"/>
+                  <stop offset="100%" stop-color="var(--bc-deep, #0a0a0a)"/>
                 </linearGradient>
-                <linearGradient id="skHl_hlBand" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stop-color="#c9a40d"/><stop offset="20%" stop-color="#fde47a"/>
-                  <stop offset="50%" stop-color="#f4d03f"/><stop offset="80%" stop-color="#fde47a"/>
-                  <stop offset="100%" stop-color="#a88a08"/>
+                <linearGradient id="skHl_hlBand" class="dsa-sk-ink-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="var(--bc-light, #fde47a)"/>
+                  <stop offset="50%" stop-color="var(--bc, #f4d03f)"/>
+                  <stop offset="100%" stop-color="var(--bc-deep, #a88a08)"/>
                 </linearGradient>
                 <radialGradient id="skHl_hlBottom" cx="50%" cy="0%" r="80%">
-                  <stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#b0b0b6"/>
+                  <stop offset="0%" stop-color="var(--bc-light, #ffffff)"/><stop offset="100%" stop-color="var(--bc-mid, #b0b0b6)"/>
                 </radialGradient>
                 <radialGradient id="skHl_hlFloor" cx="50%" cy="50%" r="50%">
                   <stop offset="0%" stop-color="rgba(0,0,0,0.20)"/><stop offset="100%" stop-color="rgba(0,0,0,0)"/>
@@ -356,14 +357,15 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
               <ellipse cx="55" cy="294" rx="42" ry="6" fill="url(#skHl_hlFloor)"/>
               <path class="dsa-sk-ink" d="M 32 25 Q 34 21 38 23 L 80 57 Q 84 60 82 64 L 80 77 Q 79 80 76 80 L 34 80 Q 30 80 30 76 L 30 30 Q 30 27 32 25 Z" fill="var(--bc, #ffeb3b)"/>
               <path d="M 32 27 L 76 59 L 74 64 L 33 32 Z" fill="rgba(255,255,255,0.4)"/>
-              <path d="M 28 80 L 82 80 L 80 280 Q 80 290 72 290 L 38 290 Q 28 290 28 280 Z" fill="url(#skHl_hlBody)"/>
+              <path class="dsa-sk-body" d="M 28 80 L 82 80 L 80 280 Q 80 290 72 290 L 38 290 Q 28 290 28 280 Z" fill="url(#skHl_hlInk)"/>
               <rect x="28" y="180" width="54" height="16" fill="url(#skHl_hlBand)"/>
+              <path d="M 28 278 Q 28 290 38 290 L 72 290 Q 80 290 80 278 Z" fill="url(#skHl_hlBottom)"/>
               <rect x="34" y="85" width="3" height="180" rx="1.5" fill="rgba(255,255,255,0.85)"/>
             </svg>
       </div>
 
       <div class="brush" data-brush="eraser" title="Eraser">
-        <svg viewBox="0 0 110 300" aria-hidden="true"><defs>
+        <svg viewBox="0 0 110 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
                 <linearGradient id="skEr_erTop" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stop-color="#f2b8b3"/><stop offset="35%" stop-color="#e09c97"/>
                   <stop offset="70%" stop-color="#c8857f"/><stop offset="100%" stop-color="#a06863"/>
@@ -392,21 +394,26 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
       </div>
 
       <div class="brush" data-brush="shape" title="Shapes">
-        <svg viewBox="0 0 120 300" aria-hidden="true"><defs>
-                <linearGradient id="skSh_shDSide1" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stop-color="#0e8ac4"/><stop offset="100%" stop-color="#075d8e"/>
+        <svg viewBox="0 0 120 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
+                <linearGradient id="skSh_shDSide1" class="dsa-sk-side-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="var(--bc-mid, #5856d6)"/>
+                  <stop offset="100%" stop-color="var(--bc-dark, #033752)"/>
                 </linearGradient>
-                <linearGradient id="skSh_shDSide2" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stop-color="#075d8e"/><stop offset="100%" stop-color="#033752"/>
+                <linearGradient id="skSh_shDSide2" class="dsa-sk-side-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="var(--bc-mid, #5856d6)"/>
+                  <stop offset="100%" stop-color="var(--bc-dark, #033752)"/>
                 </linearGradient>
-                <linearGradient id="skSh_shSSide" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stop-color="#c25a00"/><stop offset="100%" stop-color="#7a3500"/>
+                <linearGradient id="skSh_shSSide" class="dsa-sk-side-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="var(--bc-mid, #5856d6)"/>
+                  <stop offset="100%" stop-color="var(--bc-dark, #033752)"/>
                 </linearGradient>
-                <linearGradient id="skSh_shHSide1" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stop-color="#c81e5a"/><stop offset="100%" stop-color="#80103a"/>
+                <linearGradient id="skSh_shHSide1" class="dsa-sk-side-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="var(--bc-mid, #5856d6)"/>
+                  <stop offset="100%" stop-color="var(--bc-dark, #033752)"/>
                 </linearGradient>
-                <linearGradient id="skSh_shHSide2" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stop-color="#80103a"/><stop offset="100%" stop-color="#4a0820"/>
+                <linearGradient id="skSh_shHSide2" class="dsa-sk-side-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="var(--bc-mid, #5856d6)"/>
+                  <stop offset="100%" stop-color="var(--bc-dark, #033752)"/>
                 </linearGradient>
                 <radialGradient id="skSh_shFloor" cx="50%" cy="50%" r="50%">
                   <stop offset="0%" stop-color="rgba(0,0,0,0.22)"/><stop offset="100%" stop-color="rgba(0,0,0,0)"/>
@@ -418,7 +425,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
               <ellipse cx="60" cy="294" rx="48" ry="6" fill="url(#skSh_shFloor)"/>
               <g class="dsa-sk-sh-a">
                 <ellipse cx="60" cy="98" rx="30" ry="3" fill="rgba(0,0,0,0.18)" filter="url(#skSh_shBlur)"/>
-                <path d="M 64 25 L 99 60 L 64 95 L 29 60 Z" fill="#054168"/>
+                <path d="M 64 25 L 99 60 L 64 95 L 29 60 Z" fill="var(--bc-deep, #054168)"/>
                 <path d="M 60 20 L 95 55 L 99 60 L 64 25 Z" fill="url(#skSh_shDSide1)"/>
                 <path d="M 95 55 L 60 90 L 64 95 L 99 60 Z" fill="url(#skSh_shDSide2)"/>
                 <path class="dsa-sk-ink" d="M 60 20 L 95 55 L 60 90 L 25 55 Z" fill="var(--bc, #5856d6)"/>
@@ -432,8 +439,9 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
               </g>
               <g class="dsa-sk-sh-c">
                 <ellipse cx="60" cy="287" rx="32" ry="3.5" fill="rgba(0,0,0,0.18)" filter="url(#skSh_shBlur)"/>
-                <path d="M 64 215 L 90 230 L 90 260 L 64 275 L 38 260 L 38 230 Z" fill="#4a0820"/>
+                <path d="M 64 215 L 90 230 L 90 260 L 64 275 L 38 260 L 38 230 Z" fill="var(--bc-deep, #4a0820)"/>
                 <path d="M 60 210 L 86 225 L 90 230 L 64 215 Z" fill="url(#skSh_shHSide1)"/>
+                <path d="M 86 225 L 86 255 L 90 260 L 90 230 Z" fill="url(#skSh_shHSide2)"/>
                 <path class="dsa-sk-ink" d="M 60 210 L 86 225 L 86 255 L 60 270 L 34 255 L 34 225 Z" fill="var(--bc, #5856d6)"/>
                 <ellipse cx="48" cy="228" rx="8" ry="3" fill="rgba(255,255,255,0.6)" transform="rotate(-30 48 228)"/>
               </g>
@@ -444,10 +452,11 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
 
       <div class="divider"></div>
       <button class="color-btn" type="button" id="dsaSkColorBtn" title="Color">
-        <svg class="dsa-sk-color-wheel" viewBox="0 0 100 100" aria-hidden="true"><defs>
-                <radialGradient id="skCp_cpCenter" cx="35%" cy="35%" r="65%">
-                  <stop offset="0%" stop-color="#3a3a3c"/><stop offset="50%" stop-color="#1c1c1e"/>
-                  <stop offset="100%" stop-color="#000000"/>
+        <svg class="dsa-sk-color-wheel" viewBox="0 0 100 100" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
+                <radialGradient id="skCp_cpInk" class="dsa-sk-ink-grad" cx="35%" cy="35%" r="65%">
+                  <stop offset="0%" stop-color="var(--bc-light, #3a3a3c)"/>
+                  <stop offset="50%" stop-color="var(--bc, #1c1c1e)"/>
+                  <stop offset="100%" stop-color="var(--bc-deep, #000000)"/>
                 </radialGradient>
                 <filter id="skCp_cpDrop">
                   <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
@@ -472,21 +481,12 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
                   <circle r="42" fill="none" stroke="#ff2d55" stroke-width="11" stroke-dasharray="22 241" transform="rotate(240)"/>
                 </g>
                 <circle cx="50" cy="50" r="32" fill="#ffffff"/>
-                <circle class="dsa-sk-color-wheel-core" cx="50" cy="50" r="26" fill="url(#skCp_cpCenter)"/>
+                <circle class="dsa-sk-color-wheel-core" cx="50" cy="50" r="26" fill="url(#skCp_cpInk)"/>
                 <ellipse cx="42" cy="42" rx="10" ry="6" fill="rgba(255,255,255,0.15)" transform="rotate(-30 42 42)"/>
               </g>
             </svg>
       </button>
       <button class="tray-btn" id="dsaSkBtnLaser2">
-        <svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="#ff3b30"/><circle cx="12" cy="12" r="8" fill="none" stroke="#ff3b30" stroke-width="1.6" opacity="0.45"/></svg>
-      </button>
-      <button class="tray-btn" id="dsaSkBackBtnTray">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1c1c1e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-      </button>
-    </div>
-  </div>
-</div>
-
 `;
 
     const eraserCursor = document.createElement("div");
@@ -539,6 +539,66 @@ function getBrushColor(brush) {
 function setBrushColor(brush, color) {
   if (!brush || brush === 'eraser') return;
   brushColors[brush] = color;
+}
+
+function parseHexColor(hex) {
+  const h = String(hex || '').trim();
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h);
+  if (!m) return { r: 28, g: 28, b: 30 };
+  return { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) };
+}
+
+function rgbToHex(r, g, b) {
+  const c = (n) => Math.max(0, Math.min(255, Math.round(n)));
+  return `#${[c(r), c(g), c(b)].map((x) => x.toString(16).padStart(2, '0')).join('')}`;
+}
+
+function mixRgb(a, b, t) {
+  return {
+    r: a.r + (b.r - a.r) * t,
+    g: a.g + (b.g - a.g) * t,
+    b: a.b + (b.b - a.b) * t,
+  };
+}
+
+function brushColorPalette(hex) {
+  const base = parseHexColor(hex);
+  const white = { r: 255, g: 255, b: 255 };
+  const black = { r: 0, g: 0, b: 0 };
+  return {
+    base: rgbToHex(base.r, base.g, base.b),
+    light: rgbToHex(mixRgb(base, white, 0.42).r, mixRgb(base, white, 0.42).g, mixRgb(base, white, 0.42).b),
+    mid: rgbToHex(mixRgb(base, white, 0.18).r, mixRgb(base, white, 0.18).g, mixRgb(base, white, 0.18).b),
+    dark: rgbToHex(mixRgb(base, black, 0.32).r, mixRgb(base, black, 0.32).g, mixRgb(base, black, 0.32).b),
+    deep: rgbToHex(mixRgb(base, black, 0.48).r, mixRgb(base, black, 0.48).g, mixRgb(base, black, 0.48).b),
+  };
+}
+
+function paintBrushIcon(brushId, hex) {
+  const el = document.querySelector(`.brush[data-brush="${brushId}"]`);
+  if (!el || brushId === 'eraser') return;
+  const pal = brushColorPalette(hex);
+  el.style.setProperty('--bc', pal.base);
+  el.style.setProperty('--bc-light', pal.light);
+  el.style.setProperty('--bc-mid', pal.mid);
+  el.style.setProperty('--bc-dark', pal.dark);
+  el.style.setProperty('--bc-deep', pal.deep);
+  el.querySelectorAll('.dsa-sk-ink').forEach((node) => {
+    node.setAttribute('fill', pal.base);
+  });
+  el.querySelectorAll('.dsa-sk-ink-grad stop').forEach((stop, i, stops) => {
+    const t = stops.length > 1 ? i / (stops.length - 1) : 0;
+    let c = pal.base;
+    if (t <= 0.2) c = pal.light;
+    else if (t >= 0.82) c = pal.deep;
+    else if (t >= 0.55) c = pal.dark;
+    else if (t >= 0.35) c = pal.base;
+    else c = pal.mid;
+    stop.setAttribute('stop-color', c);
+  });
+  el.querySelectorAll('.dsa-sk-side-grad stop').forEach((stop, i) => {
+    stop.setAttribute('stop-color', i === 0 ? pal.mid : pal.deep);
+  });
 }
 
 function syncColorMixerToActiveBrush() {
@@ -1398,19 +1458,34 @@ function updateBrushColors() {
     const id = b.dataset.brush;
     if (!id || id === 'eraser') {
       b.style.removeProperty('--bc');
+      b.style.removeProperty('--bc-light');
+      b.style.removeProperty('--bc-mid');
+      b.style.removeProperty('--bc-dark');
+      b.style.removeProperty('--bc-deep');
       return;
     }
-    b.style.setProperty('--bc', getBrushColor(id));
+    paintBrushIcon(id, getBrushColor(id));
   });
   const colorBtn = $('dsaSkColorBtn');
   if (!colorBtn) return;
-  const wheelCore = colorBtn.querySelector('.dsa-sk-color-wheel-core');
   const activeColor = state.brush === 'eraser' ? '#8e8e93' : state.color;
-  if (wheelCore) {
-    wheelCore.style.fill = activeColor;
-  } else {
-    colorBtn.style.background = activeColor;
-  }
+  const pal = brushColorPalette(activeColor);
+  colorBtn.style.setProperty('--bc', pal.base);
+  colorBtn.style.setProperty('--bc-light', pal.light);
+  colorBtn.style.setProperty('--bc-mid', pal.mid);
+  colorBtn.style.setProperty('--bc-dark', pal.dark);
+  colorBtn.style.setProperty('--bc-deep', pal.deep);
+  colorBtn.querySelectorAll('.dsa-sk-ink-grad stop').forEach((stop, i, stops) => {
+    const t = stops.length > 1 ? i / (stops.length - 1) : 0;
+    let c = pal.base;
+    if (t <= 0.25) c = pal.light;
+    else if (t >= 0.75) c = pal.deep;
+    else if (t >= 0.5) c = pal.dark;
+    else c = pal.mid;
+    stop.setAttribute('stop-color', c);
+  });
+  const wheelCore = colorBtn.querySelector('.dsa-sk-color-wheel-core');
+  if (wheelCore) wheelCore.setAttribute('fill', pal.base);
 }
 
 document.querySelectorAll('.shape-opt').forEach(opt => {

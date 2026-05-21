@@ -45,6 +45,66 @@ function setBrushColor(brush, color) {
   brushColors[brush] = color;
 }
 
+function parseHexColor(hex) {
+  const h = String(hex || '').trim();
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h);
+  if (!m) return { r: 28, g: 28, b: 30 };
+  return { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) };
+}
+
+function rgbToHex(r, g, b) {
+  const c = (n) => Math.max(0, Math.min(255, Math.round(n)));
+  return `#${[c(r), c(g), c(b)].map((x) => x.toString(16).padStart(2, '0')).join('')}`;
+}
+
+function mixRgb(a, b, t) {
+  return {
+    r: a.r + (b.r - a.r) * t,
+    g: a.g + (b.g - a.g) * t,
+    b: a.b + (b.b - a.b) * t,
+  };
+}
+
+function brushColorPalette(hex) {
+  const base = parseHexColor(hex);
+  const white = { r: 255, g: 255, b: 255 };
+  const black = { r: 0, g: 0, b: 0 };
+  return {
+    base: rgbToHex(base.r, base.g, base.b),
+    light: rgbToHex(mixRgb(base, white, 0.42).r, mixRgb(base, white, 0.42).g, mixRgb(base, white, 0.42).b),
+    mid: rgbToHex(mixRgb(base, white, 0.18).r, mixRgb(base, white, 0.18).g, mixRgb(base, white, 0.18).b),
+    dark: rgbToHex(mixRgb(base, black, 0.32).r, mixRgb(base, black, 0.32).g, mixRgb(base, black, 0.32).b),
+    deep: rgbToHex(mixRgb(base, black, 0.48).r, mixRgb(base, black, 0.48).g, mixRgb(base, black, 0.48).b),
+  };
+}
+
+function paintBrushIcon(brushId, hex) {
+  const el = document.querySelector(`.brush[data-brush="${brushId}"]`);
+  if (!el || brushId === 'eraser') return;
+  const pal = brushColorPalette(hex);
+  el.style.setProperty('--bc', pal.base);
+  el.style.setProperty('--bc-light', pal.light);
+  el.style.setProperty('--bc-mid', pal.mid);
+  el.style.setProperty('--bc-dark', pal.dark);
+  el.style.setProperty('--bc-deep', pal.deep);
+  el.querySelectorAll('.dsa-sk-ink').forEach((node) => {
+    node.setAttribute('fill', pal.base);
+  });
+  el.querySelectorAll('.dsa-sk-ink-grad stop').forEach((stop, i, stops) => {
+    const t = stops.length > 1 ? i / (stops.length - 1) : 0;
+    let c = pal.base;
+    if (t <= 0.2) c = pal.light;
+    else if (t >= 0.82) c = pal.deep;
+    else if (t >= 0.55) c = pal.dark;
+    else if (t >= 0.35) c = pal.base;
+    else c = pal.mid;
+    stop.setAttribute('stop-color', c);
+  });
+  el.querySelectorAll('.dsa-sk-side-grad stop').forEach((stop, i) => {
+    stop.setAttribute('stop-color', i === 0 ? pal.mid : pal.deep);
+  });
+}
+
 function syncColorMixerToActiveBrush() {
   if (state.brush !== 'eraser') {
     state.color = getBrushColor(state.brush);
@@ -902,19 +962,34 @@ function updateBrushColors() {
     const id = b.dataset.brush;
     if (!id || id === 'eraser') {
       b.style.removeProperty('--bc');
+      b.style.removeProperty('--bc-light');
+      b.style.removeProperty('--bc-mid');
+      b.style.removeProperty('--bc-dark');
+      b.style.removeProperty('--bc-deep');
       return;
     }
-    b.style.setProperty('--bc', getBrushColor(id));
+    paintBrushIcon(id, getBrushColor(id));
   });
   const colorBtn = $('dsaSkColorBtn');
   if (!colorBtn) return;
-  const wheelCore = colorBtn.querySelector('.dsa-sk-color-wheel-core');
   const activeColor = state.brush === 'eraser' ? '#8e8e93' : state.color;
-  if (wheelCore) {
-    wheelCore.style.fill = activeColor;
-  } else {
-    colorBtn.style.background = activeColor;
-  }
+  const pal = brushColorPalette(activeColor);
+  colorBtn.style.setProperty('--bc', pal.base);
+  colorBtn.style.setProperty('--bc-light', pal.light);
+  colorBtn.style.setProperty('--bc-mid', pal.mid);
+  colorBtn.style.setProperty('--bc-dark', pal.dark);
+  colorBtn.style.setProperty('--bc-deep', pal.deep);
+  colorBtn.querySelectorAll('.dsa-sk-ink-grad stop').forEach((stop, i, stops) => {
+    const t = stops.length > 1 ? i / (stops.length - 1) : 0;
+    let c = pal.base;
+    if (t <= 0.25) c = pal.light;
+    else if (t >= 0.75) c = pal.deep;
+    else if (t >= 0.5) c = pal.dark;
+    else c = pal.mid;
+    stop.setAttribute('stop-color', c);
+  });
+  const wheelCore = colorBtn.querySelector('.dsa-sk-color-wheel-core');
+  if (wheelCore) wheelCore.setAttribute('fill', pal.base);
 }
 
 document.querySelectorAll('.shape-opt').forEach(opt => {

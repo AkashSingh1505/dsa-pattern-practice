@@ -1,20 +1,43 @@
 #!/usr/bin/env python3
 """Emit premium brush tray HTML for dsa-sketch-studio-fragment.html."""
+import re
 from pathlib import Path
 
+BASE = Path(__file__).resolve().parent.parent
+
+
 def prefix_ids(svg: str, prefix: str) -> str:
-    import re
     svg = re.sub(r'\bid="([^"]+)"', lambda m: f'id="{prefix}{m.group(1)}"', svg)
     svg = re.sub(r'url\(#([^)]+)\)', lambda m: f'url(#{prefix}{m.group(1)})', svg)
     return svg
 
-PEN = '''<svg viewBox="0 0 90 300" aria-hidden="true"><defs>
-        <linearGradient id="b1Body" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#b8b8be"/><stop offset="8%" stop-color="#e8e8ec"/>
-          <stop offset="22%" stop-color="#ffffff"/><stop offset="38%" stop-color="#fcfcfd"/>
-          <stop offset="55%" stop-color="#f4f4f6"/><stop offset="72%" stop-color="#fbfbfc"/>
-          <stop offset="88%" stop-color="#e0e0e4"/><stop offset="100%" stop-color="#a8a8ae"/>
-        </linearGradient>
+
+def ink_grad(grad_id: str) -> str:
+    return f'''<linearGradient id="{grad_id}" class="dsa-sk-ink-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="var(--bc-light, #e8e8ec)"/>
+          <stop offset="33%" stop-color="var(--bc-mid, #5a5a5e)"/>
+          <stop offset="66%" stop-color="var(--bc, #1c1c1e)"/>
+          <stop offset="100%" stop-color="var(--bc-deep, #0a0a0a)"/>
+        </linearGradient>'''
+
+
+def ink_grad_v(grad_id: str) -> str:
+    return f'''<linearGradient id="{grad_id}" class="dsa-sk-ink-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="var(--bc-light, #fde47a)"/>
+          <stop offset="50%" stop-color="var(--bc, #f4d03f)"/>
+          <stop offset="100%" stop-color="var(--bc-deep, #a88a08)"/>
+        </linearGradient>'''
+
+
+def side_grad(grad_id: str, x1='0%', y1='0%', x2='0%', y2='100%') -> str:
+    return f'''<linearGradient id="{grad_id}" class="dsa-sk-side-grad" x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}">
+          <stop offset="0%" stop-color="var(--bc-mid, #5856d6)"/>
+          <stop offset="100%" stop-color="var(--bc-dark, #033752)"/>
+        </linearGradient>'''
+
+
+PEN = f'''<svg viewBox="0 0 90 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
+        {ink_grad('b1Ink')}
         <linearGradient id="b1Band" x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stop-color="#0a0a0a"/><stop offset="50%" stop-color="#2c2c2e"/>
           <stop offset="100%" stop-color="#0a0a0a"/>
@@ -30,7 +53,7 @@ PEN = '''<svg viewBox="0 0 90 300" aria-hidden="true"><defs>
       <path class="dsa-sk-ink" d="M 45 18 Q 47 20 48 24 L 60 80 Q 60 83 57 83 L 33 83 Q 30 83 30 80 L 42 24 Q 43 20 45 18 Z" fill="var(--bc, #1c1c1e)"/>
       <path d="M 45 20 L 41 80 L 44 80 Z" fill="rgba(255,255,255,0.4)"/>
       <ellipse cx="45" cy="83" rx="20" ry="3" fill="#f0f0f3"/>
-      <path d="M 25 83 L 25 282 Q 25 289 32 289 L 58 289 Q 65 289 65 282 L 65 83 Z" fill="url(#b1Body)"/>
+      <path class="dsa-sk-body" d="M 25 83 L 25 282 Q 25 289 32 289 L 58 289 Q 65 289 65 282 L 65 83 Z" fill="url(#b1Ink)"/>
       <rect x="25" y="152" width="40" height="10" fill="url(#b1Band)"/>
       <rect x="25" y="152" width="40" height="1.5" fill="rgba(255,255,255,0.15)"/>
       <path d="M 25 280 Q 25 289 32 289 L 58 289 Q 65 289 65 280 Z" fill="url(#b1Bottom)"/>
@@ -39,12 +62,8 @@ PEN = '''<svg viewBox="0 0 90 300" aria-hidden="true"><defs>
       <rect x="60" y="85" width="5" height="200" fill="rgba(0,0,0,0.04)"/>
     </svg>'''
 
-PENCIL = '''<svg viewBox="0 0 90 300" aria-hidden="true"><defs>
-        <linearGradient id="pcWood" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#8a6a3a"/><stop offset="15%" stop-color="#c9a878"/>
-          <stop offset="35%" stop-color="#e8cfa6"/><stop offset="55%" stop-color="#d8b88a"/>
-          <stop offset="80%" stop-color="#a88456"/><stop offset="100%" stop-color="#6a4e26"/>
-        </linearGradient>
+PENCIL = f'''<svg viewBox="0 0 90 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
+        {ink_grad('pcInk')}
         <linearGradient id="pcLead" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stop-color="#2c2c2e"/><stop offset="50%" stop-color="#5a5a5e"/>
           <stop offset="100%" stop-color="#1c1c1e"/>
@@ -75,11 +94,11 @@ PENCIL = '''<svg viewBox="0 0 90 300" aria-hidden="true"><defs>
       <ellipse cx="45" cy="294" rx="32" ry="5" fill="url(#pcFloor)"/>
       <path d="M 45 14 L 41 42 L 49 42 Z" fill="url(#pcLead)"/>
       <path d="M 45 16 L 43 40 L 45 40 Z" fill="rgba(255,255,255,0.3)"/>
-      <path d="M 41 42 L 27 80 L 35 80 L 43 42 Z" fill="#a8814a"/>
-      <path d="M 43 42 L 35 80 L 55 80 L 47 42 Z" fill="url(#pcWood)"/>
-      <path d="M 47 42 L 55 80 L 63 80 L 49 42 Z" fill="#8a6332"/>
+      <path class="dsa-sk-ink" d="M 41 42 L 27 80 L 35 80 L 43 42 Z" fill="var(--bc, #ff3b30)"/>
+      <path class="dsa-sk-body" d="M 43 42 L 35 80 L 55 80 L 47 42 Z" fill="url(#pcInk)"/>
+      <path class="dsa-sk-ink" d="M 47 42 L 55 80 L 63 80 L 49 42 Z" fill="var(--bc, #ff3b30)"/>
       <path d="M 27 80 L 27 250 L 35 250 L 35 80 Z" fill="url(#pcFaceL)"/>
-      <path class="dsa-sk-ink" d="M 35 80 L 35 250 L 55 250 L 55 80 Z" fill="var(--bc, #ff3b30)"/>
+      <path class="dsa-sk-body" d="M 35 80 L 35 250 L 55 250 L 55 80 Z" fill="url(#pcInk)"/>
       <path d="M 55 80 L 55 250 L 63 250 L 63 80 Z" fill="url(#pcFaceR)"/>
       <rect x="43" y="82" width="3" height="166" rx="1.5" fill="rgba(255,255,255,0.5)"/>
       <rect x="26" y="250" width="38" height="22" fill="url(#pcFerrule)"/>
@@ -87,20 +106,11 @@ PENCIL = '''<svg viewBox="0 0 90 300" aria-hidden="true"><defs>
       <path d="M 26 272 L 64 272 L 64 285 Q 64 290 56 290 L 34 290 Q 26 290 26 285 Z" fill="url(#pcEraserHi)"/>
     </svg>'''
 
-HIGHLIGHTER = '''<svg viewBox="0 0 110 300" aria-hidden="true"><defs>
-        <linearGradient id="hlBody" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#a8a8ae"/><stop offset="10%" stop-color="#e0e0e4"/>
-          <stop offset="25%" stop-color="#ffffff"/><stop offset="45%" stop-color="#fafafb"/>
-          <stop offset="60%" stop-color="#f4f4f6"/><stop offset="78%" stop-color="#fcfcfd"/>
-          <stop offset="92%" stop-color="#d8d8dc"/><stop offset="100%" stop-color="#989ea0"/>
-        </linearGradient>
-        <linearGradient id="hlBand" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#c9a40d"/><stop offset="20%" stop-color="#fde47a"/>
-          <stop offset="50%" stop-color="#f4d03f"/><stop offset="80%" stop-color="#fde47a"/>
-          <stop offset="100%" stop-color="#a88a08"/>
-        </linearGradient>
+HIGHLIGHTER = f'''<svg viewBox="0 0 110 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
+        {ink_grad('hlInk')}
+        {ink_grad_v('hlBand')}
         <radialGradient id="hlBottom" cx="50%" cy="0%" r="80%">
-          <stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#b0b0b6"/>
+          <stop offset="0%" stop-color="var(--bc-light, #ffffff)"/><stop offset="100%" stop-color="var(--bc-mid, #b0b0b6)"/>
         </radialGradient>
         <radialGradient id="hlFloor" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stop-color="rgba(0,0,0,0.20)"/><stop offset="100%" stop-color="rgba(0,0,0,0)"/>
@@ -109,12 +119,13 @@ HIGHLIGHTER = '''<svg viewBox="0 0 110 300" aria-hidden="true"><defs>
       <ellipse cx="55" cy="294" rx="42" ry="6" fill="url(#hlFloor)"/>
       <path class="dsa-sk-ink" d="M 32 25 Q 34 21 38 23 L 80 57 Q 84 60 82 64 L 80 77 Q 79 80 76 80 L 34 80 Q 30 80 30 76 L 30 30 Q 30 27 32 25 Z" fill="var(--bc, #ffeb3b)"/>
       <path d="M 32 27 L 76 59 L 74 64 L 33 32 Z" fill="rgba(255,255,255,0.4)"/>
-      <path d="M 28 80 L 82 80 L 80 280 Q 80 290 72 290 L 38 290 Q 28 290 28 280 Z" fill="url(#hlBody)"/>
+      <path class="dsa-sk-body" d="M 28 80 L 82 80 L 80 280 Q 80 290 72 290 L 38 290 Q 28 290 28 280 Z" fill="url(#hlInk)"/>
       <rect x="28" y="180" width="54" height="16" fill="url(#hlBand)"/>
+      <path d="M 28 278 Q 28 290 38 290 L 72 290 Q 80 290 80 278 Z" fill="url(#hlBottom)"/>
       <rect x="34" y="85" width="3" height="180" rx="1.5" fill="rgba(255,255,255,0.85)"/>
     </svg>'''
 
-ERASER = '''<svg viewBox="0 0 110 300" aria-hidden="true"><defs>
+ERASER = '''<svg viewBox="0 0 110 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
         <linearGradient id="erTop" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stop-color="#f2b8b3"/><stop offset="35%" stop-color="#e09c97"/>
           <stop offset="70%" stop-color="#c8857f"/><stop offset="100%" stop-color="#a06863"/>
@@ -141,22 +152,12 @@ ERASER = '''<svg viewBox="0 0 110 300" aria-hidden="true"><defs>
       <rect x="29" y="80" width="3.5" height="195" rx="1.75" fill="rgba(255,255,255,0.85)"/>
     </svg>'''
 
-SHAPE = '''<svg viewBox="0 0 120 300" aria-hidden="true"><defs>
-        <linearGradient id="shDSide1" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#0e8ac4"/><stop offset="100%" stop-color="#075d8e"/>
-        </linearGradient>
-        <linearGradient id="shDSide2" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#075d8e"/><stop offset="100%" stop-color="#033752"/>
-        </linearGradient>
-        <linearGradient id="shSSide" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#c25a00"/><stop offset="100%" stop-color="#7a3500"/>
-        </linearGradient>
-        <linearGradient id="shHSide1" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#c81e5a"/><stop offset="100%" stop-color="#80103a"/>
-        </linearGradient>
-        <linearGradient id="shHSide2" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#80103a"/><stop offset="100%" stop-color="#4a0820"/>
-        </linearGradient>
+SHAPE = f'''<svg viewBox="0 0 120 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
+        {side_grad('shDSide1')}
+        {side_grad('shDSide2')}
+        {side_grad('shSSide')}
+        {side_grad('shHSide1')}
+        {side_grad('shHSide2')}
         <radialGradient id="shFloor" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stop-color="rgba(0,0,0,0.22)"/><stop offset="100%" stop-color="rgba(0,0,0,0)"/>
         </radialGradient>
@@ -167,7 +168,7 @@ SHAPE = '''<svg viewBox="0 0 120 300" aria-hidden="true"><defs>
       <ellipse cx="60" cy="294" rx="48" ry="6" fill="url(#shFloor)"/>
       <g class="dsa-sk-sh-a">
         <ellipse cx="60" cy="98" rx="30" ry="3" fill="rgba(0,0,0,0.18)" filter="url(#shBlur)"/>
-        <path d="M 64 25 L 99 60 L 64 95 L 29 60 Z" fill="#054168"/>
+        <path d="M 64 25 L 99 60 L 64 95 L 29 60 Z" fill="var(--bc-deep, #054168)"/>
         <path d="M 60 20 L 95 55 L 99 60 L 64 25 Z" fill="url(#shDSide1)"/>
         <path d="M 95 55 L 60 90 L 64 95 L 99 60 Z" fill="url(#shDSide2)"/>
         <path class="dsa-sk-ink" d="M 60 20 L 95 55 L 60 90 L 25 55 Z" fill="var(--bc, #5856d6)"/>
@@ -181,17 +182,19 @@ SHAPE = '''<svg viewBox="0 0 120 300" aria-hidden="true"><defs>
       </g>
       <g class="dsa-sk-sh-c">
         <ellipse cx="60" cy="287" rx="32" ry="3.5" fill="rgba(0,0,0,0.18)" filter="url(#shBlur)"/>
-        <path d="M 64 215 L 90 230 L 90 260 L 64 275 L 38 260 L 38 230 Z" fill="#4a0820"/>
+        <path d="M 64 215 L 90 230 L 90 260 L 64 275 L 38 260 L 38 230 Z" fill="var(--bc-deep, #4a0820)"/>
         <path d="M 60 210 L 86 225 L 90 230 L 64 215 Z" fill="url(#shHSide1)"/>
+        <path d="M 86 225 L 86 255 L 90 260 L 90 230 Z" fill="url(#shHSide2)"/>
         <path class="dsa-sk-ink" d="M 60 210 L 86 225 L 86 255 L 60 270 L 34 255 L 34 225 Z" fill="var(--bc, #5856d6)"/>
         <ellipse cx="48" cy="228" rx="8" ry="3" fill="rgba(255,255,255,0.6)" transform="rotate(-30 48 228)"/>
       </g>
     </svg>'''
 
-COLOR_WHEEL = '''<svg class="dsa-sk-color-wheel" viewBox="0 0 100 100" aria-hidden="true"><defs>
-        <radialGradient id="cpCenter" cx="35%" cy="35%" r="65%">
-          <stop offset="0%" stop-color="#3a3a3c"/><stop offset="50%" stop-color="#1c1c1e"/>
-          <stop offset="100%" stop-color="#000000"/>
+COLOR_WHEEL = '''<svg class="dsa-sk-color-wheel" viewBox="0 0 100 100" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
+        <radialGradient id="cpInk" class="dsa-sk-ink-grad" cx="35%" cy="35%" r="65%">
+          <stop offset="0%" stop-color="var(--bc-light, #3a3a3c)"/>
+          <stop offset="50%" stop-color="var(--bc, #1c1c1e)"/>
+          <stop offset="100%" stop-color="var(--bc-deep, #000000)"/>
         </radialGradient>
         <filter id="cpDrop">
           <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
@@ -216,7 +219,7 @@ COLOR_WHEEL = '''<svg class="dsa-sk-color-wheel" viewBox="0 0 100 100" aria-hidd
           <circle r="42" fill="none" stroke="#ff2d55" stroke-width="11" stroke-dasharray="22 241" transform="rotate(240)"/>
         </g>
         <circle cx="50" cy="50" r="32" fill="#ffffff"/>
-        <circle class="dsa-sk-color-wheel-core" cx="50" cy="50" r="26" fill="url(#cpCenter)"/>
+        <circle class="dsa-sk-color-wheel-core" cx="50" cy="50" r="26" fill="url(#cpInk)"/>
         <ellipse cx="42" cy="42" rx="10" ry="6" fill="rgba(255,255,255,0.15)" transform="rotate(-30 42 42)"/>
       </g>
     </svg>'''
@@ -230,25 +233,35 @@ icons = {
 }
 color_wheel = prefix_ids(COLOR_WHEEL, 'skCp_')
 
-lines = ['<div class="brushes-scroll">']
-for key, title in [
-    ('pen', 'Pen'),
-    ('pencil', 'Pencil'),
-    ('highlighter', 'Highlighter'),
-    ('eraser', 'Eraser'),
-    ('shape', 'Shapes'),
-]:
-    lines.append(f'      <div class="brush" data-brush="{key}" title="{title}">')
-    lines.append('        ' + icons[key].replace('\n', '\n        '))
-    lines.append('      </div>')
-    lines.append('')
-lines.append('</div>')
-lines.append('')
-lines.append('      <div class="divider"></div>')
-lines.append('      <button class="color-btn" type="button" id="dsaSkColorBtn" title="Color">')
-lines.append('        ' + color_wheel.replace('\n', '\n        '))
-lines.append('      </button>')
 
-out = Path(__file__).resolve().parent.parent / '_premium_brush_tray.html'
-out.write_text('\n'.join(lines), encoding='utf-8')
-print('Wrote', out)
+def build_tray_html() -> str:
+    lines = ['<div class="brushes-scroll">']
+    for key, title in [
+        ('pen', 'Pen'),
+        ('pencil', 'Pencil'),
+        ('highlighter', 'Highlighter'),
+        ('eraser', 'Eraser'),
+        ('shape', 'Shapes'),
+    ]:
+        lines.append(f'      <div class="brush" data-brush="{key}" title="{title}">')
+        lines.append('        ' + icons[key].replace('\n', '\n        '))
+        lines.append('      </div>')
+        lines.append('')
+    lines.append('</div>')
+    lines.append('')
+    lines.append('      <div class="divider"></div>')
+    lines.append('      <button class="color-btn" type="button" id="dsaSkColorBtn" title="Color">')
+    lines.append('        ' + color_wheel.replace('\n', '\n        '))
+    lines.append('      </button>')
+    return '\n'.join(lines)
+
+
+def main() -> None:
+    tray = build_tray_html()
+    out = BASE / '_premium_brush_tray.html'
+    out.write_text(tray, encoding='utf-8')
+    print('Wrote', out)
+
+
+if __name__ == '__main__':
+    main()

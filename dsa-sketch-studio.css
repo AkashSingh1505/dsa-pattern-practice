@@ -420,12 +420,12 @@
 }
 
 .dsa-sketch-studio-mount {
-    --dsa-sk-brush-w: 54px;
-    --dsa-sk-brush-h: 96px;
-    --dsa-sk-brush-gap: 6px;
-    --dsa-sk-brush-lift-hover: 6px;
-    --dsa-sk-brush-lift-active: 12px;
-    --dsa-sk-brush-tray-pad-top: 28px;
+    --dsa-sk-brush-w: 60px;
+    --dsa-sk-brush-h: 108px;
+    --dsa-sk-brush-gap: 8px;
+    --dsa-sk-brush-lift-hover: 8px;
+    --dsa-sk-brush-lift-active: 14px;
+    --dsa-sk-brush-tray-pad-top: 32px;
 }
 
 .dsa-sketch-studio-mount .brushes-scroll {
@@ -712,17 +712,21 @@
 }
 
 .dsa-sketch-studio-mount .brush-tray {
-    background: var(--float-bg);
+    background: linear-gradient(180deg, #ffffff 0%, #f8f8fa 100%);
     backdrop-filter: saturate(180%) blur(24px);
     -webkit-backdrop-filter: saturate(180%) blur(24px);
-    border: 0.5px solid rgba(255, 255, 255, 0.6);
+    border: 0.5px solid rgba(255, 255, 255, 0.8);
     border-radius: 999px;
-    padding: var(--dsa-sk-brush-tray-pad-top) 18px 12px;
-    box-shadow: var(--shadow-float);
+    padding: var(--dsa-sk-brush-tray-pad-top) 22px 14px;
+    box-shadow:
+        0 50px 100px -20px rgba(50, 50, 93, 0.1),
+        0 30px 60px -30px rgba(0, 0, 0, 0.15),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.8),
+        inset 0 1px 0 rgba(255, 255, 255, 1);
     display: flex;
     align-items: flex-end;
-    gap: 6px;
-    min-height: calc(var(--dsa-sk-brush-tray-pad-top) + var(--dsa-sk-brush-h) + 12px);
+    gap: 8px;
+    min-height: calc(var(--dsa-sk-brush-tray-pad-top) + var(--dsa-sk-brush-h) + 14px);
     overflow: hidden;
 }
 
@@ -745,11 +749,16 @@
 }
 
 .dsa-sketch-studio-mount .brush:hover {
-    transform: translateY(calc(-1 * var(--dsa-sk-brush-lift-hover)));
+    transform: translateY(calc(-1 * var(--dsa-sk-brush-lift-hover))) scale(1.04);
 }
 
 .dsa-sketch-studio-mount .brush.active {
     transform: translateY(calc(-1 * var(--dsa-sk-brush-lift-active))) scale(1.08);
+}
+
+.dsa-sketch-studio-mount .brush:hover svg,
+.dsa-sketch-studio-mount .brush.active svg {
+    filter: drop-shadow(0 20px 25px rgba(0, 0, 0, 0.12)) drop-shadow(0 8px 10px rgba(0, 0, 0, 0.06));
 }
 
 .dsa-sketch-studio-mount .brush svg {
@@ -757,7 +766,8 @@
     height: 100%;
     overflow: visible;
     transform: none;
-    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.14)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08));
+    shape-rendering: geometricPrecision;
+    filter: drop-shadow(0 20px 25px rgba(0, 0, 0, 0.08)) drop-shadow(0 8px 10px rgba(0, 0, 0, 0.04));
 }
 
 .dsa-sketch-studio-mount .brush[data-brush="shape"] .dsa-sk-sh-a {
@@ -830,8 +840,8 @@
 }
 
 .dsa-sketch-studio-mount .color-btn {
-    width: 48px;
-    height: 48px;
+    width: 52px;
+    height: 52px;
     border-radius: 50%;
     border: none;
     box-shadow: none;
@@ -1545,11 +1555,11 @@
 }
 
 .dsa-sketch-studio-mount .sketch-studio.minimized {
-    --dsa-sk-brush-w: 44px;
-    --dsa-sk-brush-h: 78px;
-    --dsa-sk-brush-lift-hover: 5px;
-    --dsa-sk-brush-lift-active: 10px;
-    --dsa-sk-brush-tray-pad-top: 22px;
+    --dsa-sk-brush-w: 48px;
+    --dsa-sk-brush-h: 86px;
+    --dsa-sk-brush-lift-hover: 6px;
+    --dsa-sk-brush-lift-active: 11px;
+    --dsa-sk-brush-tray-pad-top: 26px;
 }
 
 .dsa-sketch-studio-mount .sketch-studio.minimized .brush-tray {

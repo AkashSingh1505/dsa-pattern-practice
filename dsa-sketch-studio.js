@@ -46,7 +46,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     if (!document.head.querySelector("link[data-dsa-sketch-studio-css]")) {
         const lk = document.createElement("link");
         lk.rel = "stylesheet";
-        lk.href = "./dsa-sketch-studio.css?v=44";
+        lk.href = "./dsa-sketch-studio.css?v=46";
         lk.dataset.dsaSketchStudioCss = "1";
         document.head.appendChild(lk);
     }
@@ -251,7 +251,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     <div class="brush-tray" id="dsaSkDrawTab" style="display:none;">
 <div class="brushes-scroll">
       <div class="brush brush--upright" data-brush="pen" title="Pen">
-        <svg preserveAspectRatio="xMidYMax slice" viewBox="0 0 90 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
+        <svg preserveAspectRatio="xMidYMax meet" viewBox="0 0 90 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
         <linearGradient id="skPen_b1Ink" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stop-color="#a8a8ae"/>
           <stop offset="10%" stop-color="#e0e0e4"/>
@@ -287,7 +287,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
 
       </div>
       <div class="brush brush--upright" data-brush="pencil" title="Technical Pen">
-        <svg preserveAspectRatio="xMidYMax slice" viewBox="0 0 90 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
+        <svg preserveAspectRatio="xMidYMax meet" viewBox="0 0 90 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
         <linearGradient id="skPc_tpUpper" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stop-color="#b0b0b6"></stop><stop offset="10%" stop-color="#e8e8ec"></stop>
           <stop offset="25%" stop-color="#ffffff"></stop><stop offset="50%" stop-color="#f6f6f8"></stop>
@@ -346,7 +346,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
 
       </div>
       <div class="brush brush--upright" data-brush="highlighter" title="Highlighter">
-        <svg preserveAspectRatio="xMidYMax slice" viewBox="0 0 110 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
+        <svg preserveAspectRatio="xMidYMax meet" viewBox="0 0 110 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
         <linearGradient id="skHl_hlBody" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stop-color="#a8a8ae"></stop><stop offset="10%" stop-color="#e0e0e4"></stop>
           <stop offset="25%" stop-color="#ffffff"></stop><stop offset="45%" stop-color="#fafafb"></stop>
@@ -382,7 +382,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
 
       </div>
       <div class="brush brush--upright" data-brush="eraser" title="Eraser">
-        <svg preserveAspectRatio="xMidYMax slice" viewBox="0 0 110 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
+        <svg preserveAspectRatio="xMidYMax meet" viewBox="0 0 110 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
         <linearGradient id="skEr_erTop" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stop-color="#f2b8b3"></stop><stop offset="35%" stop-color="#e09c97"></stop>
           <stop offset="70%" stop-color="#c8857f"></stop><stop offset="100%" stop-color="#a06863"></stop>
@@ -425,7 +425,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
 
       </div>
       <div class="brush brush--upright" data-brush="shape" title="Shapes">
-        <svg preserveAspectRatio="xMidYMax slice" viewBox="0 0 120 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
+        <svg preserveAspectRatio="xMidYMax meet" viewBox="0 0 120 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
         <linearGradient id="skSh_shDSide1" class="dsa-sk-side-grad" x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stop-color="var(--bc-mid, #5856d6)"/>
           <stop offset="100%" stop-color="var(--bc-dark, #033752)"/>
@@ -517,8 +517,8 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
       </g>
     </svg>
       </button>
-      <button class="tray-btn" id="dsaSkBtnLaser2">
-        <svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="#ff3b30"/><circle cx="12" cy="12" r="8" fill="none" stroke="#ff3b30" stroke-width="1.6" opacity="0.45"/></svg>
+      <button class="tray-btn tray-btn--add" type="button" id="dsaSkBtnLaser2" title="More">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1c1c1e" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
       </button>
       <button class="tray-btn" id="dsaSkBackBtnTray">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1c1c1e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>

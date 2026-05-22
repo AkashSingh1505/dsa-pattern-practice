@@ -419,29 +419,27 @@
     max-width: calc(100% - 32px);
 }
 
-/* Tray brush layout */
+/* Tray brush layout — matched to reference mock */
 .dsa-sketch-studio-mount {
-    --sk-brush-w: 44px;
-    --sk-brush-h: 54px;
-    --sk-brush-gap: 0px;
-    --sk-brush-sink: -10px;
-    --sk-scroll-pad-top: 10px;
-    --sk-tray-pt: 2px;
-    --sk-tray-pr: 8px;
-    --sk-tray-pb: 0px;
-    --sk-tray-pl: 8px;
-    --sk-tray-gap: 0px;
-    --sk-tray-min-h: 56px;
-    --sk-color-btn-size: 30px;
-    --sk-color-btn-mb: 2px;
-    --sk-tray-btn-mb: 2px;
-    --sk-divider-h: 32px;
-    --sk-divider-mb: 4px;
-    --sk-divider-mx: 4px;
-    --sk-brush-hover-lift: -4px;
-    --sk-brush-active-lift: -8px;
-    --sk-brush-active-scale: 1.05;
-    --sk-brush-icon-scale: 0.68;
+    --sk-brush-w: 40px;
+    --sk-brush-h: 64px;
+    --sk-brush-gap: 10px;
+    --sk-brush-sink: 0px;
+    --sk-scroll-pad-top: 6px;
+    --sk-tray-pt: 14px;
+    --sk-tray-pr: 22px;
+    --sk-tray-pb: 10px;
+    --sk-tray-pl: 22px;
+    --sk-tray-gap: 12px;
+    --sk-tray-min-h: 0px;
+    --sk-color-btn-size: 36px;
+    --sk-tray-btn-size: 36px;
+    --sk-divider-h: 36px;
+    --sk-divider-mx: 14px;
+    --sk-brush-hover-lift: -3px;
+    --sk-brush-active-lift: -6px;
+    --sk-brush-active-scale: 1.04;
+    --sk-brush-icon-scale: 1;
 }
 
 .dsa-sketch-studio-mount .brushes-scroll {
@@ -727,15 +725,15 @@
 }
 
 .dsa-sketch-studio-mount .brush-tray {
-    background: var(--float-bg);
+    background: #ffffff;
     backdrop-filter: saturate(180%) blur(24px);
     -webkit-backdrop-filter: saturate(180%) blur(24px);
-    border: 0.5px solid rgba(255, 255, 255, 0.6);
+    border: 0.5px solid rgba(255, 255, 255, 0.85);
     border-radius: 999px;
     padding: var(--sk-tray-pt) var(--sk-tray-pr) var(--sk-tray-pb) var(--sk-tray-pl);
-    box-shadow: var(--shadow-float);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.05);
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     gap: var(--sk-tray-gap);
     min-height: var(--sk-tray-min-h);
     overflow: visible;
@@ -756,7 +754,7 @@
     justify-content: flex-end;
     transform-origin: bottom center;
     align-self: flex-end;
-    overflow: hidden;
+    overflow: visible;
     box-sizing: border-box;
 }
 
@@ -781,29 +779,48 @@
 
 .dsa-sketch-studio-mount .brush-tray .brushes-scroll {
     align-self: flex-end;
+    margin-bottom: 0;
+}
+
+/* Reference: pencil tallest, others slightly shorter */
+.dsa-sketch-studio-mount .brush[data-brush="pen"] {
+    height: 72px;
+    flex: 0 0 var(--sk-brush-w);
+}
+
+.dsa-sketch-studio-mount .brush[data-brush="pencil"],
+.dsa-sketch-studio-mount .brush[data-brush="highlighter"] {
+    height: 62px;
+    flex: 0 0 var(--sk-brush-w);
+}
+
+.dsa-sketch-studio-mount .brush[data-brush="eraser"],
+.dsa-sketch-studio-mount .brush[data-brush="shape"] {
+    height: 58px;
+    flex: 0 0 var(--sk-brush-w);
 }
 
 .dsa-sketch-studio-mount .brush-tray .divider {
     height: var(--sk-divider-h);
-    margin: 0 var(--sk-divider-mx) var(--sk-divider-mb);
-    align-self: flex-end;
+    margin: 0 var(--sk-divider-mx);
+    align-self: center;
     flex-shrink: 0;
 }
 
 .dsa-sketch-studio-mount .tray-btn {
-    width: 44px;
-    height: 44px;
+    width: var(--sk-tray-btn-size);
+    height: var(--sk-tray-btn-size);
     border-radius: 50%;
     border: none;
-    background: transparent;
+    background: rgba(120, 120, 128, 0.16);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s var(--ease);
-    align-self: flex-end;
+    align-self: center;
     flex-shrink: 0;
-    margin: 0 2px var(--sk-tray-btn-mb);
+    margin: 0;
 }
 
 .dsa-sketch-studio-mount .tray-btn:hover {
@@ -828,8 +845,8 @@
     transition: transform 0.2s var(--ease-spring);
     background: transparent;
     padding: 0;
-    margin: 0 0 var(--sk-color-btn-mb);
-    align-self: flex-end;
+    margin: 0;
+    align-self: center;
     flex-shrink: 0;
 }
 
@@ -1532,8 +1549,8 @@
 }
 
 .dsa-sketch-studio-mount .sketch-studio.minimized .brush-tray {
-    min-height: 72px;
-    padding: 6px 14px 0;
+    min-height: 0;
+    padding: 10px 16px 8px;
 }
 
 .dsa-sketch-studio-mount .sketch-studio.minimized .brush {

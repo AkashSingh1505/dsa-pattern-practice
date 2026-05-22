@@ -1,193 +1,191 @@
-<div class="sketch-studio" id="dsaSkStudio">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DSA Sketch — Draw Tray (standalone)</title>
+  <style>
 
-  <div class="canvas-wrap" id="dsaSkCanvasWrap">
-    <canvas id="dsaSkCanvas" width="2400" height="1800"></canvas>
-    <canvas id="dsaSkLaserCanvas"></canvas>
+/* Draw tray standalone — copy/edit freely */
+:root {
+  --theme: #007aff;
+  --theme-soft: rgba(0, 122, 255, 0.12);
+  --text: #1c1c1e;
+  --separator: rgba(60, 60, 67, 0.12);
+  --float-bg: rgba(255, 255, 255, 0.92);
+  --shadow-float: 0 10px 40px rgba(0, 0, 0, 0.12), 0 2px 10px rgba(0, 0, 0, 0.06);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
 
-    <!-- Table overlay -->
-    <div class="table-overlay" id="dsaSkTableOverlay">
-      <div class="table-grid" id="dsaSkTableGrid"></div>
-      <div class="resize-handle" id="dsaSkTableResize"></div>
-    </div>
+* { box-sizing: border-box; }
 
-<div class="image-overlay" id="dsaSkImageOverlay">
-  <img id="dsaSkImagePreview" />
-  <div class="resize-handle" id="dsaSkImageResize"></div>
-  <div class="table-controls">
-    <button class="t-cancel" data-action="table-cancel" title="Remove">
-      <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
-    </button>
-    <button class="t-confirm" data-action="image-confirm" title="Done">
-      <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
-    </button>
-  </div>
-</div>
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 40px 16px 32px;
+  background: linear-gradient(180deg, #e8ecf4 0%, #d4dae8 100%);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
 
-    <!-- Text overlay -->
-    <div class="text-overlay" id="dsaSkTextOverlay">
-      <div class="text-drag-handle" id="dsaSkTextHandle"></div>
-      <textarea id="dsaSkTextInput" placeholder="Type something..." rows="2"></textarea>
+.demo-wrap {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  justify-content: center;
+}
 
-      <div class="table-controls">
-  <button class="t-delete" id="dsaSkTextDeleteBtn" title="Delete" style="display:none;">
-    <svg viewBox="0 0 24 24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M3 6h18M19 6l-1.5 14a2 2 0 01-2 1.8H8.5a2 2 0 01-2-1.8L5 6M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
-  </button>
-  <button class="t-cancel" data-action="text-cancel" title="Cancel">
-    <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
-  </button>
-  <button class="t-confirm" data-action="text-confirm" title="Done">
-    <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
-  </button>
-</div>
+/* Scoped like production mount — reference mock */
+.dsa-sketch-studio-mount {
+  --sk-brush-w: 40px;
+  --sk-brush-h: 64px;
+  --sk-brush-gap: 10px;
+  --sk-brush-sink: 0px;
+  --sk-scroll-pad-top: 6px;
+  --sk-tray-pt: 14px;
+  --sk-tray-pr: 22px;
+  --sk-tray-pb: 10px;
+  --sk-tray-pl: 22px;
+  --sk-tray-gap: 12px;
+  --sk-tray-min-h: 0px;
+  --sk-color-btn-size: 36px;
+  --sk-tray-btn-size: 36px;
+  --sk-divider-h: 36px;
+  --sk-divider-mx: 14px;
+  --sk-brush-hover-lift: -3px;
+  --sk-brush-active-lift: -6px;
+  --sk-brush-active-scale: 1.04;
+  --sk-brush-icon-scale: 1;
+}
 
-    </div>
-  </div>
+.dsa-sketch-studio-mount .brushes-scroll {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sk-brush-gap);
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: var(--sk-scroll-pad-top) 0 0;
+  margin: calc(-1 * var(--sk-scroll-pad-top)) 0 0;
+  scrollbar-width: none;
+}
+.dsa-sketch-studio-mount .brushes-scroll::-webkit-scrollbar { display: none; }
 
-  <div class="top-toolbar">
-    <button class="icon-btn" type="button" id="dsaSkBackBtn" title="Back" aria-label="Back">
-      <svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-    </button>
+.dsa-sketch-studio-mount .brush-tray {
+  background: #ffffff;
+  backdrop-filter: saturate(180%) blur(24px);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  border: 0.5px solid rgba(255, 255, 255, 0.85);
+  border-radius: 999px;
+  padding: var(--sk-tray-pt) var(--sk-tray-pr) var(--sk-tray-pb) var(--sk-tray-pl);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: var(--sk-tray-gap);
+  min-height: var(--sk-tray-min-h);
+  overflow: visible;
+}
+.dsa-sketch-studio-mount .brush-tray .brushes-scroll { align-self: flex-end; }
+.dsa-sketch-studio-mount .brush[data-brush="pen"] { height: 72px; flex: 0 0 var(--sk-brush-w); }
+.dsa-sketch-studio-mount .brush[data-brush="pencil"],
+.dsa-sketch-studio-mount .brush[data-brush="highlighter"] { height: 62px; flex: 0 0 var(--sk-brush-w); }
+.dsa-sketch-studio-mount .brush[data-brush="eraser"],
+.dsa-sketch-studio-mount .brush[data-brush="shape"] { height: 58px; flex: 0 0 var(--sk-brush-w); }
 
-    <!-- Centered top tools (PC only) -->
-    <div class="top-tools-tab glass-pill" id="dsaSkTopToolsTab">
-      <button title="Text" id="dsaSkTtText">
-        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
-      </button>
-      <div class="table-tool-anchor" id="dsaSkTableToolAnchor">
-        <button type="button" title="Table" id="dsaSkTtGrid" aria-expanded="false" aria-controls="dsaSkTableSetupPanel">
-          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
-        </button>
-      </div>
-      <button title="Attach" id="dsaSkTtAttach">
-        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21.4 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
-      </button>
-      <button title="Laser" id="dsaSkBtnLaserTop">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="#ff3b30"/><circle cx="12" cy="12" r="8" fill="none" stroke="#ff3b30" stroke-width="1.6" opacity="0.45"/></svg>
-      </button>
-    </div>
+.dsa-sketch-studio-mount .brush {
+  width: var(--sk-brush-w);
+  height: var(--sk-brush-h);
+  flex: 0 0 var(--sk-brush-w);
+  margin: 0 0 var(--sk-brush-sink);
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.4s var(--ease-spring);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  transform-origin: bottom center;
+  align-self: flex-end;
+  overflow: visible;
+}
 
-    <div class="toolbar-right">
-      <div class="undo-redo-tab glass-pill" id="dsaSkUndoRedoTab">
-        <button id="dsaSkUndoBtn" disabled>
-          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 00-15-6.7L3 13"/></svg>
-        </button>
-        <button id="dsaSkRedoBtn" disabled>
-          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0115-6.7L21 13"/></svg>
-        </button>
-      </div>
+.dsa-sketch-studio-mount .brush:hover {
+  transform: translateY(var(--sk-brush-hover-lift));
+}
+.dsa-sketch-studio-mount .brush.active {
+  transform: translateY(var(--sk-brush-active-lift)) scale(var(--sk-brush-active-scale));
+}
 
-      <div class="menu-tab glass-pill">
-        <button type="button" id="dsaSkMenuToggleBtn" title="More">
-          <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6" fill="#1c1c1e"/><circle cx="12" cy="12" r="1.6" fill="#1c1c1e"/><circle cx="19" cy="12" r="1.6" fill="#1c1c1e"/></svg>
-        </button>
-        <button type="button" id="dsaSkMenuClearBtn" title="Clear">
-          <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6l-1.5 14a2 2 0 01-2 1.8H8.5a2 2 0 01-2-1.8L5 6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
-        </button>
-      </div>
+.dsa-sketch-studio-mount .brush svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  flex-shrink: 0;
+  overflow: visible;
+  transform: scale(var(--sk-brush-icon-scale));
+  transform-origin: bottom center;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.16));
+}
 
-      <button class="icon-btn minimize-btn" type="button" id="dsaSkMinimizeBtn" title="Expand" aria-label="Expand">
-        <svg class="dsa-sk-icon-expand" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 00-2 2v3M16 3h3a2 2 0 012 2v3M21 16v3a2 2 0 01-2 2h-3M8 21H5a2 2 0 01-2-2v-3"/></svg>
-        <svg class="dsa-sk-icon-collapse" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 9H4V4h5M15 4h5v5h-5M9 15H4v5h5M20 15v5h-5"/></svg>
-      </button>
+.dsa-sketch-studio-mount .brush-tray .divider {
+  width: 1px;
+  height: var(--sk-divider-h);
+  background: var(--separator);
+  margin: 0 var(--sk-divider-mx);
+  align-self: center;
+  flex-shrink: 0;
+}
 
-    </div>
+.dsa-sketch-studio-mount .tray-btn {
+  width: var(--sk-tray-btn-size);
+  height: var(--sk-tray-btn-size);
+  border-radius: 50%;
+  border: none;
+  background: rgba(120, 120, 128, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  align-self: center;
+  flex-shrink: 0;
+  margin: 0;
+}
+.dsa-sketch-studio-mount .tray-btn:hover { background: rgba(0, 0, 0, 0.05); }
+.dsa-sketch-studio-mount .tray-btn.active { background: var(--theme-soft); }
 
-  </div>
+.dsa-sketch-studio-mount .color-btn {
+  width: var(--sk-color-btn-size);
+  height: var(--sk-color-btn-size);
+  border-radius: 50%;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+  transition: transform 0.2s var(--ease-spring);
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  align-self: center;
+  flex-shrink: 0;
+}
+.dsa-sketch-studio-mount .color-btn .dsa-sk-color-wheel {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.14));
+}
+.dsa-sketch-studio-mount .color-btn:hover { transform: scale(1.1); }
 
-  <div class="table-setup-panel" id="dsaSkTableSetupPanel" hidden>
-    <div class="table-setup-head">Table</div>
-    <div class="table-setup-fields">
-      <label class="table-setup-field">
-        <span class="table-setup-label">Rows</span>
-        <input type="text" class="table-setup-input" id="dsaSkTableRowsInput" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" spellcheck="false" aria-valuemin="1" aria-valuemax="100" />
-      </label>
-      <label class="table-setup-field">
-        <span class="table-setup-label">Columns</span>
-        <input type="text" class="table-setup-input" id="dsaSkTableColsInput" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" spellcheck="false" aria-valuemin="1" aria-valuemax="100" />
-      </label>
-    </div>
-    <div class="table-setup-actions">
-      <button type="button" class="table-setup-btn table-setup-btn--ghost" id="dsaSkTableDiscardBtn" title="Cancel" aria-label="Cancel">
-        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
-      </button>
-      <button type="button" class="table-setup-btn table-setup-btn--primary" id="dsaSkTableDoneBtn" title="Place on canvas" aria-label="Done">
-        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
-      </button>
-    </div>
-  </div>
-
-  <div class="menu-dropdown" id="dsaSkMenuDropdown">
-    <div class="menu-item" id="dsaSkMenuExport">
-      <span>Export as PNG</span>
-      <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5-5 5 5"/><path d="M12 5v12"/></svg>
-    </div>
-    <div class="menu-item" id="dsaSkMenuGrid">
-      <span>Toggle Grid Canvas</span>
-      <svg viewBox="0 0 24 24" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
-    </div>
-    <div class="menu-item" id="dsaSkMenuResetZoom">
-      <span>Reset Zoom</span>
-      <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M8 11h6"/></svg>
-    </div>
-  </div>
-
-  <div class="bottom-area">
-    <div class="brush-settings" id="dsaSkBrushSettings">
-      <div class="settings-row" id="dsaSkShapeRow" style="display:none;">
-        <span class="settings-label">Shape</span>
-        <div class="shape-options" id="dsaSkShapeOptions">
-          <div class="shape-opt active" data-shape="rectangle"><svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="1"/></svg></div>
-          <div class="shape-opt" data-shape="circle"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg></div>
-          <div class="shape-opt" data-shape="triangle"><svg viewBox="0 0 24 24"><path d="M12 4l9 16H3z"/></svg></div>
-          <div class="shape-opt" data-shape="line"><svg viewBox="0 0 24 24"><path d="M4 20L20 4"/></svg></div>
-          <div class="shape-opt" data-shape="arrow"><svg viewBox="0 0 24 24"><path d="M4 20L20 4M20 4h-7M20 4v7"/></svg></div>
-        </div>
-      </div>
-      <div class="settings-row">
-        <span class="settings-label" id="dsaSkSizeLabel">Stroke</span>
-        <div class="size-dots" id="dsaSkSizeDots" role="group" aria-labelledby="dsaSkSizeLabel"></div>
-      </div>
-      <div class="settings-row">
-        <span class="settings-label" id="dsaSkOpacityLabel">Opacity</span>
-        <div class="opacity-control">
-          <span class="opacity-value" id="dsaSkOpacityValue" aria-live="polite">100%</span>
-          <div class="opacity-slider" id="dsaSkOpacitySlider" role="slider" aria-valuemin="10" aria-valuemax="100" aria-valuenow="100" aria-labelledby="dsaSkOpacityLabel">
-          <div class="opacity-track"></div>
-          <div class="opacity-thumb" id="dsaSkOpacityThumb" style="left:100%"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="color-modal" id="dsaSkColorModal">
-      <div class="swatches-grid" id="dsaSkSwatchesGrid"></div>
-      <div class="color-mixer">
-        <span class="mixer-label">Mixer</span>
-        <div class="hue-slider" id="dsaSkHueSlider"><div class="hue-thumb" id="dsaSkHueThumb" style="left:0%"></div></div>
-        <input type="color" class="native-color" id="dsaSkNativeColor" value="#1c1c1e">
-      </div>
-    </div>
-
-    <div class="bottom-tab" id="dsaSkMainTab">
-      <button class="tool-btn" id="dsaSkBtnPencil">
-        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
-      </button>
-      <button class="tool-btn">
-        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
-      </button>
-      <button class="tool-btn" type="button" id="dsaSkBtnGridMobile" title="Table">
-        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
-      </button>
-      <button class="tool-btn">
-        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21.4 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
-      </button>
-      <div class="divider"></div>
-      <button class="tool-btn" id="dsaSkBtnLaser">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="#ff3b30" stroke="#ff3b30"/><circle cx="12" cy="12" r="8" stroke="#ff3b30" fill="none" stroke-width="1.6" opacity="0.45"/></svg>
-      </button>
-    </div>
-
-    <div class="brush-tray" id="dsaSkDrawTab" style="display:none;">
+  </style>
+</head>
+<body>
+  <div class="demo-wrap">
+    <div class="dsa-sketch-studio-mount" id="drawTrayRoot">
+<div class="brush-tray" id="dsaSkDrawTab" style="display:flex;">
 <div class="brushes-scroll">
       <div class="brush brush--upright" data-brush="pen" title="Pen">
         <svg preserveAspectRatio="xMidYMax meet" viewBox="0 0 90 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
@@ -463,5 +461,88 @@
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1c1c1e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
       </button>
     </div>
+    </div>
   </div>
-</div>
+  <script>
+
+(function () {
+  const DEFAULT_COLORS = {
+    pen: '#1c1c1e',
+    pencil: '#f4d03f',
+    highlighter: '#ffeb3b',
+    eraser: null,
+    shape: '#5856d6',
+  };
+  let active = 'pen';
+  const colors = { ...DEFAULT_COLORS };
+
+  function shade(hex, n) {
+    const h = (hex || '#1c1c1e').replace('#', '');
+    if (h.length !== 6) return hex;
+    const v = parseInt(h, 16);
+    const r = Math.max(0, Math.min(255, ((v >> 16) & 255) + n));
+    const g = Math.max(0, Math.min(255, ((v >> 8) & 255) + n));
+    const b = Math.max(0, Math.min(255, (v & 255) + n));
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
+
+  function applyVars(el, c) {
+    if (!el || !c) return;
+    el.style.setProperty('--bc', c);
+    el.style.setProperty('--bc-light', shade(c, 48));
+    el.style.setProperty('--bc-deep', shade(c, -48));
+  }
+
+  function paint() {
+    document.querySelectorAll('.brush[data-brush]').forEach((b) => {
+      const id = b.dataset.brush;
+      b.classList.toggle('active', id === active);
+      if (id === 'eraser') {
+        b.style.removeProperty('--bc');
+        b.style.removeProperty('--bc-light');
+        b.style.removeProperty('--bc-deep');
+        return;
+      }
+      const c = colors[id];
+      if (id === 'pen' || id === 'shape') {
+        b.style.setProperty('--bc', c);
+        b.style.removeProperty('--bc-light');
+        b.style.removeProperty('--bc-deep');
+      } else {
+        applyVars(b, c);
+      }
+    });
+    const btn = document.getElementById('dsaSkColorBtn');
+    if (btn) {
+      const c = active === 'eraser' ? '#8e8e93' : colors[active];
+      applyVars(btn, c);
+    }
+  }
+
+  document.querySelectorAll('.brush[data-brush]').forEach((b) => {
+    b.addEventListener('click', () => {
+      active = b.dataset.brush;
+      paint();
+    });
+  });
+
+  document.getElementById('dsaSkColorBtn')?.addEventListener('click', () => {
+    if (active === 'eraser') return;
+    const c = prompt('Brush color (hex)', colors[active] || '#1c1c1e');
+    if (c) { colors[active] = c; paint(); }
+  });
+
+  document.getElementById('dsaSkBtnLaser2')?.addEventListener('click', function () {
+    this.classList.toggle('active');
+  });
+
+  document.getElementById('dsaSkBackBtnTray')?.addEventListener('click', () => {
+    alert('Back button — wire in app as needed');
+  });
+
+  paint();
+})();
+
+  </script>
+</body>
+</html>

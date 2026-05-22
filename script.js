@@ -3841,7 +3841,155 @@ function dsaCardIcon(name) {
         addPath(s, "M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1");
         return s;
     }
+    if (name === "maximize") {
+        const s = svgEl({ size: 11 });
+        addPath(s, "M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3");
+        return s;
+    }
     return svgEl({});
+}
+
+let _dsaSolCodeFsEl = null;
+
+function dsaPopulateSolCodeBlock(gutterEl, codeBodyEl, code) {
+    const raw = code != null ? String(code) : "";
+    if (!raw.trim()) {
+        gutterEl.textContent = "";
+        codeBodyEl.innerHTML = "";
+        codeBodyEl.textContent = "No code stored for this approach.";
+        codeBodyEl.style.color = "rgba(245,245,247,0.5)";
+        codeBodyEl.style.fontStyle = "italic";
+        return false;
+    }
+    codeBodyEl.removeAttribute("style");
+    const lines = raw.split("\n");
+    gutterEl.textContent = lines.map((_, i) => i + 1).join("\n");
+    codeBodyEl.innerHTML = dsaCardHighlightJsCode(raw);
+    return true;
+}
+
+function dsaEnsureSolutionCodeFullscreenViewer() {
+    if (_dsaSolCodeFsEl) {
+        return _dsaSolCodeFsEl;
+    }
+    const root = document.createElement("div");
+    root.className = "dsa-sol-code-fs";
+    root.hidden = true;
+    root.setAttribute("role", "dialog");
+    root.setAttribute("aria-modal", "true");
+    root.setAttribute("aria-label", "Solution code fullscreen");
+
+    const backdrop = document.createElement("button");
+    backdrop.type = "button";
+    backdrop.className = "dsa-sol-code-fs-backdrop";
+    backdrop.setAttribute("aria-label", "Close fullscreen code view");
+
+    const panel = document.createElement("div");
+    panel.className = "dsa-sol-code-fs-panel";
+
+    const head = document.createElement("div");
+    head.className = "dsa-sol-code-fs-head";
+
+    const titleEl = document.createElement("div");
+    titleEl.className = "dsa-sol-code-fs-title";
+    titleEl.id = "dsa-sol-code-fs-title";
+
+    const headActions = document.createElement("div");
+    headActions.className = "dsa-sol-code-fs-head-actions";
+
+    const copyBtn = document.createElement("button");
+    copyBtn.type = "button";
+    copyBtn.className = "dsa-sol-code-fs-copy";
+    copyBtn.title = "Copy code";
+    let fsCopyLabel = "Copy";
+    function renderFsCopyBtn(label) {
+        fsCopyLabel = label;
+        copyBtn.replaceChildren();
+        copyBtn.appendChild(dsaCardIcon("copy"));
+        copyBtn.appendChild(document.createTextNode(" " + label));
+    }
+    renderFsCopyBtn("Copy");
+    copyBtn.setAttribute("aria-label", "Copy code");
+
+    const closeBtn = document.createElement("button");
+    closeBtn.type = "button";
+    closeBtn.className = "dsa-sol-code-fs-close";
+    closeBtn.setAttribute("aria-label", "Close");
+    closeBtn.title = "Close (Esc)";
+    closeBtn.appendChild(dsaCardIcon("close"));
+
+    const pre = document.createElement("pre");
+    pre.className = "sol-code dsa-sol-code-fs-code";
+    const gutter = document.createElement("div");
+    gutter.className = "sol-code-gutter";
+    const codeBody = document.createElement("code");
+    codeBody.className = "sol-code-body";
+
+    headActions.appendChild(copyBtn);
+    headActions.appendChild(closeBtn);
+    head.appendChild(titleEl);
+    head.appendChild(headActions);
+    pre.appendChild(gutter);
+    pre.appendChild(codeBody);
+    panel.appendChild(head);
+    panel.appendChild(pre);
+    root.appendChild(backdrop);
+    root.appendChild(panel);
+    root.setAttribute("aria-labelledby", titleEl.id);
+
+    let fsCurrentCode = "";
+
+    function closeFs() {
+        root.hidden = true;
+        document.body.classList.remove("dsa-h-res-fs-open");
+        fsCurrentCode = "";
+        gutter.textContent = "";
+        codeBody.innerHTML = "";
+    }
+
+    backdrop.addEventListener("click", closeFs);
+    closeBtn.addEventListener("click", closeFs);
+    panel.addEventListener("click", (e) => e.stopPropagation());
+    copyBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!fsCurrentCode || !navigator.clipboard) {
+            return;
+        }
+        navigator.clipboard.writeText(fsCurrentCode).then(() => {
+            copyBtn.classList.add("copied");
+            renderFsCopyBtn("Copied!");
+            setTimeout(() => {
+                copyBtn.classList.remove("copied");
+                renderFsCopyBtn("Copy");
+            }, 1400);
+        });
+    });
+    document.addEventListener("keydown", (e) => {
+        if (!root.hidden && e.key === "Escape") {
+            e.preventDefault();
+            closeFs();
+        }
+    });
+
+    root._dsaOpen = (code, label) => {
+        fsCurrentCode = code != null ? String(code) : "";
+        titleEl.textContent = label || "Solution code";
+        dsaPopulateSolCodeBlock(gutter, codeBody, fsCurrentCode);
+        root.hidden = false;
+        document.body.classList.add("dsa-h-res-fs-open");
+        closeBtn.focus();
+    };
+    root._dsaClose = closeFs;
+
+    document.body.appendChild(root);
+    _dsaSolCodeFsEl = root;
+    return root;
+}
+
+function dsaOpenSolutionCodeFullscreen(code, label) {
+    const viewer = dsaEnsureSolutionCodeFullscreenViewer();
+    viewer._dsaOpen(code, label);
 }
 
 /** Brain icon for the Practice problems card header. */
@@ -4108,9 +4256,13 @@ function dsaFillProblemSolutionPane(prob, pane) {
     const lang = document.createElement("div");
     lang.className = "sol-code-lang";
 
+    const headerActions = document.createElement("div");
+    headerActions.className = "sol-code-header-actions";
+
     const copyBtn = document.createElement("button");
     copyBtn.type = "button";
     copyBtn.className = "sol-code-copy";
+    copyBtn.setAttribute("aria-label", "Copy code");
     function renderCopyBtn(label) {
         copyBtn.replaceChildren();
         copyBtn.appendChild(dsaCardIcon("copy"));
@@ -4118,9 +4270,19 @@ function dsaFillProblemSolutionPane(prob, pane) {
     }
     renderCopyBtn("Copy");
 
+    const fsBtn = document.createElement("button");
+    fsBtn.type = "button";
+    fsBtn.className = "sol-code-fs";
+    fsBtn.setAttribute("aria-label", "View code fullscreen");
+    fsBtn.title = "Fullscreen";
+    fsBtn.appendChild(dsaCardIcon("maximize"));
+
+    headerActions.appendChild(copyBtn);
+    headerActions.appendChild(fsBtn);
+
     codeHeader.appendChild(dots);
     codeHeader.appendChild(lang);
-    codeHeader.appendChild(copyBtn);
+    codeHeader.appendChild(headerActions);
     codeWrap.appendChild(codeHeader);
 
     const pre = document.createElement("pre");
@@ -4136,18 +4298,7 @@ function dsaFillProblemSolutionPane(prob, pane) {
     let currentCode = "";
     function setCode(code) {
         currentCode = code || "";
-        if (!currentCode.trim()) {
-            gutter.textContent = "";
-            codeBody.innerHTML = "";
-            codeBody.textContent = "No code stored for this approach.";
-            codeBody.style.color = "rgba(245,245,247,0.5)";
-            codeBody.style.fontStyle = "italic";
-            return;
-        }
-        codeBody.removeAttribute("style");
-        const lines = currentCode.split("\n");
-        gutter.textContent = lines.map((_, i) => i + 1).join("\n");
-        codeBody.innerHTML = dsaCardHighlightJsCode(currentCode);
+        dsaPopulateSolCodeBlock(gutter, codeBody, currentCode);
     }
 
     copyBtn.addEventListener("click", (e) => {
@@ -4164,6 +4315,13 @@ function dsaFillProblemSolutionPane(prob, pane) {
                 renderCopyBtn("Copy");
             }, 1400);
         });
+    });
+
+    fsBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const title = lang.textContent.trim() || "Solution code";
+        dsaOpenSolutionCodeFullscreen(currentCode, title);
     });
 
     const APPROACH_LABEL_BY_KEY = { brute_force: "Brute Force", better: "Better", optimal: "Optimal" };

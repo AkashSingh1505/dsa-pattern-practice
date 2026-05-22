@@ -6281,6 +6281,8 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const isRenameNode = !!renameTargetPathKey;
     const isEditProblem = !!(editQuestionName || editUserNodeId);
     let userClearedSketch = false;
+    /** Latest JPEG export while the modal is open — survives name sync that must not wipe the canvas. */
+    let lastSketchExport = "";
     let syncEntryKey = "";
 
     const backdrop = document.createElement("div");
@@ -6987,27 +6989,54 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     let scratchApi = dsaStubSketchApi();
     let sketchEditorWired = false;
 
+    function snapshotSketchExport() {
+        if (!sketchEditorWired) {
+            return "";
+        }
+        try {
+            if (typeof scratchApi.flushForPersist === "function") {
+                scratchApi.flushForPersist();
+            }
+            const hasInk = typeof scratchApi.getHasInk === "function" && scratchApi.getHasInk();
+            if (!hasInk) {
+                if (userClearedSketch) {
+                    lastSketchExport = "";
+                }
+                return "";
+            }
+            userClearedSketch = false;
+            const url =
+                typeof scratchApi.toPersistedSketchDataUrl === "function"
+                    ? scratchApi.toPersistedSketchDataUrl()
+                    : typeof scratchApi.toDataUrl === "function"
+                      ? scratchApi.toDataUrl()
+                      : "";
+            if (url && /^data:image\//i.test(url)) {
+                lastSketchExport = url;
+                return url;
+            }
+        } catch (err) {
+            console.warn("DSA: sketch snapshot failed", err);
+        }
+        return lastSketchExport && !userClearedSketch ? lastSketchExport : "";
+    }
+
     /** JPEG data URL for problem save — always wires editor if the sketch panel was used. */
     function collectSketchDrawingPayload(lookupNameOverride) {
         ensureSketchEditor();
         let drawingPayload = "";
+        let hasInk = false;
         if (sketchEditorWired) {
             try {
-                if (typeof scratchApi.flushForPersist === "function") {
-                    scratchApi.flushForPersist();
-                } else if (typeof scratchApi.syncHasInkFromPixels === "function") {
-                    scratchApi.syncHasInkFromPixels();
+                if (typeof scratchApi.resize === "function") {
+                    scratchApi.resize();
                 }
-                const hasInk = typeof scratchApi.getHasInk === "function" && scratchApi.getHasInk();
-                if (hasInk) {
-                    userClearedSketch = false;
-                    drawingPayload =
-                        typeof scratchApi.toPersistedSketchDataUrl === "function"
-                            ? scratchApi.toPersistedSketchDataUrl()
-                            : typeof scratchApi.toDataUrl === "function"
-                              ? scratchApi.toDataUrl()
-                              : "";
-                } else if (userClearedSketch) {
+                drawingPayload = snapshotSketchExport();
+                hasInk = typeof scratchApi.getHasInk === "function" && scratchApi.getHasInk();
+                if (!drawingPayload && hasInk && lastSketchExport && !userClearedSketch) {
+                    drawingPayload = lastSketchExport;
+                }
+                if (!hasInk && userClearedSketch) {
                     return "";
                 }
             } catch (err) {
@@ -7022,7 +7051,7 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
                 : isEditProblem && editQuestionName
                   ? editQuestionName
                   : nameIn.value.trim();
-        if (!drawingPayload && !userClearedSketch && lookupName) {
+        if (!drawingPayload && !userClearedSketch && !hasInk && lookupName) {
             const entKeep = dsaResolveQuestionForModal(parentKey, lookupName, editUserNodeId);
             if (entKeep && String(entKeep.drawing || "").trim()) {
                 drawingPayload = String(entKeep.drawing);
@@ -7091,10 +7120,11 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             return;
         }
         sketchEditorWired = true;
-        scratchApi = dsaWireSketchEditor(sketchEditorRoot, () => {}, {
+        scratchApi = dsaWireSketchEditor(sketchEditorRoot, snapshotSketchExport, {
             embedInDialog: true,
             afterClear() {
                 userClearedSketch = true;
+                lastSketchExport = "";
             },
             admin: isAdmin,
             onPersist: persistSketchDrawingQuick,
@@ -7147,7 +7177,11 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         const url = drawingUrl != null ? String(drawingUrl).trim() : "";
         if (!url) {
             if (sketchEditorWired && typeof scratchApi.clear === "function") {
-                scratchApi.clear();
+                const hasInk = typeof scratchApi.getHasInk === "function" && scratchApi.getHasInk();
+                if (!hasInk) {
+                    scratchApi.clear();
+                    lastSketchExport = "";
+                }
             }
             return;
         }
@@ -8029,8 +8063,13 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             if (ent.drawing && String(ent.drawing).trim()) {
                 loadSketchDrawingIntoEditor(String(ent.drawing).trim());
                 userClearedSketch = false;
+                lastSketchExport = String(ent.drawing).trim();
             } else if (sketchEditorWired) {
-                scratchApi.clear();
+                const hasInk = typeof scratchApi.getHasInk === "function" && scratchApi.getHasInk();
+                if (!hasInk) {
+                    scratchApi.clear();
+                    lastSketchExport = "";
+                }
                 userClearedSketch = false;
             }
         }
@@ -8048,7 +8087,9 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         const k = ent ? ent.id || `${parentKey}::${ent.name}` : "";
         if (k !== syncEntryKey) {
             syncEntryKey = k;
-            userClearedSketch = false;
+            if (!(sketchEditorWired && typeof scratchApi.getHasInk === "function" && scratchApi.getHasInk())) {
+                userClearedSketch = false;
+            }
         }
         renderExistingCard(ent);
         applyEntryToForm(ent);

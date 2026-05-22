@@ -191,11 +191,14 @@
 <div class="brushes-scroll">
       <div class="brush brush--upright" data-brush="pen" title="Pen">
         <svg viewBox="0 0 90 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
-        <linearGradient id="skPen_b1Ink" class="dsa-sk-ink-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="var(--bc-light, #e8e8ec)"/>
-          <stop offset="33%" stop-color="var(--bc-mid, #5a5a5e)"/>
-          <stop offset="66%" stop-color="var(--bc, #1c1c1e)"/>
-          <stop offset="100%" stop-color="var(--bc-deep, #0a0a0a)"/>
+        <linearGradient id="skPen_b1Ink" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#a8a8ae"/>
+          <stop offset="10%" stop-color="#e0e0e4"/>
+          <stop offset="25%" stop-color="#ffffff"/>
+          <stop offset="50%" stop-color="#f6f6f8"/>
+          <stop offset="75%" stop-color="#fdfdfe"/>
+          <stop offset="92%" stop-color="#d8d8dc"/>
+          <stop offset="100%" stop-color="#9ca0a6"/>
         </linearGradient>
         <linearGradient id="skPen_b1Band" x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stop-color="#0a0a0a"/><stop offset="50%" stop-color="#2c2c2e"/>
@@ -224,11 +227,11 @@
       </div>
       <div class="brush brush--upright" data-brush="pencil" title="Pencil">
         <svg viewBox="0 0 90 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
-        <linearGradient id="skPc_pcInk" class="dsa-sk-ink-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="var(--bc-light, #e8e8ec)"/>
-          <stop offset="33%" stop-color="var(--bc-mid, #5a5a5e)"/>
-          <stop offset="66%" stop-color="var(--bc, #1c1c1e)"/>
-          <stop offset="100%" stop-color="var(--bc-deep, #0a0a0a)"/>
+        <linearGradient id="skPc_pcWood" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#c9921e"/>
+          <stop offset="35%" stop-color="#f9c440"/>
+          <stop offset="65%" stop-color="#f4d03f"/>
+          <stop offset="100%" stop-color="#a8731a"/>
         </linearGradient>
         <linearGradient id="skPc_pcLead" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stop-color="#2c2c2e"/><stop offset="50%" stop-color="#5a5a5e"/>
@@ -261,10 +264,10 @@
       <path d="M 45 14 L 41 42 L 49 42 Z" fill="url(#skPc_pcLead)"/>
       <path d="M 45 16 L 43 40 L 45 40 Z" fill="rgba(255,255,255,0.3)"/>
       <path class="dsa-sk-ink" d="M 41 42 L 27 80 L 35 80 L 43 42 Z" fill="var(--bc, #ff3b30)"/>
-      <path class="dsa-sk-body" d="M 43 42 L 35 80 L 55 80 L 47 42 Z" fill="url(#skPc_pcInk)"/>
+      <path class="dsa-sk-body" d="M 43 42 L 35 80 L 55 80 L 47 42 Z" fill="url(#skPc_pcWood)"/>
       <path class="dsa-sk-ink" d="M 47 42 L 55 80 L 63 80 L 49 42 Z" fill="var(--bc, #ff3b30)"/>
       <path d="M 27 80 L 27 250 L 35 250 L 35 80 Z" fill="url(#skPc_pcFaceL)"/>
-      <path class="dsa-sk-body" d="M 35 80 L 35 250 L 55 250 L 55 80 Z" fill="url(#skPc_pcInk)"/>
+      <path class="dsa-sk-body" d="M 35 80 L 35 250 L 55 250 L 55 80 Z" fill="url(#skPc_pcWood)"/>
       <path d="M 55 80 L 55 250 L 63 250 L 63 80 Z" fill="url(#skPc_pcFaceR)"/>
       <rect x="43" y="82" width="3" height="166" rx="1.5" fill="rgba(255,255,255,0.5)"/>
       <rect x="26" y="250" width="38" height="22" fill="url(#skPc_pcFerrule)"/>
@@ -400,6 +403,22 @@
       <button class="tray-btn" id="dsaSkBackBtnTray">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1c1c1e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
       </button>
+    </div>
+  </div>
+
+  <div class="layout-customizer" id="dsaSkLayoutCustomizer" hidden>
+    <button type="button" class="layout-customizer-toggle" id="dsaSkLayoutCustomizerToggle" title="Tray layout tuner">⚙ Layout</button>
+    <div class="layout-customizer-panel" id="dsaSkLayoutCustomizerPanel">
+      <div class="layout-customizer-head">
+        <strong>Tray layout tuner</strong>
+        <button type="button" class="layout-customizer-close" id="dsaSkLayoutCustomizerClose">×</button>
+      </div>
+      <div class="layout-customizer-body" id="dsaSkLayoutCustomizerSliders"></div>
+      <div class="layout-customizer-actions">
+        <button type="button" id="dsaSkLayoutGetData">Get data</button>
+        <button type="button" id="dsaSkLayoutCopyConfig">Copy config</button>
+      </div>
+      <pre class="layout-customizer-out" id="dsaSkLayoutCustomizerOut"></pre>
     </div>
   </div>
 </div>

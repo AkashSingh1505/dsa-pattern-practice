@@ -924,7 +924,14 @@ function updateBrushColors() {
       b.style.removeProperty('--bc-deep');
       return;
     }
-    applyColorVars(b, getBrushColor(id));
+    const c = getBrushColor(id);
+    if (id === 'pen' || id === 'pencil') {
+      b.style.setProperty('--bc', c);
+      b.style.removeProperty('--bc-light');
+      b.style.removeProperty('--bc-deep');
+    } else {
+      applyColorVars(b, c);
+    }
   });
   const colorBtn = $('dsaSkColorBtn');
   if (colorBtn) {
@@ -1938,5 +1945,115 @@ const api = {
     editorRoot.classList.remove('dsa-sketch-studio-host', 'dsa-sketch-studio-host--fullscreen');
   },
 };
+
+/* ============ TRAY LAYOUT TUNER (dev) ============ */
+const SK_LAYOUT_SPECS = [
+  { key: '--sk-brush-w', label: 'Brush width', min: 40, max: 120, step: 1, unit: 'px' },
+  { key: '--sk-brush-h', label: 'Brush height', min: 50, max: 120, step: 1, unit: 'px' },
+  { key: '--sk-brush-gap', label: 'Gap between brushes', min: 0, max: 24, step: 1, unit: 'px' },
+  { key: '--sk-brush-sink', label: 'Brush sit in tray (sink)', min: -40, max: 8, step: 1, unit: 'px' },
+  { key: '--sk-scroll-pad-top', label: 'Pop-up headroom above tray', min: 0, max: 48, step: 1, unit: 'px' },
+  { key: '--sk-tray-pt', label: 'Tray padding top', min: 0, max: 24, step: 1, unit: 'px' },
+  { key: '--sk-tray-pr', label: 'Tray padding right', min: 0, max: 40, step: 1, unit: 'px' },
+  { key: '--sk-tray-pb', label: 'Tray padding bottom', min: 0, max: 24, step: 1, unit: 'px' },
+  { key: '--sk-tray-pl', label: 'Tray padding left', min: 0, max: 40, step: 1, unit: 'px' },
+  { key: '--sk-tray-gap', label: 'Tray inner gap', min: 0, max: 24, step: 1, unit: 'px' },
+  { key: '--sk-tray-min-h', label: 'Tray min height', min: 56, max: 140, step: 1, unit: 'px' },
+  { key: '--sk-color-btn-size', label: 'Color wheel size', min: 28, max: 64, step: 1, unit: 'px' },
+  { key: '--sk-color-btn-mb', label: 'Color wheel bottom offset', min: 0, max: 20, step: 1, unit: 'px' },
+  { key: '--sk-tray-btn-mb', label: 'Tray buttons bottom offset', min: 0, max: 20, step: 1, unit: 'px' },
+  { key: '--sk-divider-h', label: 'Divider height', min: 24, max: 72, step: 1, unit: 'px' },
+  { key: '--sk-divider-mb', label: 'Divider bottom offset', min: 0, max: 24, step: 1, unit: 'px' },
+  { key: '--sk-divider-mx', label: 'Divider side margin', min: 0, max: 20, step: 1, unit: 'px' },
+  { key: '--sk-brush-hover-lift', label: 'Hover lift', min: -20, max: 0, step: 1, unit: 'px' },
+  { key: '--sk-brush-active-lift', label: 'Active lift', min: -24, max: 0, step: 1, unit: 'px' },
+  { key: '--sk-brush-active-scale', label: 'Active scale', min: 1, max: 1.3, step: 0.01, unit: '' },
+];
+
+function skLayoutDefault(spec) {
+  const raw = getComputedStyle(editorRoot).getPropertyValue(spec.key).trim();
+  if (!raw) return spec.min;
+  const n = parseFloat(raw);
+  return Number.isFinite(n) ? n : spec.min;
+}
+
+function skLayoutBuildConfig() {
+  const vars = {};
+  SK_LAYOUT_SPECS.forEach((spec) => {
+    const v = editorRoot.style.getPropertyValue(spec.key).trim()
+      || getComputedStyle(editorRoot).getPropertyValue(spec.key).trim();
+    vars[spec.key] = v;
+  });
+  const cssBlock = `.dsa-sketch-studio-mount {\n${Object.entries(vars)
+    .map(([k, v]) => `  ${k}: ${v};`)
+    .join('\n')}\n}`;
+  return { vars, cssBlock, json: JSON.stringify(vars, null, 2) };
+}
+
+function skLayoutShowOutput() {
+  const out = $('dsaSkLayoutCustomizerOut');
+  if (!out) return;
+  const cfg = skLayoutBuildConfig();
+  out.textContent = cfg.cssBlock;
+  return cfg;
+}
+
+function initSkLayoutCustomizer() {
+  const root = $('dsaSkLayoutCustomizer');
+  const slidersHost = $('dsaSkLayoutCustomizerSliders');
+  if (!root || !slidersHost) return;
+
+  SK_LAYOUT_SPECS.forEach((spec) => {
+    const row = document.createElement('div');
+    row.className = 'layout-customizer-row';
+    const label = document.createElement('label');
+    label.textContent = spec.label;
+    const input = document.createElement('input');
+    input.type = 'range';
+    input.min = String(spec.min);
+    input.max = String(spec.max);
+    input.step = String(spec.step);
+    const val = document.createElement('span');
+    val.className = 'layout-val';
+    const cur = skLayoutDefault(spec);
+    input.value = String(cur);
+    const fmt = (n) => (spec.unit ? `${n}${spec.unit}` : String(n));
+    val.textContent = fmt(cur);
+    const apply = () => {
+      const n = parseFloat(input.value);
+      const disp = spec.key === '--sk-brush-active-scale' ? n.toFixed(2) : String(Math.round(n));
+      const cssVal = spec.unit ? `${disp}${spec.unit}` : disp;
+      editorRoot.style.setProperty(spec.key, cssVal);
+      val.textContent = spec.unit ? cssVal : disp;
+      skLayoutShowOutput();
+    };
+    input.addEventListener('input', apply);
+    row.appendChild(label);
+    row.appendChild(input);
+    row.appendChild(val);
+    slidersHost.appendChild(row);
+  });
+
+  const toggle = () => root.classList.toggle('open');
+  addL($('dsaSkLayoutCustomizerToggle'), 'click', toggle);
+  addL($('dsaSkLayoutCustomizerClose'), 'click', () => root.classList.remove('open'));
+  addL($('dsaSkLayoutGetData'), 'click', () => skLayoutShowOutput());
+  addL($('dsaSkLayoutCopyConfig'), 'click', async () => {
+    const cfg = skLayoutShowOutput();
+    const text = cfg ? `${cfg.cssBlock}\n\n/* JSON */\n${cfg.json}` : '';
+    try {
+      await navigator.clipboard.writeText(text);
+      const out = $('dsaSkLayoutCustomizerOut');
+      if (out) out.textContent = 'Copied to clipboard!\n\n' + text;
+    } catch (_) {
+      const out = $('dsaSkLayoutCustomizerOut');
+      if (out) out.textContent = 'Copy failed — select text below manually.\n\n' + text;
+    }
+  });
+  root.hidden = false;
+  skLayoutShowOutput();
+}
+
+initSkLayoutCustomizer();
 
 return api;

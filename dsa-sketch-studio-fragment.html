@@ -189,12 +189,88 @@
 
     <div class="brush-tray" id="dsaSkDrawTab" style="display:none;">
 <div class="brushes-scroll">
-      <div class="brush" data-brush="pen">
-        <svg viewBox="0 0 60 90"><polygon points="30,88 22,72 38,72" fill="var(--bc, #1c1c1e)"/><rect x="20" y="68" width="20" height="5" fill="#c4c4c6"/><rect x="18" y="20" width="24" height="48" fill="#2c2c2e" rx="3"/><rect x="18" y="20" width="24" height="48" fill="url(#penGrad)" rx="3"/><rect x="20" y="10" width="20" height="12" fill="#1c1c1e" rx="3"/><rect x="18" y="58" width="24" height="8" fill="var(--bc, #1c1c1e)"/><defs><linearGradient id="penGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="rgba(255,255,255,0.18)"/><stop offset="0.5" stop-color="rgba(255,255,255,0)"/><stop offset="1" stop-color="rgba(0,0,0,0.25)"/></linearGradient></defs></svg>
+      <div class="brush brush--upright" data-brush="pen" title="Pen">
+        <svg viewBox="0 0 90 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
+        <linearGradient id="skPen_b1Ink" class="dsa-sk-ink-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="var(--bc-light, #e8e8ec)"/>
+          <stop offset="33%" stop-color="var(--bc-mid, #5a5a5e)"/>
+          <stop offset="66%" stop-color="var(--bc, #1c1c1e)"/>
+          <stop offset="100%" stop-color="var(--bc-deep, #0a0a0a)"/>
+        </linearGradient>
+        <linearGradient id="skPen_b1Band" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#0a0a0a"/><stop offset="50%" stop-color="#2c2c2e"/>
+          <stop offset="100%" stop-color="#0a0a0a"/>
+        </linearGradient>
+        <radialGradient id="skPen_b1Bottom" cx="50%" cy="0%" r="80%">
+          <stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#b8b8be"/>
+        </radialGradient>
+        <radialGradient id="skPen_b1Floor" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="rgba(0,0,0,0.18)"/><stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+        </radialGradient>
+      </defs>
+      <ellipse cx="45" cy="294" rx="32" ry="5" fill="url(#skPen_b1Floor)"/>
+      <path class="dsa-sk-ink" d="M 45 18 Q 47 20 48 24 L 60 80 Q 60 83 57 83 L 33 83 Q 30 83 30 80 L 42 24 Q 43 20 45 18 Z" fill="var(--bc, #1c1c1e)"/>
+      <path d="M 45 20 L 41 80 L 44 80 Z" fill="rgba(255,255,255,0.4)"/>
+      <ellipse cx="45" cy="83" rx="20" ry="3" fill="#f0f0f3"/>
+      <path class="dsa-sk-body" d="M 25 83 L 25 282 Q 25 289 32 289 L 58 289 Q 65 289 65 282 L 65 83 Z" fill="url(#skPen_b1Ink)"/>
+      <rect x="25" y="152" width="40" height="10" fill="url(#skPen_b1Band)"/>
+      <rect x="25" y="152" width="40" height="1.5" fill="rgba(255,255,255,0.15)"/>
+      <path d="M 25 280 Q 25 289 32 289 L 58 289 Q 65 289 65 280 Z" fill="url(#skPen_b1Bottom)"/>
+      <rect x="32" y="85" width="2.5" height="200" rx="1.25" fill="rgba(255,255,255,0.7)"/>
+      <rect x="55" y="85" width="1.5" height="200" rx="0.75" fill="rgba(255,255,255,0.4)"/>
+      <rect x="60" y="85" width="5" height="200" fill="rgba(0,0,0,0.04)"/>
+    </svg>
 
       </div>
-      <div class="brush" data-brush="pencil">
-        <svg viewBox="0 0 60 90"><polygon points="30,88 24,78 36,78" fill="#2c2c2e"/><polygon points="22,70 38,70 36,78 24,78" fill="#f4d6a8"/><polygon points="30,72 36,78 24,78" fill="#dbb780" opacity="0.6"/><rect x="20" y="60" width="20" height="10" fill="#e8c547"/><rect x="20" y="62" width="20" height="1.5" fill="#a8881e"/><rect x="20" y="67" width="20" height="1.5" fill="#a8881e"/><rect x="20" y="14" width="20" height="46" fill="#f9c440"/><rect x="20" y="14" width="20" height="46" fill="url(#pcGrad)"/><rect x="20" y="10" width="20" height="6" fill="var(--bc, #ff3b30)" rx="2"/><defs><linearGradient id="pcGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="rgba(255,255,255,0.25)"/><stop offset="0.5" stop-color="rgba(255,255,255,0)"/><stop offset="1" stop-color="rgba(0,0,0,0.2)"/></linearGradient></defs></svg>
+      <div class="brush brush--upright" data-brush="pencil" title="Pencil">
+        <svg viewBox="0 0 90 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
+        <linearGradient id="skPc_pcInk" class="dsa-sk-ink-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="var(--bc-light, #e8e8ec)"/>
+          <stop offset="33%" stop-color="var(--bc-mid, #5a5a5e)"/>
+          <stop offset="66%" stop-color="var(--bc, #1c1c1e)"/>
+          <stop offset="100%" stop-color="var(--bc-deep, #0a0a0a)"/>
+        </linearGradient>
+        <linearGradient id="skPc_pcLead" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#2c2c2e"/><stop offset="50%" stop-color="#5a5a5e"/>
+          <stop offset="100%" stop-color="#1c1c1e"/>
+        </linearGradient>
+        <linearGradient id="skPc_pcFaceL" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#b8841a"/><stop offset="100%" stop-color="#e8a93a"/>
+        </linearGradient>
+        <linearGradient id="skPc_pcFaceR" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#d49d2a"/><stop offset="100%" stop-color="#a8731a"/>
+        </linearGradient>
+        <linearGradient id="skPc_pcFerrule" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#6a6a6e"/><stop offset="15%" stop-color="#b8b8bc"/>
+          <stop offset="35%" stop-color="#e8e8ec"/><stop offset="55%" stop-color="#d4d4d8"/>
+          <stop offset="80%" stop-color="#9a9a9e"/><stop offset="100%" stop-color="#4a4a4e"/>
+        </linearGradient>
+        <linearGradient id="skPc_pcEraser" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#f5b8b3"/><stop offset="40%" stop-color="#e09c97"/>
+          <stop offset="100%" stop-color="#b87872"/>
+        </linearGradient>
+        <radialGradient id="skPc_pcEraserHi" cx="30%" cy="20%" r="55%">
+          <stop offset="0%" stop-color="rgba(255,255,255,0.65)"/>
+          <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+        </radialGradient>
+        <radialGradient id="skPc_pcFloor" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="rgba(0,0,0,0.18)"/><stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+        </radialGradient>
+      </defs>
+      <ellipse cx="45" cy="294" rx="32" ry="5" fill="url(#skPc_pcFloor)"/>
+      <path d="M 45 14 L 41 42 L 49 42 Z" fill="url(#skPc_pcLead)"/>
+      <path d="M 45 16 L 43 40 L 45 40 Z" fill="rgba(255,255,255,0.3)"/>
+      <path class="dsa-sk-ink" d="M 41 42 L 27 80 L 35 80 L 43 42 Z" fill="var(--bc, #ff3b30)"/>
+      <path class="dsa-sk-body" d="M 43 42 L 35 80 L 55 80 L 47 42 Z" fill="url(#skPc_pcInk)"/>
+      <path class="dsa-sk-ink" d="M 47 42 L 55 80 L 63 80 L 49 42 Z" fill="var(--bc, #ff3b30)"/>
+      <path d="M 27 80 L 27 250 L 35 250 L 35 80 Z" fill="url(#skPc_pcFaceL)"/>
+      <path class="dsa-sk-body" d="M 35 80 L 35 250 L 55 250 L 55 80 Z" fill="url(#skPc_pcInk)"/>
+      <path d="M 55 80 L 55 250 L 63 250 L 63 80 Z" fill="url(#skPc_pcFaceR)"/>
+      <rect x="43" y="82" width="3" height="166" rx="1.5" fill="rgba(255,255,255,0.5)"/>
+      <rect x="26" y="250" width="38" height="22" fill="url(#skPc_pcFerrule)"/>
+      <path d="M 26 272 L 64 272 L 64 285 Q 64 290 56 290 L 34 290 Q 26 290 26 285 Z" fill="url(#skPc_pcEraser)"/>
+      <path d="M 26 272 L 64 272 L 64 285 Q 64 290 56 290 L 34 290 Q 26 290 26 285 Z" fill="url(#skPc_pcEraserHi)"/>
+    </svg>
 
       </div>
       <div class="brush brush--upright" data-brush="highlighter" title="Highlighter">

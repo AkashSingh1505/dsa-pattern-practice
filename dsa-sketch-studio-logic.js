@@ -925,7 +925,7 @@ function updateBrushColors() {
       return;
     }
     const c = getBrushColor(id);
-    if (id === 'pen' || id === 'pencil') {
+    if (id === 'pen' || id === 'pencil' || id === 'shape') {
       b.style.setProperty('--bc', c);
       b.style.removeProperty('--bc-light');
       b.style.removeProperty('--bc-deep');
@@ -1948,8 +1948,9 @@ const api = {
 
 /* ============ TRAY LAYOUT TUNER (dev) ============ */
 const SK_LAYOUT_SPECS = [
-  { key: '--sk-brush-w', label: 'Brush width', min: 40, max: 120, step: 1, unit: 'px' },
-  { key: '--sk-brush-h', label: 'Brush height', min: 50, max: 120, step: 1, unit: 'px' },
+  { key: '--sk-brush-icon-scale', label: 'Icon visual scale', min: 0.6, max: 2, step: 0.02, unit: '' },
+  { key: '--sk-brush-w', label: 'Brush slot width', min: 40, max: 120, step: 1, unit: 'px' },
+  { key: '--sk-brush-h', label: 'Brush slot height', min: 50, max: 140, step: 1, unit: 'px' },
   { key: '--sk-brush-gap', label: 'Gap between brushes', min: 0, max: 24, step: 1, unit: 'px' },
   { key: '--sk-brush-sink', label: 'Brush sit in tray (sink)', min: -40, max: 8, step: 1, unit: 'px' },
   { key: '--sk-scroll-pad-top', label: 'Pop-up headroom above tray', min: 0, max: 48, step: 1, unit: 'px' },

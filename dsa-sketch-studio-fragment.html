@@ -190,7 +190,7 @@
     <div class="brush-tray" id="dsaSkDrawTab" style="display:none;">
 <div class="brushes-scroll">
       <div class="brush brush--upright" data-brush="pen" title="Pen">
-        <svg viewBox="0 0 90 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
+        <svg preserveAspectRatio="xMidYMax slice" viewBox="0 0 90 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
         <linearGradient id="skPen_b1Ink" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stop-color="#a8a8ae"/>
           <stop offset="10%" stop-color="#e0e0e4"/>
@@ -226,7 +226,7 @@
 
       </div>
       <div class="brush brush--upright" data-brush="pencil" title="Pencil">
-        <svg viewBox="0 0 90 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
+        <svg preserveAspectRatio="xMidYMax slice" viewBox="0 0 90 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
         <linearGradient id="skPc_pcWood" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stop-color="#c9921e"/>
           <stop offset="35%" stop-color="#f9c440"/>
@@ -277,7 +277,7 @@
 
       </div>
       <div class="brush brush--upright" data-brush="highlighter" title="Highlighter">
-        <svg viewBox="0 0 110 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
+        <svg preserveAspectRatio="xMidYMax slice" viewBox="0 0 110 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
         <linearGradient id="skHl_hlBody" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stop-color="#a8a8ae"></stop><stop offset="10%" stop-color="#e0e0e4"></stop>
           <stop offset="25%" stop-color="#ffffff"></stop><stop offset="45%" stop-color="#fafafb"></stop>
@@ -313,7 +313,7 @@
 
       </div>
       <div class="brush brush--upright" data-brush="eraser" title="Eraser">
-        <svg viewBox="0 0 110 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
+        <svg preserveAspectRatio="xMidYMax slice" viewBox="0 0 110 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
         <linearGradient id="skEr_erTop" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stop-color="#f2b8b3"></stop><stop offset="35%" stop-color="#e09c97"></stop>
           <stop offset="70%" stop-color="#c8857f"></stop><stop offset="100%" stop-color="#a06863"></stop>
@@ -355,8 +355,59 @@
     </svg>
 
       </div>
-      <div class="brush" data-brush="shape">
-        <svg viewBox="0 0 60 90"><rect x="14" y="14" width="32" height="60" rx="6" fill="var(--bc, #5856d6)"/><rect x="14" y="14" width="32" height="60" rx="6" fill="url(#shGrad)"/><circle cx="24" cy="34" r="7" fill="#fff" opacity="0.9"/><rect x="32" y="28" width="12" height="12" fill="#fff" opacity="0.9" rx="2"/><polygon points="30,50 38,64 22,64" fill="#fff" opacity="0.9"/><defs><linearGradient id="shGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="rgba(255,255,255,0.25)"/><stop offset="0.5" stop-color="rgba(255,255,255,0)"/><stop offset="1" stop-color="rgba(0,0,0,0.2)"/></linearGradient></defs></svg>
+      <div class="brush brush--upright" data-brush="shape" title="Shapes">
+        <svg preserveAspectRatio="xMidYMax slice" viewBox="0 0 120 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
+        <linearGradient id="skSh_shDSide1" class="dsa-sk-side-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="var(--bc-mid, #5856d6)"/>
+          <stop offset="100%" stop-color="var(--bc-dark, #033752)"/>
+        </linearGradient>
+        <linearGradient id="skSh_shDSide2" class="dsa-sk-side-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="var(--bc-mid, #5856d6)"/>
+          <stop offset="100%" stop-color="var(--bc-dark, #033752)"/>
+        </linearGradient>
+        <linearGradient id="skSh_shSSide" class="dsa-sk-side-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="var(--bc-mid, #5856d6)"/>
+          <stop offset="100%" stop-color="var(--bc-dark, #033752)"/>
+        </linearGradient>
+        <linearGradient id="skSh_shHSide1" class="dsa-sk-side-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="var(--bc-mid, #5856d6)"/>
+          <stop offset="100%" stop-color="var(--bc-dark, #033752)"/>
+        </linearGradient>
+        <linearGradient id="skSh_shHSide2" class="dsa-sk-side-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="var(--bc-mid, #5856d6)"/>
+          <stop offset="100%" stop-color="var(--bc-dark, #033752)"/>
+        </linearGradient>
+        <radialGradient id="skSh_shFloor" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="rgba(0,0,0,0.22)"/><stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+        </radialGradient>
+        <filter id="skSh_shBlur" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="2.5"/>
+        </filter>
+      </defs>
+      <ellipse cx="60" cy="294" rx="48" ry="6" fill="url(#skSh_shFloor)"/>
+      <g class="dsa-sk-sh-a">
+        <ellipse cx="60" cy="98" rx="30" ry="3" fill="rgba(0,0,0,0.18)" filter="url(#skSh_shBlur)"/>
+        <path d="M 64 25 L 99 60 L 64 95 L 29 60 Z" fill="var(--bc-deep, #054168)"/>
+        <path d="M 60 20 L 95 55 L 99 60 L 64 25 Z" fill="url(#skSh_shDSide1)"/>
+        <path d="M 95 55 L 60 90 L 64 95 L 99 60 Z" fill="url(#skSh_shDSide2)"/>
+        <path class="dsa-sk-ink" d="M 60 20 L 95 55 L 60 90 L 25 55 Z" fill="var(--bc, #5856d6)"/>
+        <ellipse cx="48" cy="42" rx="8" ry="4" fill="rgba(255,255,255,0.6)" transform="rotate(-45 48 42)"/>
+      </g>
+      <g class="dsa-sk-sh-b">
+        <ellipse cx="60" cy="195" rx="34" ry="3.5" fill="rgba(0,0,0,0.18)" filter="url(#skSh_shBlur)"/>
+        <path d="M 64 119 L 72 143 L 97 143 L 77 158 L 85 182 L 64 168 L 43 182 L 51 158 L 31 143 L 56 143 Z" fill="url(#skSh_shSSide)"/>
+        <path class="dsa-sk-ink" d="M 60 115 L 68 139 L 93 139 L 73 154 L 81 178 L 60 164 L 39 178 L 47 154 L 27 139 L 52 139 Z" fill="var(--bc, #5856d6)"/>
+        <ellipse cx="52" cy="132" rx="6" ry="3" fill="rgba(255,255,255,0.7)" transform="rotate(-30 52 132)"/>
+      </g>
+      <g class="dsa-sk-sh-c">
+        <ellipse cx="60" cy="287" rx="32" ry="3.5" fill="rgba(0,0,0,0.18)" filter="url(#skSh_shBlur)"/>
+        <path d="M 64 215 L 90 230 L 90 260 L 64 275 L 38 260 L 38 230 Z" fill="var(--bc-deep, #4a0820)"/>
+        <path d="M 60 210 L 86 225 L 90 230 L 64 215 Z" fill="url(#skSh_shHSide1)"/>
+        <path d="M 86 225 L 86 255 L 90 260 L 90 230 Z" fill="url(#skSh_shHSide2)"/>
+        <path class="dsa-sk-ink" d="M 60 210 L 86 225 L 86 255 L 60 270 L 34 255 L 34 225 Z" fill="var(--bc, #5856d6)"/>
+        <ellipse cx="48" cy="228" rx="8" ry="3" fill="rgba(255,255,255,0.6)" transform="rotate(-30 48 228)"/>
+      </g>
+    </svg>
 
       </div>
 </div>

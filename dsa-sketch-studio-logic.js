@@ -925,10 +925,12 @@ function updateBrushColors() {
       return;
     }
     const c = getBrushColor(id);
-    if (id === 'pen' || id === 'pencil' || id === 'shape') {
+    if (id === 'pen' || id === 'shape') {
       b.style.setProperty('--bc', c);
       b.style.removeProperty('--bc-light');
       b.style.removeProperty('--bc-deep');
+    } else if (id === 'pencil' || id === 'highlighter') {
+      applyColorVars(b, c);
     } else {
       applyColorVars(b, c);
     }

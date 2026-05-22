@@ -46,7 +46,7 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     if (!document.head.querySelector("link[data-dsa-sketch-studio-css]")) {
         const lk = document.createElement("link");
         lk.rel = "stylesheet";
-        lk.href = "./dsa-sketch-studio.css?v=42";
+        lk.href = "./dsa-sketch-studio.css?v=43";
         lk.dataset.dsaSketchStudioCss = "1";
         document.head.appendChild(lk);
     }
@@ -286,54 +286,62 @@ function dsaWireSketchEditorStudio(editorRoot, onChange, sketchOpts) {
     </svg>
 
       </div>
-      <div class="brush brush--upright" data-brush="pencil" title="Pencil">
+      <div class="brush brush--upright" data-brush="pencil" title="Technical Pen">
         <svg preserveAspectRatio="xMidYMax slice" viewBox="0 0 90 300" shape-rendering="geometricPrecision" aria-hidden="true"><defs>
-        <linearGradient id="skPc_pcWood" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#c9921e"/>
-          <stop offset="35%" stop-color="#f9c440"/>
-          <stop offset="65%" stop-color="#f4d03f"/>
-          <stop offset="100%" stop-color="#a8731a"/>
+        <linearGradient id="skPc_tpUpper" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#b0b0b6"></stop><stop offset="10%" stop-color="#e8e8ec"></stop>
+          <stop offset="25%" stop-color="#ffffff"></stop><stop offset="50%" stop-color="#f6f6f8"></stop>
+          <stop offset="75%" stop-color="#fdfdfe"></stop><stop offset="90%" stop-color="#d8d8dc"></stop>
+          <stop offset="100%" stop-color="#a0a0a6"></stop>
         </linearGradient>
-        <linearGradient id="skPc_pcLead" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#2c2c2e"/><stop offset="50%" stop-color="#5a5a5e"/>
-          <stop offset="100%" stop-color="#1c1c1e"/>
+        <linearGradient id="skPc_tpLower" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#a8a8ae"></stop><stop offset="10%" stop-color="#e0e0e4"></stop>
+          <stop offset="25%" stop-color="#ffffff"></stop><stop offset="50%" stop-color="#f4f4f6"></stop>
+          <stop offset="75%" stop-color="#fcfcfd"></stop><stop offset="90%" stop-color="#d0d0d4"></stop>
+          <stop offset="100%" stop-color="#989ea0"></stop>
         </linearGradient>
-        <linearGradient id="skPc_pcFaceL" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#b8841a"/><stop offset="100%" stop-color="#e8a93a"/>
+        <linearGradient id="skPc_tpMid" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#9c9ca0"></stop><stop offset="10%" stop-color="#d8d8dc"></stop>
+          <stop offset="25%" stop-color="#ffffff"></stop><stop offset="50%" stop-color="#f2f2f4"></stop>
+          <stop offset="75%" stop-color="#fafafb"></stop><stop offset="90%" stop-color="#c8c8cc"></stop>
+          <stop offset="100%" stop-color="#8c8c92"></stop>
         </linearGradient>
-        <linearGradient id="skPc_pcFaceR" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#d49d2a"/><stop offset="100%" stop-color="#a8731a"/>
+        <linearGradient id="skPc_tpMetal" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#5c5c60"></stop><stop offset="25%" stop-color="#b8b8bc"></stop>
+          <stop offset="50%" stop-color="#e8e8ec"></stop><stop offset="75%" stop-color="#a8a8ac"></stop>
+          <stop offset="100%" stop-color="#48484a"></stop>
         </linearGradient>
-        <linearGradient id="skPc_pcFerrule" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#6a6a6e"/><stop offset="15%" stop-color="#b8b8bc"/>
-          <stop offset="35%" stop-color="#e8e8ec"/><stop offset="55%" stop-color="#d4d4d8"/>
-          <stop offset="80%" stop-color="#9a9a9e"/><stop offset="100%" stop-color="#4a4a4e"/>
+        <linearGradient id="skPc_tpYellow" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="var(--bc-light, #fde47a)"></stop>
+          <stop offset="50%" stop-color="var(--bc, #f4d03f)"></stop>
+          <stop offset="100%" stop-color="var(--bc-deep, #d4ac0d)"></stop>
         </linearGradient>
-        <linearGradient id="skPc_pcEraser" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#f5b8b3"/><stop offset="40%" stop-color="#e09c97"/>
-          <stop offset="100%" stop-color="#b87872"/>
+        <linearGradient id="skPc_tpYellowBand" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="var(--bc-deep, #b8930a)"></stop>
+          <stop offset="50%" stop-color="var(--bc, #f4d03f)"></stop>
+          <stop offset="100%" stop-color="var(--bc-light, #fde47a)"></stop>
         </linearGradient>
-        <radialGradient id="skPc_pcEraserHi" cx="30%" cy="20%" r="55%">
-          <stop offset="0%" stop-color="rgba(255,255,255,0.65)"/>
-          <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
-        </radialGradient>
-        <radialGradient id="skPc_pcFloor" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="rgba(0,0,0,0.18)"/><stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+        <radialGradient id="skPc_tpFloor" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="rgba(0,0,0,0.18)"></stop><stop offset="100%" stop-color="rgba(0,0,0,0)"></stop>
         </radialGradient>
       </defs>
-      <ellipse cx="45" cy="294" rx="32" ry="5" fill="url(#skPc_pcFloor)"/>
-      <path d="M 45 14 L 41 42 L 49 42 Z" fill="url(#skPc_pcLead)"/>
-      <path d="M 45 16 L 43 40 L 45 40 Z" fill="rgba(255,255,255,0.3)"/>
-      <path class="dsa-sk-ink" d="M 41 42 L 27 80 L 35 80 L 43 42 Z" fill="var(--bc, #ff3b30)"/>
-      <path class="dsa-sk-body" d="M 43 42 L 35 80 L 55 80 L 47 42 Z" fill="url(#skPc_pcWood)"/>
-      <path class="dsa-sk-ink" d="M 47 42 L 55 80 L 63 80 L 49 42 Z" fill="var(--bc, #ff3b30)"/>
-      <path d="M 27 80 L 27 250 L 35 250 L 35 80 Z" fill="url(#skPc_pcFaceL)"/>
-      <path class="dsa-sk-body" d="M 35 80 L 35 250 L 55 250 L 55 80 Z" fill="url(#skPc_pcWood)"/>
-      <path d="M 55 80 L 55 250 L 63 250 L 63 80 Z" fill="url(#skPc_pcFaceR)"/>
-      <rect x="43" y="82" width="3" height="166" rx="1.5" fill="rgba(255,255,255,0.5)"/>
-      <rect x="26" y="250" width="38" height="22" fill="url(#skPc_pcFerrule)"/>
-      <path d="M 26 272 L 64 272 L 64 285 Q 64 290 56 290 L 34 290 Q 26 290 26 285 Z" fill="url(#skPc_pcEraser)"/>
-      <path d="M 26 272 L 64 272 L 64 285 Q 64 290 56 290 L 34 290 Q 26 290 26 285 Z" fill="url(#skPc_pcEraserHi)"/>
+      <ellipse cx="45" cy="294" rx="35" ry="5" fill="url(#skPc_tpFloor)"></ellipse>
+      <rect class="dsa-sk-ink" x="42" y="20" width="6" height="22" rx="0.5" fill="url(#skPc_tpYellow)"></rect>
+      <rect x="43" y="22" width="1.5" height="18" fill="rgba(255,255,255,0.5)"></rect>
+      <path d="M 38 42 L 52 42 L 50 64 L 40 64 Z" fill="url(#skPc_tpMetal)"></path>
+      <rect x="36" y="62" width="18" height="6" rx="1" fill="url(#skPc_tpMetal)"></rect>
+      <path d="M 28 68 Q 28 66 30 66 L 60 66 Q 62 66 62 68 L 62 112 L 28 112 Z" fill="url(#skPc_tpUpper)"></path>
+      <rect x="25" y="112" width="40" height="8" rx="1" fill="url(#skPc_tpMid)"></rect>
+      <rect x="25" y="112" width="40" height="1" fill="rgba(0,0,0,0.08)"></rect>
+      <rect x="25" y="119" width="40" height="1" fill="rgba(0,0,0,0.08)"></rect>
+      <path d="M 22 120 Q 22 118 24 118 L 66 118 Q 68 118 68 120 L 68 207 Q 68 209 66 209 L 24 209 Q 22 209 22 207 Z" fill="url(#skPc_tpMid)"></path>
+      <path d="M 26 209 L 64 209 L 64 284 Q 64 290 56 290 L 34 290 Q 26 290 26 284 Z" fill="url(#skPc_tpLower)"></path>
+      <rect class="dsa-sk-ink" x="26" y="247" width="38" height="7" fill="url(#skPc_tpYellowBand)"></rect>
+      <rect x="26" y="247" width="38" height="1" fill="rgba(255,255,255,0.4)"></rect>
+      <rect x="32" y="70" width="2.5" height="40" rx="1.25" fill="rgba(255,255,255,0.8)"></rect>
+      <rect x="28" y="122" width="2.5" height="84" rx="1.25" fill="rgba(255,255,255,0.85)"></rect>
+      <rect x="32" y="212" width="2.5" height="72" rx="1.25" fill="rgba(255,255,255,0.8)"></rect>
+      <rect x="56" y="122" width="6" height="84" fill="rgba(0,0,0,0.04)"></rect>
     </svg>
 
       </div>
@@ -1468,10 +1476,12 @@ function updateBrushColors() {
       return;
     }
     const c = getBrushColor(id);
-    if (id === 'pen' || id === 'pencil' || id === 'shape') {
+    if (id === 'pen' || id === 'shape') {
       b.style.setProperty('--bc', c);
       b.style.removeProperty('--bc-light');
       b.style.removeProperty('--bc-deep');
+    } else if (id === 'pencil' || id === 'highlighter') {
+      applyColorVars(b, c);
     } else {
       applyColorVars(b, c);
     }

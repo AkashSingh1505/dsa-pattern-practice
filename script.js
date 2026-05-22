@@ -6990,9 +6990,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     /** JPEG data URL for problem save — always wires editor if the sketch panel was used. */
     function collectSketchDrawingPayload(lookupNameOverride) {
         ensureSketchEditor();
-        if (userClearedSketch) {
-            return "";
-        }
         let drawingPayload = "";
         if (sketchEditorWired) {
             try {
@@ -7003,16 +7000,21 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
                 }
                 const hasInk = typeof scratchApi.getHasInk === "function" && scratchApi.getHasInk();
                 if (hasInk) {
+                    userClearedSketch = false;
                     drawingPayload =
                         typeof scratchApi.toPersistedSketchDataUrl === "function"
                             ? scratchApi.toPersistedSketchDataUrl()
                             : typeof scratchApi.toDataUrl === "function"
                               ? scratchApi.toDataUrl()
                               : "";
+                } else if (userClearedSketch) {
+                    return "";
                 }
             } catch (err) {
                 console.warn("DSA: sketch export failed", err);
             }
+        } else if (userClearedSketch) {
+            return "";
         }
         const lookupName =
             lookupNameOverride != null && String(lookupNameOverride).trim()
@@ -7093,8 +7095,6 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             embedInDialog: true,
             afterClear() {
                 userClearedSketch = true;
-                sketchPanel.hidden = true;
-                syncSketchSlotUi();
             },
             admin: isAdmin,
             onPersist: persistSketchDrawingQuick,
@@ -8021,25 +8021,18 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             solutionsState = dsaSolutionsFromEntry(ent).map((s) => ({ ...dsaNormalizeSolutionItem(s) }));
             difficultySelect.value = dsaNormalizeProblemDifficulty(ent.difficulty);
             importantInput.checked = !!(ent && ent.starred);
-        } else {
-            hintTa.value = "";
-            urlIn.value = "";
-            solutionVideoIn.value = "";
-            setImagePreview("");
-            companyTagsList = [];
-            solutionsState = [];
-            difficultySelect.value = "medium";
-            importantInput.checked = false;
-        }
-        renderSolutionsEditorList();
-        renderCompanyPicker();
-        syncDifficultyPillsFromSelect();
-        syncStarVisual();
-        syncSketchUiFromEntry(ent);
-        if (ent && ent.drawing && String(ent.drawing).trim()) {
-            loadSketchDrawingIntoEditor(String(ent.drawing).trim());
-        } else if (sketchEditorWired) {
-            scratchApi.clear();
+            renderSolutionsEditorList();
+            renderCompanyPicker();
+            syncDifficultyPillsFromSelect();
+            syncStarVisual();
+            syncSketchUiFromEntry(ent);
+            if (ent.drawing && String(ent.drawing).trim()) {
+                loadSketchDrawingIntoEditor(String(ent.drawing).trim());
+                userClearedSketch = false;
+            } else if (sketchEditorWired) {
+                scratchApi.clear();
+                userClearedSketch = false;
+            }
         }
         const docTitleEl = sketchEditorRoot.querySelector("#dsaSkDocTitle");
         if (docTitleEl) {

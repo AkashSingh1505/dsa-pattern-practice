@@ -1543,6 +1543,7 @@ function exportImg() {
   if (!confirm('Clear all drawing?')) return;
   state.paths = []; state.redoStack = [];
   redrawAll(); updateUndoRedo(); syncInkFlag();
+  if (typeof hooks.afterClear === 'function') hooks.afterClear();
 }
 
 
@@ -1817,6 +1818,7 @@ const api = {
     redrawAll();
     updateUndoRedo();
     syncInkFlag();
+    if (typeof hooks.afterClear === 'function') hooks.afterClear();
   },
   zoomIn() {
     state.scale = Math.max(0.3, Math.min(4, state.scale * 1.08));

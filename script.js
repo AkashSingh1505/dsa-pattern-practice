@@ -4248,41 +4248,146 @@ function dsaFillProblemSolutionPane(prob, pane) {
     selectIndex(0);
 }
 
+let _dsaResourceFsEl = null;
+
+function dsaEnsureResourceFullscreenViewer() {
+    if (_dsaResourceFsEl) {
+        return _dsaResourceFsEl;
+    }
+    const root = document.createElement("div");
+    root.className = "dsa-h-res-fs";
+    root.hidden = true;
+    root.setAttribute("role", "dialog");
+    root.setAttribute("aria-modal", "true");
+    root.setAttribute("aria-label", "Resource preview");
+
+    const backdrop = document.createElement("button");
+    backdrop.type = "button";
+    backdrop.className = "dsa-h-res-fs-backdrop";
+    backdrop.setAttribute("aria-label", "Close fullscreen preview");
+
+    const panel = document.createElement("div");
+    panel.className = "dsa-h-res-fs-panel";
+
+    const head = document.createElement("div");
+    head.className = "dsa-h-res-fs-head";
+
+    const titleEl = document.createElement("div");
+    titleEl.className = "dsa-h-res-fs-title";
+    titleEl.id = "dsa-h-res-fs-title";
+
+    const closeBtn = document.createElement("button");
+    closeBtn.type = "button";
+    closeBtn.className = "dsa-h-res-fs-close";
+    closeBtn.setAttribute("aria-label", "Close");
+    closeBtn.title = "Close (Esc)";
+    closeBtn.innerHTML =
+        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+
+    const body = document.createElement("div");
+    body.className = "dsa-h-res-fs-body";
+
+    const img = document.createElement("img");
+    img.className = "dsa-h-res-fs-img";
+    img.alt = "";
+
+    head.appendChild(titleEl);
+    head.appendChild(closeBtn);
+    panel.appendChild(head);
+    body.appendChild(img);
+    panel.appendChild(body);
+    root.appendChild(backdrop);
+    root.appendChild(panel);
+    root.setAttribute("aria-labelledby", titleEl.id);
+
+    function closeFs() {
+        root.hidden = true;
+        document.body.classList.remove("dsa-h-res-fs-open");
+        img.removeAttribute("src");
+        titleEl.textContent = "";
+    }
+
+    backdrop.addEventListener("click", closeFs);
+    closeBtn.addEventListener("click", closeFs);
+    panel.addEventListener("click", (e) => e.stopPropagation());
+    document.addEventListener("keydown", (e) => {
+        if (!root.hidden && e.key === "Escape") {
+            e.preventDefault();
+            closeFs();
+        }
+    });
+
+    root._dsaOpen = (src, label) => {
+        img.src = src;
+        img.alt = label || "Resource";
+        titleEl.textContent = label || "Preview";
+        root.hidden = false;
+        document.body.classList.add("dsa-h-res-fs-open");
+        closeBtn.focus();
+    };
+    root._dsaClose = closeFs;
+
+    document.body.appendChild(root);
+    _dsaResourceFsEl = root;
+    return root;
+}
+
+function dsaOpenResourceFullscreen(src, label) {
+    const s = String(src || "").trim();
+    if (!s) {
+        return;
+    }
+    const viewer = dsaEnsureResourceFullscreenViewer();
+    viewer._dsaOpen(s, label);
+}
+
+function dsaWireResourcePaneImage(img, label) {
+    const wrap = document.createElement("button");
+    wrap.type = "button";
+    wrap.className = "dsa-h-res-sec-img-btn";
+    wrap.setAttribute("aria-label", `View ${label} fullscreen`);
+    wrap.title = "Open fullscreen";
+    wrap.appendChild(img);
+    const hint = document.createElement("span");
+    hint.className = "dsa-h-res-sec-img-hint";
+    hint.setAttribute("aria-hidden", "true");
+    hint.textContent = "Fullscreen";
+    wrap.appendChild(hint);
+    wrap.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dsaOpenResourceFullscreen(img.src, label);
+    });
+    return wrap;
+}
+
+function dsaAppendResourceImageSection(pane, title, src, alt) {
+    const url = String(src || "").trim();
+    if (!url) {
+        return;
+    }
+    const sec = document.createElement("section");
+    sec.className = "dsa-h-res-sec";
+    const h = document.createElement("h5");
+    h.className = "dsa-h-res-sec-title";
+    h.textContent = title;
+    sec.appendChild(h);
+    const im = document.createElement("img");
+    im.src = url;
+    im.alt = alt || title;
+    im.className = "dsa-h-prob-pane-img";
+    im.decoding = "async";
+    sec.appendChild(dsaWireResourcePaneImage(im, title));
+    pane.appendChild(sec);
+}
+
 function dsaFillProblemResourcesPane(prob, pane) {
     pane.innerHTML = "";
     pane.classList.add("dsa-h-prob-pane--resources");
     const drawing = prob && prob.drawing ? String(prob.drawing).trim() : "";
     const image = prob && prob.image ? String(prob.image).trim() : "";
-
-    if (drawing) {
-        const sec = document.createElement("section");
-        sec.className = "dsa-h-res-sec";
-        const h = document.createElement("h5");
-        h.className = "dsa-h-res-sec-title";
-        h.textContent = "Sketch";
-        sec.appendChild(h);
-        const im = document.createElement("img");
-        im.src = drawing;
-        im.alt = "Sketch";
-        im.className = "dsa-h-prob-pane-img";
-        sec.appendChild(im);
-        pane.appendChild(sec);
-    }
-
-    if (image) {
-        const sec = document.createElement("section");
-        sec.className = "dsa-h-res-sec";
-        const h = document.createElement("h5");
-        h.className = "dsa-h-res-sec-title";
-        h.textContent = "Image";
-        sec.appendChild(h);
-        const im = document.createElement("img");
-        im.src = image;
-        im.alt = "Image";
-        im.className = "dsa-h-prob-pane-img";
-        sec.appendChild(im);
-        pane.appendChild(sec);
-    }
+    dsaAppendResourceImageSection(pane, "Sketch", drawing, "Sketch");
+    dsaAppendResourceImageSection(pane, "Image", image, "Image");
 }
 
 function buildProblemListItem(prob, probCtx) {

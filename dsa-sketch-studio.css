@@ -419,29 +419,29 @@
     max-width: calc(100% - 32px);
 }
 
-/* Tray layout — tuned via Layout customizer (--sk-* on .dsa-sketch-studio-mount) */
+/* Tray brush layout */
 .dsa-sketch-studio-mount {
-    --sk-brush-w: 76px;
-    --sk-brush-h: 88px;
+    --sk-brush-w: 44px;
+    --sk-brush-h: 54px;
     --sk-brush-gap: 0px;
-    --sk-brush-sink: -16px;
-    --sk-scroll-pad-top: 16px;
+    --sk-brush-sink: -10px;
+    --sk-scroll-pad-top: 10px;
     --sk-tray-pt: 2px;
     --sk-tray-pr: 8px;
     --sk-tray-pb: 0px;
     --sk-tray-pl: 8px;
     --sk-tray-gap: 0px;
-    --sk-tray-min-h: 84px;
-    --sk-color-btn-size: 44px;
+    --sk-tray-min-h: 56px;
+    --sk-color-btn-size: 30px;
     --sk-color-btn-mb: 2px;
-    --sk-tray-btn-mb: 4px;
-    --sk-divider-h: 42px;
-    --sk-divider-mb: 6px;
+    --sk-tray-btn-mb: 2px;
+    --sk-divider-h: 32px;
+    --sk-divider-mb: 4px;
     --sk-divider-mx: 4px;
-    --sk-brush-hover-lift: -6px;
-    --sk-brush-active-lift: -12px;
-    --sk-brush-active-scale: 1.08;
-    --sk-brush-icon-scale: 1;
+    --sk-brush-hover-lift: -4px;
+    --sk-brush-active-lift: -8px;
+    --sk-brush-active-scale: 1.05;
+    --sk-brush-icon-scale: 0.68;
 }
 
 .dsa-sketch-studio-mount .brushes-scroll {
@@ -757,6 +757,7 @@
     transform-origin: bottom center;
     align-self: flex-end;
     overflow: hidden;
+    box-sizing: border-box;
 }
 
 .dsa-sketch-studio-mount .brush:hover {
@@ -770,21 +771,12 @@
 .dsa-sketch-studio-mount .brush svg {
     width: 100%;
     height: 100%;
-    overflow: visible;
-    transform: rotate(180deg);
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.18));
-}
-
-.dsa-sketch-studio-mount .brush--upright {
-    overflow: visible;
-}
-
-.dsa-sketch-studio-mount .brush--upright svg {
-    width: 100%;
-    height: 100%;
     display: block;
+    flex-shrink: 0;
+    overflow: visible;
     transform: scale(var(--sk-brush-icon-scale));
     transform-origin: bottom center;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.16));
 }
 
 .dsa-sketch-studio-mount .brush-tray .brushes-scroll {
@@ -1637,121 +1629,4 @@
     .dsa-sketch-studio-mount .top-toolbar {
         padding: 12px 14px;
     }
-}
-
-/* Dev: tray layout tuner (⚙ Layout button) */
-.dsa-sketch-studio-mount .layout-customizer {
-    position: fixed;
-    right: 12px;
-    bottom: 120px;
-    z-index: 120;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-}
-
-.dsa-sketch-studio-mount .layout-customizer-toggle {
-    border: none;
-    border-radius: 999px;
-    padding: 8px 14px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    background: #1c1c1e;
-    color: #fff;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
-}
-
-.dsa-sketch-studio-mount .layout-customizer-panel {
-    display: none;
-    margin-top: 8px;
-    width: min(320px, calc(100vw - 24px));
-    max-height: min(70vh, 520px);
-    overflow: auto;
-    background: rgba(255, 255, 255, 0.98);
-    border: 0.5px solid rgba(0, 0, 0, 0.12);
-    border-radius: 14px;
-    padding: 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
-}
-
-.dsa-sketch-studio-mount .layout-customizer.open .layout-customizer-panel {
-    display: block;
-}
-
-.dsa-sketch-studio-mount .layout-customizer-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    font-size: 13px;
-}
-
-.dsa-sketch-studio-mount .layout-customizer-close {
-    border: none;
-    background: transparent;
-    font-size: 20px;
-    line-height: 1;
-    cursor: pointer;
-    color: #666;
-}
-
-.dsa-sketch-studio-mount .layout-customizer-row {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 4px 10px;
-    align-items: center;
-    margin-bottom: 8px;
-    font-size: 11px;
-    color: #333;
-}
-
-.dsa-sketch-studio-mount .layout-customizer-row label {
-    grid-column: 1 / -1;
-    font-weight: 600;
-}
-
-.dsa-sketch-studio-mount .layout-customizer-row input[type="range"] {
-    width: 100%;
-    grid-column: 1 / 2;
-}
-
-.dsa-sketch-studio-mount .layout-customizer-row .layout-val {
-    font-variant-numeric: tabular-nums;
-    min-width: 44px;
-    text-align: right;
-    color: #666;
-}
-
-.dsa-sketch-studio-mount .layout-customizer-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-}
-
-.dsa-sketch-studio-mount .layout-customizer-actions button {
-    flex: 1;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 10px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    background: #007aff;
-    color: #fff;
-}
-
-.dsa-sketch-studio-mount .layout-customizer-actions button:last-child {
-    background: #34c759;
-}
-
-.dsa-sketch-studio-mount .layout-customizer-out {
-    margin: 10px 0 0;
-    padding: 8px;
-    font-size: 10px;
-    line-height: 1.35;
-    background: #f2f2f7;
-    border-radius: 8px;
-    max-height: 140px;
-    overflow: auto;
-    white-space: pre-wrap;
-    word-break: break-all;
 }

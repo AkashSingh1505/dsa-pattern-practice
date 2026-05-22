@@ -120,11 +120,39 @@
     position: absolute;
     inset: 0;
     overflow: hidden;
+    overscroll-behavior: contain;
     touch-action: none;
     background:
         radial-gradient(circle at 20% 20%, rgba(0, 122, 255, 0.03), transparent 50%),
         radial-gradient(circle at 80% 80%, rgba(255, 45, 85, 0.025), transparent 50%),
         #ffffff;
+}
+
+.dsa-sketch-studio-mount .canvas-scroll-sizer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+.dsa-sketch-studio-mount .canvas-wrap.dsa-sk-canvas-zoomed {
+    overflow: auto;
+    touch-action: none;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(60, 60, 67, 0.35) transparent;
+}
+
+.dsa-sketch-studio-mount .canvas-wrap.dsa-sk-canvas-zoomed::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.dsa-sketch-studio-mount .canvas-wrap.dsa-sk-canvas-zoomed::-webkit-scrollbar-thumb {
+    background: rgba(60, 60, 67, 0.28);
+    border-radius: 999px;
 }
 
 .dsa-sketch-studio-mount .canvas-wrap::before {
@@ -401,11 +429,6 @@
     display: flex !important;
 }
 
-/* Mobile: show laser in brush tray when drawing */
-.dsa-sketch-studio-mount.device-mobile.dsa-sk-bottom-draw #dsaSkBtnLaser2 {
-    display: flex;
-}
-
 .dsa-sketch-studio-mount .bottom-area {
     position: absolute;
     bottom: 28px;
@@ -422,10 +445,10 @@
 /* Tray brush layout — matched to reference mock */
 .dsa-sketch-studio-mount {
     --sk-brush-w: 40px;
-    --sk-brush-h: 64px;
+    --sk-brush-h: 58px;
     --sk-brush-gap: 10px;
     --sk-brush-sink: 0px;
-    --sk-scroll-pad-top: 6px;
+    --sk-scroll-pad-top: 0px;
     --sk-tray-pt: 14px;
     --sk-tray-pr: 22px;
     --sk-tray-pb: 10px;
@@ -444,14 +467,14 @@
 
 .dsa-sketch-studio-mount .brushes-scroll {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     gap: var(--sk-brush-gap);
     flex: 0 1 auto;
     min-width: 0;
     overflow-x: auto;
-    overflow-y: visible;
-    padding: var(--sk-scroll-pad-top) 0 0;
-    margin: calc(-1 * var(--sk-scroll-pad-top)) 0 0;
+    overflow-y: hidden;
+    padding: 0;
+    margin: 0;
     scrollbar-width: none;
     -ms-overflow-style: none;
     -webkit-overflow-scrolling: touch;
@@ -736,7 +759,7 @@
     align-items: center;
     gap: var(--sk-tray-gap);
     min-height: var(--sk-tray-min-h);
-    overflow: visible;
+    overflow: hidden;
 }
 
 .dsa-sketch-studio-mount .brush {
@@ -751,10 +774,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-end;
-    transform-origin: bottom center;
-    align-self: flex-end;
-    overflow: visible;
+    justify-content: center;
+    transform-origin: center bottom;
+    align-self: center;
+    overflow: hidden;
     box-sizing: border-box;
 }
 
@@ -778,26 +801,8 @@
 }
 
 .dsa-sketch-studio-mount .brush-tray .brushes-scroll {
-    align-self: flex-end;
+    align-self: center;
     margin-bottom: 0;
-}
-
-/* Reference: pencil tallest, others slightly shorter */
-.dsa-sketch-studio-mount .brush[data-brush="pen"] {
-    height: 72px;
-    flex: 0 0 var(--sk-brush-w);
-}
-
-.dsa-sketch-studio-mount .brush[data-brush="pencil"],
-.dsa-sketch-studio-mount .brush[data-brush="highlighter"] {
-    height: 62px;
-    flex: 0 0 var(--sk-brush-w);
-}
-
-.dsa-sketch-studio-mount .brush[data-brush="eraser"],
-.dsa-sketch-studio-mount .brush[data-brush="shape"] {
-    height: 58px;
-    flex: 0 0 var(--sk-brush-w);
 }
 
 .dsa-sketch-studio-mount .brush-tray .divider {
@@ -1606,8 +1611,7 @@
     max-width: none;
 }
 
-.dsa-sketch-studio-mount.device-pc #dsaSkBackBtnTray,
-.dsa-sketch-studio-mount.device-pc #dsaSkBtnLaser2 {
+.dsa-sketch-studio-mount.device-pc #dsaSkBackBtnTray {
     display: none;
 }
 
@@ -1615,12 +1619,13 @@
     display: flex;
 }
 
-.dsa-sketch-studio-mount.device-mobile #dsaSkBtnLaser2 {
+/* Mobile: embedded in problem dialog — compact card, no top toolbar chrome */
+.dsa-sketch-studio-mount.device-mobile.dsa-sk-embed-dialog .sketch-studio.minimized .top-toolbar {
     display: none;
 }
 
-.dsa-sketch-studio-mount.device-mobile.dsa-sk-bottom-draw #dsaSkBtnLaser2 {
-    display: flex;
+.dsa-sketch-studio-mount.device-mobile.dsa-sk-embed-dialog .sketch-studio.minimized .bottom-area {
+    bottom: 16px;
 }
 
 /* Mobile draw tray: 3 brushes visible, scroll for the other 2 */

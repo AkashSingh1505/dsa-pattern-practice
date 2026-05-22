@@ -335,6 +335,56 @@ function fitCanvas() {
   applyCanvasTransform();
   redrawAll();
   syncLaserCanvas();
+  syncCanvasScrollChrome();
+}
+
+const ZOOM_SCROLL_EPS = 1.001;
+let canvasScrollSyncing = false;
+
+function syncCanvasScrollChrome() {
+  const wrap = $('dsaSkCanvasWrap');
+  const sizer = $('dsaSkCanvasScrollSizer');
+  if (!wrap) return;
+  const zoomed = state.scale > ZOOM_SCROLL_EPS;
+  wrap.classList.toggle('dsa-sk-canvas-zoomed', zoomed);
+  if (!sizer) return;
+  if (!zoomed) {
+    sizer.style.width = '0';
+    sizer.style.height = '0';
+    canvasScrollSyncing = true;
+    wrap.scrollLeft = 0;
+    wrap.scrollTop = 0;
+    canvasScrollSyncing = false;
+    return;
+  }
+  const ww = wrap.clientWidth;
+  const wh = wrap.clientHeight;
+  sizer.style.width = Math.ceil(ww * state.scale) + 'px';
+  sizer.style.height = Math.ceil(wh * state.scale) + 'px';
+}
+
+function panToCanvasScroll() {
+  const wrap = $('dsaSkCanvasWrap');
+  if (!wrap || state.scale <= ZOOM_SCROLL_EPS) return;
+  const maxL = Math.max(0, wrap.scrollWidth - wrap.clientWidth);
+  const maxT = Math.max(0, wrap.scrollHeight - wrap.clientHeight);
+  canvasScrollSyncing = true;
+  wrap.scrollLeft = Math.max(0, Math.min(maxL, maxL / 2 - state.panX));
+  wrap.scrollTop = Math.max(0, Math.min(maxT, maxT / 2 - state.panY));
+  canvasScrollSyncing = false;
+}
+
+function canvasScrollToPan() {
+  const wrap = $('dsaSkCanvasWrap');
+  if (!wrap || state.scale <= ZOOM_SCROLL_EPS || canvasScrollSyncing) return;
+  const maxL = Math.max(0, wrap.scrollWidth - wrap.clientWidth);
+  const maxT = Math.max(0, wrap.scrollHeight - wrap.clientHeight);
+  state.panX = maxL / 2 - wrap.scrollLeft;
+  state.panY = maxT / 2 - wrap.scrollTop;
+  const t = `translate(calc(-50% + ${state.panX}px), calc(-50% + ${state.panY}px)) scale(${state.scale})`;
+  canvas.style.transform = t;
+  laserCanvas.style.transform = t;
+  if (eraserActive()) updateEraserCursorSize();
 }
 
 function applyCanvasTransform() {
@@ -342,6 +392,8 @@ function applyCanvasTransform() {
   canvas.style.transform = t;
   laserCanvas.style.transform = t;
   if (eraserActive()) updateEraserCursorSize();
+  syncCanvasScrollChrome();
+  panToCanvasScroll();
 }
 
 function syncLaserCanvas() {
@@ -351,7 +403,9 @@ function syncLaserCanvas() {
   laserCanvas.style.height = canvas.style.height;
 }
 function resetZoom() {
-  state.scale = 1; state.panX = 0; state.panY = 0;
+  state.scale = 1;
+  state.panX = 0;
+  state.panY = 0;
   applyCanvasTransform();
   $('dsaSkMenuDropdown').classList.remove('show');
 }
@@ -669,7 +723,7 @@ function startLaserLoop() {
 }
 function toggleLaser() {
   state.laser = !state.laser;
-  ['dsaSkBtnLaser', 'dsaSkBtnLaser2', 'dsaSkBtnLaserTop'].forEach((id) => {
+  ['dsaSkBtnLaser', 'dsaSkBtnLaserTop'].forEach((id) => {
     const el = $(id);
     if (el) el.classList.toggle('active', state.laser);
   });
@@ -694,6 +748,9 @@ function toggleLaser() {
 let pinchDist = null;
 let pinchCenter = null;
 const wrap = $('dsaSkCanvasWrap');
+if (wrap) {
+  addL(wrap, 'scroll', () => canvasScrollToPan(), { passive: true });
+}
 
 wrap.addEventListener('touchstart', (e) => {
   if (e.touches.length === 2) {
@@ -730,11 +787,19 @@ wrap.addEventListener('touchmove', (e) => {
 wrap.addEventListener('touchend', () => { pinchDist = null; pinchCenter = null; });
 
 wrap.addEventListener('wheel', (e) => {
-  if (!e.ctrlKey && !e.metaKey) return;
-  e.preventDefault();
-  const factor = e.deltaY > 0 ? 0.92 : 1.08;
-  state.scale = Math.max(0.3, Math.min(4, state.scale * factor));
-  applyCanvasTransform();
+  if (e.ctrlKey || e.metaKey) {
+    e.preventDefault();
+    const factor = e.deltaY > 0 ? 0.92 : 1.08;
+    state.scale = Math.max(0.3, Math.min(4, state.scale * factor));
+    applyCanvasTransform();
+    return;
+  }
+  if (state.scale > ZOOM_SCROLL_EPS) {
+    e.preventDefault();
+    wrap.scrollLeft += e.deltaX;
+    wrap.scrollTop += e.deltaY;
+    canvasScrollToPan();
+  }
 }, { passive: false });
 /* ============ Space-bar + mouse drag to pan on desktop: ============ */
 
@@ -1664,7 +1729,15 @@ document.addEventListener('touchend', () => { imgDrag = null; });
 const studioEl = $('dsaSkStudio');
 studioEl.style.display = 'flex';
 
+if (hooks.embedInDialog) {
+  mount.classList.add('dsa-sk-embed-dialog');
+}
 if (device === 'pc') {
+  studioEl.classList.add('minimized');
+  state.minimized = true;
+  state.tool = 'pencil';
+  activateBrush('pen');
+} else if (hooks.embedInDialog) {
   studioEl.classList.add('minimized');
   state.minimized = true;
   state.tool = 'pencil';
@@ -1725,7 +1798,6 @@ addL($('dsaSkTtGrid'), 'click', (e) => { e.stopPropagation(); toggleTableSetup()
 if (tableGridBtnMobile) addL(tableGridBtnMobile, 'click', (e) => { e.stopPropagation(); toggleTableSetup(); });
 addL($('dsaSkTtAttach'), 'click', () => selectTool('attach'));
 addL($('dsaSkBtnLaserTop'), 'click', () => toggleLaser());
-addL($('dsaSkBtnLaser2'), 'click', () => toggleLaser());
 addL($('dsaSkBackBtnTray'), 'click', () => backToMain());
 addL($('dsaSkColorBtn'), 'click', (e) => toggleColorPicker(e));
 

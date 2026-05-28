@@ -3868,6 +3868,42 @@ function dsaPopulateSolCodeBlock(gutterEl, codeBodyEl, code) {
     return true;
 }
 
+function dsaCopyTextToClipboardFallback(text) {
+    return new Promise((resolve, reject) => {
+        try {
+            const ta = document.createElement("textarea");
+            ta.value = text;
+            ta.setAttribute("readonly", "true");
+            ta.style.cssText = "position:fixed;left:-9999px;top:0;opacity:0";
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            ta.setSelectionRange(0, text.length);
+            const ok = document.execCommand("copy");
+            document.body.removeChild(ta);
+            if (ok) {
+                resolve();
+            } else {
+                reject(new Error("copy failed"));
+            }
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
+/** Clipboard API with execCommand fallback (works on http/file when API is blocked). */
+function dsaCopyTextToClipboard(text) {
+    const t = String(text ?? "");
+    if (!t.trim()) {
+        return Promise.reject(new Error("empty"));
+    }
+    if (typeof navigator !== "undefined" && navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(t).catch(() => dsaCopyTextToClipboardFallback(t));
+    }
+    return dsaCopyTextToClipboardFallback(t);
+}
+
 function dsaEnsureSolutionCodeFullscreenViewer() {
     if (_dsaSolCodeFsEl) {
         return _dsaSolCodeFsEl;
@@ -3953,10 +3989,11 @@ function dsaEnsureSolutionCodeFullscreenViewer() {
     copyBtn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (!fsCurrentCode || !navigator.clipboard) {
+        const text = String(fsCurrentCode || "").trim();
+        if (!text) {
             return;
         }
-        navigator.clipboard.writeText(fsCurrentCode).then(() => {
+        void dsaCopyTextToClipboard(text).then(() => {
             copyBtn.classList.add("copied");
             renderFsCopyBtn("Copied!");
             setTimeout(() => {
@@ -4301,13 +4338,26 @@ function dsaFillProblemSolutionPane(prob, pane) {
         dsaPopulateSolCodeBlock(gutter, codeBody, currentCode);
     }
 
+    function getCopyableCodeText() {
+        const fromState = String(currentCode || "").trim();
+        if (fromState) {
+            return fromState;
+        }
+        const fromDom = (codeBody.innerText || codeBody.textContent || "").trim();
+        if (fromDom && fromDom !== "No code stored for this approach.") {
+            return fromDom;
+        }
+        return "";
+    }
+
     copyBtn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (!currentCode || !navigator.clipboard) {
+        const text = getCopyableCodeText();
+        if (!text) {
             return;
         }
-        navigator.clipboard.writeText(currentCode).then(() => {
+        void dsaCopyTextToClipboard(text).then(() => {
             copyBtn.classList.add("copied");
             renderCopyBtn("Copied!");
             setTimeout(() => {
@@ -6344,7 +6394,7 @@ function dsaGetSiteBrandForSketch() {
  * DSA problem sketch — Sketch Studio UI (dsa-sketch-studio.js) or native fallback (dsa-sketch-native.js). Load before script.js.
  * @param {HTMLElement} editorRoot
  * @param {() => void} onChange
- * @param {{ afterClear?: () => void; admin?: boolean; onPersist?: () => void }} [sketchOpts]
+ * @param {{ afterClear?: () => void; admin?: boolean }} [sketchOpts]
  */
 function dsaWireSketchEditor(editorRoot, onChange, sketchOpts) {
     if (typeof dsaWireSketchEditorStudio === "function") {
@@ -6544,7 +6594,9 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     const isRenameNode = !!renameTargetPathKey;
     const isEditProblem = !!(editQuestionName || editUserNodeId);
     let userClearedSketch = false;
-    /** Latest JPEG export while the modal is open — survives name sync that must not wipe the canvas. */
+    /** True after any sketch edit until modal Save succeeds. */
+    let sketchDraftDirty = false;
+    /** Latest JPEG export while the modal is open — used only when collecting payload on Save. */
     let lastSketchExport = "";
     let syncEntryKey = "";
 
@@ -7252,6 +7304,36 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
     let scratchApi = dsaStubSketchApi();
     let sketchEditorWired = false;
 
+    function hasUnsavedSketchInEditor() {
+        if (userClearedSketch) {
+            return true;
+        }
+        if (sketchEditorWired && typeof scratchApi.getHasInk === "function" && scratchApi.getHasInk()) {
+            return true;
+        }
+        return sketchDraftDirty;
+    }
+
+    function onSketchEditorChange() {
+        sketchDraftDirty = true;
+        if (!sketchEditorWired) {
+            return;
+        }
+        try {
+            const hasInk = typeof scratchApi.getHasInk === "function" && scratchApi.getHasInk();
+            if (!hasInk) {
+                if (userClearedSketch) {
+                    lastSketchExport = "";
+                }
+                return;
+            }
+            userClearedSketch = false;
+        } catch (err) {
+            console.warn("DSA: sketch editor change failed", err);
+        }
+    }
+
+    /** JPEG export for Save only — not called on every stroke. */
     function snapshotSketchExport() {
         if (!sketchEditorWired) {
             return "";
@@ -7323,74 +7405,19 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
         return drawingPayload;
     }
 
-    /** Save sketch only (JPEG) — optional hook; problem Save uses collectSketchDrawingPayload. */
-    function persistSketchDrawingQuick() {
-        if (!isAdmin) {
-            return;
-        }
-        const name = nameIn.value.trim();
-        if (!name || parentKey === "__DSA_META__") {
-            return;
-        }
-        const drawingPayload = collectSketchDrawingPayload();
-        const lookupName = isEditProblem && editQuestionName ? editQuestionName : name;
-        const entForId = dsaResolveQuestionForModal(parentKey, lookupName, editUserNodeId);
-        const persistId =
-            (editUserNodeId && String(editUserNodeId).trim()) ||
-            (entForId && entForId.id ? String(entForId.id).trim() : "");
-        const solPayload = solutionsState
-            .map((s) => dsaNormalizeSolutionItem(s))
-            .filter(
-                (s) =>
-                    s &&
-                    (String(s.code || "").trim() ||
-                        s.timeComplexity ||
-                        s.spaceComplexity ||
-                        dsaNormalizeSolutionCategory(s.approach)),
-            );
-        const firstCode = solPayload.find((s) => String(s.code || "").trim());
-        const upsertPayload = {
-            id: persistId || undefined,
-            parentKey,
-            name,
-            url: urlIn.value.trim(),
-            comment: "",
-            hint: hintTa.value,
-            code: firstCode ? String(firstCode.code) : "",
-            solutions: solPayload,
-            drawing: drawingPayload,
-            image: imageDataUrl,
-            companies: dsaNormalizeCompaniesArray(companyTagsList),
-            solutionVideoUrl: solutionVideoIn.value.trim(),
-            solutionTimeComplexity: "",
-            solutionSpaceComplexity: "",
-            solutionCategory: "",
-            starred: importantInput.checked === true,
-            done: !!(entForId && entForId.done),
-            difficulty: dsaNormalizeProblemDifficulty(difficultySelect.value),
-            nodeCategorySlug: "PROBLEM",
-        };
-        if (graphBodyCats.length && graphBodyCatSelect && !graphBodyCatFs.hidden) {
-            upsertPayload.graphCategoryId = graphBodyCatSelect.value.trim();
-        }
-        dsaUpsertUserQuestionNode(upsertPayload);
-        userClearedSketch = false;
-        void dsaFlushDsaCmsSync();
-    }
-
     function ensureSketchEditor() {
         if (sketchEditorWired) {
             return;
         }
         sketchEditorWired = true;
-        scratchApi = dsaWireSketchEditor(sketchEditorRoot, snapshotSketchExport, {
+        scratchApi = dsaWireSketchEditor(sketchEditorRoot, onSketchEditorChange, {
             embedInDialog: true,
             afterClear() {
                 userClearedSketch = true;
                 lastSketchExport = "";
+                sketchDraftDirty = true;
             },
             admin: isAdmin,
-            onPersist: persistSketchDrawingQuick,
         });
     }
 
@@ -8322,18 +8349,23 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             renderCompanyPicker();
             syncDifficultyPillsFromSelect();
             syncStarVisual();
-            syncSketchUiFromEntry(ent);
-            if (ent.drawing && String(ent.drawing).trim()) {
-                loadSketchDrawingIntoEditor(String(ent.drawing).trim());
-                userClearedSketch = false;
-                lastSketchExport = String(ent.drawing).trim();
-            } else if (sketchEditorWired) {
-                const hasInk = typeof scratchApi.getHasInk === "function" && scratchApi.getHasInk();
-                if (!hasInk) {
-                    scratchApi.clear();
-                    lastSketchExport = "";
+            if (hasUnsavedSketchInEditor()) {
+                syncSketchUiFromEntry(ent);
+            } else {
+                sketchDraftDirty = false;
+                syncSketchUiFromEntry(ent);
+                if (ent.drawing && String(ent.drawing).trim()) {
+                    loadSketchDrawingIntoEditor(String(ent.drawing).trim());
+                    userClearedSketch = false;
+                    lastSketchExport = String(ent.drawing).trim();
+                } else if (sketchEditorWired) {
+                    const hasInk = typeof scratchApi.getHasInk === "function" && scratchApi.getHasInk();
+                    if (!hasInk) {
+                        scratchApi.clear();
+                        lastSketchExport = "";
+                    }
+                    userClearedSketch = false;
                 }
-                userClearedSketch = false;
             }
         }
         const docTitleEl = sketchEditorRoot.querySelector("#dsaSkDocTitle");
@@ -8896,11 +8928,17 @@ function dsaOpenCustomizeUnifiedModal(parentKey, refresh, opts) {
             upsertPayload.graphCategoryId = graphBodyCatSelect.value.trim();
         }
         dsaUpsertUserQuestionNode(upsertPayload);
+        sketchDraftDirty = false;
+        userClearedSketch = false;
+        if (drawingPayload) {
+            lastSketchExport = drawingPayload;
+        } else {
+            lastSketchExport = "";
+        }
         if (fromFullscreen) {
             if (typeof scratchApi.exitFullscreen === "function") {
                 scratchApi.exitFullscreen();
             }
-            userClearedSketch = false;
             syncNameToEntry();
         } else {
             close();

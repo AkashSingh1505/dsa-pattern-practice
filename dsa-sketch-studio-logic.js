@@ -96,12 +96,20 @@ function commitOpenStroke() {
   redrawAll();
 }
 
+let flushForPersistDepth = 0;
+
 function flushForPersist() {
-  if (textOverlay && textOverlay.classList.contains('show')) confirmText();
-  if (tableOverlay && tableOverlay.classList.contains('show')) confirmTable();
-  if (imageOverlay && imageOverlay.classList.contains('show')) confirmImage();
-  commitOpenStroke();
-  redrawAll();
+  if (flushForPersistDepth > 0) return;
+  flushForPersistDepth += 1;
+  try {
+    if (textOverlay && textOverlay.classList.contains('show')) confirmText();
+    if (tableOverlay && tableOverlay.classList.contains('show')) confirmTable();
+    if (imageOverlay && imageOverlay.classList.contains('show')) confirmImage();
+    commitOpenStroke();
+    redrawAll();
+  } finally {
+    flushForPersistDepth -= 1;
+  }
 }
 
 function syncInkFlag() {
@@ -298,7 +306,7 @@ function exportRenderedCanvas() {
   }
   state.paths.forEach((p) => {
     tctx.save();
-    drawPathOn(tctx, p);
+    drawPathOnExport(tctx, p);
     tctx.restore();
   });
   return tmp;
@@ -608,6 +616,57 @@ function drawPathOn(c, p) {
   } else if (p.points && p.points.length) {
     if (p.brush === 'eraser' && p.points.length === 1) {
       drawEraserDabOn(c, p, p.points[0]);
+    } else {
+      applyStyleOn(c, p);
+      strokePathOn(c, p.points);
+    }
+  }
+}
+
+const SKETCH_EXPORT_BG = '#ffffff';
+
+function applyStyleOnExport(c, p) {
+  if (p.brush === 'eraser') {
+    c.globalCompositeOperation = 'source-over';
+    c.globalAlpha = 1;
+    c.strokeStyle = SKETCH_EXPORT_BG;
+    c.fillStyle = SKETCH_EXPORT_BG;
+    c.lineWidth = p.size * 5;
+    c.lineCap = 'round';
+    c.lineJoin = 'round';
+    return;
+  }
+  applyStyleOn(c, p);
+}
+
+function drawEraserDabOnExport(c, p, pt) {
+  const r = (p.size || 1) * 2.5;
+  c.save();
+  c.globalCompositeOperation = 'source-over';
+  c.globalAlpha = 1;
+  c.fillStyle = SKETCH_EXPORT_BG;
+  c.beginPath();
+  c.arc(pt.x, pt.y, r, 0, Math.PI * 2);
+  c.fill();
+  c.restore();
+}
+
+function drawPathOnExport(c, p) {
+  if (p.type === 'image' && p.img) {
+    c.drawImage(p.img, p.x, p.y, p.w, p.h);
+  } else if (p.type === 'table') {
+    drawTableOn(c, p);
+  } else if (p.type === 'text') {
+    drawTextOn(c, p);
+  } else if (p.brush === 'shape') {
+    applyStyleOnExport(c, p);
+    drawShapeOn(c, p);
+  } else if (p.points && p.points.length) {
+    if (p.brush === 'eraser' && p.points.length === 1) {
+      drawEraserDabOnExport(c, p, p.points[0]);
+    } else if (p.brush === 'eraser') {
+      applyStyleOnExport(c, p);
+      strokePathOn(c, p.points);
     } else {
       applyStyleOn(c, p);
       strokePathOn(c, p.points);
@@ -1158,19 +1217,23 @@ function startTable() {
   renderTable();
   tableOverlay.classList.add('show');
 }
+/** CSS grid lines only — avoids creating rows×cols DOM nodes (hangs on large tables). */
 function renderTableGrid() {
   tableOverlay.style.left = tableState.x + 'px';
   tableOverlay.style.top = tableState.y + 'px';
   tableOverlay.style.width = tableState.w + 'px';
   tableOverlay.style.height = tableState.h + 'px';
-  tableGrid.style.gridTemplateColumns = `repeat(${tableState.cols}, 1fr)`;
-  tableGrid.style.gridTemplateRows = `repeat(${tableState.rows}, 1fr)`;
+  const cols = Math.max(1, tableState.cols);
+  const rows = Math.max(1, tableState.rows);
   tableGrid.innerHTML = '';
-  for (let i = 0; i < tableState.rows * tableState.cols; i++) {
-    const cell = document.createElement('div');
-    cell.className = 'table-cell';
-    tableGrid.appendChild(cell);
-  }
+  tableGrid.style.gridTemplateColumns = '';
+  tableGrid.style.gridTemplateRows = '';
+  tableGrid.style.border = '1px solid #1c1c1e';
+  tableGrid.style.backgroundImage = [
+    'linear-gradient(to right, #1c1c1e 1px, transparent 1px)',
+    'linear-gradient(to bottom, #1c1c1e 1px, transparent 1px)',
+  ].join(',');
+  tableGrid.style.backgroundSize = `${100 / cols}% ${100 / rows}%`;
 }
 function renderTable() {
   renderTableGrid();
@@ -1225,12 +1288,14 @@ function applyTableColsInput() {
   tableState.cols = n;
   renderTableGrid();
 }
-function commitTableDimInputs() {
+function commitTableDimInputs(opts) {
   const rowsEl = tableSetupPanel?.querySelector('#dsaSkTableRowsInput');
   const colsEl = tableSetupPanel?.querySelector('#dsaSkTableColsInput');
   if (rowsEl) tableState.rows = clampTableDim(rowsEl.value);
   if (colsEl) tableState.cols = clampTableDim(colsEl.value);
-  renderTableGrid();
+  if (!opts || !opts.skipOverlayRender) {
+    renderTableGrid();
+  }
   syncTableDimUi();
 }
 function applyTableInputs() {
@@ -1338,25 +1403,38 @@ function cancelTable() {
   closeTableSetup();
   if (state.tool === 'grid') state.tool = null;
 }
+let tableConfirmInFlight = false;
+
 function confirmTable() {
-  const wrapEl = $('dsaSkCanvasWrap');
-  const cvRect = canvas.getBoundingClientRect();
-  const wrRect = wrapEl.getBoundingClientRect();
-  const sx = canvas.width / cvRect.width;
-  const sy = canvas.height / cvRect.height;
-  state.paths.push({
-    type: 'table',
-    x: (tableState.x + wrRect.left - cvRect.left) * sx,
-    y: (tableState.y + wrRect.top - cvRect.top) * sy,
-    w: tableState.w * sx, h: tableState.h * sy,
-    rows: tableState.rows, cols: tableState.cols,
-    color: '#1c1c1e', size: 2
-  });
-  state.redoStack = [];
-  updateUndoRedo();
-  redrawAll();
-  syncInkFlag();
-  cancelTable();
+  if (tableConfirmInFlight) return;
+  tableConfirmInFlight = true;
+  try {
+    const wrapEl = $('dsaSkCanvasWrap');
+    const cvRect = canvas.getBoundingClientRect();
+    const wrRect = wrapEl.getBoundingClientRect();
+    const cw = cvRect.width > 0 ? cvRect.width : 1;
+    const ch = cvRect.height > 0 ? cvRect.height : 1;
+    const sx = canvas.width / cw;
+    const sy = canvas.height / ch;
+    state.paths.push({
+      type: 'table',
+      x: (tableState.x + wrRect.left - cvRect.left) * sx,
+      y: (tableState.y + wrRect.top - cvRect.top) * sy,
+      w: tableState.w * sx,
+      h: tableState.h * sy,
+      rows: tableState.rows,
+      cols: tableState.cols,
+      color: '#1c1c1e',
+      size: 2,
+    });
+    state.redoStack = [];
+    updateUndoRedo();
+    cancelTable();
+    redrawAll();
+    syncInkFlag();
+  } finally {
+    tableConfirmInFlight = false;
+  }
 }
 let tDrag = null;
 tableOverlay.addEventListener('mousedown', (e) => {
@@ -1503,9 +1581,9 @@ function confirmText() {
   });
   state.redoStack = [];
   updateUndoRedo();
+  cancelText();
   redrawAll();
   syncInkFlag();
-  cancelText();
 }
 function findTextAt(x, y) {
   for (let i = state.paths.length - 1; i >= 0; i--) {
@@ -1670,9 +1748,9 @@ function confirmImage() {
     });
     state.redoStack = [];
     updateUndoRedo();
+    cancelImage();
     redrawAll();
     syncInkFlag();
-    cancelImage();
   };
   img.onload = finalize;
   img.onerror = () => cancelImage();
@@ -1816,7 +1894,7 @@ if (tableDiscardBtn) {
 if (tableDoneBtn) {
   addL(tableDoneBtn, 'click', (e) => {
     e.stopPropagation();
-    commitTableDimInputs();
+    commitTableDimInputs({ skipOverlayRender: true });
     confirmTable();
   });
 }

@@ -8508,7 +8508,10 @@ body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
     text-transform: none !important;
     letter-spacing: 0.01em !important;
     flex: 1 1 auto !important;
+    min-width: 0 !important;
     text-align: center !important;
+    pointer-events: none !important;
+    user-select: none !important;
 }
 
 .dsa-h-problems-card .sol-code-header-actions {
@@ -8516,6 +8519,9 @@ body.dsa-shell-layout.dsa-page .navbar--menu-open .nav-mobile-toggle {
     align-items: center !important;
     gap: 6px !important;
     flex-shrink: 0 !important;
+    position: relative !important;
+    z-index: 2 !important;
+    pointer-events: auto !important;
 }
 
 .dsa-h-problems-card .sol-code-copy,

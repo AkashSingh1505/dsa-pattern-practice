@@ -229,6 +229,18 @@ function dsaWireSketchEditorNative(editorRoot, onChange, sketchOpts) {
         ctx.restore();
     }
 
+    /** Flatten transparent eraser holes onto white before JPEG (JPEG has no alpha). */
+    function flattenCanvasForJpegExport() {
+        const tmp = document.createElement("canvas");
+        tmp.width = canvas.width;
+        tmp.height = canvas.height;
+        const t = tmp.getContext("2d");
+        t.fillStyle = "#ffffff";
+        t.fillRect(0, 0, tmp.width, tmp.height);
+        t.drawImage(canvas, 0, 0);
+        return tmp;
+    }
+
     function pushUndoSnapshot() {
         try {
             const snap = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -670,7 +682,7 @@ function dsaWireSketchEditorNative(editorRoot, onChange, sketchOpts) {
         },
         toPersistedSketchDataUrl() {
             try {
-                return canvas.toDataURL("image/jpeg", 0.82);
+                return flattenCanvasForJpegExport().toDataURL("image/jpeg", 0.82);
             } catch (_) {
                 try {
                     return canvas.toDataURL("image/png");

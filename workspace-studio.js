@@ -577,6 +577,7 @@
                     mastery: 0,
                     diff: "Medium",
                     category: "ds",
+                    mindPath: String(ds.id != null ? ds.id : dsKey),
                 };
                 edges.push(["core", dsKey, 1]);
                 parentForTopics = dsKey;
@@ -590,6 +591,10 @@
                 var cnt = chChildren.length || probs.length;
                 var isLeafProblems = probs.length > 0 && chChildren.length === 0;
                 var hexCh = hexForMindCategory(pickMindGc(ch));
+                var topicPath =
+                    (String(ds.id != null ? ds.id : "ds" + i) +
+                        "::" +
+                        String(ch.name != null ? ch.name : "Topic")).trim();
                 nodes[tKey] = {
                     id: tKey,
                     name: String(ch.name != null ? ch.name : "Topic").slice(0, 18),
@@ -600,6 +605,7 @@
                     mastery: 0,
                     diff: "Easy",
                     category: isLeafProblems ? "problem" : "pattern",
+                    mindPath: topicPath,
                 };
                 edges.push([parentForTopics, tKey, j < 5 ? 1 : 0]);
             });
@@ -618,7 +624,57 @@
         render();
         applyView();
         refreshOrbitalLegendBot();
+        if (typeof window.wsRenderFileTree === "function") {
+            window.wsRenderFileTree();
+        }
         return true;
+    }
+
+    /** File explorer → focus nearest orbital node for a mind-map path (`ds::topic::…`). */
+    function navigateMindPath(path) {
+        var p = String(path || "").trim();
+        if (!p || !S.nodes) {
+            return;
+        }
+        var exact = null;
+        var prefixBest = null;
+        var prefixLen = 0;
+        Object.keys(S.nodes).forEach(function (nid) {
+            var n = S.nodes[nid];
+            if (!n || n.isCore) {
+                return;
+            }
+            var mp = n.mindPath ? String(n.mindPath) : "";
+            if (mp === p) {
+                exact = nid;
+                return;
+            }
+            if (mp && p.indexOf(mp) === 0 && mp.length > prefixLen) {
+                prefixBest = nid;
+                prefixLen = mp.length;
+            }
+        });
+        var target = exact || prefixBest;
+        if (!target) {
+            var parts = p.split("::").filter(Boolean);
+            var want = parts.length ? parts[parts.length - 1].toLowerCase() : "";
+            Object.keys(S.nodes).forEach(function (nid) {
+                var n = S.nodes[nid];
+                if (!n || n.isCore) {
+                    return;
+                }
+                if (String(n.name || "").toLowerCase() === want) {
+                    target = nid;
+                }
+            });
+        }
+        if (target && S.nodes[target]) {
+            setFocus(target);
+            advanceSelection(target);
+            render();
+            sidebar();
+            inspector();
+        }
     }
 
     function curve(a, b) {
@@ -1828,6 +1884,7 @@
         setMode: setMode,
         relayout: relayout,
         syncFromMindMapHierarchy: syncFromMindMapHierarchy,
+        navigateMindPath: navigateMindPath,
         refreshLegend: refreshOrbitalLegendBot,
         getState: function () {
             return S;

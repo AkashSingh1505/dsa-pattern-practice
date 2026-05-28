@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="./styles.css?v=37" />
 <link rel="stylesheet" href="./dsa-index-shell.css?v=20" />
 <link rel="stylesheet" href="./auth/admin-workspace.css?v=7" />
-<link rel="stylesheet" href="./workspace-chrome.css?v=13" />
+<link rel="stylesheet" href="./workspace-chrome.css?v=14" />
 </head>
 <body class="mode-customize ws-repr-orbital">
 <div id="admin-dsa-map-toolbar-host" class="ws-offscreen-toolbar-host" data-dsa-index-toolbar-slots="1" aria-hidden="true">
@@ -47,23 +47,22 @@
 </div>
 <div class="pv-body">
   <div class="pv-side">
-    <div id="side-orb">
-    <h6>// nodes <span class="add" id="add-pattern">+</span></h6>
-    <div id="patterns"></div>
-    <h6 style="margin-top:24px">// categories</h6>
-    <div class="item"><span class="d ds"></span> Data Structure <span class="count" id="cnt-ds">0</span></div>
-    <div class="item"><span class="d pattern"></span> Pattern <span class="count" id="cnt-pat">0</span></div>
-    <div class="item"><span class="d problem"></span> Problem <span class="count" id="cnt-prob">0</span></div>
-    <h6 style="margin-top:24px">// difficulty</h6>
-    <div class="item"><span class="d ds" style="color:#7bbf3a"></span> Easy <span class="count" id="cnt-easy">0</span></div>
-    <div class="item"><span class="d ds" style="color:var(--c-amber)"></span> Medium <span class="count" id="cnt-med">0</span></div>
-    <div class="item"><span class="d ds" style="color:var(--c-red)"></span> Hard <span class="count" id="cnt-hard">0</span></div>
-    <h6 style="margin-top:24px">// overall</h6>
-    <div style="padding:8px 10px;font-family:var(--mono);font-size:11px;color:var(--ink-3);">Avg mastery <b style="color:var(--ink);float:right" id="avg-mastery">0%</b></div>
+    <div class="ws-file-nav">
+      <h6>// explorer</h6>
+      <input type="search" class="ws-file-nav-search" id="ws-file-nav-search" placeholder="Filter nodes…" autocomplete="off" spellcheck="false" aria-label="Filter graph nodes" />
+      <div id="ws-graph-tree" class="ws-file-tree" role="tree" aria-label="Graph hierarchy"></div>
     </div>
-    <div id="side-lin" style="display:none">
-      <h6>// graph</h6>
-      <div id="ws-graph-tree"></div>
+    <div class="ws-side-foot" id="ws-side-foot">
+      <h6>// categories</h6>
+      <div class="item ws-foot-stat"><span class="d ds"></span> Data Structure <span class="count" id="cnt-ds">0</span></div>
+      <div class="item ws-foot-stat"><span class="d pattern"></span> Pattern <span class="count" id="cnt-pat">0</span></div>
+      <div class="item ws-foot-stat"><span class="d problem"></span> Problem <span class="count" id="cnt-prob">0</span></div>
+      <h6 style="margin-top:16px">// difficulty</h6>
+      <div class="item ws-foot-stat"><span class="d ds" style="color:#7bbf3a"></span> Easy <span class="count" id="cnt-easy">0</span></div>
+      <div class="item ws-foot-stat"><span class="d ds" style="color:var(--c-amber)"></span> Medium <span class="count" id="cnt-med">0</span></div>
+      <div class="item ws-foot-stat"><span class="d ds" style="color:var(--c-red)"></span> Hard <span class="count" id="cnt-hard">0</span></div>
+      <h6 style="margin-top:16px">// overall</h6>
+      <div class="ws-overall-stat">Avg mastery <b id="avg-mastery">0%</b></div>
     </div>
   </div>
   <div class="pv-canvas-wrap" id="pv-canvas-wrap">
@@ -155,7 +154,7 @@
 <script src="./dsa-solution-sheet-pro.js?v=3"></script>
 <script src="./dsa-company-selector.js?v=5"></script>
 <script src="./script.js?v=76"></script>
-<script src="./workspace-studio.js?v=26"></script>
+<script src="./workspace-studio.js?v=27"></script>
 <script>
 (function(){
 window.dsaHasCustomizeGraphAccess=function(){return true;};
@@ -174,8 +173,7 @@ function setRepr(repr){
   document.querySelectorAll("#ws-repr-tabs .pv-tab").forEach(function(x){
     x.classList.toggle("active",x.getAttribute("data-repr")===repr);
   });
-  $("side-orb").style.display=orb?"":"none";
-  $("side-lin").style.display=orb?"none":"";
+  wsRenderFileTree();
   var mt=document.querySelector("#tabs .pv-tab.active");
   var mode=(mt&&mt.getAttribute("data-mode"))||"customize";
   if(mode==="json"){mode="customize";}
@@ -226,45 +224,230 @@ function bootGraph(){
   if(typeof dsaMergeGraphMount==="function")dsaMergeGraphMount(WS_MOUNT);
   if(typeof loadDsaPatternsPage!=="function"){wsMsg("script.js missing","err");return;}
   loadDsaPatternsPage({graphPreview:true,mount:WS_MOUNT});
-  setTimeout(function(){syncPvFromAdmin();wsRenderTree();if(window.ORB&&typeof ORB.syncFromMindMapHierarchy==="function")ORB.syncFromMindMapHierarchy();},120);
+  setTimeout(function(){syncPvFromAdmin();wsRenderFileTree();if(window.ORB&&typeof ORB.syncFromMindMapHierarchy==="function")ORB.syncFromMindMapHierarchy();},120);
 }
 
 function wsGetH(){
-  try{if(typeof dsaGetMindMapHierarchyJsonString!=="function")return[];
-  var a=JSON.parse(dsaGetMindMapHierarchyJsonString());return Array.isArray(a)?a:[];}catch(e){return[];}
+  try{
+    if(typeof dsaGetMindMapHierarchyJsonString!=="function")return[];
+    var raw=typeof dsaGetMindMapHierarchyMergedJsonString==="function"?dsaGetMindMapHierarchyMergedJsonString():dsaGetMindMapHierarchyJsonString();
+    var a=JSON.parse(raw);return Array.isArray(a)?a:[];
+  }catch(e){return[];}
 }
 function wsGetDsTree(ds){
   if(!ds)return[];
   if(Array.isArray(ds.tree)&&ds.tree.length)return ds.tree;
-  return(ds.patterns||[]).map(function(p){return{name:p.name,problems:p.problems||[],children:p.children||[]};});
+  return(ds.patterns||[]).map(function(p){return Object.assign({},p,{children:p.children||[],problems:p.problems||[]});});
 }
-function wsAppendRows(host,nodes,parentPath,depth){
-  (nodes||[]).forEach(function(node){
-    var name=String(node.name||"");
-    var path=parentPath+"::"+name;
-    var kids=Array.isArray(node.children)?node.children:[];
-    var row=document.createElement("div");row.className="item";row.setAttribute("data-path",path);
-    row.innerHTML='<span class="d pattern"></span> '+name.replace(/</g,"&lt;")+' <span class="count">'+(kids.length||((node.problems||[]).length))+"</span>";
-    row.onclick=function(){var vp=$("admin-dsa-hierarchy-root");if(!vp)return;var el=vp.querySelector('[data-dsa-path="'+path.replace(/"/g,'\\"')+'"]');if(el)el.scrollIntoView({behavior:"smooth",block:"nearest"});};
-    host.appendChild(row);
-    if(kids.length){wsAppendRows(host,kids,path,depth+1);}
-  });
+function wsEsc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");}
+function wsNodeSlug(obj,ctx){
+  if(!obj||typeof obj!=="object")return ctx==="problem"?"PROBLEM":ctx==="ds"?"ROOT":"TOPIC";
+  var s=obj.nodeCategorySlug!=null?String(obj.nodeCategorySlug).trim().toUpperCase():"";
+  if(s)return s;
+  if(ctx==="problem")return"PROBLEM";
+  if(ctx==="ds")return"ROOT";
+  if(ctx==="patterns")return"PATTERN";
+  return"TOPIC";
 }
-function wsRenderTree(){
-  var h=$("ws-graph-tree");if(!h)return;h.innerHTML="";
-  var data=wsGetH();if(!data.length){h.innerHTML='<p class="meta" style="padding:8px;color:var(--ink-3)">No data</p>';return;}
-  data.forEach(function(ds,di){
-    var key=String(ds.id!=null?ds.id:"ds"+di);
-    var row=document.createElement("div");row.className="item";row.setAttribute("data-path",key);
-    row.innerHTML='<span class="d ds"></span> '+String(ds.name||key).replace(/</g,"&lt;")+' <span class="count">'+wsGetDsTree(ds).length+"</span>";
-    row.onclick=function(){var b=document.querySelector('#admin-dsa-hierarchy-root .dsa-node-root[data-ds-id="'+key+'"]');if(b)b.click();};
-    h.appendChild(row);wsAppendRows(h,wsGetDsTree(ds),key,1);
+function wsKindDot(slug){
+  var u=String(slug||"TOPIC").toUpperCase();
+  if(u==="ROOT"||u==="DS")return"ds";
+  if(u==="PROBLEM")return"problem";
+  if(u==="PATTERN")return"pattern";
+  return"pattern";
+}
+function wsExpandAncestors(panel,path){
+  if(!panel||!path)return;
+  var parts=String(path).split("::").filter(Boolean);
+  for(var i=1;i<=parts.length;i++){
+    var p=parts.slice(0,i).join("::");
+    var kids=Array.from(panel.querySelectorAll(".dsa-h-children[data-dsa-path]")).find(function(k){return k.getAttribute("data-dsa-path")===p;});
+    if(kids){kids.classList.remove("dsa-h-children--collapsed");}
+    var lb=Array.from(panel.querySelectorAll(".dsa-h-leaf-block[data-dsa-path]")).find(function(el){return el.getAttribute("data-dsa-path")===p;});
+    if(lb){
+      var pp=lb.querySelector(".dsa-h-problems-panel");
+      if(pp&&pp.hidden){var btn=lb.querySelector(".dsa-h-badge-ring-count");if(btn)btn.click();}
+    }
+  }
+}
+function wsNavigateMindPath(path,opts){
+  var o=opts||{};
+  var p=String(path||"").trim();
+  if(!p)return;
+  if(document.body.classList.contains("ws-repr-orbital")&&window.ORB&&typeof ORB.navigateMindPath==="function"){
+    ORB.navigateMindPath(p,o);return;
+  }
+  var vp=$("admin-dsa-hierarchy-root");
+  if(!vp)return;
+  var parts=p.split("::").filter(Boolean);
+  if(o.kind==="problem"&&parts.length>=2){
+    var parentKey=parts.slice(0,-1).join("::");
+    var probName=parts[parts.length-1];
+    wsExpandAncestors(vp,parentKey);
+    setTimeout(function(){
+      var lis=vp.querySelectorAll(".dsa-h-problem-li");
+      for(var i=0;i<lis.length;i++){
+        var link=lis[i].querySelector(".dsa-h-problem-link-text");
+        if(link&&String(link.textContent||"").trim()===probName){
+          if(typeof dsaScrollMindMapElIntoView==="function"){dsaScrollMindMapElIntoView(lis[i],{padding:24});}
+          else{lis[i].scrollIntoView({behavior:"smooth",block:"nearest"});}
+          lis[i].classList.add("ws-file-nav-flash");
+          setTimeout(function(){lis[i].classList.remove("ws-file-nav-flash");},1200);
+          return;
+        }
+      }
+      wsExpandAncestors(vp,parentKey);
+      var el=vp.querySelector('[data-dsa-path="'+CSS.escape(parentKey)+'"]');
+      if(el&&typeof dsaScrollMindMapElIntoView==="function"){dsaScrollMindMapElIntoView(el,{padding:24});}
+      else if(el){el.scrollIntoView({behavior:"smooth",block:"nearest"});}
+    },80);
+    return;
+  }
+  if(parts.length===1){
+    var rootBtn=vp.querySelector('.dsa-node-root[data-ds-id="'+CSS.escape(parts[0])+'"]');
+    if(rootBtn){rootBtn.click();return;}
+  }
+  wsExpandAncestors(vp,p);
+  setTimeout(function(){
+    var el=vp.querySelector('[data-dsa-path="'+CSS.escape(p)+'"]');
+    if(!el&&parts.length>1){
+      el=Array.from(vp.querySelectorAll("[data-dsa-path]")).find(function(node){return node.getAttribute("data-dsa-path")===p;});
+    }
+    if(el){
+      if(typeof dsaScrollMindMapElIntoView==="function"){dsaScrollMindMapElIntoView(el,{padding:24});}
+      else{el.scrollIntoView({behavior:"smooth",block:"nearest"});}
+      el.classList.add("ws-file-nav-flash");
+      setTimeout(function(){el.classList.remove("ws-file-nav-flash");},1200);
+    }
+  },80);
+}
+window.wsNavigateMindPath=wsNavigateMindPath;
+window.wsRenderFileTree=wsRenderFileTree;
+
+function wsMakeTreeRow(cfg){
+  var row=document.createElement("div");
+  row.className="ws-tree-row"+(cfg.active?" active":"");
+  row.setAttribute("role","treeitem");
+  row.setAttribute("aria-level",String(cfg.depth||1));
+  row.setAttribute("data-path",cfg.path||"");
+  row.setAttribute("data-kind",cfg.kind||"");
+  row.style.paddingLeft=(8+(cfg.depth||0)*14)+"px";
+  var twist=document.createElement("span");
+  twist.className="ws-tree-twist"+(cfg.hasChildren?"":" ws-tree-twist--spacer");
+  if(cfg.hasChildren){twist.textContent=cfg.open?"▾":"▸";twist.setAttribute("aria-hidden","true");}
+  var dot=document.createElement("span");
+  dot.className="d "+wsKindDot(cfg.slug);
+  var label=document.createElement("span");
+  label.className="ws-tree-label";
+  label.textContent=cfg.label||"";
+  var tag=document.createElement("span");
+  tag.className="ws-tree-tag";
+  tag.textContent=cfg.slug||"";
+  row.appendChild(twist);row.appendChild(dot);row.appendChild(label);row.appendChild(tag);
+  row.addEventListener("click",function(e){
+    if(cfg.hasChildren&&e.target===twist){
+      cfg.onToggle();e.stopPropagation();return;
+    }
+    document.querySelectorAll(".ws-tree-row.active").forEach(function(x){x.classList.remove("active");});
+    row.classList.add("active");
+    wsNavigateMindPath(cfg.path,{kind:cfg.navKind,label:cfg.label});
   });
+  return row;
 }
 
+function wsAppendBranch(host,node,parentPath,depth,filterQ,openDefault){
+  var name=String(node&&node.name!=null?node.name:"").trim()||"Untitled";
+  var path=parentPath?(parentPath+"::"+name):name;
+  var slug=wsNodeSlug(node,depth<=1?"patterns":"branch");
+  var children=Array.isArray(node.children)?node.children:[];
+  var probs=Array.isArray(node.problems)?node.problems:[];
+  var probKids=probs.map(function(pr){
+    var pn=String(pr&&pr.name!=null?pr.name:"").trim()||"Problem";
+    return{name:pn,nodeCategorySlug:"PROBLEM",_isProblem:true,_parentPath:path,_prob:pr};
+  });
+  var allKids=children.concat(probKids);
+  var labelLow=(name+" "+slug).toLowerCase();
+  var childMatch=allKids.some(function(ch){
+    var cn=String(ch.name||"").toLowerCase();
+    return cn.indexOf(filterQ)>=0||wsNodeSlug(ch,"branch").toLowerCase().indexOf(filterQ)>=0;
+  });
+  if(filterQ&&labelLow.indexOf(filterQ)<0&&!childMatch)return;
+  var group=document.createElement("div");
+  group.className="ws-tree-group";
+  var open=!!openDefault||(filterQ.length>0&&childMatch);
+  var body=document.createElement("div");
+  body.className="ws-tree-children";
+  body.hidden=!open;
+  function rerenderKids(){body.innerHTML="";allKids.forEach(function(ch){
+    if(ch._isProblem){wsAppendProblem(body,ch,path,depth+1,filterQ);}else{wsAppendBranch(body,ch,path,depth+1,filterQ,filterQ.length>0);}
+  });}
+  var row=wsMakeTreeRow({depth:depth,path:path,label:name,slug:slug,kind:slug,navKind:"branch",hasChildren:allKids.length>0,open:open,active:false,onToggle:function(){
+    open=!open;body.hidden=!open;
+    var tw=row.querySelector(".ws-tree-twist");
+    if(tw){tw.textContent=open?"▾":"▸";}
+  }});
+  group.appendChild(row);
+  if(allKids.length){rerenderKids();group.appendChild(body);}
+  host.appendChild(group);
+}
+function wsAppendProblem(host,wrap,parentPath,depth,filterQ){
+  var pr=wrap._prob||{};
+  var name=String(wrap.name||"Problem");
+  var path=parentPath+"::"+name;
+  var slug="PROBLEM";
+  var diff=pr.difficulty!=null?String(pr.difficulty):"";
+  var labelLow=(name+" problem "+diff).toLowerCase();
+  if(filterQ&&labelLow.indexOf(filterQ)<0)return;
+  host.appendChild(wsMakeTreeRow({depth:depth,path:path,label:name,slug:slug,kind:slug,navKind:"problem",hasChildren:false,open:false,active:false,onToggle:function(){}}));
+}
+function wsRenderFileTree(){
+  var h=$("ws-graph-tree");if(!h)return;
+  var qEl=$("ws-file-nav-search");
+  var filterQ=qEl&&qEl.value?String(qEl.value).trim().toLowerCase():"";
+  h.innerHTML="";
+  var data=wsGetH();
+  if(!data.length){h.innerHTML='<p class="ws-file-tree-empty">No graph data — load API or import JSON.</p>';return;}
+  data.forEach(function(ds,di){
+    var key=String(ds.id!=null?ds.id:("ds"+di));
+    var dsName=String(ds.name!=null?ds.name:key).trim()||key;
+    var slug=wsNodeSlug(ds,"ds");
+    var tree=wsGetDsTree(ds);
+    var dsProbs=Array.isArray(ds.problems)?ds.problems:[];
+    var topKids=tree.concat(dsProbs.map(function(pr){
+      return Object.assign({},pr,{_isProblem:true,name:pr.name,nodeCategorySlug:"PROBLEM",_parentPath:key,_prob:pr});
+    }));
+    var labelLow=(dsName+" "+slug+" "+key).toLowerCase();
+    var childMatch=topKids.some(function(ch){
+      return String(ch.name||"").toLowerCase().indexOf(filterQ)>=0;
+    });
+    if(filterQ&&labelLow.indexOf(filterQ)<0&&!childMatch)return;
+    var group=document.createElement("div");
+    group.className="ws-tree-group ws-tree-group--root";
+    var open=filterQ.length>0?childMatch:true;
+    var body=document.createElement("div");
+    body.className="ws-tree-children";
+    body.hidden=!open;
+    var row=wsMakeTreeRow({depth:0,path:key,label:dsName,slug:slug,kind:slug,navKind:"ds",hasChildren:topKids.length>0,open:open,active:false,onToggle:function(){
+      open=!open;body.hidden=!open;row.querySelector(".ws-tree-twist").textContent=open?"▾":"▸";
+    }});
+    group.appendChild(row);
+    if(topKids.length){
+      topKids.forEach(function(ch){
+        if(ch._isProblem){wsAppendProblem(body,ch,key,1,filterQ);}
+        else{wsAppendBranch(body,ch,key,1,filterQ,filterQ.length>0);}
+      });
+      group.appendChild(body);
+    }
+    h.appendChild(group);
+  });
+}
+function wsRenderTree(){wsRenderFileTree();}
+
 document.querySelectorAll("#ws-repr-tabs .pv-tab").forEach(function(tab){
-  tab.addEventListener("click",function(){setRepr(tab.getAttribute("data-repr"));if(tab.getAttribute("data-repr")==="linear"){wsRenderTree();}});
+  tab.addEventListener("click",function(){setRepr(tab.getAttribute("data-repr"));});
 });
+var wsSearch=$("ws-file-nav-search");
+if(wsSearch){wsSearch.addEventListener("input",function(){wsRenderFileTree();});}
 
 document.querySelectorAll("#tabs .pv-tab").forEach(function(tab){
   tab.addEventListener("click",function(){
@@ -307,7 +490,7 @@ $("import-file").addEventListener("change",function(){
 $("ws-hier-import-file").addEventListener("change",function(){
   var f=this.files&&this.files[0];if(!f)return;
   var r=new FileReader();r.onload=function(){
-    try{if(typeof dsaImportMindMapHierarchyFromText==="function")dsaImportMindMapHierarchyFromText(String(r.result||""));wsMsg("Imported.","ok");setTimeout(function(){syncPvFromAdmin();wsRenderTree();if(window.ORB&&typeof ORB.syncFromMindMapHierarchy==="function")ORB.syncFromMindMapHierarchy();},80);}
+    try{if(typeof dsaImportMindMapHierarchyFromText==="function")dsaImportMindMapHierarchyFromText(String(r.result||""));wsMsg("Imported.","ok");setTimeout(function(){syncPvFromAdmin();wsRenderFileTree();if(window.ORB&&typeof ORB.syncFromMindMapHierarchy==="function")ORB.syncFromMindMapHierarchy();},80);}
     catch(err){wsMsg(err.message||"Import failed","err");}
   };r.readAsText(f);this.value="";
 });
@@ -319,7 +502,7 @@ $("adm-ws-json-apply").addEventListener("click",function(){
   if(!r.ok){wsMsg((r.error&&r.error.message)||"Apply failed","err");return;}
   wsMsg("Graph updated.","ok");
   document.querySelectorAll("#tabs .pv-tab").forEach(function(x){x.classList.toggle("active",x.getAttribute("data-mode")==="map");});
-  document.body.className="mode-map ws-repr-linear";setRepr("linear");clickAdminMode("full");setTimeout(function(){syncPvFromAdmin();wsRenderTree();if(window.ORB&&typeof ORB.syncFromMindMapHierarchy==="function")ORB.syncFromMindMapHierarchy();},80);
+  document.body.className="mode-map ws-repr-linear";setRepr("linear");clickAdminMode("full");setTimeout(function(){syncPvFromAdmin();wsRenderFileTree();if(window.ORB&&typeof ORB.syncFromMindMapHierarchy==="function")ORB.syncFromMindMapHierarchy();},80);
 });
 $("adm-ws-json-format").addEventListener("click",function(){
   var ta=$("adm-ws-json-editor");if(!ta)return;

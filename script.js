@@ -492,6 +492,18 @@ async function dsaFetchGraphNodeCategoriesList() {
         if (j && j.ok && Array.isArray(j.categories)) {
             if (typeof window !== "undefined") {
                 window.__dsaGraphNodeCategories = j.categories;
+                window.__dsaGraphBodyCategories = j.categories
+                    .map((c) => {
+                        if (!c || !c.slug) {
+                            return null;
+                        }
+                        return {
+                            id: String(c.slug).toUpperCase(),
+                            name: String(c.label || c.slug || ""),
+                            color: String(c.color || "#6b7280").trim(),
+                        };
+                    })
+                    .filter(Boolean);
             }
             return j.categories;
         }

@@ -51,6 +51,8 @@
         pan: { x: 0, y: 0 },
         collapsed: new Set(),
         focus: "core",
+        navPathChain: null,
+        categoryFilterSlug: "",
         prevSelected: null,
     };
     Object.keys(S.nodes).forEach(function (k) {
@@ -578,6 +580,7 @@
                     diff: "Medium",
                     category: "ds",
                     mindPath: String(ds.id != null ? ds.id : dsKey),
+                    categorySlug: "ROOT",
                 };
                 edges.push(["core", dsKey, 1]);
                 parentForTopics = dsKey;
@@ -606,6 +609,7 @@
                     diff: "Easy",
                     category: isLeafProblems ? "problem" : "pattern",
                     mindPath: topicPath,
+                    categorySlug: String(ch.nodeCategorySlug || (isLeafProblems ? "PROBLEM" : "TOPIC")).toUpperCase(),
                 };
                 edges.push([parentForTopics, tKey, j < 5 ? 1 : 0]);
             });
@@ -630,12 +634,13 @@
         return true;
     }
 
-    /** File explorer → focus nearest orbital node for a mind-map path (`ds::topic::…`). */
+    /** File explorer → expand root→node path, highlight edges, select target. */
     function navigateMindPath(path) {
         var p = String(path || "").trim();
         if (!p || !S.nodes) {
             return;
         }
+        S.categoryFilterSlug = "";
         var exact = null;
         var prefixBest = null;
         var prefixLen = 0;
@@ -668,13 +673,35 @@
                 }
             });
         }
-        if (target && S.nodes[target]) {
-            setFocus(target);
-            advanceSelection(target);
-            render();
-            sidebar();
-            inspector();
+        if (!target || !S.nodes[target]) {
+            return;
         }
+        S.focus = "core";
+        var chain = pathTo(target);
+        chain.forEach(function (nid) {
+            S.collapsed.delete(nid);
+        });
+        S.navPathChain = chain;
+        layoutRadial();
+        advanceSelection(target);
+        render();
+        apply();
+        sidebar();
+        inspector();
+    }
+
+    function highlightCategory(slug, paths) {
+        S.categoryFilterSlug = String(slug || "").toUpperCase();
+        S.navPathChain = null;
+        advanceSelection(null);
+        render();
+        apply();
+    }
+
+    function clearCategoryFilter() {
+        S.categoryFilterSlug = "";
+        S.navPathChain = null;
+        apply();
     }
 
     function curve(a, b) {
@@ -1089,9 +1116,31 @@
         document.querySelectorAll("#svg .pv-node").forEach(function (n) {
             n.classList.toggle("selected", !!id && n.dataset.id === id);
         });
+        if (S.categoryFilterSlug) {
+            document.querySelectorAll("#svg .pv-node").forEach(function (el) {
+                var nid = el.dataset.id;
+                var node = S.nodes[nid];
+                var slug = node && node.categorySlug ? String(node.categorySlug).toUpperCase() : "";
+                var match =
+                    node &&
+                    !node.isCore &&
+                    (slug === S.categoryFilterSlug ||
+                        (S.categoryFilterSlug === "ROOT" && node.category === "ds") ||
+                        (S.categoryFilterSlug === "PATTERN" && node.category === "pattern") ||
+                        (S.categoryFilterSlug === "PROBLEM" && node.category === "problem"));
+                el.classList.toggle("dim", !match && nid !== id);
+                el.classList.toggle("ws-cat-match", !!match);
+            });
+            document.querySelectorAll("#svg .pv-edge").forEach(function (e) {
+                e.classList.remove("sel-ring");
+                e.classList.add("dim");
+            });
+            patchRingPaint();
+            return;
+        }
         if (!id || !S.nodes[id]) {
             document.querySelectorAll("#svg .pv-node").forEach(function (el) {
-                el.classList.remove("dim");
+                el.classList.remove("dim", "ws-cat-match");
             });
             document.querySelectorAll("#svg .pv-edge").forEach(function (e) {
                 e.classList.remove("dim", "sel-ring");
@@ -1100,7 +1149,7 @@
             return;
         }
         var bright = {};
-        var path = pathFocusTo(id);
+        var path = S.navPathChain && S.navPathChain.length ? S.navPathChain : pathFocusTo(id);
         if (!path.length) {
             path = [id];
         }
@@ -1117,12 +1166,23 @@
             } else {
                 el.classList.add("dim");
             }
+            el.classList.remove("ws-cat-match");
         });
         document.querySelectorAll("#svg .pv-edge").forEach(function (e) {
             var nf = e.getAttribute("data-from"),
                 nt = e.getAttribute("data-to");
-            var both = bright[nf] && bright[nt];
-            if (both) {
+            var onPath = false;
+            if (S.navPathChain && S.navPathChain.length > 1) {
+                for (var pi = 0; pi < S.navPathChain.length - 1; pi++) {
+                    if (S.navPathChain[pi] === nf && S.navPathChain[pi + 1] === nt) {
+                        onPath = true;
+                        break;
+                    }
+                }
+            } else {
+                onPath = bright[nf] && bright[nt];
+            }
+            if (onPath) {
                 e.classList.add("sel-ring");
                 e.classList.remove("dim");
             } else {
@@ -1885,6 +1945,8 @@
         relayout: relayout,
         syncFromMindMapHierarchy: syncFromMindMapHierarchy,
         navigateMindPath: navigateMindPath,
+        highlightCategory: highlightCategory,
+        clearCategoryFilter: clearCategoryFilter,
         refreshLegend: refreshOrbitalLegendBot,
         getState: function () {
             return S;

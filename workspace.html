@@ -167,6 +167,10 @@ window.dsaHasCustomizeGraphAccess=function(){return true;};
 var _sfu=typeof dsaSiteFeatureUse==="function"?dsaSiteFeatureUse:null;
 window.dsaSiteFeatureUse=function(id){if(id==="graph_customize_tab"||id==="practice_map"||id==="one_topic_mode")return true;return _sfu?_sfu(id):true;};
 
+/** TEMP (workspace dev only): bundled public graph — flip to false or remove before shipping. */
+var WS_DEV_USE_LOCAL_DEFAULT=true;
+var WS_DEV_DEFAULT_HIERARCHY_URL="./scripts/dsa-hierarchy.public-site-map.json";
+
 var WS_MOUNT={viewportId:"admin-dsa-hierarchy-root",mapToolbarHostId:"admin-dsa-map-toolbar-host",shellToolbarId:null};
 
 function $(id){return document.getElementById(id);}
@@ -232,6 +236,36 @@ function bootGraph(){
   loadDsaPatternsPage({graphPreview:true,mount:WS_MOUNT});
   wsEnsureCatPalette().then(function(){
     setTimeout(function(){syncPvFromAdmin();wsRenderFileTree();if(window.ORB&&typeof ORB.syncFromMindMapHierarchy==="function")ORB.syncFromMindMapHierarchy();},120);
+  });
+}
+
+/** Dev studio bootstrap: local site-map JSON, else GET /api/data?k=dsa, else script.js placeholder. */
+function wsLoadHierarchyForStudio(){
+  if(!WS_DEV_USE_LOCAL_DEFAULT){
+    return typeof dsaLoadHierarchyFromSources==="function"?dsaLoadHierarchyFromSources():Promise.resolve();
+  }
+  return fetch(WS_DEV_DEFAULT_HIERARCHY_URL,{cache:"no-store"})
+    .then(function(r){
+      if(!r.ok){throw new Error("dev default not found");}
+      return r.text();
+    })
+    .then(function(text){
+      if(typeof dsaImportMindMapHierarchyFromText==="function"){dsaImportMindMapHierarchyFromText(text);return;}
+      throw new Error("import helper missing");
+    })
+    .catch(function(err){
+      console.warn("Workspace dev default graph failed, using API/placeholder.",err);
+      return typeof dsaLoadHierarchyFromSources==="function"?dsaLoadHierarchyFromSources():undefined;
+    });
+}
+
+function wsBootstrapStudio(){
+  wsEnsureCatPalette().then(function(){
+    wsLoadHierarchyForStudio().then(function(){
+      bootGraph();
+      refreshJson();
+      wsMsg(WS_DEV_USE_LOCAL_DEFAULT?"Ready (dev default graph).":"Ready.","ok");
+    });
   });
 }
 
@@ -630,11 +664,7 @@ $("adm-ws-empty-open-public")&&$("adm-ws-empty-open-public").addEventListener("c
 
 if(typeof ORB!=="undefined")ORB.init();
 
-if(typeof dsaLoadHierarchyFromSources==="function"){
-  dsaLoadHierarchyFromSources().then(function(){
-    wsEnsureCatPalette().then(function(){bootGraph();refreshJson();wsMsg("Ready.","ok");});
-  });
-}else{wsEnsureCatPalette().then(function(){bootGraph();});}
+wsBootstrapStudio();
 
 })();
 </script>

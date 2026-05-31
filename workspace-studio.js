@@ -775,13 +775,11 @@
         return true;
     }
 
-    /** File explorer → expand root→node path, highlight edges, select target. */
-    function navigateMindPath(path) {
+    function resolveMindPathToNodeId(path) {
         var p = String(path || "").trim();
         if (!p || !S.nodes) {
-            return;
+            return null;
         }
-        S.categoryFilterSlug = "";
         var exact = null;
         var prefixBest = null;
         var prefixLen = 0;
@@ -814,9 +812,26 @@
                 }
             });
         }
-        if (!target || !S.nodes[target]) {
+        return target && S.nodes[target] ? target : null;
+    }
+
+    /** Double-click / nav focus — zoom into subtree rooted at target. */
+    function focusByMindPath(path) {
+        var target = resolveMindPathToNodeId(path);
+        if (target) {
+            S.navPathChain = null;
+            S.categoryFilterSlug = "";
+            setFocus(target);
+        }
+    }
+
+    /** File explorer → expand root→node path, highlight edges, select target. */
+    function navigateMindPath(path) {
+        var target = resolveMindPathToNodeId(path);
+        if (!target) {
             return;
         }
+        S.categoryFilterSlug = "";
         S.focus = "core";
         var chain = pathTo(target);
         chain.forEach(function (nid) {
@@ -1878,16 +1893,23 @@
         }
     }
 
+    function showFocusToast(clientX, clientY, label) {
+        if (typeof window.wsShowFocusToast === "function") {
+            window.wsShowFocusToast(clientX, clientY, label);
+        }
+    }
+
     var drag = null;
+    var nodeClickTimer = null;
     function startDrag(e, n) {
         if (e.button !== 0) {
             return;
         }
         e.stopPropagation();
-        select(n.id);
         if (S.mode !== "customize") {
             return;
         }
+        select(n.id);
         var pt = svgPt(e);
         drag = { n: n, ox: pt.x - n.x, oy: pt.y - n.y };
         var gn = ng.querySelector('.pv-node[data-id="' + n.id + '"]');
@@ -1941,11 +1963,22 @@
             g.addEventListener("mousedown", function (e) {
                 startDrag(e, n);
             });
+            g.addEventListener("click", function (e) {
+                if (S.mode === "customize") {
+                    return;
+                }
+                e.stopPropagation();
+                clearTimeout(nodeClickTimer);
+                nodeClickTimer = setTimeout(function () {
+                    showFocusToast(e.clientX, e.clientY, n.name);
+                }, 260);
+            });
             g.addEventListener("mouseenter", function () {
                 showChips(n);
             });
             g.addEventListener("dblclick", function (e) {
                 e.stopPropagation();
+                clearTimeout(nodeClickTimer);
                 setFocus(n.id);
             });
         });
@@ -2271,6 +2304,8 @@
         relayout: relayout,
         syncFromMindMapHierarchy: syncFromMindMapHierarchy,
         navigateMindPath: navigateMindPath,
+        focusByMindPath: focusByMindPath,
+        setFocus: setFocus,
         highlightCategory: highlightCategory,
         clearCategoryFilter: clearCategoryFilter,
         refreshLegend: refreshOrbitalLegendBot,

@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="./styles.css?v=37" />
 <link rel="stylesheet" href="./dsa-index-shell.css?v=20" />
 <link rel="stylesheet" href="./auth/admin-workspace.css?v=7" />
-<link rel="stylesheet" href="./workspace-chrome.css?v=19" />
+<link rel="stylesheet" href="./workspace-chrome.css?v=20" />
 </head>
 <body class="mode-customize ws-repr-orbital">
 <div id="admin-dsa-map-toolbar-host" class="ws-offscreen-toolbar-host" data-dsa-index-toolbar-slots="1" aria-hidden="true">
@@ -79,7 +79,7 @@
       <span class="legend-tone" style="border-left:3px solid var(--c-accent);padding-left:6px">structure</span>
       <span class="legend-tone" style="border-left:3px solid var(--c-amber);padding-left:6px">pattern</span>
       <span class="legend-tone" style="border-left:3px solid var(--c-pink);padding-left:6px">problems</span>
-      <span id="hint-text" style="margin-left:auto">drag bg · scroll zoom · drag bottom edge to resize · 2× click focus</span>
+      <span id="hint-text" style="margin-left:auto">double-click to focus · single-click shows hint</span>
     </div>
     <svg class="pv-svg" id="svg" viewBox="0 0 600 580" preserveAspectRatio="xMidYMid meet">
       <defs>
@@ -484,6 +484,69 @@ function wsHighlightLinearPath(path,isProblem){
     if(el){el.classList.add("ws-linear-path-active");}
   }
 }
+function wsIsOrbitalView(){
+  return document.body.classList.contains("ws-repr-orbital")&&!document.body.classList.contains("mode-json");
+}
+function wsShowFocusToast(clientX,clientY,label){
+  var el=$("ws-focus-toast");
+  if(!el){
+    el=document.createElement("div");
+    el.id="ws-focus-toast";
+    el.className="ws-focus-toast";
+    el.setAttribute("role","status");
+    el.setAttribute("aria-live","polite");
+    document.body.appendChild(el);
+  }
+  el.textContent=label?("Double-click to focus · "+label):"Double-click to focus";
+  el.classList.add("show");
+  var pad=14;
+  var rect=el.getBoundingClientRect();
+  var w=rect.width||240;
+  var h=rect.height||36;
+  var left=Math.min(Math.max(pad,clientX+pad),window.innerWidth-w-pad);
+  var top=Math.min(Math.max(pad,clientY+pad),window.innerHeight-h-pad);
+  el.style.left=left+"px";
+  el.style.top=top+"px";
+  clearTimeout(wsShowFocusToast._hideT);
+  wsShowFocusToast._hideT=setTimeout(function(){el.classList.remove("show");},2400);
+}
+window.wsShowFocusToast=wsShowFocusToast;
+function wsMarkNavActive(path,row){
+  document.querySelectorAll(".ws-tree-row.active,.ws-flat-row.active,.ws-cat-node-list-item.active").forEach(function(x){x.classList.remove("active");});
+  if(row){row.classList.add("active");}
+  wsActiveNavPath=path||"";
+}
+function wsFocusOrbitalPath(path){
+  var p=String(path||"").trim();
+  if(!p){return;}
+  wsActiveNavPath=p;
+  wsActiveCatSlug="";
+  document.querySelectorAll(".ws-cat-type-item.active").forEach(function(x){x.classList.remove("active");});
+  if(window.ORB&&typeof ORB.focusByMindPath==="function"){ORB.focusByMindPath(p);}
+}
+window.wsFocusOrbitalPath=wsFocusOrbitalPath;
+var wsNavClickTimer=null;
+function wsBindNavFocusGestures(row,entry,onLinearNavigate){
+  row.addEventListener("click",function(ev){
+    if(wsIsOrbitalView()){
+      clearTimeout(wsNavClickTimer);
+      wsNavClickTimer=setTimeout(function(){wsShowFocusToast(ev.clientX,ev.clientY,entry.label);},260);
+      return;
+    }
+    onLinearNavigate(ev);
+  });
+  row.addEventListener("dblclick",function(ev){
+    ev.preventDefault();
+    clearTimeout(wsNavClickTimer);
+    if(wsIsOrbitalView()){
+      wsExpandNavAncestors(entry.path);
+      wsMarkNavActive(entry.path,row);
+      wsFocusOrbitalPath(entry.path);
+      return;
+    }
+    onLinearNavigate(ev);
+  });
+}
 function wsNavigateMindPath(path,opts){
   var o=opts||{};
   var p=String(path||"").trim();
@@ -491,8 +554,8 @@ function wsNavigateMindPath(path,opts){
   wsActiveNavPath=p;
   wsActiveCatSlug="";
   document.querySelectorAll(".ws-cat-type-item.active").forEach(function(x){x.classList.remove("active");});
-  if(document.body.classList.contains("ws-repr-orbital")&&window.ORB&&typeof ORB.navigateMindPath==="function"){
-    ORB.navigateMindPath(p,o);return;
+  if(wsIsOrbitalView()&&window.ORB&&typeof ORB.focusByMindPath==="function"){
+    ORB.focusByMindPath(p);return;
   }
   var vp=$("admin-dsa-hierarchy-root");
   if(!vp)return;
@@ -606,10 +669,8 @@ function wsMakeTreeRow(entry){
   label.textContent=entry.label;
   label.title=entry.path;
   row.appendChild(label);
-  row.addEventListener("click",function(){
-    document.querySelectorAll(".ws-tree-row.active,.ws-flat-row.active").forEach(function(x){x.classList.remove("active");});
-    row.classList.add("active");
-    wsActiveNavPath=entry.path;
+  wsBindNavFocusGestures(row,entry,function(){
+    wsMarkNavActive(entry.path,row);
     wsExpandNavAncestors(entry.path);
     wsNavigateMindPath(entry.path,{kind:entry.navKind,label:entry.label});
   });
@@ -751,14 +812,13 @@ function wsShowCategoryNodes(slug,label){
       sp.textContent=entry.label;
       sp.title=entry.path;
       row.appendChild(sp);
-      row.addEventListener("click",function(){
+      wsBindNavFocusGestures(row,entry,function(){
         panel.hidden=true;
         wsExpandNavAncestors(entry.path);
         wsRenderFileTree();
-        document.querySelectorAll(".ws-tree-row.active,.ws-flat-row.active").forEach(function(x){x.classList.remove("active");});
         var flat=wsFindNavRow(entry.path);
-        if(flat){flat.classList.add("active");flat.scrollIntoView({block:"nearest"});}
-        wsActiveNavPath=entry.path;
+        wsMarkNavActive(entry.path,flat||row);
+        if(flat){flat.scrollIntoView({block:"nearest"});}
         wsNavigateMindPath(entry.path,{kind:entry.navKind,label:entry.label});
       });
       body.appendChild(row);

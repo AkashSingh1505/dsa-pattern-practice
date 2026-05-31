@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="./styles.css?v=37" />
 <link rel="stylesheet" href="./dsa-index-shell.css?v=20" />
 <link rel="stylesheet" href="./auth/admin-workspace.css?v=7" />
-<link rel="stylesheet" href="./workspace-chrome.css?v=15" />
+<link rel="stylesheet" href="./workspace-chrome.css?v=16" />
 </head>
 <body class="mode-customize ws-repr-orbital">
 <div id="admin-dsa-map-toolbar-host" class="ws-offscreen-toolbar-host" data-dsa-index-toolbar-slots="1" aria-hidden="true">
@@ -285,6 +285,118 @@ function wsEsc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;"
 var wsFlatEntries=[];
 var wsActiveNavPath="";
 var wsActiveCatSlug="";
+var wsNavExpandedPaths={};
+var wsNavExpandSig="";
+
+function wsNavIsExpanded(path){return !!wsNavExpandedPaths[path];}
+function wsNavSetExpanded(path,on){
+  if(on){wsNavExpandedPaths[path]=true;}
+  else{delete wsNavExpandedPaths[path];}
+}
+function wsNavToggleExpanded(path){
+  if(wsNavExpandedPaths[path]){delete wsNavExpandedPaths[path];}
+  else{wsNavExpandedPaths[path]=true;}
+}
+
+function wsExpandNavAncestors(path){
+  var parts=String(path||"").split("::").filter(Boolean);
+  for(var i=1;i<parts.length;i++){
+    wsNavSetExpanded(parts.slice(0,i).join("::"),true);
+  }
+}
+
+function wsNavHierarchySig(data){
+  try{
+    if(!data||!data.length){return "";}
+    var r=data[0];
+    var tree=wsGetDsTree(r);
+    var first=tree[0]&&tree[0].name!=null?String(tree[0].name).trim():"";
+    return String(r.id!=null?r.id:"")+"|"+tree.length+"|"+first;
+  }catch(e){return "";}
+}
+
+/** Default: root open + only first direct child expanded; all other siblings collapsed. */
+function wsInitDefaultNavExpand(forest){
+  wsNavExpandedPaths={};
+  (forest||[]).forEach(function(root){
+    if(!root||!root.branch){return;}
+    wsNavSetExpanded(root.path,true);
+    if(root.children&&root.children.length){
+      wsNavSetExpanded(root.children[0].path,true);
+    }
+  });
+}
+
+function wsBuildNavSubtree(node,parentPath,depth){
+  var name=String(node&&node.name!=null?node.name:"").trim()||"Untitled";
+  var path=node._isProblem?(parentPath+"::"+name):(parentPath?(parentPath+"::"+name):name);
+  var cat=wsCatFromNode(node,node._isProblem?"problem":"branch");
+  var children=[];
+  if(!node._isProblem){
+    (Array.isArray(node.children)?node.children:[]).forEach(function(ch){
+      children.push(wsBuildNavSubtree(ch,path,depth+1));
+    });
+    (Array.isArray(node.problems)?node.problems:[]).forEach(function(pr){
+      var pn=String(pr&&pr.name!=null?pr.name:"").trim()||"Problem";
+      children.push(wsBuildNavSubtree(Object.assign({},pr,{name:pn,_isProblem:true,nodeCategorySlug:"PROBLEM"}),path,depth+1));
+    });
+  }
+  return{
+    path:path,
+    label:name,
+    depth:depth,
+    cat:cat,
+    navKind:node._isProblem?"problem":"branch",
+    slug:cat.slug,
+    children:children,
+    branch:children.length>0
+  };
+}
+
+function wsBuildNavForest(data){
+  var forest=[];
+  (data||[]).forEach(function(ds,di){
+    var key=String(ds.id!=null?ds.id:("ds"+di));
+    var dsName=String(ds.name!=null?ds.name:key).trim()||key;
+    var rootEntry={
+      path:key,
+      label:dsName,
+      depth:0,
+      cat:wsCatFromNode(ds,"ds"),
+      navKind:"root",
+      slug:wsCatFromNode(ds,"ds").slug,
+      children:[],
+      branch:true
+    };
+    wsGetDsTree(ds).forEach(function(ch){rootEntry.children.push(wsBuildNavSubtree(ch,key,1));});
+    (Array.isArray(ds.problems)?ds.problems:[]).forEach(function(pr){
+      rootEntry.children.push(wsBuildNavSubtree(Object.assign({},pr,{_isProblem:true,nodeCategorySlug:"PROBLEM"}),key,1));
+    });
+    forest.push(rootEntry);
+  });
+  return forest;
+}
+
+function wsNavEntryMatchesFilter(entry,filterQ){
+  if(!filterQ){return true;}
+  var labelLow=(entry.label+" "+entry.cat.name+" "+entry.cat.slug).toLowerCase();
+  if(labelLow.indexOf(filterQ)>=0){return true;}
+  return(entry.children||[]).some(function(ch){return wsNavEntryMatchesFilter(ch,filterQ);});
+}
+
+function wsNavExpandForFilter(entries,filterQ){
+  if(!filterQ){return false;}
+  var any=false;
+  (entries||[]).forEach(function(entry){
+    var childAny=wsNavExpandForFilter(entry.children,filterQ);
+    var self=wsNavEntryMatchesFilter(entry,filterQ);
+    if(self||childAny){
+      wsNavSetExpanded(entry.path,true);
+      any=true;
+    }
+  });
+  return any;
+}
 
 function wsDefaultCatColor(slug){
   var u=String(slug||"").toUpperCase();
@@ -463,13 +575,32 @@ function wsCollectFlatFromData(data,filterQ){
   });
   return out;
 }
-function wsMakeFlatRow(entry,isActive){
+function wsMakeTreeRow(entry){
   var row=document.createElement("div");
-  row.className="ws-flat-row"+(isActive?" active":"");
+  row.className="ws-tree-row"+(entry.path===wsActiveNavPath?" active":"");
   row.setAttribute("role","treeitem");
   row.setAttribute("data-path",entry.path);
   row.setAttribute("data-slug",entry.cat.slug);
-  row.style.paddingLeft=(8+entry.depth*14)+"px";
+  row.setAttribute("aria-expanded",entry.branch?String(wsNavIsExpanded(entry.path)):"false");
+  row.style.paddingLeft=(4+entry.depth*14)+"px";
+  if(entry.branch){
+    var toggle=document.createElement("button");
+    toggle.type="button";
+    toggle.className="ws-tree-toggle"+(wsNavIsExpanded(entry.path)?" expanded":"");
+    toggle.setAttribute("aria-label",wsNavIsExpanded(entry.path)?"Collapse":"Expand");
+    toggle.textContent=wsNavIsExpanded(entry.path)?"▼":"▶";
+    toggle.addEventListener("click",function(ev){
+      ev.stopPropagation();
+      wsNavToggleExpanded(entry.path);
+      wsRenderFileTree();
+    });
+    row.appendChild(toggle);
+  }else{
+    var spacer=document.createElement("span");
+    spacer.className="ws-tree-toggle ws-tree-toggle--spacer";
+    spacer.setAttribute("aria-hidden","true");
+    row.appendChild(spacer);
+  }
   row.appendChild(wsMakeCatChip(entry.cat));
   var label=document.createElement("span");
   label.className="ws-flat-label";
@@ -477,11 +608,28 @@ function wsMakeFlatRow(entry,isActive){
   label.title=entry.path;
   row.appendChild(label);
   row.addEventListener("click",function(){
-    document.querySelectorAll(".ws-flat-row.active").forEach(function(x){x.classList.remove("active");});
+    document.querySelectorAll(".ws-tree-row.active,.ws-flat-row.active").forEach(function(x){x.classList.remove("active");});
     row.classList.add("active");
+    wsActiveNavPath=entry.path;
+    wsExpandNavAncestors(entry.path);
     wsNavigateMindPath(entry.path,{kind:entry.navKind,label:entry.label});
   });
   return row;
+}
+
+function wsRenderNavEntry(entry,host,filterQ){
+  if(filterQ&&!wsNavEntryMatchesFilter(entry,filterQ)){return;}
+  host.appendChild(wsMakeTreeRow(entry));
+  if(!entry.branch||!wsNavIsExpanded(entry.path)||!entry.children.length){return;}
+  var wrap=document.createElement("div");
+  wrap.className="ws-tree-children";
+  wrap.setAttribute("role","group");
+  entry.children.forEach(function(ch){wsRenderNavEntry(ch,wrap,filterQ);});
+  host.appendChild(wrap);
+}
+
+function wsFindNavRow(path){
+  return document.querySelector('.ws-tree-row[data-path="'+CSS.escape(path)+'"], .ws-flat-row[data-path="'+CSS.escape(path)+'"]');
 }
 function wsCountBySlug(entries){
   var m={};
@@ -557,9 +705,12 @@ function wsShowCategoryNodes(slug,label){
       row.appendChild(sp);
       row.addEventListener("click",function(){
         panel.hidden=true;
-        document.querySelectorAll(".ws-flat-row.active").forEach(function(x){x.classList.remove("active");});
-        var flat=document.querySelector('.ws-flat-row[data-path="'+CSS.escape(entry.path)+'"]');
+        wsExpandNavAncestors(entry.path);
+        wsRenderFileTree();
+        document.querySelectorAll(".ws-tree-row.active,.ws-flat-row.active").forEach(function(x){x.classList.remove("active");});
+        var flat=wsFindNavRow(entry.path);
         if(flat){flat.classList.add("active");flat.scrollIntoView({block:"nearest"});}
+        wsActiveNavPath=entry.path;
         wsNavigateMindPath(entry.path,{kind:entry.navKind,label:entry.label});
       });
       body.appendChild(row);
@@ -577,10 +728,15 @@ function wsRenderFileTree(){
   h.innerHTML="";
   var data=wsGetH();
   if(!data.length){h.innerHTML='<p class="ws-file-tree-empty">No graph data — load API or import JSON.</p>';wsFlatEntries=[];wsRenderCategoryFooter();return;}
+  var forest=wsBuildNavForest(data);
+  var sig=wsNavHierarchySig(data);
+  if(sig!==wsNavExpandSig){
+    wsNavExpandSig=sig;
+    wsInitDefaultNavExpand(forest);
+  }
+  if(filterQ){wsNavExpandForFilter(forest,filterQ);}
+  forest.forEach(function(root){wsRenderNavEntry(root,h,filterQ);});
   wsFlatEntries=wsCollectFlatFromData(data,filterQ);
-  wsFlatEntries.forEach(function(entry){
-    h.appendChild(wsMakeFlatRow(entry,entry.path===wsActiveNavPath));
-  });
   wsRenderCategoryFooter();
 }
 window.wsRenderFileTree=wsRenderFileTree;

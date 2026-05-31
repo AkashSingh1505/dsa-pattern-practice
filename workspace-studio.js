@@ -1901,6 +1901,7 @@
 
     var drag = null;
     var nodeClickTimer = null;
+    var suppressNodeClick = false;
     function startDrag(e, n) {
         if (e.button !== 0) {
             return;
@@ -1909,9 +1910,8 @@
         if (S.mode !== "customize") {
             return;
         }
-        select(n.id);
         var pt = svgPt(e);
-        drag = { n: n, ox: pt.x - n.x, oy: pt.y - n.y };
+        drag = { n: n, ox: pt.x - n.x, oy: pt.y - n.y, sx: e.clientX, sy: e.clientY, moved: false };
         var gn = ng.querySelector('.pv-node[data-id="' + n.id + '"]');
         if (gn) {
             gn.classList.add("dragging");
@@ -1964,10 +1964,11 @@
                 startDrag(e, n);
             });
             g.addEventListener("click", function (e) {
-                if (S.mode === "customize") {
+                e.stopPropagation();
+                if (suppressNodeClick) {
+                    suppressNodeClick = false;
                     return;
                 }
-                e.stopPropagation();
                 clearTimeout(nodeClickTimer);
                 nodeClickTimer = setTimeout(function () {
                     showFocusToast(e.clientX, e.clientY, n.name);
@@ -2083,6 +2084,9 @@
 
         window.addEventListener("mousemove", function (e) {
             if (drag) {
+                if (Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) > 4) {
+                    drag.moved = true;
+                }
                 var pt = svgPt(e);
                 drag.n.x = pt.x - drag.ox;
                 drag.n.y = pt.y - drag.oy;
@@ -2115,6 +2119,9 @@
         });
         window.addEventListener("mouseup", function () {
             if (drag) {
+                if (drag.moved) {
+                    suppressNodeClick = true;
+                }
                 var gn = ng.querySelector('.pv-node[data-id="' + drag.n.id + '"]');
                 if (gn) {
                     gn.classList.remove("dragging");
@@ -2276,10 +2283,10 @@
         if (ht) {
             ht.textContent =
                 S.mode === "customize"
-                    ? "drag bg · scroll zoom · 2× click focus"
+                    ? "double-click to focus · single-click shows hint · drag nodes to move"
                     : S.mode === "topic"
-                      ? "topic lens"
-                      : "full map";
+                      ? "double-click to focus · single-click shows hint"
+                      : "double-click to focus · single-click shows hint";
         }
         render();
     }

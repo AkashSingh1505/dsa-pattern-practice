@@ -1049,13 +1049,144 @@
             }),
         );
         var labelG = E("g", { class: "pv-node-labels", "clip-path": svgFragUrl(clipId) });
+        if (n.category === "problem") {
+            g.classList.add("ws-problem-node");
+            g.setAttribute("data-full-name", n.name);
+            g.appendChild(
+                E("circle", {
+                    class: "problem-dot",
+                    cx: 0,
+                    cy: 0,
+                    r: Math.max(3, r * 0.38),
+                    fill: brandHex,
+                    opacity: 0.92,
+                    style: "display:none",
+                }),
+            );
+        }
         appendNodeLabels(labelG, n, r);
         g.appendChild(labelG);
         return g;
     }
 
+    function svgScreenScale() {
+        if (!svg) {
+            return 1;
+        }
+        var sr = svg.getBoundingClientRect();
+        var vb = svg.viewBox.baseVal;
+        if (!vb || !vb.width || !sr.width) {
+            return 1;
+        }
+        return sr.width / vb.width;
+    }
+
+    function zoomDetailTier() {
+        if (S.zoom <= 0.48) {
+            return "far";
+        }
+        if (S.zoom <= 0.72) {
+            return "mid";
+        }
+        return "near";
+    }
+
+    function rebuildNodeTitle(g, n) {
+        var labelG = g.querySelector(".pv-node-labels");
+        if (!labelG || !n) {
+            return;
+        }
+        labelG.innerHTML = "";
+        appendNodeLabels(labelG, n, n.r);
+    }
+
+    function applyProblemLabelLod(tier) {
+        document.querySelectorAll("#svg .pv-node.ws-problem-node").forEach(function (g) {
+            var title = g.querySelector(".node-title");
+            var sub = g.querySelector(".sub");
+            var dot = g.querySelector(".problem-dot");
+            var id = g.dataset.id;
+            var n = id ? S.nodes[id] : null;
+            if (tier === "far") {
+                if (dot) {
+                    dot.removeAttribute("display");
+                }
+                if (title) {
+                    title.style.display = "none";
+                }
+                if (sub) {
+                    sub.style.display = "none";
+                }
+            } else if (tier === "mid") {
+                if (dot) {
+                    dot.setAttribute("display", "none");
+                }
+                if (title) {
+                    title.style.display = "";
+                    title.innerHTML = "";
+                    var ts = E("tspan", { x: 0, dy: 0 });
+                    ts.textContent = "\u2026";
+                    title.appendChild(ts);
+                }
+                if (sub) {
+                    sub.style.display = "none";
+                }
+            } else if (n) {
+                if (dot) {
+                    dot.setAttribute("display", "none");
+                }
+                rebuildNodeTitle(g, n);
+            }
+        });
+    }
+
     function semanticZoom() {
-        /* Labels stay visible at all zoom levels. */
+        if (!svg) {
+            return;
+        }
+        var pxPerUnit = svgScreenScale();
+        if (!pxPerUnit || pxPerUnit <= 0) {
+            return;
+        }
+        var tier = zoomDetailTier();
+        svg.setAttribute("data-zoom-tier", tier);
+
+        var edgePx = clamp(2.1 - S.zoom * 0.8, 1.6, 3.2);
+        var ringPx = clamp(1.85 - S.zoom * 0.55, 1.35, 2.8);
+        var edgeSw = clamp(edgePx / pxPerUnit, 1.5, 14);
+        var ringSw = clamp(ringPx / pxPerUnit, 1.2, 12);
+        var titlePx = clamp(10.5 / pxPerUnit, 10, 26);
+        var subPx = clamp(8.5 / pxPerUnit, 8, 18);
+
+        document.querySelectorAll("#svg .pv-edge").forEach(function (p) {
+            var isProblem = p.classList.contains("pv-edge-problem");
+            var isSel = p.classList.contains("sel-ring");
+            var isDim = p.classList.contains("dim") && !isSel;
+            var sw = isProblem ? edgeSw * 1.15 : edgeSw;
+            if (isSel) {
+                sw *= 1.2;
+            }
+            p.setAttribute("stroke-width", sw.toFixed(2));
+            p.setAttribute("stroke-opacity", isDim ? 0.38 : isProblem ? 0.72 : S.zoom < 0.55 ? 0.62 : 0.78);
+        });
+
+        document.querySelectorAll("#svg .pv-node .ring").forEach(function (ring) {
+            ring.setAttribute("stroke-width", ringSw.toFixed(2));
+        });
+
+        document.querySelectorAll("#svg .pv-node:not(.ws-problem-node) .node-title").forEach(function (t) {
+            t.setAttribute("font-size", titlePx.toFixed(1) + "px");
+        });
+        document.querySelectorAll("#svg .pv-node:not(.ws-problem-node) .sub").forEach(function (t) {
+            t.setAttribute("font-size", subPx.toFixed(1) + "px");
+        });
+
+        document.querySelectorAll("#svg .pv-node.ws-problem-node .problem-dot").forEach(function (dot) {
+            var rPx = clamp(5.5, 4.5, 7);
+            dot.setAttribute("r", (rPx / pxPerUnit).toFixed(2));
+        });
+
+        applyProblemLabelLod(tier);
     }
 
     function applyView() {
@@ -1287,6 +1418,7 @@
                 e.classList.add("dim");
             });
             patchRingPaint();
+            semanticZoom();
             return;
         }
         if (!id || !S.nodes[id]) {
@@ -1297,6 +1429,7 @@
                 e.classList.remove("dim", "sel-ring");
             });
             patchRingPaint();
+            semanticZoom();
             return;
         }
         var bright = {};
@@ -1342,6 +1475,7 @@
             }
         });
         patchRingPaint();
+        semanticZoom();
     }
 
     function esc(s) {
@@ -1788,7 +1922,10 @@
             }
             eg.appendChild(
                 E("path", {
-                    class: "pv-edge" + (a ? " active" : ""),
+                    class:
+                        "pv-edge" +
+                        (a ? " active" : "") +
+                        (B.category === "problem" || A.category === "problem" ? " pv-edge-problem" : ""),
                     d: curve(A, B),
                     "data-from": f,
                     "data-to": t,
@@ -1979,7 +2116,7 @@
             function (e) {
                 e.preventDefault();
                 var delta = e.deltaY > 0 ? 0.92 : 1.08;
-                S.zoom = clamp(S.zoom * delta, 0.35, 2.75);
+                S.zoom = clamp(S.zoom * delta, 0.28, 2.75);
                 applyView();
             },
             { passive: false },
@@ -1990,13 +2127,13 @@
             zval = $("zoom-val");
         if (zin) {
             zin.onclick = function () {
-                S.zoom = clamp(S.zoom * 1.12, 0.35, 2.75);
+                S.zoom = clamp(S.zoom * 1.12, 0.28, 2.75);
                 applyView();
             };
         }
         if (zout) {
             zout.onclick = function () {
-                S.zoom = clamp(S.zoom / 1.12, 0.35, 2.75);
+                S.zoom = clamp(S.zoom / 1.12, 0.28, 2.75);
                 applyView();
             };
         }

@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="./styles.css?v=37" />
 <link rel="stylesheet" href="./dsa-index-shell.css?v=20" />
 <link rel="stylesheet" href="./auth/admin-workspace.css?v=7" />
-<link rel="stylesheet" href="./workspace-chrome.css?v=17" />
+<link rel="stylesheet" href="./workspace-chrome.css?v=18" />
 </head>
 <body class="mode-customize ws-repr-orbital">
 <div id="admin-dsa-map-toolbar-host" class="ws-offscreen-toolbar-host" data-dsa-index-toolbar-slots="1" aria-hidden="true">
@@ -79,7 +79,7 @@
       <span class="legend-tone" style="border-left:3px solid var(--c-accent);padding-left:6px">structure</span>
       <span class="legend-tone" style="border-left:3px solid var(--c-amber);padding-left:6px">pattern</span>
       <span class="legend-tone" style="border-left:3px solid var(--c-pink);padding-left:6px">problems</span>
-      <span id="hint-text" style="margin-left:auto">drag bg · scroll zoom · 2× click focus</span>
+      <span id="hint-text" style="margin-left:auto">drag bg · scroll zoom · drag bottom edge to resize · 2× click focus</span>
     </div>
     <svg class="pv-svg" id="svg" viewBox="0 0 600 580" preserveAspectRatio="xMidYMid meet">
       <defs>
@@ -97,6 +97,7 @@
       <div class="node-chip danger" id="chip-del" title="Delete">×</div>
     </div>
     <input type="file" id="import-file" accept="application/json" style="display:none" />
+    <div class="canvas-resize-handle" id="canvas-resize-handle" title="Drag to resize canvas"></div>
   </div>
   </div>
   <div id="ws-cat-node-list" class="ws-cat-node-list" hidden>

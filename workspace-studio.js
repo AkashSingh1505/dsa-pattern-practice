@@ -54,6 +54,8 @@
         navPathChain: null,
         categoryFilterSlug: "",
         prevSelected: null,
+        canvasUserHeight: null,
+        canvasAutoHeight: null,
     };
     Object.keys(S.nodes).forEach(function (k) {
         S.nodes[k].category = NODE_CATS[k] || "pattern";
@@ -203,7 +205,103 @@
         ng,
         cw,
         cb;
-    var VB = { w: 600, h: 580, cx: 300, cy: 290 };
+    var VB_MIN = { w: 640, h: 560 };
+    var VB = { w: VB_MIN.w, h: VB_MIN.h, cx: VB_MIN.w / 2, cy: VB_MIN.h / 2 };
+
+    function visibleNodeIds() {
+        return Object.keys(S.nodes).filter(function (id) {
+            return visible(id);
+        });
+    }
+
+    function layoutMetrics() {
+        var ids = visibleNodeIds();
+        var maxDepth = 0;
+        ids.forEach(function (id) {
+            maxDepth = Math.max(maxDepth, relDepth(id, S.focus));
+        });
+        return { count: ids.length, maxDepth: maxDepth };
+    }
+
+    function ringRadiiForLayout(count, maxDepth) {
+        var BASE = [0, 130, 230, 320, 400, 470];
+        var countScale = Math.max(1, Math.sqrt(Math.max(count, 1) / 10) * 0.92);
+        var depthExtra = Math.max(0, maxDepth - 4) * 0.12;
+        var scale = countScale * (1 + depthExtra);
+        var rings = BASE.map(function (r, i) {
+            return i === 0 ? 0 : Math.round(r * scale);
+        });
+        while (rings.length < maxDepth + 2) {
+            var last = rings[rings.length - 1] || 470;
+            rings.push(last + Math.round(75 * countScale));
+        }
+        return rings;
+    }
+
+    function nodeSizesForLayout(maxDepth) {
+        var sizes = [46, 30, 22, 17, 14, 12];
+        while (sizes.length < maxDepth + 2) {
+            sizes.push(Math.max(10, sizes[sizes.length - 1] - 1));
+        }
+        return sizes;
+    }
+
+    function fitViewBoxToContent() {
+        var margin = 84;
+        var list = visibleNodeIds().map(function (id) {
+            return S.nodes[id];
+        });
+        if (!list.length) {
+            VB.w = VB_MIN.w;
+            VB.h = VB_MIN.h;
+            VB.cx = VB.w / 2;
+            VB.cy = VB.h / 2;
+            updateMinimapViewBox();
+            return;
+        }
+        var minX = Infinity,
+            maxX = -Infinity,
+            minY = Infinity,
+            maxY = -Infinity;
+        list.forEach(function (n) {
+            minX = Math.min(minX, n.x - n.r);
+            maxX = Math.max(maxX, n.x + n.r);
+            minY = Math.min(minY, n.y - n.r);
+            maxY = Math.max(maxY, n.y + n.r);
+        });
+        VB.w = Math.max(VB_MIN.w, maxX - minX + margin * 2);
+        VB.h = Math.max(VB_MIN.h, maxY - minY + margin * 2);
+        VB.cx = (minX + maxX) / 2;
+        VB.cy = (minY + maxY) / 2;
+        updateMinimapViewBox();
+    }
+
+    function updateMinimapViewBox() {
+        var mmSvg = $("mm-svg");
+        if (mmSvg) {
+            mmSvg.setAttribute("viewBox", "0 0 " + VB.w + " " + VB.h);
+        }
+    }
+
+    function syncCanvasElementSize() {
+        if (!cw) {
+            return;
+        }
+        var metrics = layoutMetrics();
+        var aspect = VB.w / Math.max(VB.h, 1);
+        var baseW = cw.clientWidth || 720;
+        var autoH = Math.round(baseW / aspect);
+        var countBoost = Math.max(0, (metrics.count - 10) * 10);
+        autoH = Math.max(VB_MIN.h, autoH, 480 + countBoost);
+        var maxAuto = Math.round(window.innerHeight * (metrics.count > 24 ? 1.2 : 0.86));
+        autoH = Math.min(autoH, maxAuto);
+        if (S.canvasUserHeight) {
+            autoH = Math.max(autoH, S.canvasUserHeight);
+        }
+        S.canvasAutoHeight = autoH;
+        cw.style.height = autoH + "px";
+        cw.style.minHeight = autoH + "px";
+    }
 
     function $(id) {
         return document.getElementById(id);
@@ -336,8 +434,9 @@
 
     function layoutRadial() {
         var root = S.focus;
-        var RINGS = [0, 150, 250, 335, 400, 455];
-        var SIZES = [46, 30, 22, 17, 14, 12];
+        var metrics = layoutMetrics();
+        var RINGS = ringRadiiForLayout(metrics.count, metrics.maxDepth);
+        var SIZES = nodeSizesForLayout(metrics.maxDepth);
         function w(id) {
             var k = childIds(id).filter(function (c) {
                 return visible(c);
@@ -393,13 +492,13 @@
         });
         recalcNodeRadii();
         resolveOverlaps();
+        fitViewBoxToContent();
+        syncCanvasElementSize();
+        applyView();
     }
 
-    /** Push overlapping nodes apart (core fixed); keeps bodies inside the view box. */
+    /** Push overlapping nodes apart (core fixed). View box expands to fit afterward. */
     function resolveOverlaps(maxIter) {
-        maxIter = maxIter == null ? 16 : maxIter;
-        var pad = 8;
-        var margin = 20;
         var list = Object.keys(S.nodes)
             .map(function (k) {
                 return S.nodes[k];
@@ -407,6 +506,8 @@
             .filter(function (n) {
                 return visible(n.id);
             });
+        maxIter = maxIter == null ? Math.min(36, 14 + Math.floor(list.length / 6)) : maxIter;
+        var pad = Math.max(10, Math.min(26, 8 + list.length * 0.14));
         for (var iter = 0; iter < maxIter; iter++) {
             var moved = false;
             for (var i = 0; i < list.length; i++) {
@@ -445,13 +546,6 @@
                 break;
             }
         }
-        list.forEach(function (n) {
-            if (n.isCore) {
-                return;
-            }
-            n.x = clamp(n.x, margin + n.r, VB.w - margin - n.r);
-            n.y = clamp(n.y, margin + n.r, VB.h - margin - n.r);
-        });
     }
 
     /** After layout, grow each node radius so title + optional child count fit without clipping. */
@@ -1913,6 +2007,44 @@
                 applyView();
             };
         }
+
+        var canvasResize = $("canvas-resize-handle");
+        var canvasResizeDrag = null;
+        if (canvasResize) {
+            canvasResize.addEventListener("mousedown", function (e) {
+                if (e.button !== 0) {
+                    return;
+                }
+                e.preventDefault();
+                e.stopPropagation();
+                canvasResizeDrag = { sy: e.clientY, sh: cw.offsetHeight };
+                document.body.classList.add("ws-canvas-resizing");
+            });
+        }
+        window.addEventListener("mousemove", function (e) {
+            if (!canvasResizeDrag || !cw) {
+                return;
+            }
+            var nh = clamp(canvasResizeDrag.sh + (e.clientY - canvasResizeDrag.sy), 360, Math.round(window.innerHeight - 72));
+            S.canvasUserHeight = nh;
+            cw.style.height = nh + "px";
+            cw.style.minHeight = nh + "px";
+        });
+        window.addEventListener("mouseup", function () {
+            if (canvasResizeDrag) {
+                canvasResizeDrag = null;
+                document.body.classList.remove("ws-canvas-resizing");
+                applyView();
+            }
+        });
+
+        window.addEventListener("resize", function () {
+            if (!document.body.classList.contains("ws-repr-orbital")) {
+                return;
+            }
+            syncCanvasElementSize();
+            applyView();
+        });
 
         var ex = $("expand-chip"),
             col = $("collapse-chip");

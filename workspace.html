@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="./styles.css?v=37" />
 <link rel="stylesheet" href="./dsa-index-shell.css?v=20" />
 <link rel="stylesheet" href="./auth/admin-workspace.css?v=7" />
-<link rel="stylesheet" href="./workspace-chrome.css?v=16" />
+<link rel="stylesheet" href="./workspace-chrome.css?v=17" />
 </head>
 <body class="mode-customize ws-repr-orbital">
 <div id="admin-dsa-map-toolbar-host" class="ws-offscreen-toolbar-host" data-dsa-index-toolbar-slots="1" aria-hidden="true">
@@ -56,9 +56,11 @@
       <h6>// node types</h6>
       <div id="ws-cat-types" class="ws-cat-types"></div>
       <h6 style="margin-top:16px">// difficulty</h6>
+      <div class="ws-difficulty-stats">
       <div class="item ws-foot-stat"><span class="d ds" style="color:#7bbf3a"></span> Easy <span class="count" id="cnt-easy">0</span></div>
       <div class="item ws-foot-stat"><span class="d ds" style="color:var(--c-amber)"></span> Medium <span class="count" id="cnt-med">0</span></div>
       <div class="item ws-foot-stat"><span class="d ds" style="color:var(--c-red)"></span> Hard <span class="count" id="cnt-hard">0</span></div>
+      </div>
       <h6 style="margin-top:16px">// overall</h6>
       <div class="ws-overall-stat">Avg mastery <b id="avg-mastery">0%</b></div>
     </div>
@@ -103,7 +105,6 @@
       <button type="button" class="ws-cat-node-list-close" id="ws-cat-node-list-close" aria-label="Close">×</button>
     </div>
     <div class="ws-cat-node-list-body" id="ws-cat-node-list-body"></div>
-  </div>
   </div>
   <div class="ws-linear-pane pv-canvas">
     <div class="ws-graph-embed">
@@ -160,7 +161,7 @@
 <script src="./dsa-solution-sheet-pro.js?v=3"></script>
 <script src="./dsa-company-selector.js?v=5"></script>
 <script src="./script.js?v=76"></script>
-<script src="./workspace-studio.js?v=28"></script>
+<script src="./workspace-studio.js?v=29"></script>
 <script>
 (function(){
 window.dsaHasCustomizeGraphAccess=function(){return true;};
@@ -315,15 +316,12 @@ function wsNavHierarchySig(data){
   }catch(e){return "";}
 }
 
-/** Default: root open + only first direct child expanded; all other siblings collapsed. */
+/** Default: only root expanded — direct children visible, all nested branches collapsed. */
 function wsInitDefaultNavExpand(forest){
   wsNavExpandedPaths={};
   (forest||[]).forEach(function(root){
     if(!root||!root.branch){return;}
     wsNavSetExpanded(root.path,true);
-    if(root.children&&root.children.length){
-      wsNavSetExpanded(root.children[0].path,true);
-    }
   });
 }
 
@@ -631,40 +629,89 @@ function wsRenderNavEntry(entry,host,filterQ){
 function wsFindNavRow(path){
   return document.querySelector('.ws-tree-row[data-path="'+CSS.escape(path)+'"], .ws-flat-row[data-path="'+CSS.escape(path)+'"]');
 }
+function wsIsRootNodeTypeSlug(slug){
+  var u=String(slug||"").toUpperCase();
+  return u==="ROOT"||u==="DS";
+}
+
 function wsCountBySlug(entries){
   var m={};
   (entries||[]).forEach(function(e){
     var s=e.cat&&e.cat.slug?e.cat.slug:"TOPIC";
+    if(wsIsRootNodeTypeSlug(s)){return;}
     m[s]=(m[s]||0)+1;
   });
   return m;
 }
+
+function wsNormalizeProblemDifficulty(d){
+  var x=String(d||"").trim().toLowerCase();
+  if(x==="easy"||x==="medium"||x==="hard"){return x;}
+  return "";
+}
+
+function wsCollectProblemDifficultyCounts(data){
+  var out={easy:0,medium:0,hard:0};
+  function countList(arr){
+    (arr||[]).forEach(function(p){
+      if(!p||typeof p!=="object"){return;}
+      var d=wsNormalizeProblemDifficulty(p.difficulty);
+      if(d){out[d]+=1;}
+    });
+  }
+  function walkNode(n){
+    if(!n||typeof n!=="object"){return;}
+    countList(n.problems);
+    (Array.isArray(n.children)?n.children:[]).forEach(walkNode);
+    (Array.isArray(n.patterns)?n.patterns:[]).forEach(walkNode);
+    (Array.isArray(n.tree)?n.tree:[]).forEach(walkNode);
+  }
+  (data||[]).forEach(function(ds){
+    countList(ds.problems);
+    wsGetDsTree(ds).forEach(walkNode);
+  });
+  return out;
+}
+
+function wsRenderDifficultyStats(data){
+  var c=wsCollectProblemDifficultyCounts(data);
+  var ge=$("cnt-easy"),gm=$("cnt-med"),gh=$("cnt-hard");
+  if(ge){ge.textContent=String(c.easy);}
+  if(gm){gm.textContent=String(c.medium);}
+  if(gh){gh.textContent=String(c.hard);}
+}
+window.wsRenderDifficultyStats=wsRenderDifficultyStats;
+
 function wsGetCategoryCatalog(counts){
   var seen={};
   var list=[];
   (window.__dsaGraphBodyCategories||[]).forEach(function(c){
     if(!c||!c.id||seen[c.id])return;
+    if(wsIsRootNodeTypeSlug(c.id))return;
     seen[c.id]=1;
     list.push({slug:c.id,name:c.name||c.id,color:c.color||wsDefaultCatColor(c.id),count:(counts&&counts[c.id])||0});
   });
   (window.__dsaGraphNodeCategories||[]).forEach(function(c){
     var id=String(c.slug||"").toUpperCase();
     if(!id||seen[id])return;
+    if(wsIsRootNodeTypeSlug(id))return;
     seen[id]=1;
     list.push({slug:id,name:String(c.label||c.slug||id),color:String(c.color||wsDefaultCatColor(id)),count:(counts&&counts[id])||0});
   });
   Object.keys(counts||{}).forEach(function(slug){
+    if(wsIsRootNodeTypeSlug(slug)){return;}
     if(seen[slug]){list.find(function(x){return x.slug===slug;}).count=counts[slug];return;}
     seen[slug]=1;
     list.push({slug:slug,name:slug,color:wsDefaultCatColor(slug),count:counts[slug]});
   });
   return list.sort(function(a,b){return a.name.localeCompare(b.name);});
 }
-function wsRenderCategoryFooter(){
+function wsRenderCategoryFooter(data){
   var host=$("ws-cat-types");if(!host)return;
   var counts=wsCountBySlug(wsFlatEntries);
   var cats=wsGetCategoryCatalog(counts);
   host.innerHTML="";
+  wsRenderDifficultyStats(data||wsGetH());
   cats.forEach(function(cat){
     var row=document.createElement("div");
     row.className="item ws-cat-type-item"+(wsActiveCatSlug===cat.slug?" active":"");
@@ -727,7 +774,7 @@ function wsRenderFileTree(){
   var filterQ=qEl&&qEl.value?String(qEl.value).trim().toLowerCase():"";
   h.innerHTML="";
   var data=wsGetH();
-  if(!data.length){h.innerHTML='<p class="ws-file-tree-empty">No graph data — load API or import JSON.</p>';wsFlatEntries=[];wsRenderCategoryFooter();return;}
+  if(!data.length){h.innerHTML='<p class="ws-file-tree-empty">No graph data — load API or import JSON.</p>';wsFlatEntries=[];wsRenderCategoryFooter(data);return;}
   var forest=wsBuildNavForest(data);
   var sig=wsNavHierarchySig(data);
   if(sig!==wsNavExpandSig){
@@ -737,7 +784,7 @@ function wsRenderFileTree(){
   if(filterQ){wsNavExpandForFilter(forest,filterQ);}
   forest.forEach(function(root){wsRenderNavEntry(root,h,filterQ);});
   wsFlatEntries=wsCollectFlatFromData(data,filterQ);
-  wsRenderCategoryFooter();
+  wsRenderCategoryFooter(data);
 }
 window.wsRenderFileTree=wsRenderFileTree;
 function wsRenderTree(){wsRenderFileTree();}

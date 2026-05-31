@@ -1005,14 +1005,18 @@
         var ge = $("cnt-easy"),
             gm = $("cnt-med"),
             gh = $("cnt-hard");
-        if (ge) {
-            ge.textContent = e;
-        }
-        if (gm) {
-            gm.textContent = m;
-        }
-        if (gh) {
-            gh.textContent = h;
+        if (typeof window.wsRenderDifficultyStats === "function") {
+            window.wsRenderDifficultyStats();
+        } else {
+            if (ge) {
+                ge.textContent = e;
+            }
+            if (gm) {
+                gm.textContent = m;
+            }
+            if (gh) {
+                gh.textContent = h;
+            }
         }
         var cd = $("cnt-ds"),
             cpat = $("cnt-pat"),

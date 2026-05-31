@@ -586,32 +586,79 @@
                 parentForTopics = dsKey;
             }
 
+            var dsId = String(ds.id != null ? ds.id : "ds" + i);
+            var dsPathPrefix = singleTop ? dsId : String(nodes[parentForTopics] && nodes[parentForTopics].mindPath ? nodes[parentForTopics].mindPath : dsId);
             var maxTopics = 14;
-            tree.slice(0, maxTopics).forEach(function (ch, j) {
-                var tKey = nextId();
-                var chChildren = Array.isArray(ch.children) ? ch.children : [];
-                var probs = Array.isArray(ch.problems) ? ch.problems : [];
-                var cnt = chChildren.length || probs.length;
+            var maxOrbNodes = 500;
+            var orbNodeCount = Object.keys(nodes).length;
+
+            function appendMindBranch(node, orbParentId, pathPrefix, depth, siblingIdx) {
+                if (!node || typeof node !== "object" || orbNodeCount >= maxOrbNodes) {
+                    return null;
+                }
+                var rawName = String(node.name != null ? node.name : "Untitled").trim() || "Untitled";
+                var name = rawName.slice(0, 22);
+                var mindPath = (pathPrefix ? pathPrefix + "::" + rawName : rawName).trim();
+                var chChildren = Array.isArray(node.children) ? node.children : [];
+                var probs = Array.isArray(node.problems) ? node.problems : [];
                 var isLeafProblems = probs.length > 0 && chChildren.length === 0;
-                var hexCh = hexForMindCategory(pickMindGc(ch));
-                var topicPath =
-                    (String(ds.id != null ? ds.id : "ds" + i) +
-                        "::" +
-                        String(ch.name != null ? ch.name : "Topic")).trim();
-                nodes[tKey] = {
-                    id: tKey,
-                    name: String(ch.name != null ? ch.name : "Topic").slice(0, 18),
-                    r: tree.length > 10 ? 17 : 20,
+                var hexCh = hexForMindCategory(pickMindGc(node));
+                var slug = String(
+                    node.nodeCategorySlug || (isLeafProblems ? "PROBLEM" : depth <= 1 ? "TOPIC" : "PATTERN"),
+                ).toUpperCase();
+                var key = nextId();
+                orbNodeCount += 1;
+                nodes[key] = {
+                    id: key,
+                    name: name,
+                    r: depth > 1 || tree.length > 10 ? 17 : 20,
                     color: col,
                     ringHex: hexCh || "",
-                    count: cnt,
+                    count: chChildren.length + probs.length,
                     mastery: 0,
-                    diff: "Easy",
-                    category: isLeafProblems ? "problem" : "pattern",
-                    mindPath: topicPath,
-                    categorySlug: String(ch.nodeCategorySlug || (isLeafProblems ? "PROBLEM" : "TOPIC")).toUpperCase(),
+                    diff: String(node.difficulty || node.diff || "Medium").replace(/^\w/, function (c) {
+                        return c.toUpperCase();
+                    }),
+                    category: isLeafProblems || slug === "PROBLEM" ? "problem" : "pattern",
+                    mindPath: mindPath,
+                    categorySlug: slug,
                 };
-                edges.push([parentForTopics, tKey, j < 5 ? 1 : 0]);
+                edges.push([orbParentId, key, depth <= 1 && siblingIdx < 5 ? 1 : 0]);
+
+                chChildren.forEach(function (ch, j) {
+                    appendMindBranch(ch, key, mindPath, depth + 1, j);
+                });
+                probs.forEach(function (pr) {
+                    if (orbNodeCount >= maxOrbNodes) {
+                        return;
+                    }
+                    var pRaw = String(pr && pr.name != null ? pr.name : "Problem").trim() || "Problem";
+                    var pName = pRaw.slice(0, 22);
+                    var pKey = nextId();
+                    orbNodeCount += 1;
+                    var pHex = hexForMindCategory(pickMindGc(pr));
+                    nodes[pKey] = {
+                        id: pKey,
+                        name: pName,
+                        r: 14,
+                        color: col,
+                        ringHex: pHex || "",
+                        count: 0,
+                        mastery: 0,
+                        diff: String(pr.difficulty || "Medium").replace(/^\w/, function (c) {
+                            return c.toUpperCase();
+                        }),
+                        category: "problem",
+                        mindPath: mindPath + "::" + pRaw,
+                        categorySlug: "PROBLEM",
+                    };
+                    edges.push([key, pKey, 0]);
+                });
+                return key;
+            }
+
+            tree.slice(0, maxTopics).forEach(function (ch, j) {
+                appendMindBranch(ch, parentForTopics, dsPathPrefix, 1, j);
             });
         });
 
@@ -1069,10 +1116,16 @@
     function select(id) {
         var n = S.nodes[id];
         var didExpand = false;
-        if (n && childIds(id).length && S.collapsed.has(id)) {
-            S.collapsed.delete(id);
-            layoutRadial();
-            didExpand = true;
+        if (n) {
+            pathTo(id).forEach(function (nid) {
+                if (S.collapsed.has(nid)) {
+                    S.collapsed.delete(nid);
+                    didExpand = true;
+                }
+            });
+            if (didExpand) {
+                layoutRadial();
+            }
         }
         advanceSelection(id);
         if (didExpand) {

@@ -1,6 +1,6 @@
 /**
  * Orbital graph studio (workspace sandbox) — sector radial layout, zoom/pan, minimap, chips.
- * Expects DOM in #ws-orbital-pane (see workspace.html). Call ORB.init() after DOM ready.
+ * Expects orbital layer in #ws-graph-layer-orbital inside #canvas-wrap (see workspace.html). Call ORB.init() after DOM ready.
  */
 (function () {
     var CATS = { ds: "Data Structure", pattern: "Pattern", problem: "Problem" };

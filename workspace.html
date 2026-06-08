@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="./styles.css?v=37" />
 <link rel="stylesheet" href="./dsa-index-shell.css?v=20" />
 <link rel="stylesheet" href="./auth/admin-workspace.css?v=7" />
-<link rel="stylesheet" href="./workspace-chrome.css?v=20" />
+<link rel="stylesheet" href="./workspace-chrome.css?v=21" />
 </head>
 <body class="mode-customize ws-repr-orbital">
 <div id="admin-dsa-map-toolbar-host" class="ws-offscreen-toolbar-host" data-dsa-index-toolbar-slots="1" aria-hidden="true">
@@ -66,73 +66,73 @@
     </div>
   </div>
   <div class="pv-canvas-wrap" id="pv-canvas-wrap">
-  <div class="ws-orbital-pane">
-  <div class="pv-canvas" id="canvas-wrap">
-    <div class="corner mono" id="meta-corner">graph.render</div>
-    <div class="canvas-tools">
-      <div class="zoom-ctrl"><button type="button" id="zoom-out" title="Zoom out">−</button><span id="zoom-val" title="Reset zoom">100%</span><button type="button" id="zoom-in" title="Zoom in">+</button></div>
-      <div class="chip" id="expand-chip" title="Expand all">⤢ Expand</div>
-      <div class="chip" id="collapse-chip" title="Collapse all">⤡ Collapse</div>
-    </div>
-    <div class="breadcrumb" id="breadcrumb"></div>
-    <div class="legend-bot">
-      <span class="legend-tone" style="border-left:3px solid var(--c-accent);padding-left:6px">structure</span>
-      <span class="legend-tone" style="border-left:3px solid var(--c-amber);padding-left:6px">pattern</span>
-      <span class="legend-tone" style="border-left:3px solid var(--c-pink);padding-left:6px">problems</span>
-      <span id="hint-text" style="margin-left:auto">drag bg · scroll zoom · click explorer to navigate</span>
-    </div>
-    <svg class="pv-svg" id="svg" viewBox="0 0 600 580" preserveAspectRatio="xMidYMid meet">
-      <defs>
-        <linearGradient id="cEdgeGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a5bd9"/><stop offset="1" stop-color="#1aa37a"/></linearGradient>
-        <linearGradient id="mintEdge" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1aa37a"/><stop offset="1" stop-color="#e08658"/></linearGradient>
-      </defs>
-      <g id="edges-g"></g><g id="nodes-g"></g>
-    </svg>
-    <div class="minimap" id="minimap"><svg viewBox="0 0 600 580" preserveAspectRatio="xMidYMid meet" id="mm-svg"><g id="mm-nodes"></g><rect class="vp" id="mm-vp" x="0" y="0" width="600" height="580"/></svg></div>
-    <div class="node-chips" id="node-chips">
-      <div class="node-chip focus" id="chip-focus" title="Focus">◎</div>
-      <div class="node-chip" id="chip-collapse-n" title="Fold">⊟</div>
-      <div class="node-chip add" id="chip-add" title="Add child">+</div>
-      <div class="node-chip" id="chip-edit" title="Edit">✎</div>
-      <div class="node-chip danger" id="chip-del" title="Delete">×</div>
-    </div>
-    <input type="file" id="import-file" accept="application/json" style="display:none" />
-    <div class="canvas-resize-handle" id="canvas-resize-handle" title="Drag to resize canvas"></div>
-  </div>
-  </div>
-  <div id="ws-cat-node-list" class="ws-cat-node-list" hidden>
-    <div class="ws-cat-node-list-head">
-      <span id="ws-cat-node-list-title">Nodes</span>
-      <button type="button" class="ws-cat-node-list-close" id="ws-cat-node-list-close" aria-label="Close">×</button>
-    </div>
-    <div class="ws-cat-node-list-body" id="ws-cat-node-list-body"></div>
-  </div>
-  <div class="ws-linear-pane pv-canvas">
-    <div class="ws-graph-embed">
-      <div class="dsa-graph-shell dsa-index-ref">
-        <main class="page adm-content-graph-studio">
-          <section class="head adm-ws-studio-head" aria-hidden="true">
-            <nav class="seg dsa-view-tabs dsa-seg-track" role="tablist" id="admin-modeSeg" aria-label="Graph layout">
-              <span class="dsa-seg-thumb" aria-hidden="true"></span>
-              <button type="button" class="dsa-view-btn" role="tab" data-mode="full" aria-selected="false">Full map</button>
-              <button type="button" class="dsa-view-btn" role="tab" data-mode="one" aria-selected="false">One topic</button>
-              <button type="button" class="dsa-view-btn" role="tab" data-mode="custom" aria-selected="false">Customize</button>
-            </nav>
-          </section>
-          <section class="graph-card adm-graph-preview adm-ws-graph-card" id="adm-ws-graph-card">
-            <div id="adm-ws-empty-placeholder" class="adm-ws-empty-placeholder empty-state">
-              <h3>Canvas</h3>
-              <p>Load API or use JSON tab.</p>
-              <button type="button" class="btn btn-sm" id="adm-ws-empty-open-public">Load <code>GET /api/data?k=dsa</code></button>
-            </div>
-            <div class="graph-stage adm-ws-graph-stage">
-              <div id="admin-dsa-hierarchy-root" class="dsa-graph-viewport" aria-label="Mind map workspace"></div>
-            </div>
-          </section>
-        </main>
+    <div class="pv-canvas ws-shared-canvas" id="canvas-wrap">
+      <div class="ws-graph-layer ws-graph-layer--linear" id="ws-graph-layer-linear">
+        <div class="ws-graph-embed">
+          <div class="dsa-graph-shell dsa-index-ref">
+            <main class="page adm-content-graph-studio">
+              <section class="head adm-ws-studio-head" aria-hidden="true">
+                <nav class="seg dsa-view-tabs dsa-seg-track" role="tablist" id="admin-modeSeg" aria-label="Graph layout">
+                  <span class="dsa-seg-thumb" aria-hidden="true"></span>
+                  <button type="button" class="dsa-view-btn" role="tab" data-mode="full" aria-selected="false">Full map</button>
+                  <button type="button" class="dsa-view-btn" role="tab" data-mode="one" aria-selected="false">One topic</button>
+                  <button type="button" class="dsa-view-btn" role="tab" data-mode="custom" aria-selected="false">Customize</button>
+                </nav>
+              </section>
+              <section class="graph-card adm-graph-preview adm-ws-graph-card" id="adm-ws-graph-card">
+                <div id="adm-ws-empty-placeholder" class="adm-ws-empty-placeholder empty-state">
+                  <h3>Canvas</h3>
+                  <p>Load API or use JSON tab.</p>
+                  <button type="button" class="btn btn-sm" id="adm-ws-empty-open-public">Load <code>GET /api/data?k=dsa</code></button>
+                </div>
+                <div class="graph-stage adm-ws-graph-stage">
+                  <div id="admin-dsa-hierarchy-root" class="dsa-graph-viewport" aria-label="Mind map workspace"></div>
+                </div>
+              </section>
+            </main>
+          </div>
+        </div>
+      </div>
+      <div class="ws-graph-layer ws-graph-layer--orbital" id="ws-graph-layer-orbital">
+        <div class="corner mono" id="meta-corner">graph.render</div>
+        <div class="canvas-tools">
+          <div class="zoom-ctrl"><button type="button" id="zoom-out" title="Zoom out">−</button><span id="zoom-val" title="Reset zoom">100%</span><button type="button" id="zoom-in" title="Zoom in">+</button></div>
+          <div class="chip" id="expand-chip" title="Expand all">⤢ Expand</div>
+          <div class="chip" id="collapse-chip" title="Collapse all">⤡ Collapse</div>
+        </div>
+        <div class="breadcrumb" id="breadcrumb"></div>
+        <div class="legend-bot">
+          <span class="legend-tone" style="border-left:3px solid var(--c-accent);padding-left:6px">structure</span>
+          <span class="legend-tone" style="border-left:3px solid var(--c-amber);padding-left:6px">pattern</span>
+          <span class="legend-tone" style="border-left:3px solid var(--c-pink);padding-left:6px">problems</span>
+          <span id="hint-text" style="margin-left:auto">drag bg · scroll zoom · click explorer to navigate</span>
+        </div>
+        <svg class="pv-svg" id="svg" viewBox="0 0 600 580" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <linearGradient id="cEdgeGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a5bd9"/><stop offset="1" stop-color="#1aa37a"/></linearGradient>
+            <linearGradient id="mintEdge" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1aa37a"/><stop offset="1" stop-color="#e08658"/></linearGradient>
+          </defs>
+          <g id="edges-g"></g><g id="nodes-g"></g>
+        </svg>
+        <div class="minimap" id="minimap"><svg viewBox="0 0 600 580" preserveAspectRatio="xMidYMid meet" id="mm-svg"><g id="mm-nodes"></g><rect class="vp" id="mm-vp" x="0" y="0" width="600" height="580"/></svg></div>
+        <div class="node-chips" id="node-chips">
+          <div class="node-chip focus" id="chip-focus" title="Focus">◎</div>
+          <div class="node-chip" id="chip-collapse-n" title="Fold">⊟</div>
+          <div class="node-chip add" id="chip-add" title="Add child">+</div>
+          <div class="node-chip" id="chip-edit" title="Edit">✎</div>
+          <div class="node-chip danger" id="chip-del" title="Delete">×</div>
+        </div>
+        <input type="file" id="import-file" accept="application/json" style="display:none" />
+        <div class="canvas-resize-handle" id="canvas-resize-handle" title="Drag to resize canvas"></div>
+      </div>
+      <div id="ws-cat-node-list" class="ws-cat-node-list" hidden>
+        <div class="ws-cat-node-list-head">
+          <span id="ws-cat-node-list-title">Nodes</span>
+          <button type="button" class="ws-cat-node-list-close" id="ws-cat-node-list-close" aria-label="Close">×</button>
+        </div>
+        <div class="ws-cat-node-list-body" id="ws-cat-node-list-body"></div>
       </div>
     </div>
-  </div>
   </div>
   <div class="pv-right">
     <div id="right-panel-inspector">
@@ -162,7 +162,7 @@
 <script src="./dsa-solution-sheet-pro.js?v=3"></script>
 <script src="./dsa-company-selector.js?v=5"></script>
 <script src="./script.js?v=76"></script>
-<script src="./workspace-studio.js?v=30"></script>
+<script src="./workspace-studio.js?v=31"></script>
 <script>
 (function(){
 window.dsaHasCustomizeGraphAccess=function(){return true;};

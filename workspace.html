@@ -11,16 +11,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=37" />
+    <link rel="stylesheet" href="./styles.css?v=38" />
 <link rel="stylesheet" href="./dsa-index-shell.css?v=20" />
 <link rel="stylesheet" href="./auth/admin-workspace.css?v=7" />
-<link rel="stylesheet" href="./workspace-chrome.css?v=21" />
+<link rel="stylesheet" href="./workspace-chrome.css?v=22" />
 </head>
 <body class="mode-customize ws-repr-orbital">
-<div id="admin-dsa-map-toolbar-host" class="ws-offscreen-toolbar-host" data-dsa-index-toolbar-slots="1" aria-hidden="true">
-  <div class="dsa-toolbar-expand-slot" id="admin-dsa-toolbar-expand-slot"></div>
-  <div class="dsa-toolbar-zoom-host" id="admin-dsa-toolbar-zoom-host"></div>
-</div>
 <input type="file" id="ws-hier-import-file" accept="application/json,.json" hidden aria-hidden="true" />
 
 <div class="preview">
@@ -68,6 +64,16 @@
   <div class="pv-canvas-wrap" id="pv-canvas-wrap">
     <div class="pv-canvas ws-shared-canvas" id="canvas-wrap">
       <div class="ws-graph-layer ws-graph-layer--linear" id="ws-graph-layer-linear">
+        <div class="corner mono ws-linear-corner">mind.map</div>
+        <div class="canvas-tools ws-linear-canvas-tools">
+          <div id="admin-dsa-map-toolbar-host" data-dsa-index-toolbar-slots="1" aria-label="Mind map controls">
+            <div class="dsa-toolbar-expand-slot" id="admin-dsa-toolbar-expand-slot"></div>
+            <div class="dsa-toolbar-zoom-host" id="admin-dsa-toolbar-zoom-host"></div>
+          </div>
+        </div>
+        <div class="legend-bot ws-linear-legend">
+          <span id="ws-linear-hint-text" style="margin-left:auto">scroll to pan · Ctrl+scroll zoom · click explorer to navigate</span>
+        </div>
         <div class="ws-graph-embed">
           <div class="dsa-graph-shell dsa-index-ref">
             <main class="page adm-content-graph-studio">
@@ -105,7 +111,7 @@
           <span class="legend-tone" style="border-left:3px solid var(--c-accent);padding-left:6px">structure</span>
           <span class="legend-tone" style="border-left:3px solid var(--c-amber);padding-left:6px">pattern</span>
           <span class="legend-tone" style="border-left:3px solid var(--c-pink);padding-left:6px">problems</span>
-          <span id="hint-text" style="margin-left:auto">drag bg · scroll zoom · click explorer to navigate</span>
+          <span id="hint-text" style="margin-left:auto">drag bg · Ctrl+scroll zoom · click explorer to navigate</span>
         </div>
         <svg class="pv-svg" id="svg" viewBox="0 0 600 580" preserveAspectRatio="xMidYMid meet">
           <defs>
@@ -161,8 +167,8 @@
 <script src="./dsa-sketch-native.js?v=3"></script>
 <script src="./dsa-solution-sheet-pro.js?v=3"></script>
 <script src="./dsa-company-selector.js?v=5"></script>
-<script src="./script.js?v=76"></script>
-<script src="./workspace-studio.js?v=31"></script>
+<script src="./script.js?v=77"></script>
+<script src="./workspace-studio.js?v=32"></script>
 <script>
 (function(){
 window.dsaHasCustomizeGraphAccess=function(){return true;};

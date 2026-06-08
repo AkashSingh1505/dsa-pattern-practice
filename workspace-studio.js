@@ -2151,6 +2151,9 @@
         svg.addEventListener(
             "wheel",
             function (e) {
+                if (!(e.ctrlKey || e.metaKey)) {
+                    return;
+                }
                 e.preventDefault();
                 var delta = e.deltaY > 0 ? 0.92 : 1.08;
                 S.zoom = clamp(S.zoom * delta, 0.28, 2.75);
@@ -2280,10 +2283,10 @@
         if (ht) {
             ht.textContent =
                 S.mode === "customize"
-                    ? "drag bg · scroll zoom · click explorer to navigate"
+                    ? "drag bg · Ctrl+scroll zoom · click explorer to navigate"
                     : S.mode === "topic"
-                      ? "topic lens · click explorer to navigate"
-                      : "drag bg · scroll zoom · click explorer to navigate";
+                      ? "topic lens · Ctrl+scroll zoom · click explorer to navigate"
+                      : "drag bg · Ctrl+scroll zoom · click explorer to navigate";
         }
         render();
     }

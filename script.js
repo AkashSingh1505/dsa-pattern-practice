@@ -6105,7 +6105,7 @@ function dsaWireMindScrollZoom(scrollEl, graphAreaEl, scheduleRedraw, zoomMountE
         const delta = e.deltaY > 0 ? -step : step;
         setScale(scale + delta);
     };
-    scrollEl.addEventListener("wheel", onWheel, { passive: false });
+    graphAreaEl.addEventListener("wheel", onWheel, { passive: false, capture: true });
 
     let pinch = null;
     const onTouchStart = (e) => {
@@ -6211,7 +6211,7 @@ function dsaWireMindScrollZoom(scrollEl, graphAreaEl, scheduleRedraw, zoomMountE
     requestAnimationFrame(() => requestAnimationFrame(syncSizer));
 
     return () => {
-        scrollEl.removeEventListener("wheel", onWheel);
+        graphAreaEl.removeEventListener("wheel", onWheel, { capture: true });
         scrollEl.removeEventListener("touchstart", onTouchStart);
         scrollEl.removeEventListener("touchmove", onTouchMove);
         scrollEl.removeEventListener("touchend", onTouchEnd);

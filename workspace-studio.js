@@ -1590,7 +1590,7 @@
                 '<div class="form-actions"><button type="button" class="btn primary" id="f-add">+ Add child</button>' +
                 (n.isCore ? "" : '<button type="button" class="btn danger" id="f-del">Delete</button>') +
                 "</div>" +
-                '<div class="kbd-row"><div><span>Focus on node</span><span class="kbd">2× click</span></div>' +
+                '<div class="kbd-row"><div><span>Explorer</span><span class="kbd">click row</span></div>' +
                 '<div><span>Pan canvas</span><span class="kbd">drag bg</span></div>' +
                 '<div><span>Zoom</span><span class="kbd">scroll</span></div>' +
                 '<div><span>Deselect</span><span class="kbd">Esc</span></div></div></div>' +
@@ -1893,12 +1893,6 @@
         }
     }
 
-    function showFocusToast(clientX, clientY, label) {
-        if (typeof window.wsShowFocusToast === "function") {
-            window.wsShowFocusToast(clientX, clientY, label);
-        }
-    }
-
     var drag = null;
     var nodeClickTimer = null;
     var suppressNodeClick = false;
@@ -1971,7 +1965,10 @@
                 }
                 clearTimeout(nodeClickTimer);
                 nodeClickTimer = setTimeout(function () {
-                    showFocusToast(e.clientX, e.clientY, n.name);
+                    advanceSelection(n.id);
+                    apply();
+                    sidebar();
+                    inspector();
                 }, 260);
             });
             g.addEventListener("mouseenter", function () {
@@ -2283,10 +2280,10 @@
         if (ht) {
             ht.textContent =
                 S.mode === "customize"
-                    ? "double-click to focus · single-click shows hint · drag nodes to move"
+                    ? "drag bg · scroll zoom · click explorer to navigate"
                     : S.mode === "topic"
-                      ? "double-click to focus · single-click shows hint"
-                      : "double-click to focus · single-click shows hint";
+                      ? "topic lens · click explorer to navigate"
+                      : "drag bg · scroll zoom · click explorer to navigate";
         }
         render();
     }

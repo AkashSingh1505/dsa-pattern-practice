@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="./styles.css?v=38" />
 <link rel="stylesheet" href="./dsa-index-shell.css?v=20" />
 <link rel="stylesheet" href="./auth/admin-workspace.css?v=7" />
-<link rel="stylesheet" href="./workspace-chrome.css?v=22" />
+<link rel="stylesheet" href="./workspace-chrome.css?v=23" />
 </head>
 <body class="mode-customize ws-repr-orbital">
 <input type="file" id="ws-hier-import-file" accept="application/json,.json" hidden aria-hidden="true" />
@@ -85,16 +85,7 @@
                   <button type="button" class="dsa-view-btn" role="tab" data-mode="custom" aria-selected="false">Customize</button>
                 </nav>
               </section>
-              <section class="graph-card adm-graph-preview adm-ws-graph-card" id="adm-ws-graph-card">
-                <div id="adm-ws-empty-placeholder" class="adm-ws-empty-placeholder empty-state">
-                  <h3>Canvas</h3>
-                  <p>Load API or use JSON tab.</p>
-                  <button type="button" class="btn btn-sm" id="adm-ws-empty-open-public">Load <code>GET /api/data?k=dsa</code></button>
-                </div>
-                <div class="graph-stage adm-ws-graph-stage">
-                  <div id="admin-dsa-hierarchy-root" class="dsa-graph-viewport" aria-label="Mind map workspace"></div>
-                </div>
-              </section>
+              <div id="admin-dsa-hierarchy-root" class="dsa-graph-viewport ws-graph-viewport" aria-label="Mind map workspace"></div>
             </main>
           </div>
         </div>
@@ -892,10 +883,6 @@ $("adm-ws-json-apply").addEventListener("click",function(){
 $("adm-ws-json-format").addEventListener("click",function(){
   var ta=$("adm-ws-json-editor");if(!ta)return;
   try{ta.value=JSON.stringify(JSON.parse(ta.value),null,2);wsMsg("Formatted.","ok");}catch(e5){wsMsg("Invalid JSON","err");}
-});
-$("adm-ws-empty-open-public")&&$("adm-ws-empty-open-public").addEventListener("click",function(){
-  if(typeof dsaLoadHierarchyFromSources!=="function")return;
-  dsaLoadHierarchyFromSources().then(function(){bootGraph();refreshJson();if(window.ORB&&typeof ORB.syncFromMindMapHierarchy==="function")ORB.syncFromMindMapHierarchy();});
 });
 
 if(typeof ORB!=="undefined")ORB.init();

@@ -199,9 +199,7 @@ body.mode-customize .node-chips.show{display:flex;gap:4px;pointer-events:auto;}
 .ws-graph-layer--linear .dsa-graph-shell.dsa-index-ref{flex:1;min-height:0;height:100%;display:flex;flex-direction:column;background:transparent!important;border:0!important;box-shadow:none!important;}
 .ws-graph-layer--linear .adm-content-graph-studio{flex:1;min-height:0;height:100%;display:flex;flex-direction:column;background:transparent!important;}
 .ws-graph-layer--linear .adm-ws-studio-head{display:none!important;}
-.ws-graph-layer--linear .adm-ws-graph-card{flex:1;min-height:0;height:100%;display:flex;flex-direction:column;border:0!important;background:transparent!important;box-shadow:none!important;}
-.ws-graph-layer--linear .adm-ws-graph-stage,
-.ws-graph-layer--linear .graph-stage{flex:1;min-height:0!important;height:100%;overflow:hidden!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;}
+.ws-graph-layer--linear .ws-graph-viewport,
 .ws-graph-layer--linear .dsa-graph-viewport{flex:1;min-height:0!important;height:100%;padding:0!important;margin:0!important;overflow:hidden!important;}
 .ws-graph-layer--linear .dsa-graph-layer{flex:1;min-height:0;height:100%;display:flex;flex-direction:column;}
 .ws-graph-layer--linear .dsa-graph-panel{flex:1;min-height:0;height:100%;margin-top:0!important;}

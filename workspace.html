@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="./styles.css?v=38" />
 <link rel="stylesheet" href="./dsa-index-shell.css?v=20" />
 <link rel="stylesheet" href="./auth/admin-workspace.css?v=7" />
-<link rel="stylesheet" href="./workspace-chrome.css?v=23" />
+<link rel="stylesheet" href="./workspace-chrome.css?v=24" />
 </head>
 <body class="mode-customize ws-repr-orbital">
 <input type="file" id="ws-hier-import-file" accept="application/json,.json" hidden aria-hidden="true" />
@@ -75,19 +75,13 @@
           <span id="ws-linear-hint-text" style="margin-left:auto">scroll to pan · Ctrl+scroll zoom · click explorer to navigate</span>
         </div>
         <div class="ws-graph-embed">
-          <div class="dsa-graph-shell dsa-index-ref">
-            <main class="page adm-content-graph-studio">
-              <section class="head adm-ws-studio-head" aria-hidden="true">
-                <nav class="seg dsa-view-tabs dsa-seg-track" role="tablist" id="admin-modeSeg" aria-label="Graph layout">
-                  <span class="dsa-seg-thumb" aria-hidden="true"></span>
-                  <button type="button" class="dsa-view-btn" role="tab" data-mode="full" aria-selected="false">Full map</button>
-                  <button type="button" class="dsa-view-btn" role="tab" data-mode="one" aria-selected="false">One topic</button>
-                  <button type="button" class="dsa-view-btn" role="tab" data-mode="custom" aria-selected="false">Customize</button>
-                </nav>
-              </section>
-              <div id="admin-dsa-hierarchy-root" class="dsa-graph-viewport ws-graph-viewport" aria-label="Mind map workspace"></div>
-            </main>
-          </div>
+          <nav class="seg dsa-view-tabs dsa-seg-track ws-hidden-mode-seg" role="tablist" id="admin-modeSeg" aria-label="Graph layout" aria-hidden="true" hidden>
+            <span class="dsa-seg-thumb" aria-hidden="true"></span>
+            <button type="button" class="dsa-view-btn" role="tab" data-mode="full" aria-selected="false">Full map</button>
+            <button type="button" class="dsa-view-btn" role="tab" data-mode="one" aria-selected="false">One topic</button>
+            <button type="button" class="dsa-view-btn" role="tab" data-mode="custom" aria-selected="false">Customize</button>
+          </nav>
+          <div id="admin-dsa-hierarchy-root" class="dsa-graph-viewport ws-graph-viewport" aria-label="Mind map workspace"></div>
         </div>
       </div>
       <div class="ws-graph-layer ws-graph-layer--orbital" id="ws-graph-layer-orbital">

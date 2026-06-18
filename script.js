@@ -6074,7 +6074,10 @@ function dsaWireMindScrollZoom(scrollEl, graphAreaEl, scheduleRedraw, zoomMountE
         const text = `${pct}%`;
         if (zoomValEl) {
             zoomValEl.textContent = text;
-            return;
+        }
+        const wsZv = document.getElementById("zoom-val");
+        if (wsZv) {
+            wsZv.textContent = text;
         }
         if (!btnReset) {
             return;
@@ -6209,6 +6212,10 @@ function dsaWireMindScrollZoom(scrollEl, graphAreaEl, scheduleRedraw, zoomMountE
     }
 
     requestAnimationFrame(() => requestAnimationFrame(syncSizer));
+
+    if (typeof window !== "undefined" && document.getElementById("canvas-wrap")) {
+        window.__wsLinearMindZoom = { setScale: setScale };
+    }
 
     return () => {
         graphAreaEl.removeEventListener("wheel", onWheel, { capture: true });

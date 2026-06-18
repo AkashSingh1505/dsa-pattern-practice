@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="./styles.css?v=38" />
 <link rel="stylesheet" href="./dsa-index-shell.css?v=20" />
 <link rel="stylesheet" href="./auth/admin-workspace.css?v=7" />
-<link rel="stylesheet" href="./workspace-chrome.css?v=26" />
+<link rel="stylesheet" href="./workspace-chrome.css?v=27" />
 </head>
 <body class="mode-customize ws-repr-orbital">
 <input type="file" id="ws-hier-import-file" accept="application/json,.json" hidden aria-hidden="true" />
@@ -63,17 +63,24 @@
   </div>
   <div class="pv-canvas-wrap" id="pv-canvas-wrap">
     <div class="pv-canvas ws-shared-canvas" id="canvas-wrap">
+      <div class="corner mono" id="meta-corner">graph.render</div>
+      <div class="canvas-tools ws-canvas-tools">
+        <div id="admin-dsa-map-toolbar-host" class="ws-offscreen-toolbar-host" data-dsa-index-toolbar-slots="1" aria-hidden="true" hidden>
+          <div class="dsa-toolbar-expand-slot" id="admin-dsa-toolbar-expand-slot"></div>
+          <div class="dsa-toolbar-zoom-host" id="admin-dsa-toolbar-zoom-host"></div>
+        </div>
+        <div class="zoom-ctrl"><button type="button" id="zoom-out" title="Zoom out">−</button><span id="zoom-val" title="Reset zoom">100%</span><button type="button" id="zoom-in" title="Zoom in">+</button></div>
+        <div class="chip" id="expand-chip" title="Expand all">⤢ Expand</div>
+        <div class="chip" id="collapse-chip" title="Collapse all">⤡ Collapse</div>
+      </div>
+      <div class="breadcrumb" id="breadcrumb"></div>
+      <div class="legend-bot ws-canvas-legend">
+        <span class="legend-tone" style="border-left:3px solid var(--c-accent);padding-left:6px">structure</span>
+        <span class="legend-tone" style="border-left:3px solid var(--c-amber);padding-left:6px">pattern</span>
+        <span class="legend-tone" style="border-left:3px solid var(--c-pink);padding-left:6px">problems</span>
+        <span id="hint-text" style="margin-left:auto">drag bg · Ctrl+scroll zoom · click explorer to navigate</span>
+      </div>
       <div class="ws-graph-layer ws-graph-layer--linear" id="ws-graph-layer-linear">
-        <div class="corner mono ws-linear-corner">mind.map</div>
-        <div class="canvas-tools ws-linear-canvas-tools">
-          <div id="admin-dsa-map-toolbar-host" data-dsa-index-toolbar-slots="1" aria-label="Mind map controls">
-            <div class="dsa-toolbar-expand-slot" id="admin-dsa-toolbar-expand-slot"></div>
-            <div class="dsa-toolbar-zoom-host" id="admin-dsa-toolbar-zoom-host"></div>
-          </div>
-        </div>
-        <div class="legend-bot ws-linear-legend">
-          <span id="ws-linear-hint-text" style="margin-left:auto">scroll to pan · Ctrl+scroll zoom · click explorer to navigate</span>
-        </div>
         <div class="ws-graph-embed">
           <nav class="seg dsa-view-tabs dsa-seg-track ws-hidden-mode-seg" role="tablist" id="admin-modeSeg" aria-label="Graph layout" aria-hidden="true" hidden>
             <span class="dsa-seg-thumb" aria-hidden="true"></span>
@@ -85,19 +92,6 @@
         </div>
       </div>
       <div class="ws-graph-layer ws-graph-layer--orbital" id="ws-graph-layer-orbital">
-        <div class="corner mono" id="meta-corner">graph.render</div>
-        <div class="canvas-tools">
-          <div class="zoom-ctrl"><button type="button" id="zoom-out" title="Zoom out">−</button><span id="zoom-val" title="Reset zoom">100%</span><button type="button" id="zoom-in" title="Zoom in">+</button></div>
-          <div class="chip" id="expand-chip" title="Expand all">⤢ Expand</div>
-          <div class="chip" id="collapse-chip" title="Collapse all">⤡ Collapse</div>
-        </div>
-        <div class="breadcrumb" id="breadcrumb"></div>
-        <div class="legend-bot">
-          <span class="legend-tone" style="border-left:3px solid var(--c-accent);padding-left:6px">structure</span>
-          <span class="legend-tone" style="border-left:3px solid var(--c-amber);padding-left:6px">pattern</span>
-          <span class="legend-tone" style="border-left:3px solid var(--c-pink);padding-left:6px">problems</span>
-          <span id="hint-text" style="margin-left:auto">drag bg · Ctrl+scroll zoom · click explorer to navigate</span>
-        </div>
         <svg class="pv-svg" id="svg" viewBox="0 0 600 580" preserveAspectRatio="xMidYMid meet">
           <defs>
             <linearGradient id="cEdgeGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a5bd9"/><stop offset="1" stop-color="#1aa37a"/></linearGradient>
@@ -114,8 +108,8 @@
           <div class="node-chip danger" id="chip-del" title="Delete">×</div>
         </div>
         <input type="file" id="import-file" accept="application/json" style="display:none" />
-        <div class="canvas-resize-handle" id="canvas-resize-handle" title="Drag to resize canvas"></div>
       </div>
+      <div class="canvas-resize-handle" id="canvas-resize-handle" title="Drag to resize canvas"></div>
       <div id="ws-cat-node-list" class="ws-cat-node-list" hidden>
         <div class="ws-cat-node-list-head">
           <span id="ws-cat-node-list-title">Nodes</span>
@@ -152,8 +146,8 @@
 <script src="./dsa-sketch-native.js?v=3"></script>
 <script src="./dsa-solution-sheet-pro.js?v=3"></script>
 <script src="./dsa-company-selector.js?v=5"></script>
-<script src="./script.js?v=77"></script>
-<script src="./workspace-studio.js?v=32"></script>
+<script src="./script.js?v=78"></script>
+<script src="./workspace-studio.js?v=33"></script>
 <script>
 (function(){
 window.dsaHasCustomizeGraphAccess=function(){return true;};
@@ -177,6 +171,7 @@ function setRepr(repr){
     x.classList.toggle("active",x.getAttribute("data-repr")===repr);
   });
   wsRenderFileTree();
+  wsCloseCatNodeList();
   var mt=document.querySelector("#tabs .pv-tab.active");
   var mode=(mt&&mt.getAttribute("data-mode"))||"customize";
   if(mode==="json"){mode="customize";}
@@ -742,9 +737,20 @@ function wsRenderCategoryFooter(data){
     cnt.className="count";
     cnt.textContent=String(cat.count||0);
     row.appendChild(nm);row.appendChild(cnt);
-    row.addEventListener("click",function(){wsShowCategoryNodes(cat.slug,cat.name);});
+    row.addEventListener("click",function(){
+      if(wsActiveCatSlug===cat.slug){wsCloseCatNodeList();return;}
+      wsShowCategoryNodes(cat.slug,cat.name);
+    });
     host.appendChild(row);
   });
+}
+function wsCloseCatNodeList(){
+  var panel=$("ws-cat-node-list");
+  if(panel){panel.hidden=true;}
+  wsActiveCatSlug="";
+  document.querySelectorAll(".ws-cat-type-item.active").forEach(function(x){x.classList.remove("active");});
+  wsRenderCategoryFooter();
+  if(window.ORB&&typeof ORB.clearCategoryFilter==="function"){ORB.clearCategoryFilter();}
 }
 function wsShowCategoryNodes(slug,label){
   wsActiveCatSlug=slug;
@@ -770,7 +776,7 @@ function wsShowCategoryNodes(slug,label){
       sp.title=entry.path;
       row.appendChild(sp);
       row.addEventListener("click",function(){
-        panel.hidden=true;
+        wsCloseCatNodeList();
         wsExpandNavAncestors(entry.path);
         wsRenderFileTree();
         var flat=wsFindNavRow(entry.path);
@@ -786,6 +792,47 @@ function wsShowCategoryNodes(slug,label){
     ORB.highlightCategory(slug,matches.map(function(m){return m.path;}));
   }
 }
+function wsIsLinearRepr(){return document.body.classList.contains("ws-repr-linear");}
+function wsLinearToolbarClick(action){
+  var host=$("admin-dsa-map-toolbar-host");
+  if(!host)return;
+  if(action==="expand"||action==="collapse"){
+    var slot=host.querySelector(".dsa-toolbar-expand-slot");
+    var btns=slot?slot.querySelectorAll("button"):[];
+    if(action==="expand"&&btns[0]){btns[0].click();return;}
+    if(action==="collapse"&&btns[1]){btns[1].click();}
+    return;
+  }
+  var zh=host.querySelector(".dsa-toolbar-zoom-host");
+  var zbtns=zh?zh.querySelectorAll("button"):[];
+  if(action==="zoom-in"&&zbtns.length){zbtns[zbtns.length-1].click();}
+  else if(action==="zoom-out"&&zbtns.length){zbtns[0].click();}
+  else if(action==="zoom-reset"&&window.__wsLinearMindZoom){window.__wsLinearMindZoom.setScale(1);}
+}
+function wsWireSharedCanvasControls(){
+  var ex=$("expand-chip"),col=$("collapse-chip"),zin=$("zoom-in"),zout=$("zoom-out"),zval=$("zoom-val");
+  if(ex){ex.onclick=function(){
+    if(wsIsLinearRepr()){wsLinearToolbarClick("expand");return;}
+    if(window.__wsOrbitalExpandAll){window.__wsOrbitalExpandAll();}
+  };}
+  if(col){col.onclick=function(){
+    if(wsIsLinearRepr()){wsLinearToolbarClick("collapse");return;}
+    if(window.__wsOrbitalCollapseAll){window.__wsOrbitalCollapseAll();}
+  };}
+  if(zin){zin.onclick=function(){
+    if(wsIsLinearRepr()){wsLinearToolbarClick("zoom-in");return;}
+    if(window.__wsOrbitalZoomIn){window.__wsOrbitalZoomIn();}
+  };}
+  if(zout){zout.onclick=function(){
+    if(wsIsLinearRepr()){wsLinearToolbarClick("zoom-out");return;}
+    if(window.__wsOrbitalZoomOut){window.__wsOrbitalZoomOut();}
+  };}
+  if(zval){zval.onclick=function(){
+    if(wsIsLinearRepr()){wsLinearToolbarClick("zoom-reset");return;}
+    if(window.__wsOrbitalZoomReset){window.__wsOrbitalZoomReset();}
+  };}
+}
+window.wsWireSharedCanvasControls=wsWireSharedCanvasControls;
 function wsRenderFileTree(){
   var h=$("ws-graph-tree");if(!h)return;
   var qEl=$("ws-file-nav-search");
@@ -813,11 +860,7 @@ document.querySelectorAll("#ws-repr-tabs .pv-tab").forEach(function(tab){
 var wsSearch=$("ws-file-nav-search");
 if(wsSearch){wsSearch.addEventListener("input",function(){wsRenderFileTree();});}
 var wsCatListClose=$("ws-cat-node-list-close");
-if(wsCatListClose){wsCatListClose.addEventListener("click",function(){
-  var panel=$("ws-cat-node-list");if(panel)panel.hidden=true;
-  wsActiveCatSlug="";wsRenderCategoryFooter();
-  if(window.ORB&&typeof ORB.clearCategoryFilter==="function"){ORB.clearCategoryFilter();}
-});}
+if(wsCatListClose){wsCatListClose.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();wsCloseCatNodeList();});}
 
 document.querySelectorAll("#tabs .pv-tab").forEach(function(tab){
   tab.addEventListener("click",function(){

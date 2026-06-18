@@ -2165,23 +2165,34 @@
         var zin = $("zoom-in"),
             zout = $("zoom-out"),
             zval = $("zoom-val");
+        window.__wsOrbitalZoomIn = function () {
+            S.zoom = clamp(S.zoom * 1.12, 0.28, 2.75);
+            applyView();
+        };
+        window.__wsOrbitalZoomOut = function () {
+            S.zoom = clamp(S.zoom / 1.12, 0.28, 2.75);
+            applyView();
+        };
+        window.__wsOrbitalZoomReset = function () {
+            S.zoom = 1;
+            S.pan = { x: 0, y: 0 };
+            applyView();
+        };
+        window.__wsOrbitalExpandAll = expandAll;
+        window.__wsOrbitalCollapseAll = collapseAll;
         if (zin) {
             zin.onclick = function () {
-                S.zoom = clamp(S.zoom * 1.12, 0.28, 2.75);
-                applyView();
+                window.__wsOrbitalZoomIn();
             };
         }
         if (zout) {
             zout.onclick = function () {
-                S.zoom = clamp(S.zoom / 1.12, 0.28, 2.75);
-                applyView();
+                window.__wsOrbitalZoomOut();
             };
         }
         if (zval) {
             zval.onclick = function () {
-                S.zoom = 1;
-                S.pan = { x: 0, y: 0 };
-                applyView();
+                window.__wsOrbitalZoomReset();
             };
         }
 
@@ -2226,10 +2237,18 @@
         var ex = $("expand-chip"),
             col = $("collapse-chip");
         if (ex) {
-            ex.onclick = expandAll;
+            ex.onclick = function () {
+                expandAll();
+            };
         }
         if (col) {
-            col.onclick = collapseAll;
+            col.onclick = function () {
+                collapseAll();
+            };
+        }
+
+        if (typeof window.wsWireSharedCanvasControls === "function") {
+            window.wsWireSharedCanvasControls();
         }
 
         var ap = $("add-pattern");

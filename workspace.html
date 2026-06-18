@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="./styles.css?v=38" />
 <link rel="stylesheet" href="./dsa-index-shell.css?v=20" />
 <link rel="stylesheet" href="./auth/admin-workspace.css?v=7" />
-<link rel="stylesheet" href="./workspace-chrome.css?v=28" />
+<link rel="stylesheet" href="./workspace-chrome.css?v=29" />
 </head>
 <body class="mode-customize ws-repr-orbital">
 <input type="file" id="ws-hier-import-file" accept="application/json,.json" hidden aria-hidden="true" />
@@ -51,11 +51,13 @@
     <div class="ws-side-foot" id="ws-side-foot">
       <h6>// node types</h6>
       <div id="ws-cat-types" class="ws-cat-types"></div>
+      <div id="ws-difficulty-section" class="ws-difficulty-section">
       <h6 style="margin-top:16px">// difficulty</h6>
       <div class="ws-difficulty-stats">
       <div class="item ws-foot-stat"><span class="d ds" style="color:#7bbf3a"></span> Easy <span class="count" id="cnt-easy">0</span></div>
       <div class="item ws-foot-stat"><span class="d ds" style="color:var(--c-amber)"></span> Medium <span class="count" id="cnt-med">0</span></div>
       <div class="item ws-foot-stat"><span class="d ds" style="color:var(--c-red)"></span> Hard <span class="count" id="cnt-hard">0</span></div>
+      </div>
       </div>
       <h6 style="margin-top:16px">// overall</h6>
       <div class="ws-overall-stat">Avg mastery <b id="avg-mastery">0%</b></div>
@@ -109,7 +111,6 @@
         </div>
         <input type="file" id="import-file" accept="application/json" style="display:none" />
       </div>
-      <div class="canvas-resize-handle" id="canvas-resize-handle" title="Drag to resize canvas"></div>
       <div id="ws-cat-node-list" class="ws-cat-node-list" hidden>
         <div class="ws-cat-node-list-head">
           <span id="ws-cat-node-list-title">Nodes</span>
@@ -146,8 +147,8 @@
 <script src="./dsa-sketch-native.js?v=3"></script>
 <script src="./dsa-solution-sheet-pro.js?v=3"></script>
 <script src="./dsa-company-selector.js?v=5"></script>
-<script src="./script.js?v=78"></script>
-<script src="./workspace-studio.js?v=33"></script>
+<script src="./script.js?v=79"></script>
+<script src="./workspace-studio.js?v=34"></script>
 <script>
 (function(){
 window.dsaHasCustomizeGraphAccess=function(){return true;};
@@ -248,6 +249,7 @@ function wsLoadHierarchyForStudio(){
 }
 
 function wsBootstrapStudio(){
+  wsSetGraphTypeSlug("DSA");
   wsEnsureCatPalette().then(function(){
     wsLoadHierarchyForStudio().then(function(){
       bootGraph();
@@ -658,10 +660,24 @@ function wsCountBySlug(entries){
   return m;
 }
 
+function wsGetGraphTypeSlug(){
+  if(window.__dsaGraphTypeSlug!=null&&String(window.__dsaGraphTypeSlug).trim()!==""){
+    return String(window.__dsaGraphTypeSlug).trim().toUpperCase();
+  }
+  return "DSA";
+}
+function wsIsDsaGraphType(){return wsGetGraphTypeSlug()==="DSA";}
+function wsSetGraphTypeSlug(slug){
+  window.__dsaGraphTypeSlug=slug!=null?String(slug).trim().toUpperCase():"GENERIC";
+  wsRenderDifficultyStats();
+}
+
 function wsNormalizeProblemDifficulty(d){
-  var x=String(d||"").trim().toLowerCase();
-  if(x==="easy"||x==="medium"||x==="hard"){return x;}
-  return "";
+  var s=String(d||"").trim().toLowerCase();
+  if(s==="easy"||s==="e"){return "easy";}
+  if(s==="hard"||s==="h"){return "hard";}
+  if(s==="medium"||s==="med"||s==="m"||s===""){return "medium";}
+  return "medium";
 }
 
 function wsCollectProblemDifficultyCounts(data){
@@ -688,13 +704,19 @@ function wsCollectProblemDifficultyCounts(data){
 }
 
 function wsRenderDifficultyStats(data){
-  var c=wsCollectProblemDifficultyCounts(data);
+  var section=$("ws-difficulty-section");
+  var isDsa=wsIsDsaGraphType();
+  if(section){section.hidden=!isDsa;}
+  if(!isDsa){return;}
+  var c=wsCollectProblemDifficultyCounts(data||wsGetH());
   var ge=$("cnt-easy"),gm=$("cnt-med"),gh=$("cnt-hard");
   if(ge){ge.textContent=String(c.easy);}
   if(gm){gm.textContent=String(c.medium);}
   if(gh){gh.textContent=String(c.hard);}
 }
 window.wsRenderDifficultyStats=wsRenderDifficultyStats;
+window.wsRefreshDifficultyStats=function(){wsRenderDifficultyStats();};
+window.wsSetGraphTypeSlug=wsSetGraphTypeSlug;
 
 function wsGetCategoryCatalog(counts){
   var seen={};

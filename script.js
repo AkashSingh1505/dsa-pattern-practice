@@ -1585,6 +1585,9 @@ function dsaImportMindMapHierarchyFromText(text) {
     dsaHierarchy = data;
     const st = typeof dsaCaptureGraphViewState === "function" ? dsaCaptureGraphViewState() : null;
     loadDsaPatternsPage({ restore: st });
+    if (typeof window.wsRefreshDifficultyStats === "function") {
+        window.wsRefreshDifficultyStats();
+    }
 }
 window.dsaImportMindMapHierarchyFromText = dsaImportMindMapHierarchyFromText;
 
@@ -9758,6 +9761,9 @@ function loadDsaPatternsPage(opts) {
     applyRestoreState();
     requestAnimationFrame(() => requestAnimationFrame(() => dsaSyncSegThumbTrack(tablist)));
     syncNavbarAuthUi();
+    if (typeof window.wsRefreshDifficultyStats === "function") {
+        window.wsRefreshDifficultyStats();
+    }
 }
 
 // Function to get query parameters from the URL

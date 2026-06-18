@@ -287,20 +287,8 @@
         if (!cw) {
             return;
         }
-        var metrics = layoutMetrics();
-        var aspect = VB.w / Math.max(VB.h, 1);
-        var baseW = cw.clientWidth || 720;
-        var autoH = Math.round(baseW / aspect);
-        var countBoost = Math.max(0, (metrics.count - 10) * 10);
-        autoH = Math.max(VB_MIN.h, autoH, 480 + countBoost);
-        var maxAuto = Math.round(window.innerHeight * (metrics.count > 24 ? 1.2 : 0.86));
-        autoH = Math.min(autoH, maxAuto);
-        if (S.canvasUserHeight) {
-            autoH = Math.max(autoH, S.canvasUserHeight);
-        }
-        S.canvasAutoHeight = autoH;
-        cw.style.height = autoH + "px";
-        cw.style.minHeight = autoH + "px";
+        cw.style.height = "";
+        cw.style.minHeight = "";
     }
 
     function $(id) {
@@ -2195,36 +2183,6 @@
                 window.__wsOrbitalZoomReset();
             };
         }
-
-        var canvasResize = $("canvas-resize-handle");
-        var canvasResizeDrag = null;
-        if (canvasResize) {
-            canvasResize.addEventListener("mousedown", function (e) {
-                if (e.button !== 0) {
-                    return;
-                }
-                e.preventDefault();
-                e.stopPropagation();
-                canvasResizeDrag = { sy: e.clientY, sh: cw.offsetHeight };
-                document.body.classList.add("ws-canvas-resizing");
-            });
-        }
-        window.addEventListener("mousemove", function (e) {
-            if (!canvasResizeDrag || !cw) {
-                return;
-            }
-            var nh = clamp(canvasResizeDrag.sh + (e.clientY - canvasResizeDrag.sy), 360, Math.round(window.innerHeight - 72));
-            S.canvasUserHeight = nh;
-            cw.style.height = nh + "px";
-            cw.style.minHeight = nh + "px";
-        });
-        window.addEventListener("mouseup", function () {
-            if (canvasResizeDrag) {
-                canvasResizeDrag = null;
-                document.body.classList.remove("ws-canvas-resizing");
-                applyView();
-            }
-        });
 
         window.addEventListener("resize", function () {
             if (!document.body.classList.contains("ws-repr-orbital")) {
